@@ -142,10 +142,26 @@
   letter-spacing: 0.5px;
 }
 
-.user-welcome {
+/* 사용자 정보 표시 */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
   color: rgba(255, 255, 255, 0.9);
   font-weight: var(--font-weight-medium);
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-icon {
+  font-size: 0.9rem;
+}
+
+.user-nickname {
+  white-space: nowrap;
 }
 
 .btn-outline-light {
@@ -166,7 +182,7 @@
 
 /* ===== Sidebar 스타일 ===== */
 .sidebar {
-  width: 250px;
+  width: 200px;
   background-color: var(--bg-primary);
   border-right: 1px solid var(--border-color);
   display: flex;
@@ -182,19 +198,6 @@
   min-width: 0;
   transform: translateX(-100%);
   border-right: none;
-}
-
-.sidebar-header {
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-}
-
-.sidebar-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
 }
 
 .sidebar-nav {
@@ -302,7 +305,7 @@
     font-size: 1.25rem;
   }
   
-  .user-welcome {
+  .user-info {
     display: none;
   }
 }

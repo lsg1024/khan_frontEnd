@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import JoinPage from './pages/JoinPage'; 
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
+import CataLogPage from "./pages/CataLogPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 
@@ -26,6 +27,26 @@ function App() {
     };
     
     checkAuth();
+
+    // 로컬 스토리지 변화 감지 (다른 탭에서의 변화 감지)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "app:accessToken") {
+        checkAuth();
+      }
+    };
+
+    // 현재 탭에서의 토큰 변화 감지를 위한 커스텀 이벤트
+    const handleTokenChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('tokenChange', handleTokenChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('tokenChange', handleTokenChange);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -56,6 +77,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/home" element={<HomePage />} />
+            <Route path="/catalog" element={<CataLogPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/login" element={<Navigate to="/" replace />} />

@@ -12,6 +12,7 @@ function TopBar({ onLogout, onToggleSidebar, isSidebarOpen }: TopBarProps) {
   const [remainingTime, setRemainingTime] = useState<string>("");
   const [isTokenExpired, setIsTokenExpired] = useState<boolean>(false);
   const [isTokenExpiringSoon, setIsTokenExpiringSoon] = useState<boolean>(false);
+  const [nickname, setNickname] = useState<string | null>(null);
 
   const handleLogout = useCallback(async () => {
     console.log("TopBar 로그아웃 시작");
@@ -40,10 +41,12 @@ function TopBar({ onLogout, onToggleSidebar, isSidebarOpen }: TopBarProps) {
         const remaining = tokenUtils.formatRemainingTime();
         const expired = tokenUtils.isTokenExpired();
         const expiringSoon = tokenUtils.isTokenExpiringSoon();
+        const userNickname = tokenUtils.getNickname();
         
         setRemainingTime(remaining);
         setIsTokenExpired(expired);
         setIsTokenExpiringSoon(expiringSoon);
+        setNickname(userNickname);
         
         // 토큰이 만료되었다면 자동 로그아웃
         if (expired) {
@@ -54,6 +57,7 @@ function TopBar({ onLogout, onToggleSidebar, isSidebarOpen }: TopBarProps) {
         setRemainingTime("");
         setIsTokenExpired(false);
         setIsTokenExpiringSoon(false);
+        setNickname(null);
       }
     };
 
@@ -87,7 +91,12 @@ function TopBar({ onLogout, onToggleSidebar, isSidebarOpen }: TopBarProps) {
             <span className="timer-text">{remainingTime}</span>
           </div>
         )}
-        <span className="user-welcome">환영합니다!</span>
+        {nickname && (
+          <div className="user-info">
+            <span className="user-icon">👤</span>
+            <span className="user-nickname">{nickname}님</span>
+          </div>
+        )}
         <button 
           className="btn btn-outline-light btn-sm" 
           onClick={handleLogout}

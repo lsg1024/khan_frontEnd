@@ -11,6 +11,8 @@ export const tokenUtils = {
     // AccessToken 저장
     setToken: (token: string) => {
         localStorage.setItem("app:accessToken", token);
+        // 토큰 변경 이벤트 발생
+        window.dispatchEvent(new Event('tokenChange'));
     },
     
     // AccessToken 조회
@@ -22,6 +24,8 @@ export const tokenUtils = {
     removeToken: () => {
         console.log("AccessToken 삭제됨");
         localStorage.removeItem("app:accessToken");
+        // 토큰 변경 이벤트 발생
+        window.dispatchEvent(new Event('tokenChange'));
     },
     
     // AccessToken 존재 여부 확인
@@ -111,5 +115,32 @@ export const tokenUtils = {
     isTokenExpiringSoon: (): boolean => {
         const remaining = tokenUtils.getTokenRemainingTime();
         return remaining > 0 && remaining <= 300; // 5분 = 300초
+    },
+
+    // 토큰에서 닉네임 추출
+    getNickname: (): string | null => {
+        const token = localStorage.getItem("app:accessToken");
+        if (!token) return null;
+
+        const decoded = tokenUtils.decodeToken(token);
+        if (!decoded) return null;
+
+        // 토큰에서 닉네임 필드 찾기 (nickname, name, preferred_username 등 가능)
+        return (decoded.nickname as string) || 
+               (decoded.name as string) || 
+               (decoded.preferred_username as string) || 
+               (decoded.sub as string) || 
+               null;
+    },
+
+    // 토큰에서 사용자 ID 추출
+    getUserId: (): string | null => {
+        const token = localStorage.getItem("app:accessToken");
+        if (!token) return null;
+
+        const decoded = tokenUtils.decodeToken(token);
+        if (!decoded) return null;
+
+        return (decoded.userId as string) || (decoded.sub as string) || null;
     }
 };

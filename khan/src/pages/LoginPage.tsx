@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { isApiSuccess, apiRequest, type ApiResponse } from "../../libs/api";
 import { useErrorHandler } from "../utils/errorHandler";
+import "../styles/pages/LoginPage.css";
 
 function LoginPage() {
     const navigate = useNavigate();
@@ -23,8 +24,7 @@ function LoginPage() {
                     // 토큰이 유효한지 서버에 확인
                     const response = await apiRequest.get("/users/info");
                     if (response.success) {
-                        console.log("토큰 유효성 검사 성공 - HomePage로 이동");
-                        navigate("/home"); // 또는 navigate("/home")
+                        navigate("/", { replace: true }); // 루트로 리다이렉트, replace 사용
                         return;
                     } else {
                         // 토큰이 유효하지 않으면 제거
@@ -33,7 +33,6 @@ function LoginPage() {
                 } catch (error) {
                     if (error instanceof Error) {
                         localStorage.removeItem("app:accessToken");
-                        console.log("토큰 검증 실패, 로그인이 필요합니다");
                     }
                 }
             } else {
@@ -68,34 +67,25 @@ function LoginPage() {
             if (isLoginSuccess) {
                 // 로그인 성공 후 토큰이 저장되었는지 확인
                 const token = localStorage.getItem("app:accessToken");
-                console.log("저장된 토큰:", token ? "존재함" : "없음");
-                
                 if (token) {
                     try {
                         const userInfoResponse = await apiRequest.get("/users/info");
                         if (userInfoResponse.success) {
-                            console.log("로그인 성공 - 사용자 정보 확인됨, HomePage로 이동");
-                            navigate("/"); // 또는 navigate("/home")
+                            navigate("/", { replace: true }); // 루트로 리다이렉트, replace 사용
                         } else {
-                            console.log("사용자 정보 조회 실패");
                             setError("인증 정보 확인에 실패했습니다.");
                         }
                     } catch (userInfoError) {
                         console.error("사용자 정보 조회 에러:", userInfoError);
-                        // 사용자 정보 조회 실패해도 토큰이 있으면 일단 인증된 것으로 처리
-                        console.log("토큰 존재로 인증 처리 - HomePage로 이동");
-                        navigate("/"); // 또는 navigate("/home")
+                        navigate("/"); 
                     }
                 } else {
-                    console.log("토큰이 저장되지 않았습니다");
                     setError("로그인 처리 중 오류가 발생했습니다.");
                 }
             } else {
-                console.log("로그인 API 응답 실패:", data?.message);
                 setError(data?.message || "로그인에 실패했습니다.");
             }
         } catch (error: unknown) {
-            console.error("로그인 에러:", error);
             handleError(error, setError);
         }
     };
@@ -103,36 +93,75 @@ function LoginPage() {
     // 인증 확인 중일 때 로딩 표시
     if (isCheckingAuth) {
         return (
-            <div style={{ textAlign: 'center', padding: '50px' }}>
-                <p>인증 상태를 확인 중입니다...</p>
+            <div className="login-page-container">
+                <div className="login-card">
+                    <div className="loading-state">
+                        <div className="spinner"></div>
+                        <p>인증 상태를 확인 중입니다...</p>
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
-        <div>
-            <h1>Login Page</h1>
-            <form onSubmit={handleLogin}>
-                <label>아이디</label>
-                <input 
-                    type="text"
-                    placeholder="아이디"
-                    value={userId}
-                    onChange={(e) => setUserId(e.target.value)}
-                    required
-                />
+        <div className="login-page-container">
+            <div className="login-card">
+                <div className="login-header">
+                    <h1>Khan System</h1>
+                    <p>로그인하여 시스템에 접속하세요</p>
+                </div>
+                
+                <form onSubmit={handleLogin} className="login-form">
+                    <div className="form-group">
+                        <label htmlFor="userId">아이디</label>
+                        <input 
+                            id="userId"
+                            type="text"
+                            placeholder="아이디를 입력하세요"
+                            value={userId}
+                            onChange={(e) => setUserId(e.target.value)}
+                            required
+                            className="form-input"
+                        />
+                    </div>
 
-                <label>비밀번호</label>
-                <input 
-                    type="password"
-                    placeholder="비밀번호"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                {error && <p style={{ color: "red" }}>{error}</p>}
-                <button type="submit">로그인</button>
-            </form>
+                    <div className="form-group">
+                        <label htmlFor="password">비밀번호</label>
+                        <input 
+                            id="password"
+                            type="password"
+                            placeholder="비밀번호를 입력하세요"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="form-input"
+                        />
+                    </div>
+                    
+                    {error && (
+                        <div className="error-message">
+                            <span>⚠️</span>
+                            <p>{error}</p>
+                        </div>
+                    )}
+                    
+                    <button type="submit" className="login-button">
+                        로그인
+                    </button>
+                </form>
+                
+                <div className="login-footer">
+                    <p>계정이 없으신가요?</p>
+                    <button 
+                        type="button" 
+                        className="signup-button"
+                        onClick={() => navigate("/join")}
+                    >
+                        회원가입
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

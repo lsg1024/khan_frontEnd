@@ -18,30 +18,18 @@ function HomePage() {
             try {
                 // 토큰 확인
                 const token = tokenUtils.getToken();
-                console.log("HomePage - 현재 토큰:", token);
-                console.log("HomePage - 토큰 존재 여부:", tokenUtils.hasToken());
-                
                 if (!token) {
-                    console.error("HomePage - 토큰이 없습니다. 로그인이 필요합니다.");
                     setLoading(false);
                     return;
                 }
-
-                console.log("HomePage - API 요청 시작: /users/info");
                 const response = await apiRequest.get("/users/info");
-                console.log("HomePage - API 응답:", response);
                 
                 if (response.success) {
-                    console.log("HomePage - 사용자 정보 로드 성공:", response.data);
                     setUserInfo(response.data as UserInfo);
-                } else {
-                    console.error("HomePage - API 응답이 성공이 아님:", response);
                 }
             } catch (error) {
-                console.error("사용자 정보 로드 실패:", error);
                 // 토큰이 만료되었거나 유효하지 않은 경우 처리
                 if (error instanceof Error && error.message.includes('401')) {
-                    console.log("HomePage - 토큰이 유효하지 않음, 토큰 제거");
                     tokenUtils.removeToken();
                 }
             } finally {

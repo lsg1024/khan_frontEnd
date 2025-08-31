@@ -7,7 +7,6 @@ export function getApiBaseUrl(): string {
     const { hostname } = window.location;
     const origin = buildApiOriginFromEnv(hostname);
     const prefix = resolveApiPrefix();
-    console.log("API Base URL:", origin + prefix);
     return `${origin}${prefix}`;
 }
 
@@ -21,8 +20,6 @@ export const api = axios.create({
 // 개발용 Bearer 토큰(운영에선 HttpOnly 쿠키 권장)
 api.interceptors.request.use((config) => {
     const token = tokenUtils.getToken();
-    console.log("API 요청 인터셉터 - 토큰:", token);
-    console.log("API 요청 인터셉터 - URL:", config.url);
     
     if (token) {
         // headers가 없으면 AxiosHeaders 인스턴스로 초기화
@@ -33,7 +30,6 @@ api.interceptors.request.use((config) => {
             config.headers = AxiosHeaders.from(config.headers);
         }
         (config.headers as AxiosHeaders).set("Authorization", `Bearer ${token}`);
-        console.log("API 요청 인터셉터 - Authorization 헤더 설정됨");
     } else {
         console.log("API 요청 인터셉터 - 토큰이 없어서 Authorization 헤더 설정 안됨");
     }
@@ -41,21 +37,14 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-    (res) => {
-        console.log("API 응답 인터셉터 - URL:", res.config.url);
-        console.log("API 응답 인터셉터 - 상태코드:", res.status);
-        
+    (res) => {        
         // 응답 헤더에서 Authorization 토큰 추출 및 저장 (대소문자 구분 없이)
         const authHeader = res.headers['authorization'] || res.headers['Authorization'] || res.headers.authorization;
-        
-        console.log("Response headers:", res.headers);
-        console.log("Authorization header:", authHeader);
         
         // AccessToken 저장
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7); // 'Bearer ' 제거
             tokenUtils.setToken(token);
-            console.log("AccessToken이 저장되었습니다:", token.substring(0, 20) + "...");
         }
         
         // 응답 본문에서도 AccessToken 확인 (백업)
@@ -67,7 +56,6 @@ api.interceptors.response.use(
                     const token = (responseData.accessToken || responseData.token) as string;
                     if (typeof token === 'string' && token.length > 0) {
                         tokenUtils.setToken(token);
-                        console.log("응답 본문에서 AccessToken 저장됨:", token.substring(0, 20) + "...");
                     }
                 }
             }
@@ -76,7 +64,6 @@ api.interceptors.response.use(
         return res;
     },
     async (err) => {
-        console.log("API 응답 인터셉터 - 에러 발생:", err.response?.status, err.message);
         const originalRequest = err.config;
         
         // 401 에러이고 재시도하지 않은 요청인 경우
@@ -95,8 +82,7 @@ api.interceptors.response.use(
                         timeout: 10000
                     }
                 );
-                
-                console.log("토큰 갱신 응답:", refreshResponse.headers);
+            
                 
                 // 새 AccessToken 추출 및 저장
                 const newAuthHeader = refreshResponse.headers['authorization'] || 
@@ -108,7 +94,6 @@ api.interceptors.response.use(
                 if (newAuthHeader && newAuthHeader.startsWith('Bearer ')) {
                     const newToken = newAuthHeader.substring(7);
                     tokenUtils.setToken(newToken);
-                    console.log("새 AccessToken이 저장되었습니다:", newToken.substring(0, 20) + "...");
                     tokenUpdated = true;
                     
                     // 원래 요청에 새 토큰 설정
@@ -130,7 +115,6 @@ api.interceptors.response.use(
                                 const token = (responseData.accessToken || responseData.token) as string;
                                 if (typeof token === 'string' && token.length > 0) {
                                     tokenUtils.setToken(token);
-                                    console.log("갱신 응답 본문에서 AccessToken 저장됨:", token.substring(0, 20) + "...");
                                     tokenUpdated = true;
                                     
                                     // 원래 요청에 새 토큰 설정
@@ -224,10 +208,8 @@ export const apiRequest = {
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
             tokenUtils.setToken(token);
-            console.log("헤더에서 토큰 저장됨:", token.substring(0, 20) + "...");
+            console.log("헤더에서 토큰 저장됨");
         } else {
-            console.log("Authorization 헤더를 찾을 수 없습니다");
-            
             // 2. 응답 본문에서 토큰 확인 (백업)
             if (response.data && typeof response.data === 'object' && 'data' in response.data) {
                 const responseData = response.data.data as Record<string, unknown>;
@@ -235,7 +217,6 @@ export const apiRequest = {
                     const token = responseData.token;
                     if (typeof token === 'string' && token.length > 0) {
                         tokenUtils.setToken(token);
-                        console.log("응답 본문에서 토큰 저장됨:", token.substring(0, 20) + "...");
                     }
                 }
             }

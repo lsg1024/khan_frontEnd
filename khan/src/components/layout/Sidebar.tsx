@@ -13,6 +13,7 @@ interface SidebarProps {
 const sidebarItems: SidebarItem[] = [
   { path: "/", label: "홈", icon: "🏠" },
   { path: "/profile", label: "프로필", icon: "👤" },
+  { path: "/catalog", label: "카탈로그", icon: "🛒" },
   { path: "/settings", label: "설정", icon: "⚙️" },
   { path: "/help", label: "도움말", icon: "❓" },
 ];
@@ -27,9 +28,6 @@ function Sidebar({ isOpen = true }: SidebarProps) {
 
   return (
     <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
-      <div className="sidebar-header">
-        <h3>메뉴</h3>
-      </div>
       <nav className="sidebar-nav">
         <ul className="nav-list">
           {sidebarItems.map((item) => (
