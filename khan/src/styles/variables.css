@@ -53,6 +53,15 @@
   /* 트랜지션 */
     --transition-base: all 0.3s ease;
     --transition-fast: all 0.15s ease;
+
+  /* 레이아웃 - 사이드바 */
+    --sidebar-width-desktop: 140px;
+    --sidebar-width-tablet: 120px;
+    --sidebar-width-mobile: 80px;
+    
+  /* 레이아웃 - 컨텐츠 최대 너비 */
+    --content-max-width-desktop: 1400px;
+    --content-max-width-tablet: 1200px;
 }
 
 /* ===== 다크 모드 지원 ===== */

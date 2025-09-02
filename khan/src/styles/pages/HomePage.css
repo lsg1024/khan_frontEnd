@@ -1,9 +1,36 @@
 /* ===== 홈페이지 전용 스타일 ===== */
 
 .home-page-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  animation: fadeInUp 0.6s ease-out;
+    max-width: var(--content-max-width-desktop);
+    width: 90%;
+    margin: 1rem auto;
+    animation: fadeInUp 0.6s ease-out;
+    transition: var(--transition-base);
+}
+
+/* 사이드바 상태에 따른 홈페이지 콘텐츠 조정 */
+@media screen and (min-width: 1025px) {
+  .main-content.with-sidebar .home-page-content {
+    max-width: calc(var(--content-max-width-desktop) - var(--sidebar-width-desktop));
+    width: 95%;
+  }
+
+  .main-content.without-sidebar .home-page-content {
+    max-width: var(--content-max-width-desktop);
+    width: 90%;
+  }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .main-content.with-sidebar .home-page-content {
+    max-width: calc(var(--content-max-width-tablet) - var(--sidebar-width-tablet));
+    width: 95%;
+  }
+
+  .main-content.without-sidebar .home-page-content {
+    max-width: var(--content-max-width-tablet);
+    width: 90%;
+  }
 }
 
 @keyframes fadeInUp {
@@ -27,7 +54,7 @@
   box-shadow: var(--shadow);
 }
 
-.home-header h1 {
+.home-header h1 { 
   font-size: 2.5rem;
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--spacing-sm);
@@ -37,6 +64,10 @@
 .home-header p {
   font-size: var(--font-size-lg);
   opacity: 0.9;
+}
+
+@media (max-width: 1024px) {
+
 }
 
 .user-info-section {
@@ -223,8 +254,23 @@
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
+  .home-page-content {
+    padding: 0 var(--spacing-md);
+    margin: 0.5rem auto 0;
+    width: 95%;
+    max-width: none; /* 모바일에서는 최대 너비 제한 해제 */
+  }
+  
+  /* 모바일에서는 사이드바가 오버레이이므로 콘텐츠 조정 불필요 */
+  .main-content.with-sidebar .home-page-content,
+  .main-content.without-sidebar .home-page-content {
+    width: 95%;
+    max-width: none;
+  }
+  
   .home-header {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
   }
   
   .home-header h1 {
@@ -232,7 +278,8 @@
   }
   
   .user-info-section {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
   }
   
   .user-info-grid {
@@ -252,12 +299,32 @@
 }
 
 @media (max-width: 480px) {
+  .home-page-content {
+    padding: 0 var(--spacing-sm);
+    margin: 0.25rem auto 0;
+    width: 98%;
+    max-width: none;
+  }
+  
+  /* 작은 모바일에서도 사이드바 조정 불필요 */
+  .main-content.with-sidebar .home-page-content,
+  .main-content.without-sidebar .home-page-content {
+    width: 98%;
+    max-width: none;
+  }
+  
+  .home-header {
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+  }
+  
   .home-header h1 {
     font-size: 1.75rem;
   }
   
   .user-info-section {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
   }
 }
 

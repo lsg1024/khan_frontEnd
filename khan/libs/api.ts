@@ -66,90 +66,24 @@ api.interceptors.response.use(
     async (err) => {
         const originalRequest = err.config;
         
-        // 401 에러이고 재시도하지 않은 요청인 경우
-        if (err.response?.status === 401 && !originalRequest._retry) {
-            console.log("API 응답 인터셉터 - 401 에러, 토큰 갱신 시도");
-            originalRequest._retry = true;
-            
-            try {
-                console.log("토큰 갱신 시도 중...");
-                // 쿠키에 있는 refreshToken으로 토큰 재발급 요청
-                const refreshResponse = await axios.post(
-                    `${getApiBaseUrl()}/auth/reissue`,
-                    {},
-                    {
-                        withCredentials: true, // 쿠키 전송
-                        timeout: 10000
-                    }
-                );
-            
-                
-                // 새 AccessToken 추출 및 저장
-                const newAuthHeader = refreshResponse.headers['authorization'] || 
-                                    refreshResponse.headers['Authorization'] || 
-                                    refreshResponse.headers.authorization;
-                
-                let tokenUpdated = false;
-                
-                if (newAuthHeader && newAuthHeader.startsWith('Bearer ')) {
-                    const newToken = newAuthHeader.substring(7);
-                    tokenUtils.setToken(newToken);
-                    tokenUpdated = true;
-                    
-                    // 원래 요청에 새 토큰 설정
-                    if (!originalRequest.headers) {
-                        originalRequest.headers = new AxiosHeaders();
-                    } else {
-                        originalRequest.headers = AxiosHeaders.from(originalRequest.headers);
-                    }
-                    (originalRequest.headers as AxiosHeaders).set("Authorization", `Bearer ${newToken}`);
-                }
-                
-                // 응답 본문에서도 AccessToken 확인 (백업)
-                if (!tokenUpdated && refreshResponse.data && typeof refreshResponse.data === 'object') {
-                    const refreshData = refreshResponse.data as Record<string, unknown>;
-                    if ('data' in refreshData) {
-                        const responseData = refreshData.data as Record<string, unknown>;
-                        if (responseData && typeof responseData === 'object') {
-                            if ('accessToken' in responseData || 'token' in responseData) {
-                                const token = (responseData.accessToken || responseData.token) as string;
-                                if (typeof token === 'string' && token.length > 0) {
-                                    tokenUtils.setToken(token);
-                                    tokenUpdated = true;
-                                    
-                                    // 원래 요청에 새 토큰 설정
-                                    if (!originalRequest.headers) {
-                                        originalRequest.headers = new AxiosHeaders();
-                                    } else {
-                                        originalRequest.headers = AxiosHeaders.from(originalRequest.headers);
-                                    }
-                                    (originalRequest.headers as AxiosHeaders).set("Authorization", `Bearer ${token}`);
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                if (tokenUpdated) {
-                    // 원래 요청 재시도
-                    return api(originalRequest);
-                } else {
-                    console.log("갱신된 토큰을 찾을 수 없습니다");
-                }
-            } catch (refreshError) {
-                console.error("토큰 갱신 실패:", refreshError);
-                // 갱신 실패 시 로그아웃 처리
-                tokenUtils.removeToken();
-                // 로그인 페이지로 리디렉션
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
-            }
+        // 로그인 요청인 경우 인터셉터 처리 건너뛰기
+        if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/reissue')) {
+            return Promise.reject(err);
         }
         
-        // 401이 아니거나 갱신 실패한 경우
+        // 401 에러인 경우 토큰 제거 및 로그인 페이지로 리다이렉트
+        // (자동 갱신 서비스에서 미리 처리하므로 여기까지 온 경우는 RefreshToken도 만료된 상황)
         if (err.response?.status === 401) {
+            console.log("API 응답 인터셉터 - 401 에러, 로그아웃 처리");
             tokenUtils.removeToken();
-            window.location.href = '/login';
+            
+            // 토큰 만료 이벤트 발생
+            window.dispatchEvent(new CustomEvent('tokenExpired'));
+            
+            // 로그인 페이지로 리다이렉트 (현재 페이지가 로그인 페이지가 아닌 경우만)
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
         }
         
         return Promise.reject(err);
@@ -223,5 +157,46 @@ export const apiRequest = {
         }
         
         return response.data;
+    }
+};
+
+// 기본 정보 관련 API 함수들
+export const basicInfoApi = {
+    // 분류 목록 조회
+    getClassifications: async (name?: string) => {
+        const params = name ? { name } : {};
+        return api.get('product/classifications', { params });
+    },
+
+    // 재질 목록 조회
+    getMaterials: async () => {
+        return api.get('product/materials');
+    },
+
+    // 세트 타입 목록 조회
+    getSetTypes: async () => {
+        return api.get('product/set-types');
+    },
+
+    // 스톤 검색 (페이징 지원)
+    getStones: async (name?: string, page: number = 1) => {
+        const params = new URLSearchParams();
+        if (name) {
+            params.append('search', name);
+        }
+        params.append('page', page.toString());
+        
+        return api.get(`product/stones?${params.toString()}`);
+    },
+
+    // 제조사 검색 (페이징 지원)
+    getFactories: async (name?: string, page: number = 1) => {
+        const params = new URLSearchParams();
+        if (name) {
+            params.append('search', name);
+        }
+        params.append('page', page.toString());
+
+        return api.get(`account/factories?${params.toString()}`);
     }
 };

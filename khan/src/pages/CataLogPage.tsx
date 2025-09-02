@@ -1,21 +1,44 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiRequest, isApiSuccess } from "../../libs/api";
 import { useErrorHandler } from "../utils/errorHandler";
 import { usePagination } from "../hooks/usePagination";
+import { getGoldTransferWeight } from "../utils/goldUtils";
 import Pagination from "../components/common/Pagination";
 import PageInfo from "../components/common/PageInfo";
 import "../styles/pages/CataLogPage.css";
+import "../styles/components/common.css";
 
 // 상품 데이터 타입 정의
+interface StoneWorkGradePolicy {
+    workGradePolicyId: string;
+    grade: string;
+    laborCost: number;
+}
+
+interface ProductStone {
+    productStoneId: string;
+    stoneId: string;
+    stoneName: string;
+    productStoneMain: boolean;
+    includeQuantity: boolean;
+    includeWeight: boolean;
+    includeLabor: boolean;
+    stoneQuantity: number;
+    stoneWorkGradePolicyDtos: StoneWorkGradePolicy[];
+}
+
 interface Product {
     productId: string;
     productName: string;
     productWeight: string;
+    productMaterial: string;
     productColor: string;
     productNote: string;
     productLaborCost: string;
     productPriceInfo: string;
-    productImagePath: string;
+    productImagePath: string | null;
+    productStones: ProductStone[];
 }
 
 interface PageInfo {
@@ -36,11 +59,17 @@ function CataLogPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
     const { handleError } = useErrorHandler();
+    const navigate = useNavigate();
 
     // 페이지네이션 훅 사용 (초기값은 20이지만 서버 응답으로 업데이트됨)
     const pagination = usePagination(20, (page) => {
         loadProducts(page);
     });
+
+    // 상품 상세 페이지로 이동
+    const handleProductClick = (productId: string) => {
+        navigate(`/catalog/${productId}`);
+    };
 
     // 상품 데이터 로드
     const loadProducts = async (page: number = 1) => {
@@ -119,11 +148,20 @@ function CataLogPage() {
         {/* 상품 그리드 */}
         <div className="products-grid">
             {products.map((product) => (
-            <div key={product.productId} className="product-card">
+            <div
+                key={product.productId}
+                className="product-card"
+                onClick={() => handleProductClick(product.productId)}
+                style={{ cursor: "pointer" }}
+            >
                 {/* 상품 이미지 */}
                 <div className="product-image">
                 <img
-                    src={product.productImagePath || "/images/not_ready.png"}
+                    src={
+                    product.productImagePath
+                        ? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${product.productImagePath}`
+                        : "/images/not_ready.png"
+                    }
                     alt={product.productName}
                     onError={(e) => {
                     e.currentTarget.src = "/images/not_ready.png";
@@ -135,19 +173,50 @@ function CataLogPage() {
                 <div className="product-info" data-product-id={product.productId}>
                 <h3 className="product-name">{product.productName}</h3>
                 <div className="product-details">
-                    {/* 무게와 색상을 한 줄로 */}
+                    {/* 무게, 재질, 색상을 한 줄로 */}
                     <div className="detail-row combined">
                     <div className="detail-item">
-                        <span className="label">무게:</span>
-                        <span className="value">{product.productWeight}</span>
+                        <div className="value">
+                        {product.productWeight}g
+                        </div>
                     </div>
                     <div className="detail-item">
-                        <span className="label">색상:</span>
+                        <div className="gold-content">
+                            {getGoldTransferWeight(product.productWeight)}돈
+                        </div>
+                    </div>
+                    <div className="detail-item">
+                        <span className="value">{product.productMaterial}</span>
+                    </div>
+                    <div className="detail-item">
                         <span className="value color-tag">
                         {product.productColor}
                         </span>
                     </div>
                     </div>
+
+                    {/* 스톤 정보 표시 */}
+                    {product.productStones && product.productStones.length > 0 && (
+                    <div className="stones-section">
+                        {product.productStones.map((stone) => (
+                        <div key={stone.productStoneId} className="stone-row">
+                            <span className="stone-info">
+                            {stone.productStoneMain ? "M " : ""}
+                            {stone.stoneName} × {stone.stoneQuantity}
+                            </span>
+                        </div>
+                        ))}
+                        <div className="stone-total">
+                        <span className="total-label">총 개수: </span>
+                        <span className="total-value">
+                            {product.productStones.reduce(
+                            (sum, stone) => sum + stone.stoneQuantity,
+                            0
+                            )}
+                        </span>
+                        </div>
+                    </div>
+                    )}
 
                     {/* 매입가와 판매가를 한 줄로 */}
                     <div className="detail-row combined price-row-combined">
@@ -165,10 +234,9 @@ function CataLogPage() {
                     </div>
                     </div>
 
-                    {/* 메모는 맨 아래 */}
+                    {/* 메모 */}
                     {product.productNote && (
                     <div className="detail-row note">
-                        <span className="label">메모:</span>
                         <span className="value">{product.productNote}</span>
                     </div>
                     )}

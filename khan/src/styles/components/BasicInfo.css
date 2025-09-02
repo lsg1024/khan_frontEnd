@@ -1,0 +1,409 @@
+/* ===== 기본 정보 섹션 ===== */
+.basic-info-section {
+  width: 100%;
+  background-color: white;
+  padding: 0.75rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.basic-info-section h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #333;
+    border-bottom: 2px solid #28a745;
+    padding-bottom: 0.25rem;
+}
+
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem; /* 간격 더 축소 */
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  font-size: 12px; /* 글씨 크기 축소 */
+  line-height: 1.2; /* 줄 간격 축소 */
+  padding-left: 5px;
+}
+
+.info-item .label {
+  font-weight: bold;
+  color: #666;
+  min-width: 50px; /* 최소 너비 축소 */
+  font-size: 12px; /* 라벨 글씨 크기 축소 */
+}
+
+.info-item .value {
+  color: #666;
+  font-weight: 500;
+  font-size: 12px; /* 값 글씨 크기 축소 */
+  flex: 1;
+}
+
+.info-row {
+  display: flex;
+  gap: 0.3rem; /* 간격 더 축소 */
+  width: 100%;
+}
+
+.info-item.half-width {
+  flex: 1;
+}
+
+.info-item.quarter-width {
+  flex: 1;
+  min-width: 0; /* flex 아이템이 축소될 수 있도록 */
+}
+
+.info-item.quarter-width .label {
+  min-width: 40px; /* 라벨 최소 너비를 더 작게 */
+  font-size: 11px; /* 라벨 크기를 더 작게 */
+}
+
+.info-item.quarter-width .value {
+  font-size: 11px; /* 값 크기를 더 작게 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.info-item.full-width {
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 45px; /* 최소 높이 더 축소 */
+}
+
+.info-item.full-width-memo {
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 45px; /* 최소 높이 더 축소 */
+  padding: 0px;
+}
+
+.info-item.full-width .value {
+  width: 100%;
+  margin-top: 0.3rem; /* 마진 더 축소 */
+  padding: 0.3rem; /* 패딩 더 축소 */
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+/* 편집 가능한 필드 스타일 */
+.editable-textarea {
+  width: 100%;
+  min-height: 45px; /* 높이 더 축소 */
+  padding: 4px 8px; /* 패딩 더 축소 */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 12px; /* 글씨 크기 축소 */
+  line-height: 1.2; /* 줄 간격 더 축소 */
+  resize: vertical;
+  background: white !important;
+  color: #333 !important;
+  transition: border-color 0.3s;
+}
+
+.editable-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  color: #333 !important;
+}
+
+.editable-textarea::placeholder {
+  color: #999;
+  font-size: 11px; /* placeholder 글씨 크기 축소 */
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .basic-info-section {
+    padding: 1rem;
+  }
+  
+  .info-grid {
+    gap: 0.6rem;
+  }
+  
+  .info-item {
+    padding: 0.5rem;
+    gap: 0.5rem;
+    font-size: 11px;
+  }
+  
+  .info-item .label {
+    min-width: 70px;
+    font-size: 11px;
+  }
+  
+  .info-item .value {
+    font-size: 11px;
+  }
+  
+  .info-row {
+    gap: 0.6rem;
+  }
+  
+  .editable-textarea {
+    min-height: 50px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  
+  .info-item.full-width {
+    min-height: 50px;
+  }
+
+  /* 768px 이하에서는 quarter-width 아이템들을 2줄로 배치 */
+  .info-row:has(.quarter-width) {
+    flex-wrap: wrap;
+  }
+  
+  .info-item.quarter-width {
+    flex: 0 0 calc(50% - 0.4rem);
+    min-width: calc(50% - 0.4rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    padding: 0.4rem;
+    font-size: 10px;
+  }
+  
+  .info-item .label {
+    min-width: auto;
+    font-size: 10px;
+  }
+  
+  .info-item .value {
+    font-size: 10px;
+  }
+  
+  .info-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .editable-textarea {
+    min-height: 45px;
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+  
+  .info-item.full-width {
+    min-height: 45px;
+  }
+
+  /* 480px 이하에서는 모든 아이템을 세로로 배치 */
+  .info-item.quarter-width {
+    flex: 1;
+    min-width: 100%;
+  }
+}
+
+/* ===== 편집 가능한 입력 필드 스타일 ===== */
+.editable-input,
+.editable-select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  background-color: white;
+  color: #333;
+  transition: border-color 0.2s ease;
+}
+
+.editable-input:focus,
+.editable-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.editable-select {
+  cursor: pointer;
+}
+
+.editable-select:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 무게 입력 필드 (단위 포함) */
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.weight-input {
+  flex: 1;
+  min-width: 0;
+
+}
+
+.unit {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 반응형 디자인에서 입력 필드 조정 */
+@media (max-width: 750px) {
+  /* 기본정보를 3줄 레이아웃으로 변경 */
+  .info-grid {
+    gap: 0.3rem;
+  }
+  
+  /* 첫 번째 줄: 모델 번호, 제조번호, 제조사 */
+  .info-row:nth-child(1) {
+    display: flex;
+    gap: 0.3rem;
+  }
+  
+  .info-row:nth-child(1) .info-item {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  /* 두 번째 줄: 무게, 재질, 분류, 세트 */
+  .info-row:nth-child(2) {
+    display: flex;
+    gap: 0.3rem;
+  }
+  
+  .info-row:nth-child(2) .info-item {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  /* 세 번째 줄: 메모 (전체 너비) */
+  .info-row:nth-child(3) {
+    width: 100%;
+  }
+  
+  .info-row:nth-child(3) .info-item {
+    width: 100%;
+  }
+  
+  /* 모든 필드 크기 조정 */
+  .info-item {
+    padding: 0.3rem;
+  }
+  
+  .info-item .label {
+    font-size: 10px;
+    min-width: 35px;
+  }
+  
+  .info-item .value {
+    font-size: 10px;
+  }
+  
+  .editable-input,
+  .editable-select {
+    font-size: 10px;
+    padding: 3px 4px;
+  }
+  
+  .editable-textarea {
+    min-height: 40px;
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .editable-input,
+  .editable-select {
+    font-size: 11px;
+    padding: 5px 6px;
+  }
+  
+  .unit {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .editable-input,
+  .editable-select {
+    font-size: 10px;
+    padding: 4px 5px;
+  }
+  
+  .unit {
+    font-size: 10px;
+  }
+}
+
+/* 제조사 검색 관련 스타일 */
+.factory-search-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.factory-display-value {
+  flex: 1;
+  color: #666;
+  font-weight: 500;
+  font-size: 12px;
+  padding: 4px 6px;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+}
+
+.factory-search-btn {
+  padding: 4px 8px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.factory-search-btn:hover {
+  background-color: #0056b3;
+}
+
+.factory-search-btn:active {
+  background-color: #004085;
+}
+
+@media (max-width: 750px) {
+  .factory-search-container {
+    gap: 0.3rem;
+  }
+  
+  .factory-search-btn {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+}

@@ -1,22 +1,27 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; 
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-import JoinPage from './pages/JoinPage'; 
+import JoinPage from "./pages/JoinPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import CataLogPage from "./pages/CataLogPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 
 import Layout from "./components/layout/Layout";
 import { tokenUtils } from "./utils/tokenUtils";
+import { useTokenAutoRefresh } from "./utils/useTokenAutoRefresh";
 
-import './App.css'
-import './styles/index.css'
+import "./App.css";
+import "./styles/index.css";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // 토큰 자동 갱신 서비스 초기화
+  useTokenAutoRefresh();
 
   useEffect(() => {
     // 앱 시작 시 토큰 확인
@@ -25,7 +30,7 @@ function App() {
       setIsAuthenticated(hasToken);
       setIsLoading(false);
     };
-    
+
     checkAuth();
 
     // 로컬 스토리지 변화 감지 (다른 탭에서의 변화 감지)
@@ -40,12 +45,12 @@ function App() {
       checkAuth();
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('tokenChange', handleTokenChange);
-    
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("tokenChange", handleTokenChange);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('tokenChange', handleTokenChange);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("tokenChange", handleTokenChange);
     };
   }, []);
 
@@ -78,6 +83,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/catalog" element={<CataLogPage />} />
+            <Route path="/catalog/:productId" element={<ProductDetailPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/login" element={<Navigate to="/" replace />} />
@@ -91,4 +97,3 @@ function App() {
 }
 
 export default App;
-

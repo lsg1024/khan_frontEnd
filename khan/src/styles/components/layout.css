@@ -25,6 +25,8 @@
   color: var(--text-white);
   box-shadow: var(--shadow);
   z-index: 1000;
+  position: relative;
+  overflow: visible;
 }
 
 .top-bar-left {
@@ -80,6 +82,13 @@
   gap: var(--spacing-md);
 }
 
+/* 토큰 섹션 컨테이너 */
+.token-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
 /* 토큰 타이머 스타일 */
 .token-timer {
   display: flex;
@@ -93,6 +102,12 @@
   color: var(--text-white);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.token-timer:hover {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .token-timer.expired {
@@ -107,6 +122,99 @@
   border-color: rgba(255, 165, 0, 0.4);
   color: #ffe4b5;
   animation: pulse-warning 3s infinite;
+}
+
+.refresh-indicator {
+  animation: rotate 1s linear infinite;
+  margin-left: 4px;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.toggle-icon {
+  margin-left: auto;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+/* 토큰 세부사항 드롭다운 */
+.token-details-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.token-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: var(--font-size-xs);
+  color: var(--text-white);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.token-detail-row:last-child {
+  border-bottom: none;
+}
+
+.token-detail-row .warning {
+  color: #ff6b6b;
+}
+
+.token-detail-row .normal {
+  color: #51cf66;
+}
+
+.token-actions {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.manual-refresh-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.manual-refresh-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.manual-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @keyframes pulse-warning {
@@ -182,7 +290,7 @@
 
 /* ===== Sidebar 스타일 ===== */
 .sidebar {
-  width: 200px;
+  width: 140px;
   background-color: var(--bg-primary);
   border-right: 1px solid var(--border-color);
   display: flex;
@@ -203,6 +311,12 @@
 .sidebar-nav {
   flex: 1;
   padding: var(--spacing-md) 0;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+  visibility: visible;
+  opacity: 1;
 }
 
 .nav-list {
@@ -227,7 +341,7 @@
   text-decoration: none;
   transition: var(--transition-fast);
   cursor: pointer;
-  font-size: var(--font-size-base);
+  font-size: 12px;
   position: relative;
 }
 
@@ -254,7 +368,6 @@
 }
 
 .nav-icon {
-  font-size: 1.2rem;
   margin-right: var(--spacing-md);
   min-width: 24px;
   text-align: center;
@@ -268,33 +381,20 @@
 /* ===== Main Content 스타일 ===== */
 .main-content {
   flex: 1;
-  padding: var(--spacing-lg);
   background-color: var(--bg-secondary);
   overflow-y: auto;
   transition: all 0.3s ease;
-}
-
-/* 사이드바 상태에 따른 메인 콘텐츠 조정 */
-.main-content.with-sidebar {
-  margin-left: 0;
-}
-
-.main-content.without-sidebar {
-  margin-left: 0;
-  /* 사이드바가 숨겨졌을 때 전체 너비 사용 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* ===== 반응형 디자인 ===== */
 @media screen and (max-width: 1024px) {
-  .sidebar {
-    width: 0;
-    visibility: hidden;
-    opacity: 0;
-    transform: translateX(-100%);
-  }
   
   .main-content {
     width: 100%;
+    margin-left: 0; /* 모바일에서는 사이드바가 오버레이되므로 마진 제거 */
   }
   
   .top-bar {
@@ -308,13 +408,21 @@
   .user-info {
     display: none;
   }
+  
+  /* 모바일 사이드바 오버레이 */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    cursor: pointer;
+  }
 }
 
 @media screen and (max-width: 768px) {
-  .main-content {
-    padding: var(--spacing-md);
-  }
-  
   .top-bar {
     padding: var(--spacing-sm);
   }
@@ -327,10 +435,6 @@
 @media screen and (max-width: 480px) {
   .top-bar-left h2 {
     font-size: 1rem;
-  }
-  
-  .main-content {
-    padding: var(--spacing-sm);
   }
 }
 
