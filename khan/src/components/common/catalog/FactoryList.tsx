@@ -1,5 +1,5 @@
 import React from "react";
-import "../../../styles/components/FactorySearchModal.css";
+import "../../../styles/components/factoryList.css";
 
 interface FactoryData {
   factoryId?: number; // optional로 변경

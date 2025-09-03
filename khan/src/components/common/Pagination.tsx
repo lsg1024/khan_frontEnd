@@ -1,53 +1,62 @@
 import React from "react";
-import type { UsePaginationReturn } from "../../hooks/usePagination";
 
 interface PaginationProps {
-    pagination: UsePaginationReturn;
+    currentPage: number;
+    totalPages: number;
+    totalElements: number;
+    loading?: boolean;
+    onPageChange: (page: number) => void;
     className?: string;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
-    pagination,
+    currentPage,
+    totalPages,
+    totalElements,
+    loading = false,
+    onPageChange,
     className = "",
     }) => {
-    const {
-        paginationState,
-        goToPage,
-        nextPage,
-        prevPage,
-        canGoNext,
-        canGoPrev,
-        getVisiblePages,
-    } = pagination;
-    const { currentPage } = paginationState;
+    // 이전 페이지로 이동
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+        onPageChange(currentPage - 1);
+        }
+    };
 
-    const visiblePages = getVisiblePages();
+    // 다음 페이지로 이동
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+        onPageChange(currentPage + 1);
+        }
+    };
 
+    console.log("Pagination Rendered: ", `pagination-footer ${className}`);
     return (
-        <div className={`pagination ${className}`}>
-        <button className="page-btn" onClick={prevPage} disabled={!canGoPrev}>
-            이전
-        </button>
+        <div className={`pagination-footer-${className}`}>
+            <div className={`pagination-controls-${className}`}>
+                    <button
+                    className="page-btn"
+                    onClick={handlePrevPage}
+                    disabled={currentPage <= 1 || loading}
+                    >
+                    이전
+                    </button>
+                    
+                <span className="page-info">
+                {totalPages > 0 && totalElements > 0
+                    ? `페이지 ${currentPage} / ${totalPages} (총 ${totalElements}개)`
+                    : "데이터 없음"}
+                </span>
 
-        <div className="page-numbers">
-            {visiblePages.map((pageNumber) => (
-            <button
-                key={pageNumber}
-                className={`page-number ${
-                currentPage === pageNumber ? "active" : ""
-                }`}
-                onClick={() => {
-                goToPage(pageNumber);
-                }}
-            >
-                {pageNumber}
-            </button>
-            ))}
-        </div>
-
-        <button className="page-btn" onClick={nextPage} disabled={!canGoNext}>
-            다음
-        </button>
+                <button
+                    className="page-btn"
+                    onClick={handleNextPage}
+                    disabled={currentPage >= totalPages || totalPages <= 1 || loading}
+                    >
+                    다음
+                </button>
+            </div>
         </div>
     );
 };

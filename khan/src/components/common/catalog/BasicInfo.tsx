@@ -6,7 +6,7 @@ import type {
   SetTypeDto,
 } from "../../../types/basicInfo";
 import { basicInfoApi } from "../../../../libs/api";
-import UnifiedSearchModal from "./UnifiedSearchModal";
+import FactorySearc from "./FactorySearch";
 import "../../../styles/components/BasicInfo.css";
 
 const BasicInfo: React.FC<BasicInfoProps> = ({
@@ -59,20 +59,14 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
     factoryId?: number;
     factoryName: string;
   }) => {
-    console.log("BasicInfo에서 받은 factory 데이터:", factory); // 디버깅용
-
     // 기존 onFactoryChange 호출 (하위 호환성)
     if (onFactoryChange) {
       onFactoryChange(factory.factoryName);
     }
 
-    // 새로운 onFactorySelect 호출 (factoryId와 factoryName 모두 전달)
     if (onFactorySelect) {
       // factoryId가 없으면 0을 기본값으로 사용
       const idToUse = factory.factoryId || 0;
-      console.log(
-        `ProductDetailPage로 전달할 값: ID=${idToUse}, Name=${factory.factoryName}`
-      ); // 디버깅용
       onFactorySelect(idToUse, factory.factoryName);
     }
 
@@ -337,11 +331,10 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
       </div>
 
       {/* 제조사 검색 모달 */}
-      <UnifiedSearchModal
+      <FactorySearc
         isOpen={isFactoryModalOpen}
         onClose={() => setIsFactoryModalOpen(false)}
         onSelectFactory={handleFactorySelect}
-        searchType="factory"
       />
     </div>
   );

@@ -65,7 +65,7 @@ export const calculatePureGoldWeight = (weight: string | number, material: strin
     const pureGoldInteger = (weightInteger * purityInteger) / 1000; // 1000으로 나누어 중간 계산
     
     const result = pureGoldInteger / 1000; // 다시 1000으로 나누어 최종 결과 계산
-    return parseFloat(result.toFixed(3)); // 소수점 최대 3자리로 제한
+    return parseFloat(result.toFixed(2)); // 소수점 최대 3자리로 제한
 };
 
 /**
@@ -81,5 +81,5 @@ export const getGoldTransferWeight = (weight: string | number): number => {
     const divisorInteger = 3.75 * 1000; // 3750
 
     const result = (weightInteger / divisorInteger);
-    return parseFloat(result.toFixed(3)); // 소수점 최대 3자리로 제한
+    return parseFloat(result.toFixed(2)); // 소수점 최대 2자리로 제한
 }

@@ -4,7 +4,7 @@ import type {
   ProductStoneDto,
   StoneSearchDto,
 } from "../../../types/stone";
-import UnifiedSearchModal from "./UnifiedSearchModal";
+import StoneSearch from "./StoneSearch";
 import "../../../styles/components/StoneTable.css";
 
 const StoneTable: React.FC<StoneTableProps> = ({
@@ -201,7 +201,6 @@ const StoneTable: React.FC<StoneTableProps> = ({
       onStoneChange(currentEditingStoneId, "note", "");
       handleCloseModal();
     }
-
   };
 
   // 모달 닫기 핸들러
@@ -663,11 +662,10 @@ const StoneTable: React.FC<StoneTableProps> = ({
       )}
 
       {/* 스톤 검색 모달 */}
-      <UnifiedSearchModal
+      <StoneSearch
         isOpen={isSearchModalOpen}
         onClose={handleCloseModal}
         onSelectStone={handleStoneSelect}
-        searchType="stone"
         currentStoneId={currentEditingStoneId}
       />
     </div>

@@ -5,7 +5,6 @@
     padding: var(--spacing-lg);
     background-color: var(--bg-secondary);
     min-height: 100vh;
-    overflow-y: auto;
     transition: var(--transition-base);
 }
 
@@ -18,7 +17,7 @@
 }
 
 @media screen and (min-width: 769px) and (max-width: 1024px) {
-    .main-content.with-sidebar .catalog-page {
+    .main-content .catalog-page {
     max-width: calc(var(--content-max-width-tablet) - var(--sidebar-width-tablet));
     width: 95%;
     }
@@ -114,6 +113,13 @@
     margin: 0;
 }
 
+.factory-pagination-footer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--primary-color);
+    background-color: #FFFFFF;
+    padding: 0.75rem 1.5rem;
+}
+
 /* ===== 에러 메시지 ===== */
 .error-message {
     display: flex;
@@ -154,7 +160,7 @@
     border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    height: 500px; /* 450px에서 500px로 증가 */
+    height: 420px; /* 500px에서 420px로 감소 */
 }
 
 .product-card:hover {
@@ -162,11 +168,8 @@
     box-shadow: var(--shadow-lg);
     border-color: var(--primary-color);
 }
-
-/* 상품 이미지 - 최소 120px 보장 */
 .product-image {
-    height: 50%; /* 이미지 영역 50% */
-    min-height: 200px; /* 최소 높이 120px 보장 */
+    height: 150px; /* 이미지 영역 150px */
     background-color: var(--bg-secondary);
     display: flex;
     align-items: center;
@@ -213,7 +216,7 @@
 
 /* 상품 정보 - 50% 높이 (반반 비율) */
 .product-info {
-    padding: var(--spacing-sm); /* 패딩 증가 */
+    padding: var(--spacing-sm); /* 패딩 감소 */
     flex: 1; /* 나머지 공간 모두 사용 */
     display: flex;
     flex-direction: column;
@@ -258,26 +261,20 @@
     display: flex;
     align-items: flex-start; /* center에서 flex-start로 변경하여 위쪽 정렬 */
     gap: 4px; /* 간격 증가 */
-    flex: 1; /* 동일한 너비 분배 */
 }
 
-/* 가격 정보 한 줄 스타일 */
+/* 가격 정보 한 줄 스타일 - 배경 제거 */
 .price-row-combined {
-    background-color: var(--bg-secondary);
-    padding: 4px var(--spacing-sm); /* 패딩 증가 */
-    border-radius: var(--border-radius);
+    padding: 2px 0; /* 패딩 최소화 */
 }
 
 .detail-row.note {
     flex-direction: column;
     align-items: flex-start;
-    background-color: var(--bg-secondary);
-    padding: 6px var(--spacing-sm); /* 패딩 더 증가 */
-    border-radius: var(--border-radius);
+    padding: 2px 0; /* 패딩 최소화 */
     margin-top: 0; /* 마진 제거하여 완전히 하단까지 확장 */
-    flex: 1; /* 남은 공간을 모두 차지 */
     display: flex;
-    min-height: 50px; /* 40px에서 50px로 증가하여 메모 영역 더 넓힘 */
+    min-height: auto; /* 최소 높이 제거 */
 }
 
 .detail-row .label,
@@ -351,47 +348,10 @@
     margin: 0;
     font-size: var(--font-size-base);
 }
-
-.page-btn, .page-number {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-}
-
-.page-btn:hover:not(:disabled), .page-number:hover {
-    background-color: var(--primary-color);
-    color: var(--text-white);
-    border-color: var(--primary-color);
-}
-
-.page-btn:disabled {
-    background-color: var(--bg-secondary);
-    color: var(--text-muted);
-    cursor: not-allowed;
-    border-color: var(--border-color);
-}
-
-.page-numbers {
-    display: flex;
-    gap: var(--spacing-xs);
-}
-
-.page-number.active {
-    background-color: var(--primary-color);
-    color: var(--text-white);
-    border-color: var(--primary-color);
-}
-
 /* ===== 반응형 디자인 ===== */
 
 .product-card {
-    height: 80%;
+    height: 100%;
     max-width: 250px;
 }
 
@@ -625,13 +585,13 @@
     }
 
     .detail-row.note {
-        min-height: 35px; /* 메모 영역 최소 높이 조정 */
-        padding: 4px;
+        min-height: auto; /* 메모 영역 최소 높이 제거 */
+        padding: 2px 0; /* 패딩 최소화 */
     }
 
     .detail-row.note .value {
         font-size: 10px;
-        min-height: 25px;
+        min-height: auto; /* 최소 높이 제거 */
     }
 }
 
@@ -647,7 +607,7 @@
     }
     
     .product-card {
-        height: 360px; /* 300px에서 360px로 증가 */
+        height: 320px; /* 360px에서 320px로 감소 */
         margin: 0 auto;
         max-width: 280px; /* 최대 너비 제한 */
     }
@@ -682,13 +642,13 @@
     }
 
     .detail-row.note {
-        min-height: 30px;
-        padding: 3px;
+        min-height: auto; /* 최소 높이 제거 */
+        padding: 2px 0; /* 패딩 최소화 */
     }
 
     .detail-row.note .value {
         font-size: 9px;
-        min-height: 20px;
+        min-height: auto; /* 최소 높이 제거 */
     }
 }
 

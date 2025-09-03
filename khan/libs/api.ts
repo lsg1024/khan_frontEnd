@@ -74,7 +74,6 @@ api.interceptors.response.use(
         // 401 에러인 경우 토큰 제거 및 로그인 페이지로 리다이렉트
         // (자동 갱신 서비스에서 미리 처리하므로 여기까지 온 경우는 RefreshToken도 만료된 상황)
         if (err.response?.status === 401) {
-            console.log("API 응답 인터셉터 - 401 에러, 로그아웃 처리");
             tokenUtils.removeToken();
             
             // 토큰 만료 이벤트 발생
@@ -142,7 +141,6 @@ export const apiRequest = {
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
             tokenUtils.setToken(token);
-            console.log("헤더에서 토큰 저장됨");
         } else {
             // 2. 응답 본문에서 토큰 확인 (백업)
             if (response.data && typeof response.data === 'object' && 'data' in response.data) {
@@ -198,5 +196,16 @@ export const basicInfoApi = {
         params.append('page', page.toString());
 
         return api.get(`account/factories?${params.toString()}`);
+    },
+
+    // 카테고리 목록 조회 (페이징 지원)
+    getProductCategories: async (name?: string, page: number = 1) => {
+        const params = new URLSearchParams();
+        if (name) {
+            params.append('search', name);
+        }
+        params.append('page', page.toString());
+
+        return api.get(`product/products?${params.toString()}`);
     }
 };

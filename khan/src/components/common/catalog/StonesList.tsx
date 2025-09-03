@@ -1,6 +1,6 @@
 import React from "react";
 import type { StoneSearchDto } from "../../../types/stone";
-import "../../../styles/components/StoneSearchModal.css";
+import "../../../styles/components/stoneSearch.css";
 
 interface StonesListProps {
     stones: StoneSearchDto[];

@@ -1,6 +1,6 @@
-/* ===== 통합 검색 모달 스타일 ===== */
+/* ===== 제조사 검색 모달 스타일 ===== */
 
-.unified-search-modal-overlay {
+.factory-search-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -13,7 +13,7 @@
   z-index: 1000;
 }
 
-.unified-search-modal-content {
+.factory-search-modal-content {
   background: white;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -26,7 +26,7 @@
 }
 
 /* ===== 모달 헤더 ===== */
-.unified-search-modal-header {
+.factory-search-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -35,7 +35,7 @@
   background-color: #f8f9fa;
 }
 
-.unified-search-modal-header h3 {
+.factory-search-modal-header h3 {
   margin: 0;
   font-size: 1.25rem;
   color: #333;
@@ -109,7 +109,7 @@
 }
 
 /* ===== 결과 섹션 ===== */
-.unified-search-results {
+.factory-search-results {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -122,31 +122,6 @@
   overflow-y: auto;
   padding: 1rem 1.5rem;
   min-height: 500px; /* 최소 높이 보장 */
-}
-
-.pagination-footer {
-  flex-shrink: 0;
-  border-top: 1px solid #e9ecef;
-  background-color: #f8f9fa;
-  padding: 0.75rem 1.5rem;
-}
-
-.pagination-info {
-  text-align: center;
-  margin-bottom: 0.5rem;
-}
-
-.pagination-info .page-info {
-  font-size: 0.875rem;
-  color: #666;
-  margin: 0;
-}
-
-.pagination-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
 }
 
 /* ===== 상태 표시 ===== */
@@ -202,54 +177,43 @@
   color: #666;
 }
 
-.page-btn, .page-number {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ddd;
-  background-color: white;
-  color: #333;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  font-weight: 500;
+/* ===== 페이지네이션 ===== */
+.pagination-footer-factory {
+    flex-shrink: 0;
+    border-top: 1px solid #e9ecef;
+    background-color: #fff;
+    padding: 0.75rem 1.5rem;
 }
 
-.page-btn:hover:not(:disabled), 
-.page-number:hover {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
+.pagination-info-factory {
+    text-align: center;
+    margin-bottom: 0.5rem;
 }
 
-.page-btn:disabled {
-  background-color: #e9ecef;
-  color: #666;
-  cursor: not-allowed;
-  border-color: #e9ecef;
+.pagination-info-factory .page-info {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0;
 }
 
-.page-numbers {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.page-number.active {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
+.pagination-controls-factory {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
 }
 
 /* ===== 반응형 디자인 ===== */
 @media (max-width: 768px) {
-  .unified-search-modal-overlay {
+  .factory-search-modal-overlay {
     padding: 1rem;
   }
 
-  .unified-search-modal-content {
+  .factory-search-modal-content {
     max-height: 95vh;
   }
 
-  .unified-search-modal-header {
+  .factory-search-modal-header {
     padding: 1rem;
   }
 
@@ -266,7 +230,7 @@
     width: 100%;
   }
 
-  .unified-search-results {
+  .factory-search-results {
     padding: 1rem;
   }
 
@@ -277,7 +241,7 @@
 }
 
 @media (max-width: 480px) {
-  .unified-search-modal-header h3 {
+  .factory-search-modal-header h3 {
     font-size: 1rem;
   }
 
