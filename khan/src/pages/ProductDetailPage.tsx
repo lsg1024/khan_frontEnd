@@ -4,70 +4,26 @@ import { apiRequest, isApiSuccess } from "../../libs/api";
 import { useErrorHandler } from "../utils/errorHandler";
 import StoneTable from "../components/common/catalog/StoneTable";
 import PriceTable from "../components/common/catalog/PriceTable";
-import BasicInfo from "../components/common/catalog/BasicInfo";
+import ProductInfo from "../components/common/catalog/BasicInfo";
 import type { ProductStoneDto } from "../types/stone";
 import type { ProductWorkGradePolicyGroupDto } from "../types/price";
-import type {
-  SetTypeDto,
-  ClassificationDto,
-  MaterialDto,
-} from "../types/basicInfo";
+import type { ProductData } from "../types/product";
 import "../styles/pages/ProductDetailPage.css";
 import "../styles/components/common.css";
 
-// 백엔드 DTO에 맞는 타입 정의
-interface ProductImageDto {
-  imagePath: string;
-}
-
-interface ProductDetail {
-  productId: string;
-  factoryId: number; // Long -> number
-  factoryName: string;
-  productFactoryName: string;
-  productName: string;
-  standardWeight: string;
-  productNote: string;
-  setTypeDto: SetTypeDto;
-  classificationDto: ClassificationDto;
-  materialDto: MaterialDto;
+interface Product extends ProductData {
   productWorkGradePolicyGroupDto: ProductWorkGradePolicyGroupDto[];
   productStoneDtos: ProductStoneDto[];
-  productImageDtos: ProductImageDto[];
+  productImageDtos: { imagePath: string }[];
 }
 
 function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
-  const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const { handleError } = useErrorHandler();
-
-  // 편집 상태 관리
-  const [editedNote, setEditedNote] = useState<string>("");
-  const [editedPurchasePrices, setEditedPurchasePrices] = useState<{
-    [key: string]: string;
-  }>({});
-  const [editedLaborCosts, setEditedLaborCosts] = useState<{
-    [key: string]: string;
-  }>({});
-  const [editedColors, setEditedColors] = useState<{ [key: string]: string }>(
-    {}
-  );
-  const [editedNotes, setEditedNotes] = useState<{ [key: string]: string }>({});
-
-  // 기본 정보 편집 상태 관리
-  const [editedProductName, setEditedProductName] = useState<string>("");
-  const [editedProductFactoryName, setEditedProductFactoryName] =
-    useState<string>("");
-  const [editedStandardWeight, setEditedStandardWeight] = useState<string>("");
-  const [editedMaterialId, setEditedMaterialId] = useState<string>("");
-  const [editedClassificationId, setEditedClassificationId] =
-    useState<string>("");
-  const [editedSetTypeId, setEditedSetTypeId] = useState<string>("");
-  const [editedFactoryId, setEditedFactoryId] = useState<number>(0);
-  const [editedFactoryName, setEditedFactoryName] = useState<string>("");
 
   // 이미지 슬라이더 상태 관리
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
@@ -93,19 +49,8 @@ function ProductDetailPage() {
     setCurrentImageIndex(index);
   }, []);
 
-  // 색상 변경 핸들러 (추후 서버 연동용)
-  const handleColorChange = (groupId: string, newColor: string) => {
-    setEditedColors((prev) => ({
-      ...prev,
-      [groupId]: newColor,
-    }));
-  };
-
   // 공장 선택 핸들러
   const handleFactorySelect = (factoryId: number, factoryName: string) => {
-    setEditedFactoryId(factoryId);
-    setEditedFactoryName(factoryName);
-
     // 상품 정보에도 반영
     if (product) {
       setProduct((prevProduct) => {
@@ -118,8 +63,98 @@ function ProductDetailPage() {
         return updatedProduct;
       });
     }
+  };
 
+  // Product 변경 핸들러
+  const handleProductChange = (updatedProduct: Partial<ProductData>) => {
+    if (product) {
+      setProduct((prevProduct) => {
+        if (!prevProduct) return prevProduct;
+        return {
+          ...prevProduct,
+          ...updatedProduct,
+        };
+      });
+    }
+  };
 
+  // 상품 정보 저장
+  const handleSaveProduct = async () => {
+    if (!product) return;
+
+    try {
+      setLoading(true);
+
+      // 서버 양식에 맞게 데이터 변환
+      const serverData = {
+        factoryId: product.factoryId,
+        productFactoryName: product.factoryName,
+        productName: product.productName,
+        setType: product.setTypeDto?.setTypeId || "",
+        classification: product.classificationDto?.classificationId || "",
+        material: product.materialDto?.materialId || "",
+        standardWeight: product.standardWeight,
+        productNote: product.productNote,
+        productWorkGradePolicyGroupDto:
+          product.productWorkGradePolicyGroupDto.map((group) => ({
+            productGroupId: group.productGroupId,
+            productPurchasePrice: group.productPurchasePrice,
+            colorId: group.colorId || "",
+            colorName: group.colorName,
+            gradePolicyDtos: group.gradePolicyDtos.map((policy) => ({
+              workGradePolicyId: policy.workGradePolicyId,
+              laborCost: policy.laborCost,
+            })),
+            note: group.note,
+          })),
+        productStoneDtos: product.productStoneDtos.map((stone) => {
+          const stoneData: {
+            productStoneId?: string;
+            stoneId: string;
+            isMainStone: boolean;
+            isIncludeStone: boolean;
+            stoneQuantity: number;
+            productStoneNote: string;
+          } = {
+            stoneId: stone.stoneId,
+            isMainStone: stone.isMainStone,
+            isIncludeStone: stone.isIncludeStone,
+            stoneQuantity: stone.stoneQuantity,
+            productStoneNote: stone.productStoneNote,
+          };
+
+          // 신규 스톤이 아닌 경우에만 productStoneId 포함
+          if (
+            stone.productStoneId &&
+            !stone.productStoneId.startsWith("temp_")
+          ) {
+            stoneData.productStoneId = stone.productStoneId;
+          } else {
+            stoneData.productStoneId = ""; // 신규 스톤은 undefined로 설정
+          }
+
+          return stoneData;
+        }),
+      };
+
+      // 서버에 저장
+      const response = await apiRequest.patch(
+        `product/products/${productId}`,
+        serverData
+      );
+
+      if (isApiSuccess(response)) {
+        alert(response.data || "상품 정보가 성공적으로 저장되었습니다.");
+        loadProductDetail();
+      } else {
+        alert("저장에 실패했습니다: " + response.data);
+      }
+    } catch (error) {
+      console.error("저장 오류:", error);
+      alert("저장 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 스톤 정보 변경 핸들러
@@ -158,6 +193,8 @@ function ProductDetailPage() {
 
         // 일반 필드 처리
         switch (field) {
+          case "stoneId":
+            return { ...stone, stoneId: String(value) };
           case "stoneName":
             return { ...stone, stoneName: String(value) };
           case "stoneWeight":
@@ -194,14 +231,14 @@ function ProductDetailPage() {
     );
     const newId = Math.max(...existingIds, 0) + 1;
 
-    // 새로운 스톤 객체 생성
+    // 새로운 스톤 객체 생성 (임시 ID 사용)
     const newStone: ProductStoneDto = {
-      productStoneId: `new_stone_${newId}`,
-      stoneId: `stone_${newId}`,
+      productStoneId: `temp_${newId}`, // 임시 ID 사용
+      stoneId: "",
       stoneName: "",
       stoneWeight: "0",
-      mainStone: false,
-      includeStone: true,
+      isMainStone: false,
+      isIncludeStone: true,
       stonePurchase: 0,
       stoneQuantity: 1,
       productStoneNote: "",
@@ -271,7 +308,7 @@ function ProductDetailPage() {
       setLoading(true);
       setError("");
 
-      const response = await apiRequest.get<ProductDetail>(
+      const response = await apiRequest.get<Product>(
         `product/products/${productId}`
       );
 
@@ -312,45 +349,6 @@ function ProductDetailPage() {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [nextImage, prevImage, product?.productImageDtos]);
 
-  // product가 변경될 때마다 편집 상태를 동기화
-  useEffect(() => {
-    if (product) {
-      setEditedNote(product.productNote || "");
-
-      // 기본 정보 편집 상태 초기화
-      setEditedProductName(product.productName || "");
-      setEditedProductFactoryName(product.productFactoryName || "");
-      setEditedStandardWeight(product.standardWeight || "");
-      setEditedMaterialId(product.materialDto?.materialId || "");
-      setEditedClassificationId(
-        product.classificationDto?.classificationId || ""
-      );
-      setEditedSetTypeId(product.setTypeDto?.setTypeId || "");
-      setEditedFactoryId(product.factoryId || 0);
-      setEditedFactoryName(product.factoryName || "");
-
-      const purchasePrices: { [key: string]: string } = {};
-      const laborCosts: { [key: string]: string } = {};
-      const colors: { [key: string]: string } = {};
-      const note: { [key: string]: string } = {};
-
-      product.productWorkGradePolicyGroupDto.forEach((group) => {
-        purchasePrices[group.productGroupId] =
-          group.productPurchasePrice.toString();
-        colors[group.productGroupId] = group.colorName;
-        note[group.productGroupId] = group.note || "";
-        group.gradePolicyDtos.forEach((policy) => {
-          laborCosts[policy.workGradePolicyId] = policy.laborCost.toString();
-        });
-      });
-
-      setEditedPurchasePrices(purchasePrices);
-      setEditedLaborCosts(laborCosts);
-      setEditedColors(colors);
-      setEditedNotes(note);
-    }
-  }, [product]);
-
   // 뒤로가기
   const handleGoBack = () => {
     navigate("/catalog");
@@ -386,46 +384,15 @@ function ProductDetailPage() {
 
   return (
     <div className="product-detail-page">
-      {/* 헤더 */}
-      <div className="detail-header">
-        <button onClick={handleGoBack} className="back-button">
-          ← 뒤로가기
-        </button>
-      </div>
-
       <div className="detail-content">
         {/* 상단 섹션: 기본정보와 이미지 */}
         <div className="top-section">
           {/* 기본 정보 섹션 */}
-          <BasicInfo
-            productId={product.productId}
-            factoryId={product.factoryId}
-            factoryName={product.factoryName}
-            productName={product.productName}
-            productFactoryName={product.productFactoryName}
-            standardWeight={product.standardWeight}
-            productNote={product.productNote}
-            setTypeDto={product.setTypeDto}
-            classificationDto={product.classificationDto}
-            materialDto={product.materialDto}
+          <ProductInfo
+            product={product}
             showTitle={true}
             editable={true}
-            editedNote={editedNote}
-            onNoteChange={setEditedNote}
-            editedProductName={editedProductName}
-            editedProductFactoryName={editedProductFactoryName}
-            editedStandardWeight={editedStandardWeight}
-            editedMaterialId={editedMaterialId}
-            editedClassificationId={editedClassificationId}
-            editedSetTypeId={editedSetTypeId}
-            editedFactoryId={editedFactoryId}
-            editedFactoryName={editedFactoryName}
-            onProductNameChange={setEditedProductName}
-            onProductFactoryNameChange={setEditedProductFactoryName}
-            onStandardWeightChange={setEditedStandardWeight}
-            onMaterialChange={setEditedMaterialId}
-            onClassificationChange={setEditedClassificationId}
-            onSetTypeChange={setEditedSetTypeId}
+            onProductChange={handleProductChange}
             onFactorySelect={handleFactorySelect}
           />
 
@@ -484,29 +451,15 @@ function ProductDetailPage() {
           priceGroups={product.productWorkGradePolicyGroupDto}
           showTitle={true}
           editable={true}
-          editedPurchasePrices={editedPurchasePrices}
-          editedLaborCosts={editedLaborCosts}
-          editedColors={editedColors}
-          editedNotes={editedNotes}
-          onColorChange={handleColorChange}
-          onPurchasePriceChange={(groupId, value) =>
-            setEditedPurchasePrices((prev) => ({
-              ...prev,
-              [groupId]: value,
-            }))
-          }
-          onLaborCostChange={(workGradePolicyId, value) =>
-            setEditedLaborCosts((prev) => ({
-              ...prev,
-              [workGradePolicyId]: value,
-            }))
-          }
-          onNoteChange={(groupId, value) =>
-            setEditedNotes((prev) => ({
-              ...prev,
-              [groupId]: value,
-            }))
-          }
+          onPriceGroupChange={(updatedGroups) => {
+            setProduct((prevProduct) => {
+              if (!prevProduct) return prevProduct;
+              return {
+                ...prevProduct,
+                productWorkGradePolicyGroupDto: updatedGroups,
+              };
+            });
+          }}
         />
 
         {/* 스톤 정보 섹션 */}
@@ -531,6 +484,20 @@ function ProductDetailPage() {
           onAddStone={handleAddStone}
           onDeleteStone={handleDeleteStone}
         />
+
+        {/* 버튼 섹션 */}
+        <div className="action-buttons">
+          <button onClick={handleGoBack} className="back-button">
+            뒤로
+          </button>
+          <button
+            onClick={handleSaveProduct}
+            className="save-button"
+            disabled={loading}
+          >
+            {loading ? "저장 중..." : "수정"}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import type { StoneSearchDto } from "../../../types/stone";
-import { basicInfoApi } from "../../../../libs/api";
+import { stoneApi } from "../../../../libs/api";
 import { useErrorHandler } from "../../../utils/errorHandler";
 import StonesList from "./StonesList";
 import Pagination from "../Pagination";
@@ -34,11 +34,11 @@ const StoneSearch: React.FC<StoneSearchProps> = ({
     setError("");
 
     try {
-      const response = await basicInfoApi.getStones(term, page);
+      const response = await stoneApi.getStones(term, page);
 
-      if (response.data?.success && response.data.data) {
-        const pageData = response.data.data.page;
-        const content = response.data.data.content || [];
+      if (response.success && response.data) {
+        const pageData = response.data.page;
+        const content = response.data.content || [];
 
         setStones(content);
         setCurrentPage(page);
@@ -54,7 +54,7 @@ const StoneSearch: React.FC<StoneSearchProps> = ({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [handleError]); 
 
   // 모달이 열릴 때 초기 데이터 로드
   useEffect(() => {
@@ -99,12 +99,15 @@ const StoneSearch: React.FC<StoneSearchProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="stone-search-modal-overlay" onClick={handleOverlayClick}>
-      <div className="stone-search-modal-content">
+    <div
+      className="search-modal-overlay stone-search-modal-overlay"
+      onClick={handleOverlayClick}
+    >
+      <div className="search-modal-content stone-search-modal-content">
         {/* 모달 헤더 */}
-        <div className="stone-search-modal-header">
+        <div className="search-modal-header stone-search-modal-header">
           <h3>스톤 검색</h3>
-          <button className="close-btn" onClick={handleClose}>
+          <button className="close-button" onClick={handleClose}>
             ×
           </button>
         </div>
@@ -131,7 +134,7 @@ const StoneSearch: React.FC<StoneSearchProps> = ({
         </div>
 
         {/* 결과 섹션 */}
-        <div className="stone-search-results">
+        <div className="search-results stone-search-results">
           <div className="results-content">
             {loading && (
               <div className="loading-state">
@@ -168,7 +171,6 @@ const StoneSearch: React.FC<StoneSearchProps> = ({
             totalElements={totalElements}
             loading={loading}
             onPageChange={(page) => {
-              setCurrentPage(page);
               performSearch(searchTerm, page);
             }}
             className="stone"

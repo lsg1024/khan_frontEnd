@@ -1,31 +1,17 @@
 import React from "react";
 import "../../../styles/components/factoryList.css";
-
-interface FactoryData {
-  factoryId?: number; // optional로 변경
-  factoryName: string;
-  factoryOwnerName: string;
-  factoryPhoneNumber: string;
-  factoryContactNumber1: string;
-  factoryContactNumber2: string;
-  factoryFaxNumber: string;
-  factoryNote: string;
-  address: string;
-  tradeType: "WEIGHT" | "PIECE";
-  level: "ONE" | "TWO" | "THREE";
-  goldHarryLoss: string;
-}
+import type { FactorySearchDto } from "../../../types/factory";
 
 interface FactoryListProps {
-  factories: FactoryData[];
-  onSelectFactory: (factory: FactoryData) => void;
+  factories: FactorySearchDto[];
+  onSelectFactory: (factory: FactorySearchDto) => void;
 }
 
 const FactoryList: React.FC<FactoryListProps> = ({
   factories,
   onSelectFactory,
 }) => {
-  const handleFactorySelect = (factory: FactoryData) => {
+  const handleFactorySelect = (factory: FactorySearchDto) => {
     onSelectFactory(factory);
   };
 

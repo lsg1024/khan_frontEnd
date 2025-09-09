@@ -1,46 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { basicInfoApi } from "../../libs/api";
+import { classificationApi, productApi, setTypeApi } from "../../libs/api";
+import { factoryApi } from "../../libs/api";
 import { useErrorHandler } from "../utils/errorHandler";
 import { getGoldTransferWeight } from "../utils/goldUtils";
 import Pagination from "../components/common/Pagination";
 import "../styles/pages/CataLogPage.css";
-import "../styles/components/common.css";
 
-// 상품 데이터 타입 정의
-interface StoneWorkGradePolicy {
-    workGradePolicyId: string;
-    grade: string;
-    laborCost: number;
-}
-
-interface ProductStone {
-    productStoneId: string;
-    stoneId: string;
-    stoneName: string;
-    productStoneMain: boolean;
-    includeQuantity: boolean;
-    includeWeight: boolean;
-    includeLabor: boolean;
-    stoneQuantity: number;
-    stoneWorkGradePolicyDtos: StoneWorkGradePolicy[];
-}
-
-interface Product {
-    productId: string;
-    productName: string;
-    productWeight: string;
-    productMaterial: string;
-    productColor: string;
-    productNote: string;
-    productLaborCost: string;
-    productPriceInfo: string;
-    productImagePath: string | null;
-    productStones: ProductStone[];
-}
+import type { ProductDto } from "../../src/types/catalog";
+import type { SetTypeDto } from "../../src/types/setType";
+import type { ClassificationDto } from "../../src/types/classification";
+import type { FactorySearchDto } from "../../src/types/factory";
 
 function CataLogPage() {
-    const [products, setProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<ProductDto[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -49,23 +22,45 @@ function CataLogPage() {
     const { handleError } = useErrorHandler();
     const navigate = useNavigate();
 
+    // 검색 관련 상태
+    const [searchFilters, setSearchFilters] = useState({
+        name: "",
+        factory: "",
+        classification: "",
+        setType: "",
+    });
+
+    // 드롭다운 데이터
+    const [factories, setFactories] = useState<FactorySearchDto[]>([]);
+    const [classifications, setClassifications] = useState<ClassificationDto[]>(
+        []
+    );
+    const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
+    const [dropdownLoading, setDropdownLoading] = useState(false);
+
     // 상품 상세 페이지로 이동
     const handleProductClick = (productId: string) => {
         navigate(`/catalog/${productId}`);
     };
 
-    // 상품 데이터 로드
+    // 상품 데이터 로드 (검색 파라미터 포함)
     const loadProducts = useCallback(
-        async (search?: string, page: number = 1) => {
+        async (filters: typeof searchFilters, page: number = 1) => {
         setLoading(true);
         setError("");
 
         try {
-            const response = await basicInfoApi.getProductCategories(search, page);
+            const response = await productApi.getProductCategories(
+            filters.name || undefined,
+            filters.factory || undefined,
+            filters.classification || undefined,
+            filters.setType || undefined,
+            page
+            );
 
-            if (response.data?.success && response.data) {
-            const pageData = response.data.data.page;
-            const content = response.data.data.content || [];
+            if (response.success && response.data) {
+            const pageData = response.data.page;
+            const content = response.data.content || [];
 
             setProducts(content || []);
             setCurrentPage(page);
@@ -82,12 +77,115 @@ function CataLogPage() {
             setLoading(false);
         }
         },
-    []); // eslint-disable-line react-hooks/exhaustive-deps
+        [handleError]
+    );
 
+    // 검색 필터 변경 핸들러
+    const handleFilterChange = (
+        field: keyof typeof searchFilters,
+        value: string
+    ) => {
+        setSearchFilters((prev) => ({ ...prev, [field]: value }));
+    };
+
+    // 검색 실행
+    const handleSearch = () => {
+        setCurrentPage(1);
+        loadProducts(searchFilters, 1);
+    };
+
+    // 검색 초기화
+    const handleResetSearch = () => {
+        const resetFilters = {
+        name: "",
+        factory: "",
+        classification: "",
+        setType: "",
+        };
+        setSearchFilters(resetFilters);
+        setCurrentPage(1);
+        loadProducts(resetFilters, 1);
+    };
+
+    const handleCreate = () => {
+        navigate("/catalog/create");
+    };
+
+    const handleExcel = () => {
+        alert("엑셀 다운로드 기능은 아직 구현되지 않았습니다.");
+    };
+
+    // 컴포넌트 마운트시 초기 데이터 로드
     useEffect(() => {
         setCurrentPage(1);
-        loadProducts("", 1);
-    }, [loadProducts]);
+
+        // 드롭다운 데이터 로드
+        const loadDropdowns = async () => {
+        setDropdownLoading(true);
+        try {
+            const [factoriesRes, classificationsRes, setTypesRes] =
+            await Promise.all([
+                factoryApi.getFactories("", 1),
+                classificationApi.getClassifications(),
+                setTypeApi.getSetTypes(),
+            ]);
+
+            if (factoriesRes.success && factoriesRes.data?.content) {
+            setFactories(factoriesRes.data.content);
+            }
+
+            if (classificationsRes.success && classificationsRes.data) {
+            setClassifications(classificationsRes.data);
+            }
+
+            if (setTypesRes.success && setTypesRes.data) {
+            setSetTypes(setTypesRes.data);
+            }
+        } catch (error) {
+            console.error("드롭다운 데이터 로드 실패:", error);
+        } finally {
+            setDropdownLoading(false);
+        }
+        };
+
+        // 초기 로드 - 빈 필터로 전체 상품 로드
+        const initialLoad = async () => {
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await productApi.getProductCategories(
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            1
+            );
+
+            if (response.success && response.data) {
+            const pageData = response.data.page;
+            const content = response.data.content || [];
+
+            setProducts(content || []);
+            setCurrentPage(1);
+            setTotalPages(pageData.totalPages || 1);
+            setTotalElements(pageData.totalElements || 0);
+            }
+        } catch (err: unknown) {
+            console.error("초기 상품 로드 실패:", err);
+            setError("상품 목록을 불러오는데 실패했습니다.");
+            setProducts([]);
+            setCurrentPage(1);
+            setTotalPages(0);
+            setTotalElements(0);
+        } finally {
+            setLoading(false);
+        }
+        };
+
+        loadDropdowns();
+        initialLoad();
+    }, []); // 빈 의존성 배열로 한 번만 실행
 
     // 로딩 상태 렌더링
     if (loading) {
@@ -110,6 +208,111 @@ function CataLogPage() {
             <p>{error}</p>
             </div>
         )}
+
+        {/* 검색 */}
+
+        {/* 검색 영역 */}
+        <div className="search-section-catalog">
+            <div className="search-filters-catalog">
+            <div className="filter-group-catalog">
+                <label htmlFor="factory">제조사:</label>
+                <select
+                id="factory"
+                value={searchFilters.factory}
+                onChange={(e) => handleFilterChange("factory", e.target.value)}
+                disabled={dropdownLoading}
+                >
+                <option value="">전체</option>
+                {factories.map((factory) => (
+                    <option key={factory.factoryId} value={factory.factoryName}>
+                    {factory.factoryName}
+                    </option>
+                ))}
+                </select>
+            </div>
+
+            <div className="filter-group-catalog">
+                <label htmlFor="classification">분류:</label>
+                <select
+                id="classification"
+                value={searchFilters.classification}
+                onChange={(e) =>
+                    handleFilterChange("classification", e.target.value)
+                }
+                disabled={dropdownLoading}
+                >
+                <option value="">전체</option>
+                {classifications.map((classification) => (
+                    <option
+                    key={classification.classificationId}
+                    value={classification.classificationName}
+                    >
+                    {classification.classificationName}
+                    </option>
+                ))}
+                </select>
+            </div>
+
+            <div className="filter-group-catalog">
+                <label htmlFor="setType">세트타입:</label>
+                <select
+                id="setType"
+                value={searchFilters.setType}
+                onChange={(e) => handleFilterChange("setType", e.target.value)}
+                disabled={dropdownLoading}
+                >
+                <option value="">전체</option>
+                {setTypes.map((setType) => (
+                    <option key={setType.setTypeId} value={setType.setTypeName}>
+                    {setType.setTypeName}
+                    </option>
+                ))}
+                </select>
+            </div>
+            </div>
+            <div className="search-controls-catalog">
+            <div className="search-input-catalog">
+                <input
+                className="search-input-catalog"
+                id="productName"
+                type="text"
+                placeholder="상품명을 입력하세요"
+                value={searchFilters.name}
+                onChange={(e) => handleFilterChange("name", e.target.value)}
+                />
+            </div>
+            <div className="search-buttons-catalog">
+                <button
+                className="search-button"
+                onClick={handleSearch}
+                disabled={loading}
+                >
+                검색
+                </button>
+                <button
+                className="reset-button"
+                onClick={handleResetSearch}
+                disabled={loading}
+                >
+                초기화
+                </button>
+                <button
+                className="search-button"
+                onClick={handleCreate}
+                disabled={loading}
+                >
+                생성
+                </button>
+                <button
+                className="search-button"
+                onClick={handleExcel}
+                disabled={loading}
+                >
+                엑셀 다운로드
+                </button>
+            </div>
+            </div>
+        </div>
 
         {/* 상품 그리드 */}
         <div className="products-grid">
@@ -152,48 +355,50 @@ function CataLogPage() {
                     <div className="detail-item">
                         <span className="value">{product.productMaterial}</span>
                     </div>
-                    <div className="detail-item">
-                        <span className="value color-tag">
-                        {product.productColor}
-                        </span>
-                    </div>
                     </div>
 
                     {/* 스톤 정보 표시 */}
                     {product.productStones && product.productStones.length > 0 && (
                     <div className="stones-section">
-                        {product.productStones.map((stone) => (
-                        <div key={stone.productStoneId} className="stone-row">
-                            <span className="stone-info">
-                            {stone.productStoneMain ? "M " : ""}
-                            {stone.stoneName} × {stone.stoneQuantity}
-                            </span>
-                        </div>
-                        ))}
-                        <div className="stone-total">
-                        <span className="total-label">총 개수: </span>
-                        <span className="total-value">
-                            {product.productStones.reduce(
-                            (sum, stone) => sum + stone.stoneQuantity,
+                        {product.productStones.map((stone, idx) => {
+                        const isLast = idx === product.productStones.length - 1;
+                        const totalCount = product.productStones.reduce(
+                            (sum, s) => sum + s.stoneQuantity,
                             0
+                        );
+                        return (
+                            <div key={stone.productStoneId} className="stone-row">
+                            <span className="stone-info">
+                                {stone.productStoneMain ? "M " : ""}
+                                {stone.stoneName} × {stone.stoneQuantity}
+                            </span>
+
+                            {/* 마지막 행에만 총계 표시 */}
+                            {isLast && (
+                                <span className="stone-total-inline">
+                                <span className="total-label">
+                                    총 개수:&nbsp;
+                                </span>
+                                <span className="total-value">{totalCount}</span>
+                                </span>
                             )}
-                        </span>
-                        </div>
+                            </div>
+                        );
+                        })}
                     </div>
                     )}
-
                     {/* 매입가와 판매가를 한 줄로 */}
                     <div className="detail-row combined price-row-combined">
                     <div className="detail-item">
                         <span className="price-label">매입가:</span>
                         <span className="labor-cost">
-                        {product.productLaborCost}원
+                        {product.productPurchaseCost}원
                         </span>
                     </div>
                     <div className="detail-item">
                         <span className="price-label">판매가:</span>
                         <span className="selling-price">
-                        {product.productPriceInfo}원
+                        {product.productLaborCost}원
                         </span>
                     </div>
                     </div>
@@ -227,8 +432,9 @@ function CataLogPage() {
             loading={loading}
             onPageChange={(page) => {
             setCurrentPage(page);
-            loadProducts("", page);
+            loadProducts(searchFilters, page);
             }}
+            className="catalog"
         />
         </div>
     );

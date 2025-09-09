@@ -1,84 +1,61 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { basicInfoApi } from "../../../../libs/api";
+import { factoryApi, isApiSuccess } from "../../../../libs/api";
+import type { FactorySearchDto } from "../../../types/factory";
 import FactoryList from "./FactoryList";
 import Pagination from "../Pagination";
-import "../../../styles/components/FactorySearch.css";
+import "../../../styles/components/factorySearch.css";
 
-interface FactoryData {
-  factoryId?: number;
-  factoryName: string;
-  factoryOwnerName: string;
-  factoryPhoneNumber: string;
-  factoryContactNumber1: string;
-  factoryContactNumber2: string;
-  factoryFaxNumber: string;
-  factoryNote: string;
-  address: string;
-  tradeType: "WEIGHT" | "PIECE";
-  level: "ONE" | "TWO" | "THREE";
-  goldHarryLoss: string;
-}
-
-interface FactorySearchModalProps {
+interface FactorySearchProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectFactory: (factory: FactoryData) => void;
+  onSelectFactory: (factory: FactorySearchDto) => void;
 }
 
-const FactorySearc: React.FC<FactorySearchModalProps> = ({
+const FactorySearc: React.FC<FactorySearchProps> = ({
   isOpen,
   onClose,
   onSelectFactory,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [factories, setFactories] = useState<FactoryData[]>([]);
+  const [searchName, setSearchName] = useState("");
+  const [factories, setFactories] = useState<FactorySearchDto[]>([]);
   const [loading, setLoading] = useState(false);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+
   const [error, setError] = useState<string>("");
 
   // 검색 API 호출
-  const performSearch = useCallback(async (term?: string, page: number = 1) => {
+  const performSearch = useCallback(async (name: string, page: number) => {
     setLoading(true);
     setError("");
 
     try {
-      const response = await basicInfoApi.getFactories(term, page);
+      const res = await factoryApi.getFactories(name, page);
 
-      console.log("Factory API Response:", response.data);
-
-      if (response.status === 200 && response.data) {
-        if (Array.isArray(response.data)) {
-          // 단순 배열 응답인 경우 - 페이지네이션 없음
-          const factoriesWithId = response.data.map((factory, index) => ({
-            ...factory,
-            factoryId: factory.factoryId || Date.now() + index,
-          }));
-          setFactories(factoriesWithId);
-          setCurrentPage(1);
-          setTotalPages(1);
-          setTotalElements(response.data.length);
-        } else if (response.data.success && response.data.data) {
-          // 페이지네이션이 있는 응답인 경우
-          const pageData = response.data.data.page;
-          const content = response.data.data.content || [];
-
-          const factoriesWithId = content.map(
-            (factory: FactoryData, index: number) => ({
-              ...factory,
-              factoryId: factory.factoryId || Date.now() + index,
-            })
-          );
-
-          setFactories(factoriesWithId);
-          setCurrentPage(page);
-          setTotalPages(pageData.totalPages || 1);
-          setTotalElements(pageData.totalElements || 0);
-        }
+      // success=false 응답 처리
+      if (!isApiSuccess(res)) {
+        setError(res.message || "제조사 데이터를 불러오지 못했습니다.");
+        setFactories([]);
+        setCurrentPage(1);
+        setTotalPages(0);
+        setTotalElements(0);
+        return;
       }
+
+      // success=true + data 파싱
+      const data = res.data;
+      const content = data?.content ?? [];
+      const pageInfo = data?.page;
+
+      setFactories(content);
+      const uiPage = (pageInfo?.number ?? page - 1) + 1;
+      setCurrentPage(uiPage);
+      setTotalPages(pageInfo?.totalPages ?? 1);
+      setTotalElements(pageInfo?.totalElements ?? content.length);
     } catch {
-      setError("제조사 검색에 실패했습니다.");
+      setError("제조사 데이터를 불러오지 못했습니다.");
       setFactories([]);
       setCurrentPage(1);
       setTotalPages(0);
@@ -91,7 +68,7 @@ const FactorySearc: React.FC<FactorySearchModalProps> = ({
   // 모달이 열릴 때 초기 데이터 로드
   useEffect(() => {
     if (isOpen) {
-      setSearchTerm("");
+      setSearchName("");
       setCurrentPage(1);
       performSearch("", 1);
     }
@@ -100,7 +77,7 @@ const FactorySearc: React.FC<FactorySearchModalProps> = ({
   // 검색 처리
   const handleSearch = () => {
     setCurrentPage(1);
-    performSearch(searchTerm, 1);
+    performSearch(searchName, 1);
   };
 
   // 엔터 키 처리
@@ -112,7 +89,7 @@ const FactorySearc: React.FC<FactorySearchModalProps> = ({
 
   // 모달 닫기
   const handleClose = () => {
-    setSearchTerm("");
+    setSearchName("");
     setFactories([]);
     setCurrentPage(1);
     setTotalPages(0);
@@ -131,12 +108,15 @@ const FactorySearc: React.FC<FactorySearchModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="factory-search-modal-overlay" onClick={handleOverlayClick}>
-      <div className="factory-search-modal-content">
+    <div
+      className="search-modal-overlay factory-search-modal-overlay"
+      onClick={handleOverlayClick}
+    >
+      <div className="search-modal-content factory-search-modal-content">
         {/* 모달 헤더 */}
-        <div className="factory-search-modal-header">
+        <div className="search-modal-header factory-search-modal-header">
           <h3>제조사 검색</h3>
-          <button className="close-btn" onClick={handleClose}>
+          <button className="close-button" onClick={handleClose}>
             ×
           </button>
         </div>
@@ -146,9 +126,9 @@ const FactorySearc: React.FC<FactorySearchModalProps> = ({
           <div className="search-input-group">
             <input
               type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={handleKeyPress}
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              onKeyDown={handleKeyPress}
               placeholder="제조사명을 입력해 주세요"
               className="search-input"
             />
@@ -163,7 +143,7 @@ const FactorySearc: React.FC<FactorySearchModalProps> = ({
         </div>
 
         {/* 결과 섹션 */}
-        <div className="factory-search-results">
+        <div className="search-results factory-search-results">
           <div className="results-content">
             {loading && (
               <div className="loading-state">
@@ -199,8 +179,7 @@ const FactorySearc: React.FC<FactorySearchModalProps> = ({
             totalElements={totalElements}
             loading={loading}
             onPageChange={(page) => {
-              setCurrentPage(page);
-              performSearch(searchTerm, page);
+              performSearch(searchName, page);
             }}
             className="factory"
           />

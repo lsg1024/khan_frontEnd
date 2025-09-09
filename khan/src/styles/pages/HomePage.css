@@ -212,7 +212,6 @@
   gap: var(--spacing-md);
   justify-content: center;
   flex-wrap: wrap;
-  margin-top: var(--spacing-xl);
 }
 
 .action-buttons .btn {

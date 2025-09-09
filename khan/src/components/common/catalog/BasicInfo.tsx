@@ -1,43 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
-import type {
-  BasicInfoProps,
-  ClassificationDto,
-  MaterialDto,
-  SetTypeDto,
-} from "../../../types/basicInfo";
-import { basicInfoApi } from "../../../../libs/api";
-import FactorySearc from "./FactorySearch";
+import type { ProductInfo, ProductData } from "../../../types/product";
+import type { ClassificationDto } from "../../../types/classification";
+import type { MaterialDto } from "../../../types/material";
+import type { SetTypeDto } from "../../../types/setType";
+import { classificationApi, materialApi, setTypeApi } from "../../../../libs/api";
+import FactorySearch from "./FactorySearch";
 import "../../../styles/components/BasicInfo.css";
 
-const BasicInfo: React.FC<BasicInfoProps> = ({
-  productName,
-  productFactoryName,
-  factoryName,
-  standardWeight,
-  productNote,
-  setTypeDto,
-  classificationDto,
-  materialDto,
+const BasicInfo: React.FC<ProductInfo> = ({
+  product,
   showTitle = true,
   editable = true,
-  editedNote,
-  onNoteChange,
-  editedProductName,
-  editedProductFactoryName,
-  editedStandardWeight,
-  editedMaterialId,
-  editedClassificationId,
-  editedSetTypeId,
-  editedFactoryId,
-  editedFactoryName,
-  onProductNameChange,
-  onProductFactoryNameChange,
-  onStandardWeightChange,
-  onMaterialChange,
-  onClassificationChange,
-  onSetTypeChange,
-  onFactoryChange,
+  onProductChange,
   onFactorySelect,
+  validationErrors = {},
 }) => {
   const [classifications, setClassifications] = useState<ClassificationDto[]>(
     []
@@ -59,15 +35,19 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
     factoryId?: number;
     factoryName: string;
   }) => {
-    // 기존 onFactoryChange 호출 (하위 호환성)
-    if (onFactoryChange) {
-      onFactoryChange(factory.factoryName);
+    const factoryId = factory.factoryId || 0;
+
+    // 상품 정보 업데이트
+    if (onProductChange) {
+      onProductChange({
+        factoryId,
+        factoryName: factory.factoryName,
+      });
     }
 
+    // 외부 핸들러 호출
     if (onFactorySelect) {
-      // factoryId가 없으면 0을 기본값으로 사용
-      const idToUse = factory.factoryId || 0;
-      onFactorySelect(idToUse, factory.factoryName);
+      onFactorySelect(factoryId, factory.factoryName);
     }
 
     // 모달 닫기
@@ -79,19 +59,60 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
     setIsFactoryModalOpen(true);
   };
 
+  // 필드 변경 핸들러
+  const handleFieldChange = (
+    field: keyof ProductData | "materialId" | "classificationId" | "setTypeId",
+    value: string
+  ) => {
+    if (!onProductChange) return;
+
+    let updatedProduct: Partial<ProductData> = {};
+
+    // 중첩된 객체 처리
+    if (field === "materialId") {
+      const selectedMaterial = materials.find((m) => m.materialId === value);
+      if (selectedMaterial) {
+        updatedProduct = { materialDto: selectedMaterial };
+      }
+    } else if (field === "classificationId") {
+      const selectedClassification = classifications.find(
+        (c) => c.classificationId === value
+      );
+      if (selectedClassification) {
+        updatedProduct = { classificationDto: selectedClassification };
+      }
+    } else if (field === "setTypeId") {
+      const selectedSetType = setTypes.find((s) => s.setTypeId === value);
+      if (selectedSetType) {
+        updatedProduct = { setTypeDto: selectedSetType };
+      }
+    } else {
+      // 직접 필드
+      updatedProduct = { [field]: value };
+    }
+
+    onProductChange(updatedProduct);
+  };
+
   // 재질 데이터 로드 함수
   const loadMaterials = useCallback(async () => {
     if (materialsLoaded) return;
 
     setLoading(true);
     try {
-      const materialsRes = await basicInfoApi.getMaterials();
-      if (materialsRes.data?.success && materialsRes.data.data) {
-        setMaterials(materialsRes.data.data);
+      const response = await materialApi.getMaterials();
+      if (!response.success) {
+        alert(`${response.message || "재질 데이터를 불러오지 못했습니다."}`);
+        setMaterials([]);
+        return;
+      }
+
+      if (response.success && response.data) {
+        setMaterials(response.data);
         setMaterialsLoaded(true);
       }
-    } catch (error) {
-      console.error("재질 데이터 로드 실패:", error);
+    } catch {
+      setMaterials([]);
     } finally {
       setLoading(false);
     }
@@ -103,13 +124,20 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
 
     setLoading(true);
     try {
-      const classificationsRes = await basicInfoApi.getClassifications();
-      if (classificationsRes.data?.success && classificationsRes.data.data) {
-        setClassifications(classificationsRes.data.data);
+      const response = await classificationApi.getClassifications();
+
+      if (!response.success) {
+        alert(`${response.message || "분류 데이터를 불러오지 못했습니다."}`);
+        setClassifications([]);
+        return;
+      }
+
+      if (response.success && response.data) {
+        setClassifications(response.data);
         setClassificationsLoaded(true);
       }
-    } catch (error) {
-      console.error("분류 데이터 로드 실패:", error);
+    } catch {
+      setClassifications([]);
     } finally {
       setLoading(false);
     }
@@ -121,13 +149,22 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
 
     setLoading(true);
     try {
-      const setTypesRes = await basicInfoApi.getSetTypes();
-      if (setTypesRes.data?.success && setTypesRes.data.data) {
-        setSetTypes(setTypesRes.data.data);
+      const setTypesRes = await setTypeApi.getSetTypes();
+
+      if (!setTypesRes.success) {
+        alert(
+          `${setTypesRes.message || "세트 타입 데이터를 불러오지 못했습니다."}`
+        );
+        setSetTypes([]);
+        return;
+      }
+
+      if (setTypesRes.success && setTypesRes.data) {
+        setSetTypes(setTypesRes.data);
         setSetTypesLoaded(true);
       }
-    } catch (error) {
-      console.error("세트 타입 데이터 로드 실패:", error);
+    } catch {
+      setSetTypes([]);
     } finally {
       setLoading(false);
     }
@@ -156,19 +193,24 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
         {/* 상품명과 공장명을 같은 줄에 */}
         <div className="info-row">
           <div className="info-item half-width">
+            <span className="required-field-basic">*</span>
             <span className="label">모델번호:</span>
             {editable ? (
               <input
                 type="text"
-                className="editable-input"
-                value={editedProductName || productName}
+                className={`editable-input ${
+                  validationErrors.productName ? "error" : ""
+                }`}
+                value={product.productName}
                 onChange={(e) =>
-                  onProductNameChange && onProductNameChange(e.target.value)
+                  handleFieldChange("productName", e.target.value)
                 }
-                placeholder="모델번호를 입력하세요"
+                placeholder={
+                  validationErrors.productName || "모델번호를 입력하세요"
+                }
               />
             ) : (
-              <span className="value">{productName}</span>
+              <span className="value">{product.productName}</span>
             )}
           </div>
           <div className="info-item half-width">
@@ -177,23 +219,27 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
               <input
                 type="text"
                 className="editable-input"
-                value={editedProductFactoryName || productFactoryName}
+                value={product.productFactoryName}
                 onChange={(e) =>
-                  onProductFactoryNameChange &&
-                  onProductFactoryNameChange(e.target.value)
+                  handleFieldChange("productFactoryName", e.target.value)
                 }
                 placeholder="제조번호를 입력하세요"
               />
             ) : (
-              <span className="value">{productFactoryName}</span>
+              <span className="value">{product.productFactoryName}</span>
             )}
           </div>
           <div className="info-item half-width">
+            <span className="required-field-basic">*</span>
             <span className="label">제조사:</span>
             {editable ? (
-              <div className="factory-search-container">
+              <div
+                className={`factory-search-container ${
+                  validationErrors.factoryId ? "error" : ""
+                }`}
+              >
                 <span className="factory-display-value">
-                  {editedFactoryName || factoryName}
+                  {validationErrors.factoryId || product.factoryName}
                 </span>
                 <button
                   type="button"
@@ -204,7 +250,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
                 </button>
               </div>
             ) : (
-              <span className="value">{factoryName}</span>
+              <span className="value">{product.factoryName}</span>
             )}
           </div>
         </div>
@@ -218,17 +264,16 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
                 <input
                   type="text"
                   className="editable-input weight-input"
-                  value={editedStandardWeight || standardWeight}
+                  value={product.standardWeight}
                   onChange={(e) =>
-                    onStandardWeightChange &&
-                    onStandardWeightChange(e.target.value)
+                    handleFieldChange("standardWeight", e.target.value)
                   }
                   placeholder="무게"
                 />
                 <span className="unit"></span>
               </div>
             ) : (
-              <span className="value">{standardWeight}</span>
+              <span className="value">{product.standardWeight}</span>
             )}
           </div>
           <div className="info-item quarter-width">
@@ -236,14 +281,14 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
             {editable ? (
               <select
                 className="editable-select"
-                value={editedMaterialId || materialDto.materialId}
+                value={product.materialDto?.materialId || ""}
                 onChange={(e) =>
-                  onMaterialChange && onMaterialChange(e.target.value)
+                  handleFieldChange("materialId", e.target.value)
                 }
                 disabled={loading}
               >
-                <option value={materialDto.materialId}>
-                  {materialDto.materialName}
+                <option value={product.materialDto?.materialId}>
+                  {product.materialDto?.materialName}
                 </option>
                 {materials.map((material) => (
                   <option key={material.materialId} value={material.materialId}>
@@ -252,7 +297,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
                 ))}
               </select>
             ) : (
-              <span className="value">{materialDto.materialName}</span>
+              <span className="value">{product.materialDto?.materialName}</span>
             )}
           </div>
           <div className="info-item quarter-width">
@@ -260,17 +305,14 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
             {editable ? (
               <select
                 className="editable-select"
-                value={
-                  editedClassificationId || classificationDto.classificationId
-                }
+                value={product.classificationDto?.classificationId || ""}
                 onChange={(e) =>
-                  onClassificationChange &&
-                  onClassificationChange(e.target.value)
+                  handleFieldChange("classificationId", e.target.value)
                 }
                 disabled={loading}
               >
-                <option value={classificationDto.classificationId}>
-                  {classificationDto.classificationName}
+                <option value={product.classificationDto?.classificationId}>
+                  {product.classificationDto?.classificationName}
                 </option>
                 {classifications.map((classification) => (
                   <option
@@ -283,7 +325,7 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
               </select>
             ) : (
               <span className="value">
-                {classificationDto.classificationName}
+                {product.classificationDto?.classificationName}
               </span>
             )}
           </div>
@@ -292,14 +334,12 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
             {editable ? (
               <select
                 className="editable-select"
-                value={editedSetTypeId || setTypeDto.setTypeId}
-                onChange={(e) =>
-                  onSetTypeChange && onSetTypeChange(e.target.value)
-                }
+                value={product.setTypeDto?.setTypeId || ""}
+                onChange={(e) => handleFieldChange("setTypeId", e.target.value)}
                 disabled={loading}
               >
-                <option value={setTypeDto.setTypeId}>
-                  {setTypeDto.setTypeName}
+                <option value={product.setTypeDto?.setTypeId}>
+                  {product.setTypeDto?.setTypeName}
                 </option>
                 {setTypes.map((setType) => (
                   <option key={setType.setTypeId} value={setType.setTypeId}>
@@ -308,30 +348,32 @@ const BasicInfo: React.FC<BasicInfoProps> = ({
                 ))}
               </select>
             ) : (
-              <span className="value">{setTypeDto.setTypeName}</span>
+              <span className="value">{product.setTypeDto?.setTypeName}</span>
             )}
           </div>
         </div>
 
         {/* 메모는 전체 너비 */}
-        {productNote !== undefined && (
+        {product.productNote !== undefined && (
           <div className=".info-item.full-width-memo">
             {editable ? (
               <textarea
                 className="editable-textarea"
-                value={editedNote || productNote || ""}
-                onChange={(e) => onNoteChange && onNoteChange(e.target.value)}
+                value={product.productNote || ""}
+                onChange={(e) =>
+                  handleFieldChange("productNote", e.target.value)
+                }
                 placeholder="메모를 입력하세요..."
               />
             ) : (
-              <span className="value">{productNote}</span>
+              <span className="value">{product.productNote}</span>
             )}
           </div>
         )}
       </div>
 
       {/* 제조사 검색 모달 */}
-      <FactorySearc
+      <FactorySearch
         isOpen={isFactoryModalOpen}
         onClose={() => setIsFactoryModalOpen(false)}
         onSelectFactory={handleFactorySelect}

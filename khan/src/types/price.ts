@@ -10,6 +10,7 @@ export interface GradePolicyDto {
 export interface ProductWorkGradePolicyGroupDto {
   productGroupId: string;
   productPurchasePrice: number;
+  colorId: string;
   colorName: string;
   gradePolicyDtos: GradePolicyDto[];
   note: string;
@@ -19,12 +20,6 @@ export interface PriceTableProps {
   priceGroups: ProductWorkGradePolicyGroupDto[];
   showTitle?: boolean;
   editable?: boolean;
-  editedPurchasePrices?: { [key: string]: string };
-  editedLaborCosts?: { [key: string]: string };
-  editedColors?: { [key: string]: string };
-  editedNotes?: { [key: string]: string };
-  onColorChange?: (groupId: string, newColor: string) => void;
-  onPurchasePriceChange?: (groupId: string, value: string) => void;
-  onLaborCostChange?: (workGradePolicyId: string, value: string) => void;
-  onNoteChange?: (groupId: string, value: string) => void;
+  onPriceGroupChange?: (updatedGroups: ProductWorkGradePolicyGroupDto[]) => void;
+  validationErrors?: Record<string, string>;
 }

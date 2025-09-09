@@ -290,7 +290,7 @@
 
 /* ===== Sidebar 스타일 ===== */
 .sidebar {
-  width: 140px;
+  width: 160px;
   background-color: var(--bg-primary);
   border-right: 1px solid var(--border-color);
   display: flex;
@@ -376,6 +376,62 @@
 .nav-label {
   flex: 1;
   font-weight: inherit;
+}
+
+.expand-icon {
+  margin-left: auto;
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+/* 하위 메뉴 스타일 */
+.nav-sub-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background-color: color-mix(in srgb, var(--bg-primary) 95%, var(--dark-color) 5%);
+}
+
+.nav-sub-item {
+  margin: 0;
+}
+
+.nav-sub-link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 1rem var(--spacing-lg) 1rem calc(var(--spacing-lg) * 2);
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+  cursor: pointer;
+  font-size: 12px;
+  position: relative;
+}
+
+.nav-sub-link:hover {
+  background-color: var(--bg-secondary);
+  color: var(--primary-color);
+  transform: translateX(3px);
+}
+
+.nav-sub-link.active {
+  background-color: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  color: var(--primary-color);
+  font-weight: var(--font-weight-medium);
+}
+
+.nav-sub-link.active::before {
+  content: '';
+  position: absolute;
+  left: var(--spacing-lg);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--primary-color);
 }
 
 /* ===== Main Content 스타일 ===== */

@@ -30,33 +30,37 @@ const Pagination: React.FC<PaginationProps> = ({
         onPageChange(currentPage + 1);
         }
     };
-
-    console.log("Pagination Rendered: ", `pagination-footer ${className}`);
     return (
-        <div className={`pagination-footer-${className}`}>
-            <div className={`pagination-controls-${className}`}>
-                    <button
-                    className="page-btn"
-                    onClick={handlePrevPage}
-                    disabled={currentPage <= 1 || loading}
-                    >
-                    이전
-                    </button>
-                    
-                <span className="page-info">
+        <div
+        className={`pagination-footer ${
+            className ? `pagination-footer-${className}` : ""
+        }`}
+        >
+        <div
+            className={`pagination-controls ${
+            className ? `pagination-controls-${className}` : ""
+            }`}
+        >
+            <button
+            className="page-btn"
+            onClick={handlePrevPage}
+            disabled={currentPage <= 1 || loading}
+            >
+            이전
+            </button>
+            <span className="page-info">
                 {totalPages > 0 && totalElements > 0
-                    ? `페이지 ${currentPage} / ${totalPages} (총 ${totalElements}개)`
+                    ? `페이지 ${currentPage}/ ${totalPages} (총 ${totalElements}개)`
                     : "데이터 없음"}
-                </span>
-
-                <button
-                    className="page-btn"
-                    onClick={handleNextPage}
-                    disabled={currentPage >= totalPages || totalPages <= 1 || loading}
-                    >
-                    다음
-                </button>
-            </div>
+            </span>
+            <button
+            className="page-btn"
+            onClick={handleNextPage}
+            disabled={currentPage >= totalPages || totalPages <= 1 || loading}
+            >
+            다음
+            </button>
+        </div>
         </div>
     );
 };

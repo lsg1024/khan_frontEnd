@@ -1,3 +1,16 @@
+export interface StoneWorkGradePolicyCreateDto {
+    grade: string;        
+    laborCost: number;    
+}
+
+export interface StoneCreateRequest {
+    stoneName: string;
+    stoneNote?: string | null;
+    stoneWeight?: string | null;              
+    stonePurchasePrice?: number | null;
+    stoneWorkGradePolicyDto: StoneWorkGradePolicyCreateDto[];
+}
+
 // 스톤 관련 타입 정의
 export interface StoneWorkGradePolicyDto {
     workGradePolicyId: string;
@@ -34,8 +47,8 @@ export interface ProductStoneDto {
     stoneId: string;
     stoneName: string;
     stoneWeight: string;
-    mainStone: boolean;
-    includeStone: boolean;
+    isMainStone: boolean;
+    isIncludeStone: boolean;
     stonePurchase: number;
     stoneQuantity: number;
     productStoneNote: string;

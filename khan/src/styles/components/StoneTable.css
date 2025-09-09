@@ -35,7 +35,7 @@
     background-color: #007bff;
     color: white;
     border: none;
-    padding: 8px 16px;
+    padding: 4px 10px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
@@ -181,7 +181,7 @@
 }
 
 /* 검색 버튼 스타일 */
-.search-button {
+.search-button-stone-table {
     background: none;
     border: none;
     cursor: pointer;
@@ -191,7 +191,7 @@
     padding: 0% 0%;
 }
 
-.search-button:hover {
+.search-button-stone-table:hover {
     color: #0056b3;
 }
 
@@ -264,7 +264,7 @@
 
 /* 읽기 전용 입력 필드 스타일 */
 .stone-table .readonly-input {
-    background-color: #f8f9fa !important;
+    background-color: #ddd !important;
     color: #6c757d !important;
     cursor: not-allowed !important;
     border-color: #e9ecef !important;
@@ -303,6 +303,36 @@
     background-color: #e9ecef !important;
 }
 
+/* 테이블 상단 에러 배너 */
+.table-level-error {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background: #fff5f5;
+    border: 1px solid #ffc9c9;
+    color: #c92a2a;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+/* 행 전체 강조 (기본행 누락 등) */
+.price-table tr.row-error > td {
+    background: #fff5f5;
+}
+
+/* 인풋/셀렉트 에러 테두리 */
+.table-input.error,
+.editable-select.error {
+    border-color: #e03131 !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(224, 49, 49, 0.1);
+}
+
+/* 에러 메시지 */
+.error-message {
+    margin-top: 4px;
+    color: #e03131;
+    font-size: 12px;
+}
 
 /* 769px - 1024px 사이즈 반응형 스타일 */
 @media (max-width: 1024px) {

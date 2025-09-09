@@ -1,11 +1,18 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import JoinPage from "./pages/JoinPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import CataLogPage from "./pages/CataLogPage";
+import ProductCreatePage from "./pages/ProductCreatePage";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import StonePage from "./pages/StonePage";
+import StoneCreatePage from "./pages/StoneCreatePage";
+import OrderPage from "./pages/OrderPage";
+import FixPage from "./pages/FixPage";
+import ExpactPage from "./pages/ExpactPage";
+import OrderDeletedPage from "./pages/OrderDeletePage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 
@@ -70,27 +77,36 @@ function App() {
   return (
     <BrowserRouter>
       {!isAuthenticated ? (
-        // 인증되지 않은 경우: 로그인/회원가입 페이지만 표시
         <Routes>
           <Route path="/join" element={<JoinPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       ) : (
-        // 인증된 경우: 레이아웃과 함께 메인 콘텐츠 표시
-        <Layout onLogout={handleLogout}>
-          <Routes>
+        <Routes>
+          {/* Layout 없이 단독 페이지 렌더링 */}
+          <Route path="/stone/create" element={<StoneCreatePage />} />
+
+          {/* Layout 안에서 렌더링 */}
+          <Route element={<Layout onLogout={handleLogout}><Outlet /></Layout>}>
             <Route path="/" element={<HomePage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/catalog" element={<CataLogPage />} />
+            <Route path="/catalog/create" element={<ProductCreatePage />} />
             <Route path="/catalog/:productId" element={<ProductDetailPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/stone" element={<StonePage />} />
+            <Route path="/stone/create" element={<StoneCreatePage />} />
+            <Route path="/orders" element={<OrderPage />} />
+            <Route path="/fix" element={<FixPage />} />
+            <Route path="/expact" element={<ExpactPage />} />
+            <Route path="/order-deleted" element={<OrderDeletedPage />} />
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/join" element={<Navigate to="/" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Layout>
+          </Route>
+        </Routes>
       )}
     </BrowserRouter>
   );

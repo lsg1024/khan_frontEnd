@@ -172,35 +172,32 @@ const StoneTable: React.FC<StoneTableProps> = ({
 
   // 스톤 선택 핸들러
   const handleStoneSelect = (selectedStone: StoneSearchDto) => {
-    if (onStoneChange && currentEditingStoneId) {
-      // 선택된 스톤의 정보로 기존 스톤 정보 업데이트
-      onStoneChange(
-        currentEditingStoneId,
-        "stoneName",
-        selectedStone.stoneName
-      );
-      onStoneChange(
-        currentEditingStoneId,
-        "stoneWeight",
-        selectedStone.stoneWeight
-      );
-      onStoneChange(
-        currentEditingStoneId,
-        "stonePurchase",
-        selectedStone.stonePurchasePrice
-      );
+    const newStoneId = currentEditingStoneId;
 
-      // 등급별 가격 업데이트 - 실제 사용되는 필드명 형식으로 수정
-      selectedStone.stoneWorkGradePolicyDto?.forEach((gradePolicy) => {
-        const gradeNumber = gradePolicy.grade.replace("GRADE_", "");
-        const fieldName = `grade_${gradeNumber}`;
-        onStoneChange(currentEditingStoneId, fieldName, gradePolicy.laborCost);
-      });
-
-      // 비고란 초기화
-      onStoneChange(currentEditingStoneId, "note", "");
-      handleCloseModal();
+    if (!newStoneId || !onStoneChange) {
+      return;
     }
+
+    // 선택된 스톤의 정보로 기존 스톤 정보 업데이트
+    onStoneChange(newStoneId, "stoneId", selectedStone.stoneId);
+    onStoneChange(newStoneId, "stoneName", selectedStone.stoneName);
+    onStoneChange(newStoneId, "stoneWeight", selectedStone.stoneWeight);
+    onStoneChange(
+      newStoneId,
+      "stonePurchase",
+      selectedStone.stonePurchasePrice
+    );
+
+    // 등급별 가격 업데이트 - 실제 사용되는 필드명 형식으로 수정
+    selectedStone.stoneWorkGradePolicyDto?.forEach((gradePolicy) => {
+      const gradeNumber = gradePolicy.grade.replace("GRADE_", "");
+      const fieldName = `grade_${gradeNumber}`;
+      onStoneChange(newStoneId, fieldName, gradePolicy.laborCost);
+    });
+
+    // 비고란 초기화
+    onStoneChange(newStoneId, "note", "");
+    handleCloseModal();
   };
 
   // 모달 닫기 핸들러
@@ -284,11 +281,11 @@ const StoneTable: React.FC<StoneTableProps> = ({
                 {editable ? (
                   <select
                     className="editable-select"
-                    value={stone.mainStone ? "Y" : "N"}
+                    value={stone.isMainStone ? "Y" : "N"}
                     onChange={(e) =>
                       handleFieldChange(
                         stone.productStoneId,
-                        "mainStone",
+                        "isMainStone",
                         e.target.value === "Y"
                       )
                     }
@@ -297,7 +294,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
                     <option value="N">N</option>
                   </select>
                 ) : (
-                  <span>{stone.mainStone ? "Y" : "N"}</span>
+                  <span>{stone.isMainStone ? "Y" : "N"}</span>
                 )}
               </td>
 
@@ -306,11 +303,11 @@ const StoneTable: React.FC<StoneTableProps> = ({
                 {editable ? (
                   <select
                     className="editable-select"
-                    value={stone.includeStone ? "Y" : "N"}
+                    value={stone.isIncludeStone ? "Y" : "N"}
                     onChange={(e) =>
                       handleFieldChange(
                         stone.productStoneId,
-                        "includeStone",
+                        "isIncludeStone",
                         e.target.value === "Y"
                       )
                     }
@@ -319,7 +316,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
                     <option value="N">N</option>
                   </select>
                 ) : (
-                  <span>{stone.includeStone ? "Y" : "N"}</span>
+                  <span>{stone.isIncludeStone ? "Y" : "N"}</span>
                 )}
               </td>
 
@@ -345,7 +342,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
                       }
                     />
                     <button
-                      className="search-button"
+                      className="search-button-stone-table"
                       onClick={() => handleSearchClick(stone.productStoneId)}
                     >
                       🔍
@@ -360,7 +357,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
                       readOnly
                     />
                     <button
-                      className="search-button"
+                      className="search-button-stone-table"
                       onClick={() => handleSearchClick(stone.productStoneId)}
                     >
                       🔍
@@ -597,13 +594,13 @@ const StoneTable: React.FC<StoneTableProps> = ({
               <td colSpan={4}>소계</td>
               <td className="total-cell">
                 {stones
-                  .filter((stone) => stone.includeStone)
+                  .filter((stone) => stone.isIncludeStone)
                   .reduce((sum, stone) => sum + stone.stoneQuantity, 0)}
               </td>
               <td>
                 <span>
                   {stones
-                    .filter((stone) => stone.includeStone)
+                    .filter((stone) => stone.isIncludeStone)
                     .reduce(
                       (sum, stone) =>
                         sum + Number(stone.stoneWeight) * stone.stoneQuantity,
@@ -614,7 +611,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
               </td>
               <td className="total-cell">
                 {stones
-                  .filter((stone) => stone.includeStone)
+                  .filter((stone) => stone.isIncludeStone)
                   .reduce(
                     (sum, stone) =>
                       sum + stone.stonePurchase * stone.stoneQuantity,
@@ -625,7 +622,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
               {[1, 2, 3, 4].map((gradeNum) => (
                 <td key={gradeNum} className="total-cell">
                   {stones
-                    .filter((stone) => stone.includeStone)
+                    .filter((stone) => stone.isIncludeStone)
                     .reduce((sum, stone) => {
                       const gradePolicy = stone.stoneWorkGradePolicyDtos?.find(
                         (policy) => policy.grade === `GRADE_${gradeNum}`

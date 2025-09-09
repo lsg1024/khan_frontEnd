@@ -1,17 +1,7 @@
-/* StoneSearchModal.css */
-.stone-search-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
+/* StoneSearch 컴포넌트 전용 스타일 */
+@import './searchModal.css';
 
+/* 스톤 검색 모달 고유 스타일 */
 .stone-search-modal {
   background: white;
   border-radius: 8px;
@@ -24,122 +14,11 @@
   overflow: hidden;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e9ecef;
-  background-color: #f8f9fa;
+.stone-search-modal-header {
+  background-color: white; /* 스톤 검색은 헤더 배경이 흰색 */
 }
 
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #333;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-button:hover {
-  color: #333;
-}
-
-.search-section {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.search-input-group {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.search-input {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.search-btn {
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  min-width: 80px;
-}
-
-.search-btn:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.search-btn:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.stones-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0; /* 패딩 제거, 부모에서 관리 */
-}
-
-.loading-indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  color: #666;
-}
-
-.spinner {
-  width: 30px;
-  height: 30px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #007bff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 0.5rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.no-results {
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-  font-style: italic;
-}
-
+/* 스톤 테이블 전용 스타일 */
 .stones-table {
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -213,70 +92,8 @@
   background-color: #218838;
 }
 
-
-.page-btn {
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.page-btn:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.page-btn:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.page-info {
-  font-size: 14px;
-  color: #666;
-  margin: 0 1rem;
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  .stone-search-modal {
-    width: 95%;
-    max-height: 90vh;
-  }
-  
-  .modal-header {
-    padding: 0.75rem 1rem;
-  }
-  
-  .search-section {
-    padding: 0.75rem 1rem;
-  }
-  
-  .stones-list {
-    padding: 0.75rem 1rem;
-  }
-  
-  .table-header,
-  .table-row {
-    grid-template-columns: 2fr 0.8fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
-  }
-  
-  .table-header span,
-  .table-row span {
-    padding: 0.5rem 0.25rem;
-    font-size: 11px;
-  }
-  
-}
-
+/* 스톤 검색 전용 반응형 */
 @media (max-width: 480px) {
-  .stone-search-modal {
-    width: 98%;
-    max-height: 95vh;
-  }
-  
   .table-header,
   .table-row {
     grid-template-columns: 1.5fr 0.7fr 0.9fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr;
