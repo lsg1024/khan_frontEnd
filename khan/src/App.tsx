@@ -1,18 +1,24 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 import { useState, useEffect } from "react";
 
 import JoinPage from "./pages/JoinPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
-import CataLogPage from "./pages/CataLogPage";
-import ProductCreatePage from "./pages/ProductCreatePage";
-import ProductDetailPage from "./pages/ProductDetailPage";
-import StonePage from "./pages/StonePage";
-import StoneCreatePage from "./pages/StoneCreatePage";
-import OrderPage from "./pages/OrderPage";
-import FixPage from "./pages/FixPage";
-import ExpactPage from "./pages/ExpactPage";
-import OrderDeletedPage from "./pages/OrderDeletePage";
+import CataLogPage from "./pages/product/CataLogPage";
+import ProductCreatePage from "./pages/product/ProductCreatePage";
+import ProductDetailPage from "./pages/product/ProductDetailPage";
+import StonePage from "./pages/stone/StonePage";
+import StoneCreatePage from "./pages/stone/StoneCreatePage";
+import OrderPage from "./pages/order/OrderPage";
+import FixPage from "./pages/order/FixPage";
+import ExpactPage from "./pages/order/ExpactPage";
+import OrderDeletedPage from "./pages/order/OrderDeletePage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 
@@ -88,7 +94,13 @@ function App() {
           <Route path="/stone/create" element={<StoneCreatePage />} />
 
           {/* Layout 안에서 렌더링 */}
-          <Route element={<Layout onLogout={handleLogout}><Outlet /></Layout>}>
+          <Route
+            element={
+              <Layout onLogout={handleLogout}>
+                <Outlet />
+              </Layout>
+            }
+          >
             <Route path="/" element={<HomePage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/catalog" element={<CataLogPage />} />

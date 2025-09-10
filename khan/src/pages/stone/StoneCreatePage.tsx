@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { stoneApi } from "../../libs/api/stone";
-import { stoneTypeApi } from "../../libs/api/stoneType";
-import { stoneShapeApi } from "../../libs/api/stoneShape";
-import type { StoneTypeDto } from "../types/stoneType";
-import type { StoneShapeDto } from "../types/stoneShape";
-import type { StoneCreateRequest, StoneWorkGradePolicyCreateDto } from "../types/stone";
-import "../styles/pages/StoneCreatePage.css";
+import { stoneApi } from "../../../libs/api/stone";
+import { stoneTypeApi } from "../../../libs/api/stoneType";
+import { stoneShapeApi } from "../../../libs/api/stoneShape";
+import type { StoneTypeDto } from "../../../src/types/stoneType";
+import type { StoneShapeDto } from "../../../src/types/stoneShape";
+import type { StoneCreateRequest, StoneWorkGradePolicyCreateDto } from "../../../src//types/stone";
+import "../../styles/pages/StoneCreatePage.css";
 
 export interface StoneCreateFormRow {
     stoneTypeId: string;

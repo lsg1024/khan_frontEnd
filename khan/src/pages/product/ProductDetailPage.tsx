@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { apiRequest, isApiSuccess } from "../../libs/api";
-import { useErrorHandler } from "../utils/errorHandler";
-import StoneTable from "../components/common/catalog/StoneTable";
-import PriceTable from "../components/common/catalog/PriceTable";
-import ProductInfo from "../components/common/catalog/BasicInfo";
-import type { ProductStoneDto } from "../types/stone";
-import type { ProductWorkGradePolicyGroupDto } from "../types/price";
-import type { ProductData } from "../types/product";
-import "../styles/pages/ProductDetailPage.css";
-import "../styles/components/common.css";
+import { apiRequest, isApiSuccess } from "../../../libs/api";
+import { useErrorHandler } from "../../utils/errorHandler";
+import StoneTable from "../../components/common/product/StoneTable";
+import PriceTable from "../../components/common/product/PriceTable";
+import ProductInfo from "../../components/common/product/BasicInfo";
+import type { ProductStoneDto } from "../../types/stone";
+import type { ProductWorkGradePolicyGroupDto } from "../../types/price";
+import type { ProductData } from "../../types/product";
+import "../../styles/pages/ProductDetailPage.css";
+import "../../styles/components/common.css";
 
 interface Product extends ProductData {
   productWorkGradePolicyGroupDto: ProductWorkGradePolicyGroupDto[];
