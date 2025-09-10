@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { factoryApi } from "../../../libs/api/factory";
-import { StoreApi } from "../../../libs/api/store";
+import { orderApi } from "../../../libs/api/order"
+import { storeApi } from "../../../libs/api/store";
+import Pagination from "../../components/common/Pagination";
+import { useErrorHandler } from "../../utils/errorHandler";
 import type { SetTypeDto } from "../../types/setType";
 import type { FactorySearchDto } from "../../types/factory";
 import type { StoreSearchDto } from "../../types/store";
-
+import type { OrderDto } from "../../types/order";
 
 export const OrderPage = () => {
 
@@ -29,50 +32,82 @@ export const OrderPage = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalElements, setTotalElements] = useState(0);
     const [dropdownLoading, setDropdownLoading] = useState(false);
+    const [orders, setOrders] = useState<OrderDto[]>([]); // 주문 데이터 상태
     const [factories, setFactories] = useState<FactorySearchDto[]>([]);
     const [stores, setStores] = useState<StoreSearchDto[]>([]);
     const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
+    const { handleError } = useErrorHandler();
 
     // 드롭다운 데이터 로드 함수
-    const loadDropdowns = async () => {
-        setDropdownLoading(true);
+    // const loadDropdowns = async () => {
+    //     setDropdownLoading(true);
 
-    }
+    // }
 
     // 주문 데이터 로드 함수
-    const loadOrders = async () => {
-    }
-
-    useEffect(() => {
-        setCurrentPage(1);
+    const loadOrders = useCallback(async (filters: typeof searchFilters, page: number = 1) => {
+        setLoading(true);
         setError("");
 
-        const fetchDropdownData = async () => {
-            setDropdownLoading(true);
+        try {
+            const response = await orderApi.getOrders(
+                filters.start,
+                filters.end,
+                filters.search,
+                filters.factory,
+                filters.store,
+                filters.setType,
+                page
+            );
+
+            if (response.success && response.data) {
+                const pageData = response.data.page;
+                const content = response.data.content || [];
+
+                setOrders(content || []);
+                setCurrentPage(page);
+                setTotalPages(pageData.totalPages || 1);
+                setTotalElements(pageData.totalElements || 0);
+            }
+        } catch (err) {
+            handleError(err, setError);
+            setOrders([]);
+            setCurrentPage(1);
+            setTotalPages(0);
+            setTotalElements(0);
+        } finally {
+            setLoading(false);
+        }
+    }, [handleError]);
+
+    const fetchDropdownData = async () => {
+        setDropdownLoading(true);
             try {
-                // 공장 데이터 가져오기
-                const factoryResponse = await factoryApi.getFactories(
-                    
-                )
-                const factoryData = await factoryResponse.json();
-                setFactories(factoryData.content);
+                // 공장 데이터 가져오기 -> 서버에서 distinct 이용해 종합 페이지에서 가져오도록
+                // const factoryResponse;
+                // setFactories(factoryData.content);
 
                 // 판매처 데이터 가져오기
-                const storeResponse = await fetch("/api/stores");
-                const storeData = await storeResponse.json();
-                setStores(storeData.content);
+                // setStores(storeData.content);
 
                 // 세트타입 데이터 가져오기
-                const setTypeResponse = await fetch("/api/set-types");
-                const setTypeData = await setTypeResponse.json();
-                setSetTypes(setTypeData.content);
+                // const setTypeResponse;
+                // setSetTypes(setTypeResponse);
             } catch (err) {
                 console.error("드롭다운 데이터 로드 실패:", err);
             } finally {
                 setDropdownLoading(false);
             }
         };
+
+    useEffect(() => {
+        setCurrentPage(1);
+        setError("");
+
+        loadOrders(searchFilters, 1);
         
         fetchDropdownData();
     }, []);
@@ -158,6 +193,18 @@ export const OrderPage = () => {
                     </div>
                 </div>
             </div>
+            {/* 페이지네이션 */}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalElements={totalElements}
+                loading={loading}
+                onPageChange={(page) => {
+                setCurrentPage(page);
+                loadOrders(searchFilters, page);
+                }}
+                className="catalog"
+            />
         </div>
         </>
     )

@@ -3,7 +3,7 @@ import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
 import type { ProductSearchResponse } from "../../src/types/catalog";
 
-import type { Product } from "../../src/types/product";
+import type { Product, CreateProductRequest } from "../../src/types/product";
 
 export const productApi = {
     // 상품 카테고리 목록 조회 (페이징 및 검색 옵션 지원)
@@ -48,13 +48,13 @@ export const productApi = {
     },
 
     // 상품 생성
-    createProduct: async (data: Product): Promise<ApiResponse<Product>> => {
-        return apiRequest.post<Product>("product/products", data);
+    createProduct: async (data: CreateProductRequest): Promise<ApiResponse<CreateProductRequest>> => {
+        return apiRequest.post<CreateProductRequest>("product/products", data);
     },
 
     // 상품 수정
-    updateProduct: async (productId: string, data: Product): Promise<ApiResponse<Product>> => {
-        return apiRequest.patch<Product>(`product/products/${productId}`, data);
+    updateProduct: async (productId: string, data: CreateProductRequest): Promise<ApiResponse<CreateProductRequest>> => {
+        return apiRequest.patch<CreateProductRequest>(`product/products/${productId}`, data);
     },
 
     // 상품 삭제

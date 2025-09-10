@@ -33,3 +33,33 @@ export interface Product extends ProductData {
     productStoneDtos: ProductStoneDto[];
     productImageDtos: { imagePath: string }[];
 }
+
+/** 서버에 전달할 생성 요청 DTO */
+export interface CreateProductRequest {
+    factoryId?: number; // 값이 없으면 undefined (JSON 직렬화 시 필드 생략)
+    productFactoryName: string;
+    productName: string;
+    setType: string;
+    classification: string;
+    material: string;
+    standardWeight: string; // 서버가 문자열로 받는 형태 유지
+    productNote: string;
+
+    productWorkGradePolicyGroupDto: Array<{
+        productPurchasePrice: number;
+        colorId: string;
+        policyDtos: Array<{
+        grade: string;
+        laborCost: number;
+        }>;
+        note: string;
+    }>;
+
+    productStoneDtos: Array<{
+        stoneId: string;
+        isMainStone: boolean;
+        isIncludeStone: boolean;
+        stoneQuantity: number;
+        productStoneNote: string;
+    }>;
+}
