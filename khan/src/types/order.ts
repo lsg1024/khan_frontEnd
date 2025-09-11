@@ -16,6 +16,7 @@ export interface OrderDto {
     setType: string;
     productSize: string;
     productWeight: string;
+    stockQuantity: number;
     stockFlowCodes: string[];
     orderNote: string;
     factoryName: string;
