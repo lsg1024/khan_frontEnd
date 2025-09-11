@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { factoryApi } from "../../../libs/api/factory";
 import { orderApi } from "../../../libs/api/order"
-import { storeApi } from "../../../libs/api/store";
 import Pagination from "../../components/common/Pagination";
 import { useErrorHandler } from "../../utils/errorHandler";
-import type { SetTypeDto } from "../../types/setType";
-import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto } from "../../types/store";
 import type { OrderDto } from "../../types/order";
 
 export const OrderPage = () => {
@@ -14,8 +9,8 @@ export const OrderPage = () => {
 // 검색 관련 상태
     const [searchFilters, setSearchFilters] = useState({
         search: "",
-        start: "",
-        end: "",
+        start: "2025-08-04",
+        end: "2025-09-11",
         factory: "",
         store: "",
         setType: "",
@@ -36,16 +31,10 @@ export const OrderPage = () => {
     const [totalElements, setTotalElements] = useState(0);
     const [dropdownLoading, setDropdownLoading] = useState(false);
     const [orders, setOrders] = useState<OrderDto[]>([]); // 주문 데이터 상태
-    const [factories, setFactories] = useState<FactorySearchDto[]>([]);
-    const [stores, setStores] = useState<StoreSearchDto[]>([]);
-    const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
+    const [factories, setFactories] = useState<string[]>([]);
+    const [stores, setStores] = useState<string[]>([]);
+    const [setTypes, setSetTypes] = useState<string[]>([]);
     const { handleError } = useErrorHandler();
-
-    // 드롭다운 데이터 로드 함수
-    // const loadDropdowns = async () => {
-    //     setDropdownLoading(true);
-
-    // }
 
     // 주문 데이터 로드 함수
     const loadOrders = useCallback(async (filters: typeof searchFilters, page: number = 1) => {
@@ -84,32 +73,34 @@ export const OrderPage = () => {
     }, [handleError]);
 
     const fetchDropdownData = async () => {
+        setLoading(true);
         setDropdownLoading(true);
             try {
                 // 공장 데이터 가져오기 -> 서버에서 distinct 이용해 종합 페이지에서 가져오도록
-                // const factoryResponse;
-                // setFactories(factoryData.content);
+                const factoryResponse = await orderApi.getFilterFactories(searchFilters.start, searchFilters.end);
+                setFactories(factoryResponse.data || []);
 
                 // 판매처 데이터 가져오기
-                // setStores(storeData.content);
+                const storeResponse = await orderApi.getFilterStores(searchFilters.start, searchFilters.end);
+                setStores(storeResponse.data || []);
 
                 // 세트타입 데이터 가져오기
-                // const setTypeResponse;
-                // setSetTypes(setTypeResponse);
+                const setTypeResponse = await orderApi.getFilterSetTypes(searchFilters.start, searchFilters.end);
+                setSetTypes(setTypeResponse.data || []);
             } catch (err) {
                 console.error("드롭다운 데이터 로드 실패:", err);
             } finally {
                 setDropdownLoading(false);
+                setLoading(false);
             }
         };
 
     useEffect(() => {
         setCurrentPage(1);
         setError("");
-
         loadOrders(searchFilters, 1);
-        
         fetchDropdownData();
+        
     }, []);
 
     // 로딩 상태 렌더링
@@ -118,7 +109,7 @@ export const OrderPage = () => {
         <div className="catalog-page">
             <div className="loading-container">
             <div className="spinner"></div>
-            <p>상품을 불러오는 중...</p>
+            <p>주문을 불러오는 중...</p>
             </div>
         </div>
         );
@@ -152,8 +143,8 @@ export const OrderPage = () => {
                             disabled={dropdownLoading}>
                             <option value="">전체</option>
                             {factories.map((factory) => (
-                                <option key={factory.factoryId} value={factory.factoryName}>
-                                {factory.factoryName}
+                                <option key={factory} value={factory}>
+                                {factory}
                                 </option>
                             ))}
                         </select>
@@ -168,8 +159,8 @@ export const OrderPage = () => {
                             disabled={dropdownLoading}>
                             <option value="">전체</option>
                             {stores.map((store) => (
-                                <option key={store.storeId} value={store.storeName}>
-                                {store.storeName}
+                                <option key={store} value={store}>
+                                {store}
                                 </option>
                             ))}
                         </select>
@@ -185,14 +176,58 @@ export const OrderPage = () => {
                         >
                         <option value="">전체</option>
                         {setTypes.map((setType) => (
-                            <option key={setType.setTypeId} value={setType.setTypeName}>
-                            {setType.setTypeName}
+                            <option key={setType} value={setType}>
+                            {setType}
                             </option>
                         ))}
                         </select>
                     </div>
                 </div>
             </div>
+
+            {/* 주문 목록 */}
+            <div className="order-list">
+                {orders.length === 0 ? (
+                <p className="no-orders">조회된 주문이 없습니다.</p>
+                ) : (
+                <table className="order-table">
+                    <thead></thead>
+                    <tr>
+                        <th>주문번호</th>
+                        <th>거래처</th>
+                        <th>판매처</th>
+                        <th>세트타입</th>
+                        <th>주문일자</th>
+                        <th>출고일자</th>
+                        <th>무게</th>
+                        <th>사이즈</th>
+                        <th>재질</th>
+                        <th>출고 유형</th>
+                        <th>비고</th>
+                        <th>주문 상태</th>
+                    </tr>
+                    <tbody>
+                    {orders.map((order) => (
+                        <tr key={order.flowCode}>
+                        <td>{order.flowCode}</td>
+                        <td>{order.factoryName}</td>
+                        <td>{order.storeName}</td>
+                        <td>{order.setType}</td>
+                        <td>{new Date(order.orderDate).toLocaleDateString()}</td>
+                        <td>{new Date(order.orderExpectDate).toLocaleDateString()}</td>
+                        <td>{order.productWeight}</td>
+                        <td>{order.productSize}</td>
+                        <td>{order.materialName}</td>
+                        <td>{order.priority}</td>
+                        <td>{order.orderNote}</td>
+                        <td>{order.orderStatus}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+                )}
+            </div>  
+
             {/* 페이지네이션 */}
             <Pagination
                 currentPage={currentPage}

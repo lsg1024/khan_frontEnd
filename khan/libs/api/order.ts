@@ -23,4 +23,29 @@ export const orderApi = {
         return apiRequest.get<OrderSearchResponse>("order/orders", { params });
     },
 
+    getFilterFactories: async (start:string, end:string): Promise<ApiResponse<string[]>> => {
+
+        const params: Record<string, string> = {};
+        if (start) params.start = start;
+        if (end) params.end = end;
+
+        return apiRequest.get("order/filters/factory" , { params });
+    },
+
+    getFilterStores: async (start:string, end:string): Promise<ApiResponse<string[]>> => {
+        const params: Record<string, string> = {};
+        if (start) params.start = start;
+        if (end) params.end = end;
+
+        return apiRequest.get("order/filters/store", { params });
+    },
+
+    getFilterSetTypes: async (start:string, end:string): Promise<ApiResponse<string[]>> => {
+        const params: Record<string, string> = {};
+        if (start) params.start = start;
+        if (end) params.end = end;
+
+        return apiRequest.get("order/filters/set-type", { params });
+    }
+
 };

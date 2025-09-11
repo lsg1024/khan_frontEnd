@@ -13,6 +13,7 @@ export interface OrderDto {
     productName: string;
     materialName: string;
     colorName: string;
+    setType: string;
     productSize: string;
     productWeight: string;
     stockFlowCodes: string[];
