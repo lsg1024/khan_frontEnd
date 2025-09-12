@@ -114,6 +114,10 @@ export const OrderPage = () => {
         setSelectedOrderForFactory("");
     };
 
+    const handleOrderCreate = () => {
+        navigate("/orders/create");
+    };
+
     // 검색 실행
     const handleSearch = () => {
         setCurrentPage(1);
@@ -337,7 +341,7 @@ export const OrderPage = () => {
                             초기화
                             </button>
                             <button
-                            onClick={handleReset}
+                            onClick={handleOrderCreate}
                             className="order-btn-order"
                             disabled={loading}
                             >

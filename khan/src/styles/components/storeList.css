@@ -1,0 +1,117 @@
+/* StoreList.css */
+.stores-list {
+    width: 100%;
+}
+
+.stores-table {
+    width: 100%;
+    font-size: 14px;
+}
+
+.stores-table .table-header {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 0.8fr 0.8fr 1fr 0.8fr;
+    gap: 8px;
+    padding: 12px 8px;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #dee2e6;
+    align-items: center;
+}
+
+.stores-table .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 0.8fr 0.8fr 1fr 0.8fr;
+    gap: 8px;
+    padding: 12px 8px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.stores-table .table-row:hover {
+    background-color: #f8f9fa;
+}
+
+.stores-table .col-name {
+    font-weight: 500;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.stores-table .col-owner,
+.stores-table .col-phone {
+    color: #666;
+    font-size: 13px;
+}
+
+.stores-table .col-level {
+    display: flex;
+    justify-content: center;
+}
+
+.level-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.level-badge.level-one {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+}
+
+.level-badge.level-two {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.level-badge.level-three {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+.level-badge.level-four {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.stores-table .col-harry,
+.stores-table .col-trade {
+    color: #666;
+    font-size: 13px;
+    text-align: center;
+}
+
+.stores-table .col-action {
+    display: flex;
+    justify-content: center;
+}
+
+.select-button {
+    padding: 6px 12px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.select-button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 14px;
+}

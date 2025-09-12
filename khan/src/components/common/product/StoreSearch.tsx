@@ -1,23 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { factoryApi, isApiSuccess } from "../../../../libs/api";
-import type { FactorySearchDto } from "../../../types/factory";
-import FactoryList from "./FactoryList";
+import { storeApi, isApiSuccess } from "../../../../libs/api";
+import type { StoreSearchDto, StoreSearchResponse } from "../../../types/store";
+import StoreList from "../product/StoreList";
 import Pagination from "../Pagination";
-import "../../../styles/components/factorySearch.css";
+import "../../../styles/components/storeSearch.css";
 
-interface FactorySearchProps {
+interface StoreSearchProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectFactory: (factory: FactorySearchDto) => void;
+  onSelectStore: (store: StoreSearchDto) => void;
 }
 
-const FactorySearch: React.FC<FactorySearchProps> = ({
+const StoreSearch: React.FC<StoreSearchProps> = ({
   isOpen,
   onClose,
-  onSelectFactory,
+  onSelectStore,
 }) => {
   const [searchName, setSearchName] = useState("");
-  const [factories, setFactories] = useState<FactorySearchDto[]>([]);
+  const [stores, setStores] = useState<StoreSearchDto[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,12 +32,23 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
     setError("");
 
     try {
-      const res = await factoryApi.getFactories(name, page);
+      // 날짜 범위를 넓게 설정 (전체 조회를 위해)
+      const startDate = "2020-01-01";
+      const endDate = new Date().toISOString().split("T")[0];
+
+      const res = await storeApi.getStores(
+        startDate,
+        endDate,
+        name,
+        undefined,
+        undefined,
+        page
+      );
 
       // success=false 응답 처리
       if (!isApiSuccess(res)) {
-        setError(res.message || "제조사 데이터를 불러오지 못했습니다.");
-        setFactories([]);
+        setError(res.message || "거래처 데이터를 불러오지 못했습니다.");
+        setStores([]);
         setCurrentPage(1);
         setTotalPages(0);
         setTotalElements(0);
@@ -45,18 +56,18 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
       }
 
       // success=true + data 파싱
-      const data = res.data;
+      const data = res.data as StoreSearchResponse;
       const content = data?.content ?? [];
       const pageInfo = data?.page;
 
-      setFactories(content);
+      setStores(content);
       const uiPage = (pageInfo?.number ?? page - 1) + 1;
       setCurrentPage(uiPage);
       setTotalPages(pageInfo?.totalPages ?? 1);
       setTotalElements(pageInfo?.totalElements ?? content.length);
     } catch {
-      setError("제조사 데이터를 불러오지 못했습니다.");
-      setFactories([]);
+      setError("거래처 데이터를 불러오지 못했습니다.");
+      setStores([]);
       setCurrentPage(1);
       setTotalPages(0);
       setTotalElements(0);
@@ -90,7 +101,7 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
   // 모달 닫기
   const handleClose = () => {
     setSearchName("");
-    setFactories([]);
+    setStores([]);
     setCurrentPage(1);
     setTotalPages(0);
     setTotalElements(0);
@@ -109,13 +120,13 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
 
   return (
     <div
-      className="search-modal-overlay factory-search-modal-overlay"
+      className="search-modal-overlay store-search-modal-overlay"
       onClick={handleOverlayClick}
     >
-      <div className="search-modal-content factory-search-modal-content">
+      <div className="search-modal-content store-search-modal-content">
         {/* 모달 헤더 */}
-        <div className="search-modal-header factory-search-modal-header">
-          <h3>제조사 검색</h3>
+        <div className="search-modal-header store-search-modal-header">
+          <h3>거래처 검색</h3>
           <button className="close-button" onClick={handleClose}>
             ×
           </button>
@@ -129,7 +140,7 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="제조사명을 입력해 주세요"
+              placeholder="거래처명을 입력해 주세요"
               className="search-input"
             />
             <button
@@ -143,7 +154,7 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
         </div>
 
         {/* 결과 섹션 */}
-        <div className="search-results factory-search-results">
+        <div className="search-results store-search-results">
           <div className="results-content">
             {loading && (
               <div className="loading-state">
@@ -158,17 +169,14 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
               </div>
             )}
 
-            {!loading && !error && factories.length === 0 && (
+            {!loading && !error && stores.length === 0 && (
               <div className="empty-state">
-                <p>검색된 제조사가 없습니다.</p>
+                <p>검색된 거래처가 없습니다.</p>
               </div>
             )}
 
-            {!loading && !error && factories.length > 0 && (
-              <FactoryList
-                factories={factories}
-                onSelectFactory={onSelectFactory}
-              />
+            {!loading && !error && stores.length > 0 && (
+              <StoreList stores={stores} onSelectStore={onSelectStore} />
             )}
           </div>
 
@@ -181,7 +189,7 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
             onPageChange={(page) => {
               performSearch(searchName, page);
             }}
-            className="factory"
+            className="store"
           />
         </div>
       </div>
@@ -189,4 +197,4 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
   );
 };
 
-export default FactorySearch;
+export default StoreSearch;

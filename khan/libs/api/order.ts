@@ -1,6 +1,6 @@
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { OrderSearchResponse } from "../../src/types/order";
+import type { OrderSearchResponse, OrderCreateRequest } from "../../src/types/order";
 
 export const orderApi = {
     getOrders: async (
@@ -73,6 +73,12 @@ export const orderApi = {
             id: flowCode
         };
         return apiRequest.patch("order/orders/factory", requestBody, { params });
+    },
+
+    // 주문 생성
+    createOrder: async (orderData: OrderCreateRequest): Promise<ApiResponse<string>> => {
+        const params = { order_type: "ORDER" };
+        return apiRequest.post("order/orders", orderData, { params });
     }
 
 };

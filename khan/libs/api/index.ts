@@ -8,6 +8,7 @@ export * from "./classification";
 export * from "./material";
 export * from "./setType";
 export * from "./color";
+export * from "./store";
 
 // 기존 호환성을 위한 통합 객체 (점진적 마이그레이션용)
 import { productApi } from "./product";

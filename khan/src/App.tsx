@@ -18,6 +18,7 @@ import StoneCreatePage from "./pages/stone/StoneCreatePage";
 import OrderPage from "./pages/order/OrderPage";
 import FixPage from "./pages/order/FixPage";
 import ExpactPage from "./pages/order/ExpactPage";
+import OrderCreatePage from "./pages/order/OrderCreatePage";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
@@ -111,6 +112,7 @@ function App() {
             <Route path="/stone" element={<StonePage />} />
             <Route path="/stone/create" element={<StoneCreatePage />} />
             <Route path="/orders" element={<OrderPage />} />
+            <Route path="/orders/create" element={<OrderCreatePage />} />
             <Route path="/fix" element={<FixPage />} />
             <Route path="/expact" element={<ExpactPage />} />
             <Route path="/order-deleted" element={<OrderDeletedPage />} />
