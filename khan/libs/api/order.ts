@@ -46,6 +46,33 @@ export const orderApi = {
         if (end) params.end = end;
 
         return apiRequest.get("order/filters/set-type", { params });
+    },
+
+    // 주문 상태 변경
+    updateOrderStatus: async (flowCode: string, status: string): Promise<ApiResponse<string>> => {
+        const statusMap: Record<string, string> = {
+            "대기": "WAITING",
+            "주문": "RECEIPT"
+        };
+
+        const englishStatus = statusMap[status] || status;
+
+        const params = {
+            id: flowCode,
+            status: englishStatus
+        };
+        return apiRequest.patch("order/orders/status", null, { params });
+    },
+
+    // 제조사 변경
+    updateOrderFactory: async (flowCode: string, factoryId: number): Promise<ApiResponse<string>> => {
+        const requestBody = {
+            factoryId: factoryId
+        };
+        const params = {
+            id: flowCode
+        };
+        return apiRequest.patch("order/orders/factory", requestBody, { params });
     }
 
 };

@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import Pagination from "../../components/common/Pagination";
+import FactorySearch from "../../components/common/product/FactorySearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { OrderDto } from "../../types/order";
+import type { FactorySearchDto } from "../../types/factory";
 import "../../styles/pages/OrderPage.css";
 
 export const OrderPage = () => {
@@ -37,11 +39,79 @@ export const OrderPage = () => {
     const [factories, setFactories] = useState<string[]>([]);
     const [stores, setStores] = useState<string[]>([]);
     const [setTypes, setSetTypes] = useState<string[]>([]);
+
+    // 제조사 변경 관련 상태
+    const [isFactorySearchOpen, setIsFactorySearchOpen] = useState(false);
+    const [selectedOrderForFactory, setSelectedOrderForFactory] =
+        useState<string>("");
+
     const { handleError } = useErrorHandler();
 
     // 주문 상세 페이지로 이동
     const handleOrderClick = (flowCode: string) => {
         navigate(`/orders/${flowCode}`);
+    };
+
+    // 주문 상태 변경
+    const handleStatusChange = async (flowCode: string, newStatus: string) => {
+        const confirmMessage = `주문 상태를 "${newStatus}"로 변경하시겠습니까?`;
+
+        if (window.confirm(confirmMessage)) {
+        try {
+            setLoading(true);
+            const orderId = flowCode; // flowCode를 숫자로 변환
+            await orderApi.updateOrderStatus(orderId, newStatus);
+
+            alert("주문 상태가 성공적으로 변경되었습니다.");
+
+            // 현재 페이지 데이터 새로고침
+            await loadOrders(searchFilters, currentPage);
+        } catch (err) {
+            handleError(err, setError);
+            alert("주문 상태 변경에 실패했습니다.");
+        } finally {
+            setLoading(false);
+        }
+        }
+    };
+
+    // 제조사 클릭 핸들러
+    const handleFactoryClick = (flowCode: string) => {
+        if (window.confirm("공장을 변경하시겠습니까?")) {
+        setSelectedOrderForFactory(flowCode);
+        setIsFactorySearchOpen(true);
+        }
+    };
+
+    // 제조사 선택 핸들러
+    const handleFactorySelect = async (factory: FactorySearchDto) => {
+        try {
+        setLoading(true);
+        await orderApi.updateOrderFactory(
+            selectedOrderForFactory,
+            factory.factoryId!
+        );
+
+        alert("제조사가 성공적으로 변경되었습니다.");
+
+        // 현재 페이지 데이터 새로고침
+        await loadOrders(searchFilters, currentPage);
+
+        // 팝업 닫기
+        setIsFactorySearchOpen(false);
+        setSelectedOrderForFactory("");
+        } catch (err) {
+        handleError(err, setError);
+        alert("제조사 변경에 실패했습니다.");
+        } finally {
+        setLoading(false);
+        }
+    };
+
+    // 제조사 검색 팝업 닫기
+    const handleFactorySearchClose = () => {
+        setIsFactorySearchOpen(false);
+        setSelectedOrderForFactory("");
     };
 
     // 검색 실행
@@ -149,10 +219,10 @@ export const OrderPage = () => {
     // 로딩 상태 렌더링
     if (loading) {
         return (
-            <>
+        <>
             <div className="spinner"></div>
             <p>주문을 불러오는 중...</p>
-            </>
+        </>
         );
     }
 
@@ -171,102 +241,110 @@ export const OrderPage = () => {
             <div className="search-section-order">
                 <div className="search-filters-order">
                     <div className="filter-row-order">
-                    <div className="filter-group-order">
-                        <div className="date-range-order">
-                        <input
-                            type="date"
-                            value={searchFilters.start}
+                        <div className="filter-group-order">
+                            <div className="date-range-order">
+                            <input
+                                type="date"
+                                value={searchFilters.start}
+                                onChange={(e) =>
+                                handleFilterChange("start", e.target.value)
+                                }
+                            />
+                            <span>~</span>
+                            <input
+                                type="date"
+                                value={searchFilters.end}
+                                onChange={(e) => handleFilterChange("end", e.target.value)}
+                            />
+                            </div>
+                        </div>
+
+                        <div className="filter-group-order">
+                            <select
+                            id="factoryId"
+                            value={searchFilters.factory}
                             onChange={(e) =>
-                            handleFilterChange("start", e.target.value)
+                                handleFilterChange("factory", e.target.value)
                             }
-                        />
-                        <span>~</span>
-                        <input
-                            type="date"
-                            value={searchFilters.end}
-                            onChange={(e) => handleFilterChange("end", e.target.value)}
-                        />
+                            disabled={dropdownLoading}
+                            >
+                            <option value="">제조사</option>
+                            {factories.map((factory) => (
+                                <option key={factory} value={factory}>
+                                {factory}
+                                </option>
+                            ))}
+                            </select>
+                        </div>
+
+                        <div className="filter-group-order">
+                            <select
+                            id="storeId"
+                            value={searchFilters.store}
+                            onChange={(e) => handleFilterChange("store", e.target.value)}
+                            disabled={dropdownLoading}
+                            >
+                            <option value="">판매처</option>
+                            {stores.map((store) => (
+                                <option key={store} value={store}>
+                                {store}
+                                </option>
+                            ))}
+                            </select>
+                        </div>
+
+                        <div className="filter-group-order">
+                            <select
+                            id="setType"
+                            value={searchFilters.setType}
+                            onChange={(e) =>
+                                handleFilterChange("setType", e.target.value)
+                            }
+                            disabled={dropdownLoading}
+                            >
+                            <option value="">세트</option>
+                            {setTypes.map((setType) => (
+                                <option key={setType} value={setType}>
+                                {setType}
+                                </option>
+                            ))}
+                            </select>
                         </div>
                     </div>
 
-                    <div className="filter-group-order">
-                        <select
-                        id="factoryId"
-                        value={searchFilters.factory}
-                        onChange={(e) =>
-                            handleFilterChange("factory", e.target.value)
-                        }
-                        disabled={dropdownLoading}
-                        >
-                        <option value="">제조사</option>
-                        {factories.map((factory) => (
-                            <option key={factory} value={factory}>
-                            {factory}
-                            </option>
-                        ))}
-                        </select>
-                    </div>
-
-                    <div className="filter-group-order">
-                        <select
-                        id="storeId"
-                        value={searchFilters.store}
-                        onChange={(e) => handleFilterChange("store", e.target.value)}
-                        disabled={dropdownLoading}
-                        >
-                        <option value="">판매처</option>
-                        {stores.map((store) => (
-                            <option key={store} value={store}>
-                            {store}
-                            </option>
-                        ))}
-                        </select>
-                    </div>
-
-                    <div className="filter-group-order">
-                        <select
-                        id="setType"
-                        value={searchFilters.setType}
-                        onChange={(e) =>
-                            handleFilterChange("setType", e.target.value)
-                        }
-                        disabled={dropdownLoading}
-                        >
-                        <option value="">세트</option>
-                        {setTypes.map((setType) => (
-                            <option key={setType} value={setType}>
-                            {setType}
-                            </option>
-                        ))}
-                        </select>
-                    </div>
-                    </div>
-
                     <div className="search-controls-order">
-                    <input
-                        type="text"
-                        placeholder="상품명으로 검색..."
-                        value={searchFilters.search}
-                        onChange={(e) => handleFilterChange("search", e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                        className="search-input-order"
-                    />
-                    <div className="search-buttons-order">
-                        <button
-                        onClick={handleSearch}
-                        className="search-btn-order"
-                        disabled={loading}
-                        >
-                        검색
-                        </button>
-                        <button
-                        onClick={handleReset}
-                        className="reset-btn-order"
-                        disabled={loading}
-                        >
-                        초기화
-                        </button>
-                    </div>
+                        <input
+                            type="text"
+                            placeholder="상품명으로 검색..."
+                            value={searchFilters.search}
+                            onChange={(e) => handleFilterChange("search", e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                            className="search-input-order"
+                        />
+                        <div className="search-buttons-order">
+                            <button
+                            onClick={handleSearch}
+                            className="search-btn-order"
+                            disabled={loading}
+                            >
+                            검색
+                            </button>
+                            <button
+                            onClick={handleReset}
+                            className="reset-btn-order"
+                            disabled={loading}
+                            >
+                            초기화
+                            </button>
+                            <button
+                            onClick={handleReset}
+                            className="order-btn-order"
+                            disabled={loading}
+                            >
+                            주문
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -285,10 +363,11 @@ export const OrderPage = () => {
                     <th>상품명</th>
                     <th>일자</th>
                     <th>판매처</th>
-                    <th>세트타입</th>
+                    <th>이미지</th>
                     <th>재질/색상</th>
                     <th>메인/보조</th>
                     <th>사이즈</th>
+                    <th>세트타입</th>
                     <th>재고</th>
                     <th>급</th>
                     <th>비고</th>
@@ -308,48 +387,66 @@ export const OrderPage = () => {
                         </button>
                         </td>
                         <td className="product-name-order">{order.productName}</td>
-                        <td className="info-cell"> {/* << MODIFIED */}
-                        <div className="info-row-order">
-                            <span className="info-value">
-                            {new Date(order.orderDate).toLocaleDateString()}
-                            </span>
-                        </div>
-                        <div className="info-row-order">
-                            <span className="info-value">
-                            {new Date(order.orderExpectDate).toLocaleDateString()}
-                            </span>
-                        </div>
+                        <td className="info-cell">
+                            {/* << MODIFIED */}
+                            <div className="info-row-order">
+                                <span className="info-value">
+                                {new Date(order.orderDate).toLocaleDateString().split(".").join("-").slice(0, 11)}
+                                </span>
+                            </div>
+                            <div className="info-row-order">
+                                <span className="info-value-expect">
+                                {new Date(order.orderExpectDate).toLocaleDateString().split(".").join("-").slice(0, 11)}
+                                </span>
+                            </div>
                         </td>
                         <td>{order.storeName}</td>
-                        <td>{order.setType}</td>
+                        <div className="image-cell-order">
+                            <img
+                                className="order-image"
+                                src={
+                                order.imagePath
+                                    ? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${order.imagePath}`
+                                    : "/images/not_ready.png"
+                                }
+                                alt={order.productName}
+                                onError={(e) => {
+                                e.currentTarget.src = "/images/not_ready.png";
+                                }}
+                            />
+                        </div>
                         <td className="info-cell">
-                            <div className="info-row-order">
-                                <span className="info-label"></span>
-                                <span 
-                                    className={`info-value ${order.materialName === "18K" ? "highlight-18k" : ""}`}>
-                                    {order.materialName}
-                                </span>
-                            </div>
-                            <div className="info-row-order">
-                                <span className="info-label"></span>
-                                <span className="info-value">
-                                    {order.colorName}
-                                </span>
-                            </div>
+                        <div className="info-row-order">
+                            <span className="info-label"></span>
+                            <span
+                            className={`info-value ${
+                                order.materialName === "18K" ? "highlight-18k" : ""
+                            }`}
+                            >
+                            {order.materialName}
+                            </span>
+                        </div>
+                        <div className="info-row-order">
+                            <span className="info-label"></span>
+                            <span className="info-value">{order.colorName}</span>
+                        </div>
                         </td>
-                        <td className="info-cell"> {/* << MODIFIED */}
-                            <div className="info-row-order">
-                                <span className="info-value">
-                                {order.orderMainStoneNote}
-                                </span>
-                            </div>
-                            <div className="info-row-order">
-                                <span className="info-value">
-                                {order.orderAssistanceStoneNote}
-                                </span>
-                            </div>
+                        <td className="info-cell">
+                        {" "}
+                        {/* << MODIFIED */}
+                        <div className="info-row-order">
+                            <span className="info-value-stone-note">
+                            {order.orderMainStoneNote}
+                            </span>
+                        </div>
+                        <div className="info-row-order">
+                            <span className="info-value-stone-note">
+                            {order.orderAssistanceStoneNote}
+                            </span>
+                        </div>
                         </td>
                         <td>{order.productSize}</td>
+                        <td>{order.setType}</td>
                         <td>{order.stockQuantity}</td>
                         <td>
                         <span
@@ -360,12 +457,27 @@ export const OrderPage = () => {
                         </td>
                         <td className="note-cell-order">{order.orderNote}</td>
                         <td>
-                        <span
-                            className={`status-badge-order ${order.productStatus?.toLowerCase()}`}>
-                            {order.productStatus}
-                        </span>
+                        <select
+                            className="status-dropdown-order"
+                            value={order.productStatus}
+                            onChange={(e) =>
+                            handleStatusChange(order.flowCode, e.target.value)
+                            }
+                            disabled={loading}
+                        >
+                            <option value="접수">접수</option>
+                            <option value="대기">대기</option>
+                        </select>
                         </td>
-                        <td>{order.factoryName}</td>
+                        <td>
+                        <button
+                            className="factory-name-btn"
+                            onClick={() => handleFactoryClick(order.flowCode)}
+                            disabled={loading}
+                        >
+                            <ul>{order.factoryName}</ul>
+                        </button>
+                        </td>
                     </tr>
                     ))}
                 </tbody>
@@ -379,12 +491,19 @@ export const OrderPage = () => {
                 totalElements={totalElements}
                 loading={loading}
                 onPageChange={(page) => {
-                    setCurrentPage(page);
-                    loadOrders(searchFilters, page);
+                setCurrentPage(page);
+                loadOrders(searchFilters, page);
                 }}
                 className="order"
             />
             </div>
+
+            {/* 제조사 검색 팝업 */}
+            <FactorySearch
+            isOpen={isFactorySearchOpen}
+            onClose={handleFactorySearchClose}
+            onSelectFactory={handleFactorySelect}
+            />
         </div>
         </>
     );

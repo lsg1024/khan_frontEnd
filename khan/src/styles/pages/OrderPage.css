@@ -72,14 +72,16 @@
 .filter-group-order label {
     font-weight: 500;
     color: var(--text-color);
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .filter-group-order select {
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 14px;
+    background-color: white;
+    color: #000;
+    font-size: 12px;
     min-width: 120px;
 }
 
@@ -94,7 +96,9 @@
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 14px;
+    background-color: white;
+    color: #000;
+    font-size: 12px;
 }
 
 .date-range-order span {
@@ -111,11 +115,13 @@
 
 .search-input-order {
     flex: 1;
-    min-width: 250px;
-    padding: 10px 14px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
+    min-width: 200px;
+    padding: 10px 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 6px;
+    background-color: white;
+    font-size: 12px;
+    transition: border-color 0.2s ease;
 }
 
 .search-buttons-order {
@@ -124,23 +130,24 @@
 }
 
 .search-btn-order,
-.reset-btn-order {
-    padding: 10px 20px;
+.reset-btn-order,
+.order-btn-order {
+    padding: 8px 16px;
     border: none;
-    border-radius: 4px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 10px;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s ease;
 }
 
 .search-btn-order {
-    background-color: var(--primary-color);
+    background-color: #007bff;
     color: white;
 }
 
 .search-btn-order:hover:not(:disabled) {
-    background-color: var(--primary-hover-color);
+    background-color: #0056b3;
 }
 
 .reset-btn-order {
@@ -152,8 +159,18 @@
     background-color: #5a6268;
 }
 
+.order-btn-order {
+    background-color: #28a745;
+    color: white;
+}
+
+.order-btn-order:hover:not(:disabled) {
+    background-color: #218838;
+}
+
 .search-btn-order:disabled,
-.reset-btn-order:disabled {
+.reset-btn-order:disabled,
+.order-btn-order:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -182,10 +199,41 @@
     font-size: 16px;
 }
 
+/* 비고 셀 */
+.color-cell-order {
+    min-width: 150px;
+    text-align: left !important;
+    word-break: break-word;
+    line-height: 1;
+    color: #000; /* 검정색으로 변경 */
+}
+
+/* 비고 셀 */
+.note-cell-order {
+    min-width: 150px;
+    text-align: left !important;
+    word-break: break-word;
+    line-height: 1;
+    color: #000; /* 검정색으로 변경 */
+}
+
+/* 이미지 셀 */
+.image-cell-order {
+    display: flex;
+    justify-content: center;
+}
+
+.order-image {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
 .order-table {
     width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
+    font-size: 13px;
     color: #000; /* 검정색으로 변경 */
 }
 
@@ -259,7 +307,16 @@
 }
 
 .info-value {
-    font-size: 13px;
+    font-size: 12px;
+    color: #000;
+}
+
+.info-value-expect {
+    color: #d32f2f; 
+}
+
+.info-value-stone-note {
+    font-size: 10px;
     color: #000;
 }
 
@@ -281,12 +338,64 @@
     min-width: 60px;
 }
 
+/* 상태 드롭다운 스타일 */
+.status-dropdown-order {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    min-width: 70px;
+    color: #000;
+    transition: border-color 0.2s;
+}
+
+.status-dropdown-order:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.status-dropdown-order:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.status-dropdown-order option {
+    padding: 5px;
+}
+
+/* 제조사 버튼 스타일 */
+.factory-name-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    text-decoration: underline;
+}
+
+.factory-name-btn:hover:not(:disabled) {
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+}
+
+.factory-name-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    color: #999;
+}
+
 .priority-badge-order.일반 {
     background-color: #e3f2fd;
     color: #1976d2;
 }
 
-.priority-badge-order.긴급 {
+.priority-badge-order.급 {
     background-color: #ffebee;
     color: #d32f2f;
 }
@@ -310,23 +419,7 @@
     color: #000;
 }
 
-/* 비고 셀 */
-.color-cell-order {
-    min-width: 150px;
-    text-align: left !important;
-    word-break: break-word;
-    line-height: 1;
-    color: #000; /* 검정색으로 변경 */
-}
 
-/* 비고 셀 */
-.note-cell-order {
-    min-width: 150px;
-    text-align: left !important;
-    word-break: break-word;
-    line-height: 1;
-    color: #000; /* 검정색으로 변경 */
-}
 
 /* 반응형 스타일 */
 @media (max-width: 1400px) {

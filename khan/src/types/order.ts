@@ -23,6 +23,7 @@ export interface OrderDto {
     orderNote: string;
     factoryName: string;
     priority: string;
+    imagePath: string;
     productStatus: string;
     orderStatus: string;
 }
