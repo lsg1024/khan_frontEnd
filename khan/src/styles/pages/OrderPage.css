@@ -53,7 +53,7 @@
 .search-filters-order {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 10px;
 }
 
 .filter-row-order {
@@ -87,6 +87,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    color: #000;
 }
 
 .date-range-order input[type="date"] {
@@ -303,6 +304,10 @@
 .status-badge-order.대기 {
     background-color: #f3e5f5;
     color: #7b1fa2;
+}
+
+.color-spen {
+    color: #000;
 }
 
 /* 비고 셀 */

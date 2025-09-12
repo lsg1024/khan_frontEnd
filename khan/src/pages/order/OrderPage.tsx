@@ -149,12 +149,10 @@ export const OrderPage = () => {
     // 로딩 상태 렌더링
     if (loading) {
         return (
-        <div className="catalog-page">
-            <div className="loading-container">
+            <>
             <div className="spinner"></div>
             <p>주문을 불러오는 중...</p>
-            </div>
-        </div>
+            </>
         );
     }
 
@@ -174,7 +172,6 @@ export const OrderPage = () => {
                 <div className="search-filters-order">
                     <div className="filter-row-order">
                     <div className="filter-group-order">
-                        <label>기간:</label>
                         <div className="date-range-order">
                         <input
                             type="date"
@@ -193,7 +190,6 @@ export const OrderPage = () => {
                     </div>
 
                     <div className="filter-group-order">
-                        <label htmlFor="factory">거래처:</label>
                         <select
                         id="factoryId"
                         value={searchFilters.factory}
@@ -202,7 +198,7 @@ export const OrderPage = () => {
                         }
                         disabled={dropdownLoading}
                         >
-                        <option value="">전체</option>
+                        <option value="">제조사</option>
                         {factories.map((factory) => (
                             <option key={factory} value={factory}>
                             {factory}
@@ -212,14 +208,13 @@ export const OrderPage = () => {
                     </div>
 
                     <div className="filter-group-order">
-                        <label htmlFor="store">판매처:</label>
                         <select
                         id="storeId"
                         value={searchFilters.store}
                         onChange={(e) => handleFilterChange("store", e.target.value)}
                         disabled={dropdownLoading}
                         >
-                        <option value="">전체</option>
+                        <option value="">판매처</option>
                         {stores.map((store) => (
                             <option key={store} value={store}>
                             {store}
@@ -229,7 +224,6 @@ export const OrderPage = () => {
                     </div>
 
                     <div className="filter-group-order">
-                        <label htmlFor="setType">세트타입:</label>
                         <select
                         id="setType"
                         value={searchFilters.setType}
@@ -238,7 +232,7 @@ export const OrderPage = () => {
                         }
                         disabled={dropdownLoading}
                         >
-                        <option value="">전체</option>
+                        <option value="">세트</option>
                         {setTypes.map((setType) => (
                             <option key={setType} value={setType}>
                             {setType}
@@ -254,7 +248,7 @@ export const OrderPage = () => {
                         placeholder="상품명으로 검색..."
                         value={searchFilters.search}
                         onChange={(e) => handleFilterChange("search", e.target.value)}
-                        onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                         className="search-input-order"
                     />
                     <div className="search-buttons-order">
@@ -290,16 +284,16 @@ export const OrderPage = () => {
                     <th>No</th>
                     <th>상품명</th>
                     <th>일자</th>
-                    <th>거래처</th>
                     <th>판매처</th>
                     <th>세트타입</th>
-                    <th>재질/색상</th> {/* << MODIFIED */}
+                    <th>재질/색상</th>
+                    <th>메인/보조</th>
                     <th>사이즈</th>
                     <th>재고</th>
-                    <th>출고유형</th>
-                    <th>상품상태</th>
-                    <th>주문상태</th>
+                    <th>급</th>
                     <th>비고</th>
+                    <th>상품상태</th>
+                    <th>제조사</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -316,22 +310,19 @@ export const OrderPage = () => {
                         <td className="product-name-order">{order.productName}</td>
                         <td className="info-cell"> {/* << MODIFIED */}
                         <div className="info-row-order">
-                            <span className="info-label">주문:</span>
                             <span className="info-value">
                             {new Date(order.orderDate).toLocaleDateString()}
                             </span>
                         </div>
                         <div className="info-row-order">
-                            <span className="info-label">출고:</span>
                             <span className="info-value">
                             {new Date(order.orderExpectDate).toLocaleDateString()}
                             </span>
                         </div>
                         </td>
-                        <td>{order.factoryName}</td>
                         <td>{order.storeName}</td>
                         <td>{order.setType}</td>
-                        <td className="info-cell"> {/* << NEW & MODIFIED */}
+                        <td className="info-cell">
                             <div className="info-row-order">
                                 <span className="info-label"></span>
                                 <span 
@@ -346,6 +337,18 @@ export const OrderPage = () => {
                                 </span>
                             </div>
                         </td>
+                        <td className="info-cell"> {/* << MODIFIED */}
+                            <div className="info-row-order">
+                                <span className="info-value">
+                                {order.orderMainStoneNote}
+                                </span>
+                            </div>
+                            <div className="info-row-order">
+                                <span className="info-value">
+                                {order.orderAssistanceStoneNote}
+                                </span>
+                            </div>
+                        </td>
                         <td>{order.productSize}</td>
                         <td>{order.stockQuantity}</td>
                         <td>
@@ -355,21 +358,14 @@ export const OrderPage = () => {
                             {order.priority}
                         </span>
                         </td>
+                        <td className="note-cell-order">{order.orderNote}</td>
                         <td>
                         <span
-                            className={`status-badge-order ${order.productStatus?.toLowerCase()}`}
-                        >
+                            className={`status-badge-order ${order.productStatus?.toLowerCase()}`}>
                             {order.productStatus}
                         </span>
                         </td>
-                        <td>
-                        <span
-                            className={`status-badge-order ${order.orderStatus?.toLowerCase()}`}
-                        >
-                            {order.orderStatus}
-                        </span>
-                        </td>
-                        <td className="note-cell-order">{order.orderNote}</td>
+                        <td>{order.factoryName}</td>
                     </tr>
                     ))}
                 </tbody>

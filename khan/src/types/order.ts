@@ -17,6 +17,8 @@ export interface OrderDto {
     productSize: string;
     productWeight: string;
     stockQuantity: number;
+    orderMainStoneNote: string;
+    orderAssistanceStoneNote: string;
     stockFlowCodes: string[];
     orderNote: string;
     factoryName: string;
