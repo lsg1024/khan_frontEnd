@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { isApiSuccess, apiRequest, type ApiResponse } from "../../libs/api";
+import { extractSubdomain } from "../../libs/domain"
 import "../styles/pages/LoginPage.css";
 
 function LoginPage() {
@@ -56,8 +57,6 @@ function LoginPage() {
             userId,
             password,
         });
-
-        console.log("로그인 응답 데이터:", data);
 
         // 204 No Content 응답이거나 성공 응답 처리
         const isLoginSuccess = !data || isApiSuccess(data);
@@ -133,8 +132,7 @@ function LoginPage() {
         <div className="login-page-container">
         <div className="login-card">
             <div className="login-header">
-            <h1>Khan System</h1>
-            <p>로그인하여 시스템에 접속하세요</p>
+            <h1>{extractSubdomain(window.location.hostname)}</h1>
             </div>
 
             <form onSubmit={handleLogin} className="login-form">
