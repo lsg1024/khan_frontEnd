@@ -1,6 +1,4 @@
-/* Factory Search Modal Styles */
-
-.factory-modal-overlay {
+.account-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -13,7 +11,7 @@
   z-index: 1000;
 }
 
-.factory-modal-content {
+.account-modal-content {
   background: white;
   border-radius: 8px;
   width: 90%;
@@ -24,7 +22,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.factory-modal-header {
+.account-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -32,13 +30,13 @@
   border-bottom: 1px solid #e9ecef;
 }
 
-.factory-modal-header h3 {
+.account-modal-header h3 {
   margin: 0;
   color: #333;
   font-size: 1.2rem;
 }
 
-.factory-modal-close {
+.account-modal-close {
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -52,21 +50,21 @@
   justify-content: center;
 }
 
-.factory-modal-close:hover {
+.account-modal-close:hover {
   color: #000;
 }
 
-.factory-search-section {
+.account-search-section {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #e9ecef;
 }
 
-.factory-search-bar {
+.account-search-bar {
   display: flex;
   gap: 0.5rem;
 }
 
-.factory-search-input {
+.account-search-input {
   flex: 1;
   padding: 0.5rem;
   border: 1px solid #ddd;
@@ -75,13 +73,13 @@
   background: #f8f9fa;
 }
 
-.factory-search-input:focus {
+.account-search-input:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-.factory-search-button {
+.account-search-button {
   padding: 0.5rem 1rem;
   background-color: #007bff;
   color: white;
@@ -91,20 +89,20 @@
   font-size: 0.9rem;
 }
 
-.factory-search-button:hover {
+.account-search-button:hover {
   background-color: #0056b3;
 }
 
-.factory-list-container {
+.account-list-container {
   flex: 1;
   overflow-y: auto;
   padding: 1rem 1.5rem;
   min-height: 300px;
 }
 
-.factory-loading,
-.factory-error,
-.factory-no-results {
+.account-loading,
+.account-error,
+.account-no-results {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,17 +111,17 @@
   font-size: 0.9rem;
 }
 
-.factory-error {
+.account-error {
   color: #dc3545;
 }
 
-.factory-list {
+.account-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.factory-item {
+.account-item {
   border: 1px solid #e9ecef;
   border-radius: 6px;
   padding: 1rem;
@@ -132,26 +130,26 @@
   background: white;
 }
 
-.factory-item:hover {
+.account-item:hover {
   border-color: #007bff;
   box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
   transform: translateY(-1px);
 }
 
-.factory-item-header {
+.account-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
 }
 
-.factory-name {
+.account-name {
   font-weight: bold;
   font-size: 1.1rem;
   color: #333;
 }
 
-.factory-level {
+.account-level {
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
   font-size: 0.75rem;
@@ -159,21 +157,21 @@
   color: white;
 }
 
-.factory-level.level-one {
+.account-level.level-one {
   background-color: #28a745;
 }
 
-.factory-level.level-two {
+.account-level.level-two {
   background-color: #ffc107;
   color: #333;
 }
 
-.factory-level.level-three {
+.account-level.level-three {
   background-color: #dc3545;
 }
 
 
-.factory-pagination {
+.account-pagination {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -182,8 +180,8 @@
   border-top: 1px solid #e9ecef;
 }
 
-.factory-page-button,
-.factory-page-btn {
+.account-page-button,
+.account-page-btn {
   padding: 0.5rem 1rem;
   border: 1px solid #ddd;
   background: white;
@@ -193,19 +191,19 @@
   font-size: 0.9rem;
 }
 
-.factory-page-button:hover:not(:disabled),
-.factory-page-btn:hover:not(:disabled) {
+.account-page-button:hover:not(:disabled),
+.account-page-btn:hover:not(:disabled) {
   background-color: #f8f9fa;
   border-color: #007bff;
 }
 
-.factory-page-button:disabled,
-.factory-page-btn:disabled {
+.account-page-button:disabled,
+.account-page-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.factory-page-info {
+.account-page-info {
   color: #666;
   font-size: 0.9rem;
   min-width: 80px;
@@ -214,52 +212,52 @@
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-  .factory-modal-content {
+  .account-modal-content {
     width: 95%;
     max-height: 90vh;
   }
   
-  .factory-modal-header,
-  .factory-search-section,
-  .factory-list-container,
-  .factory-pagination {
+  .account-modal-header,
+  .account-search-section,
+  .account-list-container,
+  .account-pagination {
     padding: 0.75rem 1rem;
   }
   
-  .factory-search-bar {
+  .account-search-bar {
     flex-direction: column;
   }
   
-  .factory-item-header {
+  .account-item-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
   
-  .factory-details {
+  .account-details {
     gap: 0.3rem;
   }
   
-  .factory-detail-row {
+  .account-detail-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.2rem;
   }
   
-  .factory-detail-row .label {
+  .account-detail-row .label {
     min-width: auto;
     font-size: 0.8rem;
   }
 }
 
 /* ===== 테이블 형식 제조사 리스트 스타일 ===== */
-.factories-list {
+.accounts-list {
   flex: 1;
   overflow-y: auto;
   padding: 0; /* 패딩 제거, 부모에서 관리 */
 }
 
-.factories-table {
+.accounts-table {
   display: flex;
   flex-direction: column;
   border: 1px solid #e9ecef;
@@ -267,7 +265,7 @@
   overflow: hidden;
 }
 
-.factories-table .table-header {
+.accounts-table .table-header {
   display: grid;
   grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 1fr 1fr;
   gap: 0;
@@ -279,7 +277,7 @@
   font-size: 12px;
 }
 
-.factories-table .table-row {
+.accounts-table .table-row {
   display: grid;
   grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 1fr 1fr;
   gap: 0;
@@ -289,10 +287,11 @@
   align-items: center;
 }
 
-.factories-table .table-header > span,
-.factories-table .table-row > span {
+.accounts-table .table-header > span,
+.accounts-table .table-row > span {
   padding: 0.25rem 0.5rem;
   border-right: 1px solid #ddd;
+  color: #495057;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -300,20 +299,20 @@
   font-size: 12px;
 }
 
-.factories-table .table-header > span:last-child,
-.factories-table .table-row > span:last-child {
+.accounts-table .table-header > span:last-child,
+.accounts-table .table-row > span:last-child {
   border-right: none;
 }
 
-.factories-table .table-row:hover {
+.accounts-table .table-row:hover {
   background-color: #f8f9fa;
 }
 
-.factories-table .table-row:last-child {
+.accounts-table .table-row:last-child {
   border-bottom: none;
 }
 
-.factories-table .col-name {
+.accounts-table .col-name {
   font-weight: 500;
   color: #333;
   overflow: hidden;
@@ -323,10 +322,10 @@
   text-align: left !important;
 }
 
-.factories-table .col-owner,
-.factories-table .col-phone,
-.factories-table .col-harry,
-.factories-table .col-trade {
+.accounts-table .col-owner,
+.accounts-table .col-phone,
+.accounts-table .col-harry,
+.accounts-table .col-trade {
   color: #666;
   font-size: 12px;
 }
@@ -356,7 +355,7 @@
   color: white;
 }
 
-.factories-table .select-button {
+.accounts-table .select-button {
   padding: 0.25rem 0.5rem;
   background-color: #28a745;
   color: white;
@@ -368,23 +367,23 @@
   transition: background-color 0.2s ease;
 }
 
-.factories-table .select-button:hover {
+.accounts-table .select-button:hover {
   background-color: #218838;
 }
 
 /* 반응형 테이블 */
 @media (max-width: 768px) {
-  .factories-table .table-header,
-  .factories-table .table-row {
+  .accounts-table .table-header,
+  .accounts-table .table-row {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
   
-  .factories-table .table-header {
+  .accounts-table .table-header {
     display: none;
   }
   
-  .factories-table .table-row {
+  .accounts-table .table-row {
     padding: 1rem;
     border: 1px solid #e9ecef;
     border-radius: 4px;
@@ -392,14 +391,14 @@
     background-color: white;
   }
   
-  .factories-table .table-row > span {
+  .accounts-table .table-row > span {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.25rem 0;
   }
   
-  .factories-table .table-row > span:before {
+  .accounts-table .table-row > span:before {
     content: attr(data-label);
     font-weight: 600;
     color: #495057;
@@ -407,11 +406,11 @@
     margin-right: 1rem;
   }
   
-  .factories-table .col-name:before { content: "제조사명: "; }
-  .factories-table .col-owner:before { content: "대표자: "; }
-  .factories-table .col-phone:before { content: "연락처: "; }
-  .factories-table .col-level:before { content: "등급: "; }
-  .factories-table .col-harry:before { content: "해리: "; }
-  .factories-table .col-trade:before { content: "거래방식: "; }
-  .factories-table .col-action:before { content: ""; }
+  .accounts-table .col-name:before { content: "제조사명: "; }
+  .accounts-table .col-owner:before { content: "대표자: "; }
+  .accounts-table .col-phone:before { content: "연락처: "; }
+  .accounts-table .col-level:before { content: "등급: "; }
+  .accounts-table .col-harry:before { content: "해리: "; }
+  .accounts-table .col-trade:before { content: "거래방식: "; }
+  .accounts-table .col-action:before { content: ""; }
 }

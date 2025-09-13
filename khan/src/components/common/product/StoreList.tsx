@@ -1,5 +1,5 @@
 import React from "react";
-import "../../../styles/components/storeList.css";
+import "../../../styles/components/accountSearch.css";
 import type { StoreSearchDto } from "../../../types/store";
 
 interface StoreListProps {
@@ -13,10 +13,10 @@ const StoreList: React.FC<StoreListProps> = ({ stores, onSelectStore }) => {
   };
 
   return (
-    <div className="stores-list">
+    <div className="accounts-list">
       {stores.length > 0 ? (
         <>
-          <div className="stores-table">
+          <div className="accounts-table">
             {/* 테이블 헤더 */}
             <div className="table-header">
               <span className="col-name">거래처명</span>
@@ -40,21 +40,12 @@ const StoreList: React.FC<StoreListProps> = ({ stores, onSelectStore }) => {
                 <span className="col-owner">{store.storeOwnerName}</span>
                 <span className="col-phone">{store.storePhoneNumber}</span>
                 <span className="col-level">
-                  <span
-                    className={`level-badge level-${store.level.toLowerCase()}`}
-                  >
-                    {store.level === "ONE"
-                      ? "1급"
-                      : store.level === "TWO"
-                      ? "2급"
-                      : store.level === "THREE"
-                      ? "3급"
-                      : "4급"}
+                  <span className={`level-badge level-${store.level.toLowerCase()}`}>{store.level + "급"}
                   </span>
                 </span>
                 <span className="col-harry">{store.goldHarryLoss}%</span>
                 <span className="col-trade">
-                  {store.tradeType === "WEIGHT" ? "무게" : "개수"}
+                  {store.tradeType}
                 </span>
                 <span className="col-action">
                   <button

@@ -3,7 +3,6 @@ import { factoryApi, isApiSuccess } from "../../../../libs/api";
 import type { FactorySearchDto } from "../../../types/factory";
 import FactoryList from "./FactoryList";
 import Pagination from "../Pagination";
-import "../../../styles/components/factorySearch.css";
 
 interface FactorySearchProps {
   isOpen: boolean;
@@ -112,9 +111,9 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
       className="search-modal-overlay factory-search-modal-overlay"
       onClick={handleOverlayClick}
     >
-      <div className="search-modal-content factory-search-modal-content">
+      <div className="search-modal-content">
         {/* 모달 헤더 */}
-        <div className="search-modal-header factory-search-modal-header">
+        <div className="search-modal-header">
           <h3>제조사 검색</h3>
           <button className="close-button" onClick={handleClose}>
             ×
@@ -143,7 +142,7 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
         </div>
 
         {/* 결과 섹션 */}
-        <div className="search-results factory-search-results">
+        <div className="search-results">
           <div className="results-content">
             {loading && (
               <div className="loading-state">

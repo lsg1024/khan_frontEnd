@@ -54,7 +54,7 @@ const StoneSearch: React.FC<StoneSearchProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [handleError]); 
+  }, []); 
 
   // 모달이 열릴 때 초기 데이터 로드
   useEffect(() => {

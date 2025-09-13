@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
-import { factoryApi } from "../../../libs/api/factory";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { OrderRowData, OrderCreateRequest } from "../../types/order";
 import type { FactorySearchDto } from "../../types/factory";
 import type { StoreSearchDto } from "../../types/store";
+import type { ProductDto } from "../../types/catalog";
 import StoreSearch from "../../components/common/product/StoreSearch";
 import FactorySearch from "../../components/common/product/FactorySearch";
+import ProductSearch from "../../components/common/product/ProductSearch";
 import "../../styles/pages/OrderCreatePage.css";
 
 const OrderCreatePage = () => {
@@ -21,21 +22,13 @@ const OrderCreatePage = () => {
 
     // 검색 모달 상태
     const [isStoreSearchOpen, setIsStoreSearchOpen] = useState(false);
-    const [isFactorySearchOpen, setIsFactorySearchOpen] = useState(false);
     const [selectedRowForStore, setSelectedRowForStore] = useState<string>("");
-    const [selectedRowForFactory, setSelectedRowForFactory] =
-        useState<string>("");
+    const [isFactoryModalOpen, setIsFactoryModalOpen] = useState(false);
+    const [selectedRowForFactory, setSelectedRowForFactory] = useState<string>("");
+    const [isProductSearchOpen, setIsProductSearchOpen] = useState(false);
+    const [selectedRowForProduct, setSelectedRowForProduct] = useState<string>("");
 
     // 드롭다운 데이터
-    const [factories, setFactories] = useState<{ factoryId: string; factoryName: string }[]>([]);
-    const [products] = useState([
-        { productId: "1", productName: "반지", imagePath: "/images/ring.jpg" },
-        {
-        productId: "2",
-        productName: "목걸이",
-        imagePath: "/images/necklace.jpg",
-        },
-    ]);
     const [materials, setMaterials] = useState<
         { materialId: string; materialName: string }[]
     >([]);
@@ -81,7 +74,11 @@ const OrderCreatePage = () => {
         mainStoneCount: 0,
         assistanceStoneCount: 0,
         stoneWeightTotal: 0,
-        deliveryDate: new Date().toISOString().split("T")[0],
+        deliveryDate: new Date()
+            .toLocaleDateString()
+            .split(".")
+            .join("-")
+            .slice(0, 11),
         };
         setOrderRows([...orderRows, newRow]);
     };
@@ -97,9 +94,109 @@ const OrderCreatePage = () => {
         field: keyof OrderRowData,
         value: string | number | boolean
     ) => {
-        setOrderRows(
-        orderRows.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+        console.log("updateOrderRow - id:", id, "field:", field, "value:", value);
+
+        setOrderRows((prevRows) => {
+        const updatedRows = prevRows.map((row) => {
+            if (row.id === id) {
+            const updatedRow = { ...row, [field]: value };
+            console.log("updateOrderRow - updated row:", updatedRow);
+            return updatedRow;
+            }
+            return row;
+        });
+        console.log("updateOrderRow - all updated rows:", updatedRows);
+        return updatedRows;
+        });
+    };
+
+    // 필수 선택 순서 체크 함수들
+    const checkStoreSelected = (rowId: string): boolean => {
+        const row = orderRows.find((r) => r.id === rowId);
+        return !!(row?.storeId && row?.storeName);
+    };
+
+    const checkProductSelected = (rowId: string): boolean => {
+        const row = orderRows.find((r) => r.id === rowId);
+        return !!(row?.productId && row?.productName);
+    };
+
+    const checkMaterialSelected = (rowId: string): boolean => {
+        const row = orderRows.find((r) => r.id === rowId);
+        return !!(row?.materialId && row?.materialName);
+    };
+
+    // 필수 선택 순서 체크 및 알림
+    const validateSequence = (
+        rowId: string,
+        currentStep: "product" | "material" | "other"
+    ): boolean => {
+        const row = orderRows.find((r) => r.id === rowId);
+        console.log(
+        "validateSequence - rowId:",
+        rowId,
+        "currentStep:",
+        currentStep
         );
+        console.log("validateSequence - row data:", {
+        storeId: row?.storeId,
+        storeName: row?.storeName,
+        productId: row?.productId,
+        productName: row?.productName,
+        materialId: row?.materialId,
+        materialName: row?.materialName,
+        });
+
+        if (currentStep === "product" && !checkStoreSelected(rowId)) {
+        console.log("product step - store not selected");
+        alert("거래처를 먼저 선택해주세요.");
+        openStoreSearch(rowId);
+        return false;
+        }
+
+        if (currentStep === "material" && !checkStoreSelected(rowId)) {
+        console.log("material step - store not selected");
+        alert("거래처를 먼저 선택해주세요.");
+        openStoreSearch(rowId);
+        return false;
+        }
+
+        if (currentStep === "material" && !checkProductSelected(rowId)) {
+        console.log("material step - product not selected");
+        alert("모델번호를 먼저 선택해주세요.");
+        openProductSearch(rowId);
+        return false;
+        }
+
+        if (currentStep === "other" && !checkStoreSelected(rowId)) {
+        console.log("other step - store not selected");
+        alert("거래처를 먼저 선택해주세요.");
+        openStoreSearch(rowId);
+        return false;
+        }
+
+        if (currentStep === "other" && !checkProductSelected(rowId)) {
+        console.log("other step - product not selected");
+        alert("모델번호를 먼저 선택해주세요.");
+        openProductSearch(rowId);
+        return false;
+        }
+
+        if (currentStep === "other" && !checkMaterialSelected(rowId)) {
+        console.log("other step - material not selected");
+        alert("재질을 먼저 선택해주세요.");
+        // 재질 드롭다운에 포커스
+        const materialSelect = document.querySelector(
+            `[data-row-id="${rowId}"][data-field="material"]`
+        ) as HTMLSelectElement;
+        if (materialSelect) {
+            materialSelect.focus();
+        }
+        return false;
+        }
+
+        console.log("validateSequence - validation passed");
+        return true;
     };
 
     // 거래처 검색 모달 열기
@@ -110,12 +207,23 @@ const OrderCreatePage = () => {
 
     // 거래처 선택 처리
     const handleStoreSelect = (store: StoreSearchDto) => {
-        if (selectedRowForStore) {
-        updateOrderRow(
-            selectedRowForStore,
-            "storeId",
-            store.storeId?.toString() || ""
+        console.log("handleStoreSelect - received store:", store);
+        console.log(
+        "handleStoreSelect - storeId type:",
+        typeof store.storeId,
+        "value:",
+        store.storeId
         );
+        console.log(
+        "handleStoreSelect - selectedRowForStore:",
+        selectedRowForStore
+        );
+
+        if (selectedRowForStore) {
+        const storeIdValue = store.storeId?.toString() || "";
+        console.log("handleStoreSelect - converted storeId:", storeIdValue);
+
+        updateOrderRow(selectedRowForStore, "storeId", storeIdValue);
         updateOrderRow(selectedRowForStore, "storeName", store.storeName);
         }
         setIsStoreSearchOpen(false);
@@ -125,7 +233,7 @@ const OrderCreatePage = () => {
     // 제조사 검색 모달 열기
     const openFactorySearch = (rowId: string) => {
         setSelectedRowForFactory(rowId);
-        setIsFactorySearchOpen(true);
+        setIsFactoryModalOpen(true);
     };
 
     // 제조사 선택 처리
@@ -138,8 +246,32 @@ const OrderCreatePage = () => {
         );
         updateOrderRow(selectedRowForFactory, "factoryName", factory.factoryName);
         }
-        setIsFactorySearchOpen(false);
+        setIsFactoryModalOpen(false);
         setSelectedRowForFactory("");
+    };
+
+    // 상품 검색 모달 열기
+    const openProductSearch = (rowId: string) => {
+        if (!validateSequence(rowId, "product")) {
+        return;
+        }
+        setSelectedRowForProduct(rowId);
+        setIsProductSearchOpen(true);
+    };
+
+    // 상품 선택 처리
+    const handleProductSelect = (product: ProductDto) => {
+        if (selectedRowForProduct) {
+        updateOrderRow(selectedRowForProduct, "productId", product.productId);
+        updateOrderRow(selectedRowForProduct, "productName", product.productName);
+        updateOrderRow(
+            selectedRowForProduct,
+            "productImage",
+            product.productImagePath || ""
+        );
+        }
+        setIsProductSearchOpen(false);
+        setSelectedRowForProduct("");
     };
 
     // 초기 데이터 로드
@@ -149,19 +281,11 @@ const OrderCreatePage = () => {
             setLoading(true);
 
             // 기본 드롭다운 데이터만 로드
-            const [factoryRes, materialRes, colorRes] = await Promise.all([
-            factoryApi.getFactories("", 1),
+            const [materialRes, colorRes] = await Promise.all([
             materialApi.getMaterials(),
             colorApi.getColors(),
             ]);
 
-            if (factoryRes.success) {
-            const factories = (factoryRes.data?.content || []).map((f) => ({
-                factoryId: f.factoryId?.toString() || "",
-                factoryName: f.factoryName,
-            }));
-            setFactories(factories);
-            }
             if (materialRes.success) {
             const materials = (materialRes.data || []).map((m) => ({
                 materialId: m.materialId?.toString() || "",
@@ -206,7 +330,6 @@ const OrderCreatePage = () => {
                 assistanceStoneNote: "",
                 orderNote: "",
                 stoneInfos: [],
-                // 새로운 필드들
                 basicPrice: 0,
                 additionalPrice: 0,
                 centerPrice: 0,
@@ -227,7 +350,7 @@ const OrderCreatePage = () => {
         };
 
         loadInitialData();
-    }, []);
+    }, []); //
 
     // 주문 제출
     const handleSubmit = async () => {
@@ -305,20 +428,6 @@ const OrderCreatePage = () => {
 
     return (
         <div className="order-create-page">
-        {/* 헤더 */}
-        <div className="page-header">
-            <h1>주문 등록</h1>
-            <div className="header-actions">
-            <button
-                className="btn-add-row"
-                onClick={addOrderRow}
-                disabled={loading}
-            >
-                + 주문 추가
-            </button>
-            </div>
-        </div>
-
         {/* 에러 메시지 */}
         {error && (
             <div className="error-message">
@@ -368,24 +477,48 @@ const OrderCreatePage = () => {
                 <tr>
                 <th>No</th>
                 <th>삭제</th>
-                <th>거래처</th>
-                <th>모델번호</th>
+                <th>
+                    <span className="required-field-basic">*</span>거래처
+                </th>
+                <th>
+                    <span className="required-field-basic">*</span>모델번호
+                </th>
                 <th>제조사</th>
-                <th>재질</th>
+                <th>
+                    <span className="required-field-basic">*</span>재질
+                </th>
                 <th>색상</th>
+                <th colSpan={4}>상품 단가</th>
+                <th colSpan={2}>알 단가</th>
+                <th>알중량</th>
+                <th>메인메모</th>
+                <th>보조메모</th>
+                <th>사이즈</th>
+                <th>급</th>
+                <th>메모</th>
+                <th>출고일</th>
+                </tr>
+                <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
                 <th>기본단가</th>
                 <th>추가단가</th>
                 <th>중심단가</th>
                 <th>보조단가</th>
                 <th>메인알수</th>
                 <th>보조알수</th>
-                <th>알중량</th>
-                <th>메인메모</th>
-                <th>보조메모</th>
-                <th>사이즈</th>
-                <th>우선순위</th>
-                <th>메모</th>
-                <th>출고일</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -420,33 +553,22 @@ const OrderCreatePage = () => {
                     </div>
                     </td>
                     <td>
-                    <select
-                        value={row.productId}
-                        onChange={(e) => {
-                        const selectedProduct = products.find(
-                            (p) => p.productId === e.target.value
-                        );
-                        updateOrderRow(row.id, "productId", e.target.value);
-                        updateOrderRow(
-                            row.id,
-                            "productName",
-                            selectedProduct?.productName || ""
-                        );
-                        updateOrderRow(
-                            row.id,
-                            "productImage",
-                            selectedProduct?.imagePath || ""
-                        );
+                    <div
+                        style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "5px",
                         }}
-                        disabled={loading}
                     >
-                        <option value="">선택</option>
-                        {products.map((product) => (
-                        <option key={product.productId} value={product.productId}>
-                            {product.productName}
-                        </option>
-                        ))}
-                    </select>
+                        <input
+                        type="text"
+                        value={row.productName}
+                        readOnly
+                        placeholder="모델번호"
+                        style={{ flex: 1, cursor: "pointer" }}
+                        onClick={() => openProductSearch(row.id)}
+                        />
+                    </div>
                     </td>
                     <td>
                     <div
@@ -470,6 +592,9 @@ const OrderCreatePage = () => {
                     <select
                         value={row.materialId}
                         onChange={(e) => {
+                        if (!validateSequence(row.id, "material")) {
+                            return;
+                        }
                         const selectedMaterial = materials.find(
                             (m) => m.materialId === e.target.value
                         );
@@ -481,6 +606,8 @@ const OrderCreatePage = () => {
                         );
                         }}
                         disabled={loading}
+                        data-row-id={row.id}
+                        data-field="material"
                     >
                         <option value="">선택</option>
                         {materials.map((material) => (
@@ -497,6 +624,9 @@ const OrderCreatePage = () => {
                     <select
                         value={row.colorId}
                         onChange={(e) => {
+                        if (!validateSequence(row.id, "other")) {
+                            return;
+                        }
                         const selectedColor = colors.find(
                             (c) => c.colorId === e.target.value
                         );
@@ -521,13 +651,22 @@ const OrderCreatePage = () => {
                     <input
                         type="number"
                         value={row.basicPrice}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                        if (!validateSequence(row.id, "other")) {
+                            return;
+                        }
                         updateOrderRow(
                             row.id,
                             "basicPrice",
                             parseInt(e.target.value) || 0
-                        )
+                        );
+                        }}
+                        onFocus={(e) => {
+                        if (!validateSequence(row.id, "other")) {
+                            e.target.blur();
+                            return;
                         }
+                        }}
                         disabled={loading}
                     />
                     </td>
@@ -706,6 +845,13 @@ const OrderCreatePage = () => {
             >
             취소
             </button>
+            <button
+            className="btn-add-row"
+            onClick={addOrderRow}
+            disabled={loading}
+            >
+            + 주문 추가
+            </button>
         </div>
 
         {/* 검색 모달들 */}
@@ -719,12 +865,15 @@ const OrderCreatePage = () => {
         />
 
         <FactorySearch
-            isOpen={isFactorySearchOpen}
-            onClose={() => {
-            setIsFactorySearchOpen(false);
-            setSelectedRowForFactory("");
-            }}
+            isOpen={isFactoryModalOpen}
+            onClose={() => setIsFactoryModalOpen(false)}
             onSelectFactory={handleFactorySelect}
+        />
+
+        <ProductSearch
+            isOpen={isProductSearchOpen}
+            onClose={() => setIsProductSearchOpen(false)}
+            onSelectProduct={handleProductSelect}
         />
         </div>
     );

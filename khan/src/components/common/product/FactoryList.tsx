@@ -1,5 +1,5 @@
 import React from "react";
-import "../../../styles/components/factoryList.css";
+import "../../../styles/components/accountSearch.css";
 import type { FactorySearchDto } from "../../../types/factory";
 
 interface FactoryListProps {
@@ -16,10 +16,10 @@ const FactoryList: React.FC<FactoryListProps> = ({
   };
 
   return (
-    <div className="factories-list">
+    <div className="accounts-list">
       {factories.length > 0 ? (
         <>
-          <div className="factories-table">
+          <div className="accounts-table">
             {/* 테이블 헤더 */}
             <div className="table-header">
               <span className="col-name">제조사명</span>
@@ -50,7 +50,9 @@ const FactoryList: React.FC<FactoryListProps> = ({
                       ? "1급"
                       : factory.level === "TWO"
                       ? "2급"
-                      : "3급"}
+                      : factory.level === "THREE"
+                      ? "3급"
+                      : "4급"}
                   </span>
                 </span>
                 <span className="col-harry">{factory.goldHarryLoss}%</span>

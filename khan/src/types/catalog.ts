@@ -1,22 +1,17 @@
 import type { PageInfo } from "./page";
 
 // 상품 데이터 타입 정의
-export interface StoneWorkGradePolicy {
-    workGradePolicyId: string;
-    grade: string;
-    laborCost: number;
-}
-
 export interface ProductStone {
     productStoneId: string;
     stoneId: string;
     stoneName: string;
-    productStoneMain: boolean;
-    includeQuantity: boolean;
-    includeWeight: boolean;
-    includeLabor: boolean;
     stoneQuantity: number;
-    stoneWorkGradePolicyDtos: StoneWorkGradePolicy[];
+    laborCost: number;
+    purchasePrice: number;
+    mainStone: boolean;
+    includeStone: boolean;
+    isMainStone: boolean;
+    isIncludeStone: boolean;
 }
 
 export interface ProductDto {

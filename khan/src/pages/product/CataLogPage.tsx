@@ -32,9 +32,29 @@ function CataLogPage() {
 
   // 드롭다운 데이터
   const [factories, setFactories] = useState<FactorySearchDto[]>([]);
-  const [classifications, setClassifications] = useState<ClassificationDto[]>([]);
+  const [classifications, setClassifications] = useState<ClassificationDto[]>(
+    []
+  );
   const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
   const [dropdownLoading, setDropdownLoading] = useState(false);
+
+  // 총 매입가 계산 (상품 매입가 + 스톤 매입가 총합)
+  const calculateTotalPurchaseCost = (product: ProductDto): number => {
+    const productCost = parseInt(product.productPurchaseCost) || 0;
+    const stoneCost = product.productStones.reduce((sum, stone) => {
+      return sum + stone.purchasePrice * stone.stoneQuantity;
+    }, 0);
+    return productCost + stoneCost;
+  };
+
+  // 총 판매가 계산 (상품 판매가 + 스톤 판매가 총합)
+  const calculateTotalLaborCost = (product: ProductDto): number => {
+    const productCost = parseInt(product.productLaborCost) || 0;
+    const stoneCost = product.productStones.reduce((sum, stone) => {
+      return sum + stone.laborCost * stone.stoneQuantity;
+    }, 0);
+    return productCost + stoneCost;
+  };
 
   // 상품 상세 페이지로 이동
   const handleProductClick = (productId: string) => {
@@ -42,7 +62,8 @@ function CataLogPage() {
   };
 
   // 상품 데이터 로드 (검색 파라미터 포함)
-  const loadProducts = useCallback(async (filters: typeof searchFilters, page: number = 1) => {
+  const loadProducts = useCallback(
+    async (filters: typeof searchFilters, page: number = 1) => {
       setLoading(true);
       setError("");
 
@@ -292,14 +313,14 @@ function CataLogPage() {
               초기화
             </button>
             <button
-              className="search-button"
+              className="create-button"
               onClick={handleCreate}
               disabled={loading}
             >
               생성
             </button>
             <button
-              className="search-button"
+              className="excel-button"
               onClick={handleExcel}
               disabled={loading}
             >
@@ -364,7 +385,7 @@ function CataLogPage() {
                       return (
                         <div key={stone.productStoneId} className="stone-row">
                           <span className="stone-info">
-                            {stone.productStoneMain ? "M " : ""}
+                            {stone.mainStone ? "M " : ""}
                             {stone.stoneName} × {stone.stoneQuantity}
                           </span>
 
@@ -387,13 +408,13 @@ function CataLogPage() {
                   <div className="detail-item">
                     <span className="price-label">매입가:</span>
                     <span className="labor-cost">
-                      {product.productPurchaseCost}원
+                      {calculateTotalPurchaseCost(product).toLocaleString()}원
                     </span>
                   </div>
                   <div className="detail-item">
                     <span className="price-label">판매가:</span>
                     <span className="selling-price">
-                      {product.productLaborCost}원
+                      {calculateTotalLaborCost(product).toLocaleString()}원
                     </span>
                   </div>
                 </div>

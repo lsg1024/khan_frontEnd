@@ -3,7 +3,7 @@ import { storeApi, isApiSuccess } from "../../../../libs/api";
 import type { StoreSearchDto, StoreSearchResponse } from "../../../types/store";
 import StoreList from "../product/StoreList";
 import Pagination from "../Pagination";
-import "../../../styles/components/storeSearch.css";
+import "../../../styles/components/accountSearch.css";
 
 interface StoreSearchProps {
   isOpen: boolean;
@@ -32,18 +32,7 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
     setError("");
 
     try {
-      // 날짜 범위를 넓게 설정 (전체 조회를 위해)
-      const startDate = "2020-01-01";
-      const endDate = new Date().toISOString().split("T")[0];
-
-      const res = await storeApi.getStores(
-        startDate,
-        endDate,
-        name,
-        undefined,
-        undefined,
-        page
-      );
+      const res = await storeApi.getStores(name, page);
 
       // success=false 응답 처리
       if (!isApiSuccess(res)) {
@@ -154,7 +143,7 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
         </div>
 
         {/* 결과 섹션 */}
-        <div className="search-results store-search-results">
+        <div className="search-results">
           <div className="results-content">
             {loading && (
               <div className="loading-state">

@@ -5,9 +5,9 @@ import type { StoreSearchResponse } from "../../src/types/store";
 
 export const storeApi = {
     // 판매처 검색 (페이징 지원)
-    getStores: async (start:string, end:string, search?: string, factory?:number, store?:number, page: number = 1): Promise<ApiResponse<StoreSearchResponse>> => {
+    getStores: async (name?: string, page: number = 1): Promise<ApiResponse<StoreSearchResponse>> => {
         return apiRequest.get<StoreSearchResponse>("account/stores", 
-            { params: {search: search || "", start: start, end: end, factory: factory || "", store: store || "", page: page} });
+            { params: {search: name || "", page: page} });
     },
 
     // 판매처 상세 조회

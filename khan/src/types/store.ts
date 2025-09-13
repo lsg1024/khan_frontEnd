@@ -10,8 +10,8 @@ export interface StoreSearchDto {
     storeFaxNumber: string;
     storeNote: string;
     address: string;
-    tradeType: "WEIGHT" | "PIECE";
-    level: "ONE" | "TWO" | "THREE" | "FOUR";
+    tradeType: string
+    level: string;
     goldHarryLoss: string;
 }
 
