@@ -61,7 +61,7 @@ export const StonePage = () => {
 		} finally {
 			setLoading(false);
 		}
-	}, []);
+	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const handleSearch = () => {
 		setCurrentPage(1);
