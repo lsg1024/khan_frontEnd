@@ -3,6 +3,7 @@ import type { ClassificationDto } from "./classification";
 import type { MaterialDto } from "./material";
 import type { ProductStoneDto } from "./stone";
 import type { ProductWorkGradePolicyGroupDto } from "./price";
+import type { PageInfo } from "./page";
 
 // 통합된 Product 타입 (편집과 원본 통합)
 export interface ProductData {
@@ -63,4 +64,34 @@ export interface CreateProductRequest {
         stoneQuantity: number;
         productStoneNote: string;
     }>;
+}
+
+export interface ProductSearchResponse {
+    content: ProductDto[];
+    page: PageInfo;
+}
+
+export interface ProductStone {
+	productStoneId: string;
+	stoneId: string;
+	stoneName: string;
+	stoneQuantity: number;
+	laborCost: number;
+	purchasePrice: number;
+	mainStone: boolean;
+	includeStone: boolean;
+}
+
+export interface ProductDto {
+    productId: string;
+    productName: string;
+    productWeight: string;
+    productMaterial: string;
+    factoryId: string;
+    factoryName: string;
+    productNote: string;
+    productPurchaseCost: string;
+    productLaborCost: string;
+    productImagePath: string | null;
+    productStones: ProductStone[];
 }

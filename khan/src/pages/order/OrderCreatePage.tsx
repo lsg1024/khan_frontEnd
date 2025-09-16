@@ -11,11 +11,10 @@ import type {
 	OrderCreateRequest,
 	PastOrderDto,
 } from "../../types/order";
-import type { Product } from "../../types/product";
+import type { Product, ProductDto } from "../../types/product";
 import type { ProductStoneDto } from "../../types/stone";
 import type { FactorySearchDto } from "../../types/factory";
 import type { StoreSearchDto } from "../../types/store";
-import type { ProductDto } from "../../types/catalog";
 import StoreSearch from "../../components/common/product/StoreSearch";
 import FactorySearch from "../../components/common/product/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";

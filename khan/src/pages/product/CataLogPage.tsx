@@ -9,7 +9,7 @@ import { getGoldTransferWeight } from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/CataLogPage.css";
 
-import type { ProductDto } from "../../types/catalog";
+import type { ProductDto } from "../../types/product";
 import type { SetTypeDto } from "../../types/setType";
 import type { ClassificationDto } from "../../types/classification";
 import type { FactorySearchDto } from "../../types/factory";
@@ -61,7 +61,7 @@ function CataLogPage() {
 			setError("");
 
 			try {
-				const response = await productApi.getProductCategories(
+				const response = await productApi.getProducts(
 					filters.name || undefined,
 					filters.factory || undefined,
 					filters.classification || undefined,
@@ -165,7 +165,7 @@ function CataLogPage() {
 			setError("");
 
 			try {
-				const response = await productApi.getProductCategories(
+				const response = await productApi.getProducts(
 					undefined,
 					undefined,
 					undefined,

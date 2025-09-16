@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { isApiSuccess, apiRequest, type ApiResponse } from "../../libs/api";
+import { isApiSuccess, apiRequest, type ApiResponse } from "../../libs/api/config";
 import { useErrorHandler } from "../utils/errorHandler";
 
 function JoinPage() {

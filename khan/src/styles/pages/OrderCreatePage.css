@@ -148,20 +148,20 @@
 }
 
 .product-image-container {
-	min-width: 200px;
-	min-height: 200px;
+	max-width: 250px;
+	max-height: 250px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	border-radius: 4px;
 	overflow: hidden;
 	border: 1px solid #ddd;
+    object-fit: contain;
 }
 
 .product-image {
 	width: 100%;
 	height: 100%;
-	object-fit: cover;
 }
 
 .no-image-placeholder {
@@ -220,6 +220,7 @@
 	padding: 8px;
 	overflow-y: auto;
 	min-height: 120px; /* 최소 높이 설정 */
+    color: #333;
 }
 
 .info-item .label {
@@ -244,6 +245,7 @@
 	border-radius: 3px;
 	font-size: 11px;
 	line-height: 1.4;
+    color: #333;
 }
 
 .stone-item:last-child {

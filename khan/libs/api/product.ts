@@ -1,28 +1,10 @@
 // libs/api/product.ts
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { ProductSearchResponse } from "../../src/types/catalog";
-
+import type { ProductSearchResponse } from "../../src/types/product";
 import type { Product, CreateProductRequest } from "../../src/types/product";
 
 export const productApi = {
-    // 상품 카테고리 목록 조회 (페이징 및 검색 옵션 지원)
-    getProductCategories: async (
-        name?: string, 
-        factory?: string,
-        classification?: string,
-        setType?: string,
-        page: number = 1
-    ): Promise<ApiResponse<ProductSearchResponse>> => {
-        const params: Record<string, string> = { page: page.toString() };
-        
-        if (name) params.name = name;
-        if (factory) params.factory = factory;
-        if (classification) params.classification = classification;
-        if (setType) params.setType = setType;
-
-        return apiRequest.get<ProductSearchResponse>("product/products", { params });
-    },
 
     // 상품 목록 조회 (페이징 및 검색 옵션 지원)
     getProducts: async (
@@ -30,14 +12,16 @@ export const productApi = {
         factory?: string,
         classification?: string,
         setType?: string,
-        page: number = 1
+        page: number = 1,
+        size?: number
     ): Promise<ApiResponse<ProductSearchResponse>> => {
-        const params: Record<string, string> = { page: page.toString() };
+        const params: Record<string, string|number> = { page: page.toString() };
         
         if (name) params.name = name;
         if (factory) params.factory = factory;
         if (classification) params.classification = classification;
         if (setType) params.setType = setType;
+        if (size) params.size = size;
 
         return apiRequest.get<ProductSearchResponse>("product/products", { params });
     },

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { productApi } from "../../../../libs/api/product";
 import { isApiSuccess } from "../../../../libs/api/config";
 import { getGoldTransferWeight } from "../../../utils/goldUtils";
-import type { ProductDto } from "../../../types/catalog";
+import type { ProductDto } from "../../../types/product";
 import Pagination from "../Pagination";
 import "../../../styles/components/searchModal.css";
 import "../../../styles/components/productSearch.css";
@@ -32,12 +32,13 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
 		setError("");
 
 		try {
-			const response = await productApi.getProductCategories(
+			const response = await productApi.getProducts(
 				name || undefined,
 				undefined,
 				undefined,
 				undefined,
-				page
+				page,
+				10
 			);
 
 			if (!isApiSuccess(response)) {
