@@ -1,222 +1,221 @@
 /* 컨테이너 */
 .stone-create-page {
-    padding: 8px;
-    background: #f8f9fa;
-    min-height: 100vh;
-    box-sizing: border-box;
+	padding: 8px;
+	background: #f8f9fa;
+	min-height: 100vh;
+	box-sizing: border-box;
 }
 
 /* 섹션 카드 */
 .stone-create-section {
-    background: #fff;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    overflow: hidden;
-    margin-bottom: 8px;
-    border: 1px solid #e1e5e9;
+	background: #fff;
+	border-radius: 6px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+	margin-bottom: 8px;
+	border: 1px solid #e1e5e9;
 }
 
 /* 헤더 */
 .stone-create-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid #e1e5e9;
-    background: #f8f9fa;
+	padding: 12px 16px;
+	border-bottom: 1px solid #e1e5e9;
+	background: #f8f9fa;
 }
 
 .stone-create-header h2 {
-    margin: 0;
-    color: #333;
-    font-size: 16px;
-    font-weight: 600;
+	margin: 0;
+	color: #333;
+	font-size: 16px;
+	font-weight: 600;
 }
 
 /* 테이블 래퍼 (작은 화면 가로 스크롤) */
 .stone-create-table-wrap {
-    width: 100%;
-    overflow-x: auto;
+	width: 100%;
+	overflow-x: auto;
 }
 
 /* 테이블 */
 .stone-create-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    font-size: 12px;
+	width: 100%;
+	border-collapse: collapse;
+	background: #fff;
+	font-size: 12px;
 }
 
 .stone-create-table th {
-    background-color: #f8f9fa;
-    border: 1px solid #e1e5e9;
-    text-align: center;
-    font-weight: 600;
-    color: #495057;
-    font-size: 12px;
-    white-space: nowrap;
-    padding: 6px 4px;
-    width: 50px;
+	background-color: #f8f9fa;
+	border: 1px solid #e1e5e9;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	font-size: 12px;
+	white-space: nowrap;
+	padding: 6px 4px;
+	width: 50px;
 }
 
-
 .stone-create-table .no-th {
-    background-color: #f8f9fa;
-    border: 1px solid #e1e5e9;
-    text-align: center;
-    font-weight: 600;
-    color: #495057;
-    font-size: 12px;
-    white-space: nowrap;
-    padding: 6px 4px;
-    width: 20px;
+	background-color: #f8f9fa;
+	border: 1px solid #e1e5e9;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	font-size: 12px;
+	white-space: nowrap;
+	padding: 6px 4px;
+	width: 20px;
 }
 
 .stone-create-table .stone-th {
-    background-color: #f8f9fa;
-    border: 1px solid #e1e5e9;
-    text-align: center;
-    font-weight: 600;
-    color: #495057;
-    font-size: 12px;
-    white-space: nowrap;
-    padding: 6px 4px;
-    width: 40px;
+	background-color: #f8f9fa;
+	border: 1px solid #e1e5e9;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	font-size: 12px;
+	white-space: nowrap;
+	padding: 6px 4px;
+	width: 40px;
 }
 
 .stone-create-table .stone-size-th {
-    background-color: #f8f9fa;
-    border: 1px solid #e1e5e9;
-    text-align: center;
-    font-weight: 600;
-    color: #495057;
-    font-size: 12px;
-    white-space: nowrap;
-    padding: 6px 4px;
-    width: 80px;
+	background-color: #f8f9fa;
+	border: 1px solid #e1e5e9;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	font-size: 12px;
+	white-space: nowrap;
+	padding: 6px 4px;
+	width: 80px;
 }
 
 .stone-create-table .note-th {
-    background-color: #f8f9fa;
-    border: 1px solid #e1e5e9;
-    text-align: center;
-    font-weight: 600;
-    color: #495057;
-    font-size: 12px;
-    white-space: nowrap;
-    padding: 6px 4px;
-    width: 60px;
+	background-color: #f8f9fa;
+	border: 1px solid #e1e5e9;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	font-size: 12px;
+	white-space: nowrap;
+	padding: 6px 4px;
+	width: 60px;
 }
 
 .stone-create-table .weight-th {
-    background-color: #f8f9fa;
-    border: 1px solid #e1e5e9;
-    text-align: center;
-    font-weight: 600;
-    color: #495057;
-    font-size: 12px;
-    white-space: nowrap;
-    padding: 6px 4px;
-    width: 60px;
+	background-color: #f8f9fa;
+	border: 1px solid #e1e5e9;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	font-size: 12px;
+	white-space: nowrap;
+	padding: 6px 4px;
+	width: 60px;
 }
 
 .stone-create-table td {
-    border: 1px solid #e1e5e9;
-    padding: 4px 4px;
-    text-align: center;
-    font-size: 11px;
-    color: #333;
-    vertical-align: middle;
+	border: 1px solid #e1e5e9;
+	padding: 4px 4px;
+	text-align: center;
+	font-size: 11px;
+	color: #333;
+	vertical-align: middle;
 }
 
 /* 입력 컨트롤 공통 */
 .stone-create-table input,
 .stone-create-table select {
-    width: 100%;
-    height: 26px;
-    padding: 0 6px;
-    box-sizing: border-box;
-    border: 1px solid #ced4da;
-    border-radius: 3px;
-    background: #fff;
-    font-size: 11px;
-    color: black;
+	width: 100%;
+	height: 26px;
+	padding: 0 6px;
+	box-sizing: border-box;
+	border: 1px solid #ced4da;
+	border-radius: 3px;
+	background: #fff;
+	font-size: 11px;
+	color: black;
 }
 
 /* 읽기 전용 스톤 이름 스타일 */
 .stone-create-table .readonly-stone-name {
-    background-color: #f8f9fa !important;
-    color: #6c757d;
-    cursor: not-allowed;
-    border-color: #e1e5e9;
+	background-color: #f8f9fa !important;
+	color: #6c757d;
+	cursor: not-allowed;
+	border-color: #e1e5e9;
 }
 .stone-create-table input:focus,
 .stone-create-table select:focus {
-    outline: none;
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.15rem rgba(13,110,253,.15);
+	outline: none;
+	border-color: #86b7fe;
+	box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
 }
 
 /* 행 호버 */
 .stone-create-table tbody tr:hover {
-    background-color: #f8f9fa;
+	background-color: #f8f9fa;
 }
 
 /* 하단 액션 바 */
 .stone-create-actions {
-    display: flex;
-    gap: 6px;
-    justify-content: center;
-    padding: 8px;
-    background: #fff;
-    border-top: 1px solid #e1e5e9;
+	display: flex;
+	gap: 6px;
+	justify-content: center;
+	padding: 8px;
+	background: #fff;
+	border-top: 1px solid #e1e5e9;
 }
 
 .sc-btn {
-    min-width: 46px;
-    min-height: 16px;
-    border: 1px solid #c9d3e1;
-    border-radius: 6px;
-    background: #fff;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 12px;
+	min-width: 46px;
+	min-height: 16px;
+	border: 1px solid #c9d3e1;
+	border-radius: 6px;
+	background: #fff;
+	cursor: pointer;
+	font-weight: 600;
+	font-size: 12px;
 }
 .sc-btn:disabled {
-    opacity: .6;
-    cursor: not-allowed;
+	opacity: 0.6;
+	cursor: not-allowed;
 }
 
 .sc-btn-primary {
-    background: #38b000;
-    color: #fff;
-    border-color: #2b8700;
+	background: #38b000;
+	color: #fff;
+	border-color: #2b8700;
 }
 .sc-btn-danger {
-    background: #e53e3e;
-    color: #fff;
-    border-color: #c53030;
+	background: #e53e3e;
+	color: #fff;
+	border-color: #c53030;
 }
 
 /* 반응형 */
 @media (max-width: 1200px) {
-    .stone-create-table {
-        font-size: 12px;
-    }
-    .stone-create-table th,
-    .stone-create-table td {
-        padding: 6px 4px;
-    }
+	.stone-create-table {
+		font-size: 12px;
+	}
+	.stone-create-table th,
+	.stone-create-table td {
+		padding: 6px 4px;
+	}
 }
 
 @media (max-width: 768px) {
-    .stone-create-header h2 {
-        font-size: 16px;
-    }
-    .stone-create-actions {
-        padding: 10px;
-    }
+	.stone-create-header h2 {
+		font-size: 16px;
+	}
+	.stone-create-actions {
+		padding: 10px;
+	}
 }
 
 @media (max-width: 600px) {
-    .stone-create-table {
-        min-width: 900px; /* 컬럼 많으니 모바일에서 가로 스크롤 */
-    }
+	.stone-create-table {
+		min-width: 900px; /* 컬럼 많으니 모바일에서 가로 스크롤 */
+	}
 }

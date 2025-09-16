@@ -47,8 +47,8 @@ export interface ProductStoneDto {
     stoneId: string;
     stoneName: string;
     stoneWeight: string;
-    isMainStone: boolean;
-    isIncludeStone: boolean;
+    mainStone: boolean;
+    includeStone: boolean;
     stonePurchase: number;
     stoneQuantity: number;
     productStoneNote: string;

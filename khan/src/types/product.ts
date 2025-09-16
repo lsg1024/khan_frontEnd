@@ -46,19 +46,20 @@ export interface CreateProductRequest {
     productNote: string;
 
     productWorkGradePolicyGroupDto: Array<{
+        productGroupId: string;
         productPurchasePrice: number;
         colorId: string;
-        policyDtos: Array<{
-        grade: string;
-        laborCost: number;
+        gradePolicyDtos: Array<{
+            workGradePolicyId: string;
+            laborCost: number;
         }>;
         note: string;
     }>;
 
     productStoneDtos: Array<{
         stoneId: string;
-        isMainStone: boolean;
-        isIncludeStone: boolean;
+        mainStone: boolean;
+        includeStone: boolean;
         stoneQuantity: number;
         productStoneNote: string;
     }>;

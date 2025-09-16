@@ -281,11 +281,11 @@ const StoneTable: React.FC<StoneTableProps> = ({
                 {editable ? (
                   <select
                     className="editable-select"
-                    value={stone.isMainStone ? "Y" : "N"}
+                    value={stone.mainStone ? "Y" : "N"}
                     onChange={(e) =>
                       handleFieldChange(
                         stone.productStoneId,
-                        "isMainStone",
+                        "mainStone",
                         e.target.value === "Y"
                       )
                     }
@@ -294,7 +294,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
                     <option value="N">N</option>
                   </select>
                 ) : (
-                  <span>{stone.isMainStone ? "Y" : "N"}</span>
+                  <span>{stone.mainStone ? "Y" : "N"}</span>
                 )}
               </td>
 
@@ -303,11 +303,11 @@ const StoneTable: React.FC<StoneTableProps> = ({
                 {editable ? (
                   <select
                     className="editable-select"
-                    value={stone.isIncludeStone ? "Y" : "N"}
+                    value={stone.includeStone ? "Y" : "N"}
                     onChange={(e) =>
                       handleFieldChange(
                         stone.productStoneId,
-                        "isIncludeStone",
+                        "includeStone",
                         e.target.value === "Y"
                       )
                     }
@@ -316,7 +316,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
                     <option value="N">N</option>
                   </select>
                 ) : (
-                  <span>{stone.isIncludeStone ? "Y" : "N"}</span>
+                  <span>{stone.includeStone ? "Y" : "N"}</span>
                 )}
               </td>
 
@@ -594,13 +594,13 @@ const StoneTable: React.FC<StoneTableProps> = ({
               <td colSpan={4}>소계</td>
               <td className="total-cell">
                 {stones
-                  .filter((stone) => stone.isIncludeStone)
+                  .filter((stone) => stone.includeStone)
                   .reduce((sum, stone) => sum + stone.stoneQuantity, 0)}
               </td>
               <td>
                 <span>
                   {stones
-                    .filter((stone) => stone.isIncludeStone)
+                    .filter((stone) => stone.includeStone)
                     .reduce(
                       (sum, stone) =>
                         sum + Number(stone.stoneWeight) * stone.stoneQuantity,
@@ -611,7 +611,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
               </td>
               <td className="total-cell">
                 {stones
-                  .filter((stone) => stone.isIncludeStone)
+                  .filter((stone) => stone.includeStone)
                   .reduce(
                     (sum, stone) =>
                       sum + stone.stonePurchase * stone.stoneQuantity,
@@ -622,7 +622,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
               {[1, 2, 3, 4].map((gradeNum) => (
                 <td key={gradeNum} className="total-cell">
                   {stones
-                    .filter((stone) => stone.isIncludeStone)
+                    .filter((stone) => stone.includeStone)
                     .reduce((sum, stone) => {
                       const gradePolicy = stone.stoneWorkGradePolicyDtos?.find(
                         (policy) => policy.grade === `GRADE_${gradeNum}`

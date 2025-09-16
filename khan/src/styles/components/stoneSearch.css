@@ -1,113 +1,113 @@
 /* StoneSearch 컴포넌트 전용 스타일 */
-@import './searchModal.css';
+@import "./searchModal.css";
 
 /* 스톤 검색 모달 고유 스타일 */
 .stone-search-modal {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 1000px;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	width: 90%;
+	max-width: 1000px;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
 
 .stone-search-modal-header {
-  background-color: white; /* 스톤 검색은 헤더 배경이 흰색 */
+	background-color: white; /* 스톤 검색은 헤더 배경이 흰색 */
 }
 
 /* 스톤 테이블 전용 스타일 */
 .stones-table {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  overflow: hidden;
-  color: #333;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	overflow: hidden;
+	color: #333;
 }
 
 .table-header {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr 1fr 1fr 1fr 1fr 0.8fr;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #ddd;
-  font-weight: bold;
-  color: #495057;
+	display: grid;
+	grid-template-columns: 2fr 1fr 1.2fr 1fr 1fr 1fr 1fr 0.8fr;
+	background-color: #f8f9fa;
+	border-bottom: 1px solid #ddd;
+	font-weight: bold;
+	color: #495057;
 }
 
 .table-header span,
 .table-row span {
-  padding: 0.25rem 0.5rem;
-  border-right: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 12px;
+	padding: 0.25rem 0.5rem;
+	border-right: 1px solid #ddd;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	font-size: 12px;
 }
 
 .table-header span:last-child,
 .table-row span:last-child {
-  border-right: none;
+	border-right: none;
 }
 
 .table-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr 1fr 1fr 1fr 1fr 0.8fr;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-  transition: background-color 0.2s;
+	display: grid;
+	grid-template-columns: 2fr 1fr 1.2fr 1fr 1fr 1fr 1fr 0.8fr;
+	border-bottom: 1px solid #eee;
+	cursor: pointer;
+	transition: background-color 0.2s;
 }
 
 .table-row:hover {
-  background-color: #f5f5f5;
+	background-color: #f5f5f5;
 }
 
 .table-row.current {
-  background-color: #e3f2fd;
-  font-weight: bold;
+	background-color: #e3f2fd;
+	font-weight: bold;
 }
 
 .col-name {
-  justify-content: flex-start !important;
-  padding-left: 0.75rem !important;
-  text-align: left !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+	justify-content: flex-start !important;
+	padding-left: 0.75rem !important;
+	text-align: left !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .select-button {
-  padding: 0.25rem 0.5rem;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 11px;
-  min-width: 50px;
+	padding: 0.25rem 0.5rem;
+	background-color: #28a745;
+	color: white;
+	border: none;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 11px;
+	min-width: 50px;
 }
 
 .select-button:hover {
-  background-color: #218838;
+	background-color: #218838;
 }
 
 /* 스톤 검색 전용 반응형 */
 @media (max-width: 480px) {
-  .table-header,
-  .table-row {
-    grid-template-columns: 1.5fr 0.7fr 0.9fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr;
-  }
-  
-  .table-header span,
-  .table-row span {
-    padding: 0.4rem 0.2rem;
-    font-size: 10px;
-  }
-  
-  .select-button {
-    padding: 0.2rem 0.3rem;
-    font-size: 10px;
-    min-width: 40px;
-  }
+	.table-header,
+	.table-row {
+		grid-template-columns: 1.5fr 0.7fr 0.9fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr;
+	}
+
+	.table-header span,
+	.table-row span {
+		padding: 0.4rem 0.2rem;
+		font-size: 10px;
+	}
+
+	.select-button {
+		padding: 0.2rem 0.3rem;
+		font-size: 10px;
+		min-width: 40px;
+	}
 }

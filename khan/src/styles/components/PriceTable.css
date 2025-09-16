@@ -1,77 +1,80 @@
 /* ===== 가격 정보 섹션 ===== */
 .price-section {
-  width: 100%;
-  background-color: white;
-  padding: 0.75rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	width: 100%;
+	background-color: white;
+	padding: 0.75rem;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .price-section h2 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
-    color: #333;
-    border-bottom: 2px solid #28a745;
-    padding-bottom: 0.25rem;
+	margin: 0 0 0.5rem 0;
+	font-size: 1rem;
+	color: #333;
+	border-bottom: 2px solid #28a745;
+	padding-bottom: 0.25rem;
 }
 
 /* 실제 HTML 테이블 스타일 */
 .price-table {
-  width: 100%;
-  border-collapse: collapse;
-  border: 1px solid #ddd;
-  background: white;
-  margin-top: 0.5rem;
-  font-size: 12px; /* 전체 테이블 글씨 크기 축소 */
+	width: 100%;
+	border-collapse: collapse;
+	border: 1px solid #ddd;
+	background: white;
+	margin-top: 0.5rem;
+	font-size: 12px; /* 전체 테이블 글씨 크기 축소 */
 }
 
 .price-table th,
 .price-table td {
-  padding: 6px 3px; /* 패딩 더 축소 */
-  border: 1px solid #ddd;
-  text-align: center;
-  vertical-align: middle;
-  line-height: 1.1; /* 줄 간격 더 축소 */
+	padding: 6px 3px; /* 패딩 더 축소 */
+	border: 1px solid #ddd;
+	text-align: center;
+	vertical-align: middle;
+	line-height: 1.1; /* 줄 간격 더 축소 */
 }
 
 .price-table th {
-  background-color: #f8f9fa;
-  font-weight: bold;
-  color: #495057;
-  font-size: 11px; /* 헤더 글씨 크기 축소 */
+	background-color: #f8f9fa;
+	font-weight: bold;
+	color: #495057;
+	font-size: 11px; /* 헤더 글씨 크기 축소 */
 }
 
 .price-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
+	background-color: #f9f9f9;
 }
 
 .price-table tbody tr:hover {
-  background-color: #f0f0f0;
+	background-color: #f0f0f0;
 }
 
 /* 필수 입력 표시 */
 .required-field {
-  color: #dc3545;
-  font-weight: bold;
+	color: #dc3545;
+	font-weight: bold;
 }
 
 /* 테이블 셀 너비 조정 */
 .price-table th:nth-child(1),
-.price-table td:nth-child(1) { /* 구분 */
-  width: 8%;
-  min-width: 60px;
+.price-table td:nth-child(1) {
+	/* 구분 */
+	width: 8%;
+	min-width: 60px;
 }
 
 .price-table th:nth-child(2),
-.price-table td:nth-child(2) { /* 색상 */
-  width: 12%;
-  min-width: 60px;
+.price-table td:nth-child(2) {
+	/* 색상 */
+	width: 12%;
+	min-width: 60px;
 }
 
 .price-table th:nth-child(3),
-.price-table td:nth-child(3) { /* 구매 공임 */
-  width: 15%;
-  min-width: 100px;
+.price-table td:nth-child(3) {
+	/* 구매 공임 */
+	width: 15%;
+	min-width: 100px;
 }
 
 .price-table th:nth-child(4),
@@ -80,151 +83,153 @@
 .price-table td:nth-child(5),
 .price-table th:nth-child(6),
 .price-table td:nth-child(6) {
-  width: 8%;
-  min-width: 60px;
+	width: 8%;
+	min-width: 60px;
 }
 .price-table th:nth-child(7),
 .price-table td:nth-child(7) {
-  width: 8%;
-  min-width: 60px;
+	width: 8%;
+	min-width: 60px;
 }
 
 .price-table th:nth-child(8),
-.price-table td:nth-child(8) { /* 비고 */
-  width: 20%;
-  min-width: 120px;
+.price-table td:nth-child(8) {
+	/* 비고 */
+	width: 20%;
+	min-width: 120px;
 }
 
 .price-table th:nth-child(9),
-.price-table td:nth-child(9) { /* 비고 */
-  width: 12%;
-  min-width: 100px;
+.price-table td:nth-child(9) {
+	/* 비고 */
+	width: 12%;
+	min-width: 100px;
 }
 
 /* 테이블 내 입력 필드 스타일 */
 .price-table .table-input {
-  width: 100%;
-  padding: 4px 6px; /* 입력 필드 패딩 축소 */
-  border: 1px solid #ddd;
-  border-radius: 3px;
-  font-size: 12px; /* 입력 필드 글씨 크기 축소 */
-  background: white;
-  color: #333;
-  text-align: center;
-  box-sizing: border-box;
-  line-height: 1.2; /* 줄 간격 축소 */
+	width: 100%;
+	padding: 4px 6px; /* 입력 필드 패딩 축소 */
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	font-size: 12px; /* 입력 필드 글씨 크기 축소 */
+	background: white;
+	color: #333;
+	text-align: center;
+	box-sizing: border-box;
+	line-height: 1.2; /* 줄 간격 축소 */
 }
 
 .price-table .table-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+	outline: none;
+	border-color: #007bff;
+	box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .price-table .editable-select {
-  width: 100%;
-  padding: 4px 6px; /* 셀렉트 패딩 축소 */
-  border: 1px solid #ddd;
-  border-radius: 3px;
-  font-size: 12px; /* 셀렉트 글씨 크기 축소 */
-  background: white;
-  color: #333;
-  text-align: center;
-  text-align-last: center;
-  box-sizing: border-box;
-  cursor: pointer;
-  line-height: 1.2; /* 줄 간격 축소 */
+	width: 100%;
+	padding: 4px 6px; /* 셀렉트 패딩 축소 */
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	font-size: 12px; /* 셀렉트 글씨 크기 축소 */
+	background: white;
+	color: #333;
+	text-align: center;
+	text-align-last: center;
+	box-sizing: border-box;
+	cursor: pointer;
+	line-height: 1.2; /* 줄 간격 축소 */
 }
 
 .price-table .editable-select option {
-  text-align: start;
+	text-align: start;
 }
 
 .price-table .editable-select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+	outline: none;
+	border-color: #007bff;
+	box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .price-table .editable-text {
-  text-align: left !important;
+	text-align: left !important;
 }
 
 .price-table .fixed-text {
-  font-weight: 500;
-  color: #495057;
-  display: block;
-  padding: 4px 6px; /* 고정 텍스트 패딩 축소 */
-  font-size: 12px; /* 고정 텍스트 글씨 크기 축소 */
-  line-height: 1.2; /* 줄 간격 축소 */
+	font-weight: 500;
+	color: #495057;
+	display: block;
+	padding: 4px 6px; /* 고정 텍스트 패딩 축소 */
+	font-size: 12px; /* 고정 텍스트 글씨 크기 축소 */
+	line-height: 1.2; /* 줄 간격 축소 */
 }
 
 .price-table .grade-value {
-  color: #999;
-  font-style: italic;
-  font-size: 11px; /* 등급 값 글씨 크기 축소 */
+	color: #999;
+	font-style: italic;
+	font-size: 11px; /* 등급 값 글씨 크기 축소 */
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-  .price-section {
-    padding: 1rem;
-  }
-  
-  .price-table {
-    font-size: 10px; /* 모바일에서 더 작은 글씨 */
-  }
-  
-  .price-table th,
-  .price-table td {
-    padding: 6px 2px; /* 모바일에서 더 작은 패딩 */
-  }
-  
-  .price-table .table-input,
-  .price-table .editable-select {
-    padding: 2px 4px; /* 모바일에서 더 작은 패딩 */
-    font-size: 10px; /* 모바일에서 더 작은 글씨 */
-    text-align: center;
-    text-align-last: center;
-  }
-  
-  .price-table .fixed-text {
-    padding: 2px 4px; /* 모바일에서 더 작은 패딩 */
-    font-size: 10px; /* 모바일에서 더 작은 글씨 */
-  }
+	.price-section {
+		padding: 1rem;
+	}
+
+	.price-table {
+		font-size: 10px; /* 모바일에서 더 작은 글씨 */
+	}
+
+	.price-table th,
+	.price-table td {
+		padding: 6px 2px; /* 모바일에서 더 작은 패딩 */
+	}
+
+	.price-table .table-input,
+	.price-table .editable-select {
+		padding: 2px 4px; /* 모바일에서 더 작은 패딩 */
+		font-size: 10px; /* 모바일에서 더 작은 글씨 */
+		text-align: center;
+		text-align-last: center;
+	}
+
+	.price-table .fixed-text {
+		padding: 2px 4px; /* 모바일에서 더 작은 패딩 */
+		font-size: 10px; /* 모바일에서 더 작은 글씨 */
+	}
 }
 
 @media (max-width: 480px) {
-  .price-table {
-    font-size: 9px; /* 소형 모바일에서 가장 작은 글씨 */
-  }
-  
-  .price-table th,
-  .price-table td {
-    padding: 4px 1px; /* 소형 모바일에서 가장 작은 패딩 */
-  }
-  
-  .price-table .table-input,
-  .price-table .editable-select {
-    padding: 1px 2px; /* 소형 모바일에서 가장 작은 패딩 */
-    font-size: 9px; /* 소형 모바일에서 가장 작은 글씨 */
-  }
-  
-  .price-table .fixed-text {
-    padding: 1px 2px; /* 소형 모바일에서 가장 작은 패딩 */
-    font-size: 9px; /* 소형 모바일에서 가장 작은 글씨 */
-  }
+	.price-table {
+		font-size: 9px; /* 소형 모바일에서 가장 작은 글씨 */
+	}
+
+	.price-table th,
+	.price-table td {
+		padding: 4px 1px; /* 소형 모바일에서 가장 작은 패딩 */
+	}
+
+	.price-table .table-input,
+	.price-table .editable-select {
+		padding: 1px 2px; /* 소형 모바일에서 가장 작은 패딩 */
+		font-size: 9px; /* 소형 모바일에서 가장 작은 글씨 */
+	}
+
+	.price-table .fixed-text {
+		padding: 1px 2px; /* 소형 모바일에서 가장 작은 패딩 */
+		font-size: 9px; /* 소형 모바일에서 가장 작은 글씨 */
+	}
 }
 
 /* ===== 에러 스타일 ===== */
 .color-select.error {
-  border-color: #dc3545 !important;
-  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
+	border-color: #dc3545 !important;
+	box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
 }
 
 .color-input-container .error-message {
-  color: #dc3545;
-  font-size: 10px;
-  margin-top: 2px;
-  text-align: left;
+	color: #dc3545;
+	font-size: 10px;
+	margin-top: 2px;
+	text-align: left;
 }

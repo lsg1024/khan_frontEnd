@@ -1,212 +1,211 @@
 /* 스톤 리스트 테이블 스타일 */
 .stone-list-section {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  margin-bottom: 10px;
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+	margin-top: 10px;
 }
 
 .stone-list-header {
-  padding: 20px;
-  border-bottom: 1px solid #e1e5e9;
-  background-color: #f8f9fa;
+	padding: 20px;
+	border-bottom: 1px solid #e1e5e9;
+	background-color: #f8f9fa;
 }
 
 .stone-list-header h2 {
-  margin: 0;
-  color: #333;
-  font-size: 18px;
-  font-weight: 600;
+	margin: 0;
+	color: #333;
+	font-size: 18px;
+	font-weight: 600;
 }
 
 /* 테이블 스타일 */
 .stone-list-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
+	width: 100%;
+	border-collapse: collapse;
+	background: white;
 }
 
 .stone-list-table th {
-    background-color: #f8f9fa;
-    border: 1px solid #e1e5e9;
-    text-align: center;
-    font-weight: 600;
-    color: #495057;
-    font-size: 14px;
-    white-space: nowrap;
+	background-color: #f8f9fa;
+	border: 1px solid #e1e5e9;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	font-size: 14px;
+	white-space: nowrap;
 }
 
 .stone-list-table td {
-    border: 1px solid #e1e5e9;
-    text-align: center;
-    font-size: 13px;
-    color: #333;
-    vertical-align: middle;
+	border: 1px solid #e1e5e9;
+	text-align: center;
+	font-size: 13px;
+	color: #333;
+	vertical-align: middle;
 }
 
 /* No 열 버튼 스타일 */
 .stone-number-button {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: black;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 40px;
+	background-color: rgba(255, 255, 255, 0.1);
+	color: black;
+	border: none;
+	border-radius: 4px;
+	padding: 6px 12px;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	min-width: 40px;
 }
-
 
 /* 셀 스타일 */
 .stone-name-cell {
-  max-width: 200px;
+	max-width: 200px;
 }
 
 .stone-name-text {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-  color: #333;
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: 500;
+	color: #333;
 }
 
 .stone-weight-text,
 .stone-purchase-text,
 .stone-grade-text {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: 500;
-    color: #333;
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: 500;
+	color: #333;
 }
 
 .stone-note-cell {
-    text-align: left !important;
-    padding-left: 5px;
-    min-width: 100px;
+	text-align: left !important;
+	padding-left: 5px;
+	min-width: 100px;
 }
 
 .stone-note-text {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: #6c757d;
-    font-style: italic;
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: #6c757d;
+	font-style: italic;
 }
 
 /* 툴팁 스타일 */
 .stone-list-tooltip {
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 1000;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	background-color: rgba(0, 0, 0, 0.8);
+	color: white;
+	padding: 8px 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	white-space: nowrap;
+	z-index: 1000;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .stone-list-tooltip.show {
-  opacity: 1;
+	opacity: 1;
 }
 
 /* 데이터 없음 메시지 */
 .no-stones-message {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  color: #6c757d;
-  font-size: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 60px 20px;
+	color: #6c757d;
+	font-size: 16px;
 }
 
 .no-stones-message p {
-  margin: 0;
+	margin: 0;
 }
 
 /* 호버 효과 */
 .stone-list-table tbody tr:hover {
-  background-color: #f8f9fa;
+	background-color: #f8f9fa;
 }
 
 .stone-list-table tbody tr:hover .stone-number-button {
-  background-color: #0056b3;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+	background-color: #0056b3;
+	box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
 }
 
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
-  .stone-list-table {
-    font-size: 12px;
-  }
-  
-  .stone-list-table th,
-  .stone-list-table td {
-    padding: 8px 6px;
-  }
-  
-  .stone-name-cell {
-    max-width: 60px;
-  }
-  
-  .stone-note-cell {
-    min-width: 80px;
-  }
+	.stone-list-table {
+		font-size: 12px;
+	}
+
+	.stone-list-table th,
+	.stone-list-table td {
+		padding: 8px 6px;
+	}
+
+	.stone-name-cell {
+		max-width: 60px;
+	}
+
+	.stone-note-cell {
+		min-width: 80px;
+	}
 }
 
 @media (max-width: 768px) {
-  .stone-list-section {
-    margin-bottom: 15px;
-  }
-  
-  .stone-list-header {
-    padding: 15px;
-  }
-  
-  .stone-list-header h2 {
-    font-size: 16px;
-  }
-  
-  .stone-list-table {
-    font-size: 11px;
-  }
-  
-  .stone-list-table th,
-  .stone-list-table td {
-    padding: 6px 4px;
-  }
-  
-  .stone-number-button {
-    padding: 4px 8px;
-    font-size: 11px;
-    min-width: 30px;
-  }
-  
-  .stone-name-cell {
-    max-width: 120px;
-  }
-  
-  .stone-note-cell {
-    min-width: 50px;
-  }
+	.stone-list-section {
+		margin-bottom: 15px;
+	}
+
+	.stone-list-header {
+		padding: 15px;
+	}
+
+	.stone-list-header h2 {
+		font-size: 16px;
+	}
+
+	.stone-list-table {
+		font-size: 11px;
+	}
+
+	.stone-list-table th,
+	.stone-list-table td {
+		padding: 6px 4px;
+	}
+
+	.stone-number-button {
+		padding: 4px 8px;
+		font-size: 11px;
+		min-width: 30px;
+	}
+
+	.stone-name-cell {
+		max-width: 120px;
+	}
+
+	.stone-note-cell {
+		min-width: 50px;
+	}
 }
 
 /* 테이블 스크롤 */
 @media (max-width: 600px) {
-  .stone-list-section {
-    overflow-x: auto;
-  }
-  
-  .stone-list-table {
-    min-width: 600px;
-  }
+	.stone-list-section {
+		overflow-x: auto;
+	}
+
+	.stone-list-table {
+		min-width: 600px;
+	}
 }

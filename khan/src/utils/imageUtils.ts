@@ -11,23 +11,24 @@ import { useState, useEffect } from "react";
  * @returns 전체 이미지 URL (로컬 개발용)
  */
 export const getImageUrl = (imagePath: string | null | undefined): string => {
-    if (!imagePath) {
-        return "/images/not_ready.png";
-    }
-    
-    // 이미 전체 URL인 경우 (http:// 또는 https://로 시작)
-    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-        return imagePath;
-    }
-    
-    // 로컬 개발 환경: 개발 서버를 통해 정적 파일 제공
-    // imagePath가 /로 시작하면 그대로, 아니면 /를 붙임
-    const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
-    
-    // 로컬 개발 서버에서 정적 파일로 제공 (/@fs/ 프리픽스 사용)
-    const localBasePath = "C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources";
-    console.log('Local image path:', `${localBasePath}${path}`);
-    return `${localBasePath}${path}`;
+	if (!imagePath) {
+		return "/images/not_ready.png";
+	}
+
+	// 이미 전체 URL인 경우 (http:// 또는 https://로 시작)
+	if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+		return imagePath;
+	}
+
+	// 로컬 개발 환경: 개발 서버를 통해 정적 파일 제공
+	// imagePath가 /로 시작하면 그대로, 아니면 /를 붙임
+	const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+
+	// 로컬 개발 서버에서 정적 파일로 제공 (/@fs/ 프리픽스 사용)
+	const localBasePath =
+		"C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources";
+	console.log("Local image path:", `${localBasePath}${path}`);
+	return `${localBasePath}${path}`;
 };
 
 /**
@@ -36,41 +37,43 @@ export const getImageUrl = (imagePath: string | null | undefined): string => {
  * @param imagePath - 이미지 경로
  * @returns Promise<string> - 이미지 URL
  */
-export const fetchImageWithAuth = async (imagePath: string | null | undefined): Promise<string> => {
-    if (!imagePath) {
-        return "/images/not_ready.png";
-    }
+export const fetchImageWithAuth = async (
+	imagePath: string | null | undefined
+): Promise<string> => {
+	if (!imagePath) {
+		return "/images/not_ready.png";
+	}
 
-    const imageUrl = getImageUrl(imagePath);
-    
-    // 로컬 개발 환경에서는 Vite의 @fs 프로토콜 사용 (인증 불필요)
-    if (imageUrl.includes('/@fs/')) {
-        return imageUrl;
-    }
+	const imageUrl = getImageUrl(imagePath);
 
-    try {
-        const token = tokenUtils.getToken();
-        
-        if (!token) {
-            return "/images/not_ready.png";
-        }
+	// 로컬 개발 환경에서는 Vite의 @fs 프로토콜 사용 (인증 불필요)
+	if (imageUrl.includes("/@fs/")) {
+		return imageUrl;
+	}
 
-        const response = await fetch(imageUrl, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-            },
-        });
+	try {
+		const token = tokenUtils.getToken();
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+		if (!token) {
+			return "/images/not_ready.png";
+		}
 
-        const blob = await response.blob();
-        return URL.createObjectURL(blob);
-    } catch (error) {
-        console.error('Failed to fetch image:', error);
-        return "/images/not_ready.png";
-    }
+		const response = await fetch(imageUrl, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const blob = await response.blob();
+		return URL.createObjectURL(blob);
+	} catch (error) {
+		console.error("Failed to fetch image:", error);
+		return "/images/not_ready.png";
+	}
 };
 
 /**
@@ -79,66 +82,68 @@ export const fetchImageWithAuth = async (imagePath: string | null | undefined): 
  * @returns {src: string, loading: boolean, error: boolean}
  */
 export const useAuthImage = (imagePath: string | null | undefined) => {
-    const [src, setSrc] = useState<string>("/images/not_ready.png");
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<boolean>(false);
+	const [src, setSrc] = useState<string>("/images/not_ready.png");
+	const [loading, setLoading] = useState<boolean>(true);
+	const [error, setError] = useState<boolean>(false);
 
-    useEffect(() => {
-        let mounted = true;
+	useEffect(() => {
+		let mounted = true;
 
-        const loadImage = async () => {
-            if (!imagePath) {
-                setSrc("/images/not_ready.png");
-                setLoading(false);
-                setError(false);
-                return;
-            }
+		const loadImage = async () => {
+			if (!imagePath) {
+				setSrc("/images/not_ready.png");
+				setLoading(false);
+				setError(false);
+				return;
+			}
 
-            setLoading(true);
-            setError(false);
+			setLoading(true);
+			setError(false);
 
-            try {
-                const blobUrl = await fetchImageWithAuth(imagePath);
-                if (mounted) {
-                    setSrc(blobUrl);
-                    setError(blobUrl === "/images/not_ready.png");
-                }
-            } catch (err) {
-                console.error('Image loading error:', err);
-                if (mounted) {
-                    setSrc("/images/not_ready.png");
-                    setError(true);
-                }
-            } finally {
-                if (mounted) {
-                    setLoading(false);
-                }
-            }
-        };
+			try {
+				const blobUrl = await fetchImageWithAuth(imagePath);
+				if (mounted) {
+					setSrc(blobUrl);
+					setError(blobUrl === "/images/not_ready.png");
+				}
+			} catch (err) {
+				console.error("Image loading error:", err);
+				if (mounted) {
+					setSrc("/images/not_ready.png");
+					setError(true);
+				}
+			} finally {
+				if (mounted) {
+					setLoading(false);
+				}
+			}
+		};
 
-        loadImage();
+		loadImage();
 
-        return () => {
-            mounted = false;
-        };
-    }, [imagePath]);
+		return () => {
+			mounted = false;
+		};
+	}, [imagePath]);
 
-    // 컴포넌트 언마운트 시 blob URL 정리
-    useEffect(() => {
-        return () => {
-            if (src.startsWith('blob:')) {
-                URL.revokeObjectURL(src);
-            }
-        };
-    }, [src]);
+	// 컴포넌트 언마운트 시 blob URL 정리
+	useEffect(() => {
+		return () => {
+			if (src.startsWith("blob:")) {
+				URL.revokeObjectURL(src);
+			}
+		};
+	}, [src]);
 
-    return { src, loading, error };
+	return { src, loading, error };
 };
 
 /**
  * 이미지 로드 실패 시 기본 이미지로 대체하는 핸들러
  * @param event - 이미지 에러 이벤트
  */
-export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    event.currentTarget.src = "/images/not_ready.png";
+export const handleImageError = (
+	event: React.SyntheticEvent<HTMLImageElement, Event>
+) => {
+	event.currentTarget.src = "/images/not_ready.png";
 };
