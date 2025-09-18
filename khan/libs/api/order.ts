@@ -4,9 +4,16 @@ import type {
 	OrderSearchResponse,
 	OrderCreateRequest,
 	PastOrderDto,
+	OrderDto
 } from "../../src/types/order";
 
 export const orderApi = {
+
+	getOrder: async (flowCode: string): Promise<ApiResponse<OrderDto>> => {
+		const params = { id: flowCode };
+		return apiRequest.get<OrderDto>("order/order", { params });
+	},
+
 	getOrders: async (
 		start: string,
 		end: string,

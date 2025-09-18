@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { tokenUtils } from "../../utils/tokenUtils";
-import { apiRequest } from "../../../libs/api";
+import { authApi } from "../../../libs/api/auth";
 import { useTokenAutoRefresh } from "../../utils/useTokenAutoRefresh";
 
 interface TopBarProps {
@@ -34,7 +34,7 @@ function TopBar({ onLogout, onToggleSidebar, isSidebarOpen }: TopBarProps) {
 	const handleLogout = useCallback(async () => {
 		try {
 			// 서버에 로그아웃 요청
-			await apiRequest.post("/auth/logout");
+			await authApi.logout();
 		} catch (error) {
 			console.error("서버 로그아웃 실패:", error);
 		}

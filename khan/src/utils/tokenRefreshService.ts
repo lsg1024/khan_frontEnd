@@ -1,7 +1,7 @@
 // 토큰 자동 갱신 서비스
 import axios from "axios";
 import { tokenUtils } from "./tokenUtils";
-import { getApiBaseUrl } from "../../libs/api";
+import { getApiBaseUrl } from "../../libs/api/config";
 
 class TokenRefreshService {
 	private refreshTimer: number | null = null;

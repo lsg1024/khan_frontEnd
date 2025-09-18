@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiRequest } from "../../libs/api";
+import { apiRequest } from "../../libs/api/config";
 import { tokenUtils } from "../utils/tokenUtils";
 import "../../src/styles/pages/HomePage.css";
 

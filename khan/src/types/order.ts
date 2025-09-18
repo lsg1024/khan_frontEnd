@@ -47,19 +47,22 @@ export interface OrderCreateRequest {
 	factoryId: string;
 	productId: string;
 	productSize: string;
-	productAddLaborCost: number;
 	isProductWeightSale: boolean;
-	productWeight: number;
-	stoneWeight: number;
+	productAddLaborCost: number;
 	materialId: string;
-	classificationId: string;
+	classificationName: string;
 	colorId: string;
-	setType: string;
+	setTypeName: string
 	priorityName: string;
+	stoneWeight: number;
 	mainStoneNote: string;
 	assistanceStoneNote: string;
-	productStatus: string;
+	assistantStone: boolean;
+	assistantStoneId : number;
+	assistantStoneName : string;
+	assistantStoneCreateAt : string;
 	createAt: string;
+	productStatus: string;
 	stoneInfos: StoneInfo[];
 }
 
@@ -94,20 +97,18 @@ export interface OrderRowData {
 	id: string;
 	storeId: string;
 	storeName: string;
+	grade: string;
 	productId: string;
+	classificationName: string;
+	setTypeName: string;
 	productName: string;
-	productImage: string;
 	materialId: string;
 	materialName: string;
 	colorId: string;
 	colorName: string;
-	classificationId: string;
-	classificationName: string;
-	setType: string;
 	factoryId: string;
 	factoryName: string;
 	productSize: string;
-	productWeight: number;
 	stoneWeight: number;
 	productAddLaborCost: number;
 	isProductWeightSale: boolean;
@@ -116,17 +117,18 @@ export interface OrderRowData {
 	assistanceStoneNote: string;
 	orderNote: string;
 	stoneInfos: StoneInfo[];
-	mainPrice: number; // 기본 판매단가
-	additionalPrice: number; // 추가 판매단가
-	mainStonePrice: number; // 중심 판매단가
-	assistanceStonePrice: number; // 보조 판매단가
-	mainStoneCount: number; // 메인 개당알수
-	assistanceStoneCount: number; // 보조 개당알수
-	additionalStonePrice: number; // 추가 스톤 판매단가
-	stoneWeightTotal: number; // 알중량
-	deliveryDate: string; // 출고일
+	mainPrice: number | ''; // 기본 판매단가
+	additionalPrice: number | ''; // 추가 판매단가
+	mainStonePrice: number | ''; // 중심 판매단가
+	assistanceStonePrice: number | ''; // 보조 판매단가
+	mainStoneCount: number | ''; // 메인 개당알수
+	assistanceStoneCount: number | ''; // 보조 개당알수
+	additionalStonePrice: number | ''; // 추가 스톤 판매단가
+	stoneWeightTotal: number | ''; // 알중량
+	createAt: string; // 생성일
 	// 보조석 관련 필드
-	assistanceStoneType: string; // 보조석 유형 (없음, 랩, 천연, 모이사, 유색석)
-	assistanceStoneArrival: string; // 입고여부 (Y/N)
-	assistanceStoneArrivalDate: string; // 입고날짜
+	assistantStoneId: number;
+	assistantStone: boolean; // 입고여부 (Y/N)
+	assistantStoneName: string; // 보조석 아이디 (없음, 랩, 천연, 모이사, 유색석)
+	assistantStoneCreateAt: string; // 입고날짜
 }

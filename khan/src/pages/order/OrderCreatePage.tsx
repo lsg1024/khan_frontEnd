@@ -5,6 +5,7 @@ import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
 import { priorityApi } from "../../../libs/api/priority";
 import { productApi } from "../../../libs/api/product";
+import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type {
 	OrderRowData,
@@ -18,6 +19,7 @@ import type { StoreSearchDto } from "../../types/store";
 import StoreSearch from "../../components/common/product/StoreSearch";
 import FactorySearch from "../../components/common/product/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
+import OrderTable from "../../components/common/order/OrderTable";
 import "../../styles/pages/OrderCreatePage.css";
 
 const OrderCreatePage = () => {
@@ -47,6 +49,9 @@ const OrderCreatePage = () => {
 	const [priorities, setPriorities] = useState<
 		{ priorityName: string; priorityDate: number }[]
 	>([]);
+	const [assistantStones, setAssistantStones] = useState<
+		{ assistantStoneId: number; assistantStoneName: string }[]
+	>([]);
 
 	// 과거 주문 데이터 관련 state
 	const [pastOrdersCache, setPastOrdersCache] = useState<
@@ -63,39 +68,31 @@ const OrderCreatePage = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 
+	const currentDate = new Date().toISOString().split("T")[0];
+
 	// 새 주문 행 추가
 	const addOrderRow = () => {
 		const defaultPriority =
 			priorities.length > 0
 				? priorities[0]
 				: { priorityName: "일반", priorityDate: 7 };
-		const currentDate = new Date();
-		const defaultDeliveryDate = new Date(currentDate);
-		defaultDeliveryDate.setDate(
-			currentDate.getDate() + defaultPriority.priorityDate
-		);
-		const formattedDefaultDate = defaultDeliveryDate
-			.toISOString()
-			.split("T")[0];
 
 		const newRow: OrderRowData = {
 			id: Date.now().toString(),
 			storeId: "",
 			storeName: "",
+			grade: "1",
 			productId: "",
 			productName: "",
-			productImage: "",
+			classificationName: "",
+			setTypeName: "",
 			materialId: "",
 			materialName: "",
-			colorId: "",
+			colorId: "1",
 			colorName: "",
-			classificationId: "",
-			classificationName: "",
-			setType: "",
 			factoryId: "",
 			factoryName: "",
 			productSize: "",
-			productWeight: 0,
 			stoneWeight: 0,
 			productAddLaborCost: 0,
 			isProductWeightSale: false,
@@ -104,19 +101,20 @@ const OrderCreatePage = () => {
 			assistanceStoneNote: "",
 			orderNote: "",
 			stoneInfos: [],
-			mainPrice: 0, // 기본 판매단가
-			additionalPrice: 0, // 추가 판매단가
-			mainStonePrice: 0, // 스톤 중심 판매단가
-			assistanceStonePrice: 0, // 보조 중심 판매단가
-			additionalStonePrice: 0, // 추가 스톤 판매단가
-			mainStoneCount: 0,
-			assistanceStoneCount: 0,
-			stoneWeightTotal: 0,
-			deliveryDate: formattedDefaultDate,
+			mainPrice: "", // 기본 판매단가
+			additionalPrice: "", // 추가 판매단가
+			mainStonePrice: "", // 스톤 중심 판매단가
+			assistanceStonePrice: "", // 보조 중심 판매단가
+			additionalStonePrice: "", // 추가 스톤 판매단가
+			mainStoneCount: "",
+			assistanceStoneCount: "",
+			stoneWeightTotal: "",
+			createAt: currentDate,
 			// 보조석 관련 필드
-			assistanceStoneType: "없음",
-			assistanceStoneArrival: "N",
-			assistanceStoneArrivalDate: "",
+			assistantStone: false,
+			assistantStoneId: 0,
+			assistantStoneName: "",
+			assistantStoneCreateAt: "",
 		};
 		setOrderRows([...orderRows, newRow]);
 	};
@@ -126,14 +124,6 @@ const OrderCreatePage = () => {
 		if (window.confirm("초기화하시겠습니까?")) {
 			// 기본 priority 날짜 계산 (서버에서 받아온 첫 번째 데이터 사용)
 			const defaultPriority = priorities[0];
-			const currentDate = new Date();
-			const defaultDeliveryDate = new Date(currentDate);
-			defaultDeliveryDate.setDate(
-				currentDate.getDate() + defaultPriority.priorityDate
-			);
-			const formattedDefaultDate = defaultDeliveryDate
-				.toISOString()
-				.split("T")[0];
 
 			setOrderRows((prevRows) =>
 				prevRows.map((row) => {
@@ -147,15 +137,13 @@ const OrderCreatePage = () => {
 							productImage: "",
 							materialId: "",
 							materialName: "",
-							colorId: "",
+							colorId: "1",
 							colorName: "",
-							classificationId: "",
-							classificationName: "",
 							setType: "",
 							factoryId: "",
 							factoryName: "",
 							productSize: "",
-							productWeight: 0,
+							productWeight: "",
 							stoneWeight: 0,
 							productAddLaborCost: 0,
 							isProductWeightSale: false,
@@ -164,15 +152,15 @@ const OrderCreatePage = () => {
 							assistanceStoneNote: "",
 							orderNote: "",
 							stoneInfos: [],
-							basicPrice: 0,
-							additionalPrice: 0,
-							mainStonePrice: 0,
-							assistanceStonePrice: 0,
-							additionalStonePrice: 0,
-							mainStoneCount: 0,
-							assistanceStoneCount: 0,
-							stoneWeightTotal: 0,
-							deliveryDate: formattedDefaultDate,
+							basicPrice: "",
+							additionalPrice: "",
+							mainStonePrice: "",
+							assistanceStonePrice: "",
+							additionalStonePrice: "",
+							mainStoneCount: "",
+							assistanceStoneCount: "",
+							stoneWeightTotal: "",
+							deliveryDate: currentDate,
 							assistanceStoneType: "없음",
 							assistanceStoneArrival: "N",
 							assistanceStoneArrivalDate: "",
@@ -188,7 +176,7 @@ const OrderCreatePage = () => {
 	const updateOrderRow = async (
 		id: string,
 		field: keyof OrderRowData,
-		value: string | number | boolean
+		value: unknown
 	) => {
 		setOrderRows((prevRows) => {
 			const updatedRows = prevRows.map((row) => {
@@ -213,7 +201,7 @@ const OrderCreatePage = () => {
 						// productId 필드가 변경될 때만 상품 상세 정보 가져오기
 						if (field === "productId") {
 							if (updatedRow.productId) {
-								updateProductDetail(updatedRow.productId);
+								updateProductDetail(updatedRow.productId, updatedRow.id);
 							} else {
 								setCurrentProductDetail(null);
 							}
@@ -281,13 +269,72 @@ const OrderCreatePage = () => {
 	};
 
 	// productId가 있을 때 상품 상세 정보 업데이트
-	const updateProductDetail = async (productId?: string) => {
+	const updateProductDetail = async (productId?: string, rowId?: string) => {
 		if (!productId) {
 			setCurrentProductDetail(null);
 			return;
 		}
+
 		const productDetail = await fetchProductDetail(productId);
 		setCurrentProductDetail(productDetail);
+
+		if (productDetail && rowId) {
+			// 업데이트할 대상 행(row)을 찾습니다.
+			const targetRow = orderRows.find((row) => row.id === rowId);
+			if (!targetRow) return;
+
+			// 1. 대상 행에서 거래처 등급(grade)을 가져옵니다.
+			const storeGrade = targetRow.grade || "1"; // 등급 값이 없으면 기본값 '1' 사용
+			const policyGrade = `GRADE_${storeGrade}`;
+
+			// 2. productStoneDtos를 순회하며 stoneInfos 형식으로 변환합니다.
+			const transformedStoneInfos = productDetail.productStoneDtos.map(
+				(stone) => {
+					// 거래처 등급에 맞는 공임 정책(policy)을 찾습니다.
+					const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
+						(policy) => policy.grade === policyGrade
+					);
+
+					// 일치하는 공임을 사용하고, 없으면 첫 번째 등급의 공임이나 0을 사용합니다.
+					const laborCost = matchingPolicy
+						? matchingPolicy.laborCost
+						: stone.stoneWorkGradePolicyDtos[0]?.laborCost || 0;
+
+					// OrderCreateRequest의 stoneInfos 형식에 맞게 객체를 구성합니다.
+					return {
+						stoneId: stone.stoneId,
+						stoneName: stone.stoneName,
+						stoneWeight: stone.stoneWeight,
+						purchaseCost: stone.stonePurchase,
+						laborCost: laborCost,
+						quantity: stone.stoneQuantity,
+						mainStone: stone.mainStone,
+						includeStone: stone.includeStone,
+						addLaborCost: 0, // 추가 공임은 기본 0으로 설정
+					};
+				}
+			);
+
+			// 3. 가공된 스톤 정보로 주문 행을 업데이트합니다.
+			updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
+
+			// 기존의 다른 필드 업데이트 로직
+			updateOrderRow(
+				rowId,
+				"classificationName",
+				productDetail.classificationDto.classificationName || ""
+			);
+			updateOrderRow(
+				rowId,
+				"setTypeName",
+				productDetail.setTypeDto.setTypeName || ""
+			);
+			// updateOrderRow(
+			//     rowId,
+			//     "colorId",
+			//     productDetail.colorDtos.length > 0 ? productDetail
+			// )
+		}
 	};
 
 	// 3개 필수값이 모두 있을 때 과거 주문 데이터 업데이트
@@ -332,7 +379,7 @@ const OrderCreatePage = () => {
 				!currentProductDetail ||
 				currentProductDetail.productId !== row.productId
 			) {
-				await updateProductDetail(row.productId);
+				await updateProductDetail(row.productId, row.id);
 			}
 		} else {
 			setCurrentProductDetail(null);
@@ -351,7 +398,6 @@ const OrderCreatePage = () => {
 				storeName: prevRow.storeName,
 				productId: prevRow.productId,
 				productName: prevRow.productName,
-				productImage: prevRow.productImage,
 				materialId: prevRow.materialId,
 				materialName: prevRow.materialName,
 				factoryId: prevRow.factoryId,
@@ -361,7 +407,6 @@ const OrderCreatePage = () => {
 				assistanceStonePrice: prevRow.assistanceStonePrice,
 				mainStoneCount: prevRow.mainStoneCount,
 				assistanceStoneCount: prevRow.assistanceStoneCount,
-				productWeight: prevRow.productWeight,
 			};
 		}
 		return null;
@@ -377,14 +422,15 @@ const OrderCreatePage = () => {
 			prevRow &&
 			prevRow.storeId &&
 			prevRow.productId &&
-			prevRow.materialId
+			prevRow.materialId &&
+			prevRow.colorId
 		);
 	};
 
 	// 필수값 자동 복사 핸들러
 	const handleRequiredFieldClick = (
 		currentRowId: string,
-		fieldType: "store" | "product" | "material"
+		fieldType: "store" | "product" | "material" | "color"
 	) => {
 		const currentIndex = orderRows.findIndex((row) => row.id === currentRowId);
 		const currentRow = orderRows[currentIndex];
@@ -406,7 +452,6 @@ const OrderCreatePage = () => {
 			} else if (fieldType === "product") {
 				updateOrderRow(currentRowId, "productId", prevValues.productId);
 				updateOrderRow(currentRowId, "productName", prevValues.productName);
-				updateOrderRow(currentRowId, "productImage", prevValues.productImage);
 				updateOrderRow(currentRowId, "factoryId", prevValues.factoryId);
 				updateOrderRow(currentRowId, "factoryName", prevValues.factoryName);
 				updateOrderRow(currentRowId, "mainPrice", prevValues.mainPrice);
@@ -430,7 +475,6 @@ const OrderCreatePage = () => {
 					"assistanceStoneCount",
 					prevValues.assistanceStoneCount
 				);
-				updateOrderRow(currentRowId, "productWeight", prevValues.productWeight);
 			} else if (fieldType === "material") {
 				updateOrderRow(currentRowId, "materialId", prevValues.materialId);
 				updateOrderRow(currentRowId, "materialName", prevValues.materialName);
@@ -440,13 +484,12 @@ const OrderCreatePage = () => {
 	const handleAssistanceStoneArrivalChange = (id: string, value: string) => {
 		if (value === "Y") {
 			// Y로 변경 시 현재 날짜를 자동 설정
-			const currentDate = new Date().toISOString().split("T")[0];
-			updateOrderRow(id, "assistanceStoneArrival", value);
-			updateOrderRow(id, "assistanceStoneArrivalDate", currentDate);
+			updateOrderRow(id, "assistantStone", true);
+			updateOrderRow(id, "assistantStoneCreateAt", currentDate);
 		} else {
 			// N으로 변경 시 날짜 초기화
-			updateOrderRow(id, "assistanceStoneArrival", value);
-			updateOrderRow(id, "assistanceStoneArrivalDate", "");
+			updateOrderRow(id, "assistantStone", false);
+			updateOrderRow(id, "assistantStoneCreateAt", "");
 		}
 	};
 
@@ -469,7 +512,7 @@ const OrderCreatePage = () => {
 	// 필수 선택 순서 체크 및 알림
 	const validateSequence = (
 		rowId: string,
-		currentStep: "product" | "material" | "other"
+		currentStep: "product" | "material" | "other" | "color"
 	): boolean => {
 		if (currentStep === "product" && !checkStoreSelected(rowId)) {
 			alert("거래처를 먼저 선택해주세요.");
@@ -486,6 +529,12 @@ const OrderCreatePage = () => {
 		if (currentStep === "material" && !checkProductSelected(rowId)) {
 			alert("모델번호를 먼저 선택해주세요.");
 			openProductSearch(rowId);
+			return false;
+		}
+
+		if (currentStep === "color" && !checkStoreSelected(rowId)) {
+			alert("거래처를 먼저 선택해주세요.");
+			openStoreSearch(rowId);
 			return false;
 		}
 
@@ -527,6 +576,7 @@ const OrderCreatePage = () => {
 
 			updateOrderRow(selectedRowForStore, "storeId", storeIdValue);
 			updateOrderRow(selectedRowForStore, "storeName", store.storeName);
+			updateOrderRow(selectedRowForStore, "grade", store.level || "1");
 		}
 		setIsStoreSearchOpen(false);
 		setSelectedRowForStore("");
@@ -568,8 +618,13 @@ const OrderCreatePage = () => {
 			updateOrderRow(selectedRowForProduct, "productName", product.productName);
 			updateOrderRow(
 				selectedRowForProduct,
-				"productImage",
-				product.productImagePath || "/images/not_ready.png"
+				"classificationName",
+				currentProductDetail?.classificationDto.classificationName || ""
+			);
+			updateOrderRow(
+				selectedRowForProduct,
+				"setTypeName",
+				currentProductDetail?.setTypeDto.setTypeName || ""
 			);
 			updateOrderRow(selectedRowForProduct, "factoryId", product.factoryId);
 			updateOrderRow(selectedRowForProduct, "factoryName", product.factoryName);
@@ -580,23 +635,36 @@ const OrderCreatePage = () => {
 			);
 
 			const mainStone = product.productStones.find((stone) => stone.mainStone);
+
 			const mainStonePrice = mainStone
 				? (mainStone.laborCost || 0) * (mainStone.stoneQuantity || 0)
 				: 0;
+			const mainStoneCount = mainStone?.stoneQuantity || 0;
+
 			updateOrderRow(selectedRowForProduct, "mainStonePrice", mainStonePrice);
+			updateOrderRow(selectedRowForProduct, "mainStoneCount", mainStoneCount);
 
 			const assistanceStone = product.productStones.find(
 				(stone) => !stone.mainStone
 			);
-			const assistanceStonePrice = mainStone
-				? (assistanceStone?.laborCost || 0) *
-				  (assistanceStone?.stoneQuantity || 0)
+
+			const assistanceStonePrice = assistanceStone
+				? (assistanceStone.laborCost || 0) *
+				  (assistanceStone.stoneQuantity || 0)
 				: 0;
+			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
+
 			updateOrderRow(
 				selectedRowForProduct,
 				"assistanceStonePrice",
 				assistanceStonePrice
 			);
+			updateOrderRow(
+				selectedRowForProduct,
+				"assistanceStoneCount",
+				assistanceStoneCount
+			);
+
 			updateOrderRow(
 				selectedRowForProduct,
 				"mainStoneCount",
@@ -608,11 +676,6 @@ const OrderCreatePage = () => {
 				"assistanceStoneCount",
 				product.productStones.find((stone) => !stone.mainStone)
 					?.stoneQuantity || 0
-			);
-			updateOrderRow(
-				selectedRowForProduct,
-				"productWeight",
-				parseFloat(product.productWeight) || 0
 			);
 		}
 		setIsProductSearchOpen(false);
@@ -626,11 +689,13 @@ const OrderCreatePage = () => {
 				setLoading(true);
 
 				// 기본 드롭다운 데이터만 로드
-				const [materialRes, colorRes, priorityRes] = await Promise.all([
-					materialApi.getMaterials(),
-					colorApi.getColors(),
-					priorityApi.getPriorities(),
-				]);
+				const [materialRes, colorRes, priorityRes, assistantStoneRes] =
+					await Promise.all([
+						materialApi.getMaterials(),
+						colorApi.getColors(),
+						priorityApi.getPriorities(),
+						assistantStoneApi.getAssistantStones(),
+					]);
 
 				if (materialRes.success) {
 					const materials = (materialRes.data || []).map((m) => ({
@@ -653,42 +718,48 @@ const OrderCreatePage = () => {
 					}));
 					setPriorities(priorities);
 				}
+				if (assistantStoneRes.success) {
+					const assistantStones = (assistantStoneRes.data || []).map((a) => ({
+						assistantStoneId: a.assistantStoneId,
+						assistantStoneName: a.assistantStoneName,
+					}));
+					setAssistantStones(assistantStones);
+				}
 
 				// 기본 priority 값 (서버에서 받아온 첫 번째 데이터 사용)
 				const defaultPriority =
 					priorityRes.data && priorityRes.data[0]
 						? priorityRes.data[0]
 						: { priorityName: "일반", priorityDate: 7 };
-				const currentDate = new Date();
-				const defaultDeliveryDate = new Date(currentDate);
+
+				const defaultDeliveryDate = new Date();
 				defaultDeliveryDate.setDate(
-					currentDate.getDate() + defaultPriority.priorityDate
+					defaultDeliveryDate.getDate() + defaultPriority.priorityDate
 				);
 				const formattedDefaultDate = defaultDeliveryDate
 					.toISOString()
 					.split("T")[0];
 
 				// 초기 10개 행 생성
+				const initialRowCount = 10; // 행 개수를 변수로 관리
 				const initialRows: OrderRowData[] = [];
-				for (let i = 0; i < 10; i++) {
+				for (let i = 0; i < initialRowCount; i++) {
 					const newRow: OrderRowData = {
 						id: `${Date.now()}-${i}`,
 						storeId: "",
 						storeName: "",
+						grade: "1",
 						productId: "",
 						productName: "",
-						productImage: "",
+						classificationName: "",
+						setTypeName: "",
 						materialId: "",
 						materialName: "",
-						colorId: "",
+						colorId: "1",
 						colorName: "",
-						classificationId: "",
-						classificationName: "",
-						setType: "",
 						factoryId: "",
 						factoryName: "",
 						productSize: "",
-						productWeight: 0,
 						stoneWeight: 0,
 						productAddLaborCost: 0,
 						isProductWeightSale: false,
@@ -697,19 +768,20 @@ const OrderCreatePage = () => {
 						assistanceStoneNote: "",
 						orderNote: "",
 						stoneInfos: [],
-						mainPrice: 0, // 중심단가
-						additionalPrice: 0, // 추가단가
-						mainStonePrice: 0,
-						assistanceStonePrice: 0,
-						mainStoneCount: 0,
-						assistanceStoneCount: 0,
-						additionalStonePrice: 0, // 추가 스톤 판매단가
-						stoneWeightTotal: 0,
-						deliveryDate: formattedDefaultDate,
+						mainPrice: "", // 중심단가
+						additionalPrice: "", // 추가단가
+						mainStonePrice: "",
+						assistanceStonePrice: "",
+						mainStoneCount: "",
+						assistanceStoneCount: "",
+						additionalStonePrice: "", // 추가 스톤 판매단가
+						stoneWeightTotal: "",
+						createAt: formattedDefaultDate,
 						// 보조석 관련 필드
-						assistanceStoneType: "없음",
-						assistanceStoneArrival: "N",
-						assistanceStoneArrivalDate: "",
+						assistantStone: false,
+						assistantStoneId: 1,
+						assistantStoneName: "",
+						assistantStoneCreateAt: "",
 					};
 					initialRows.push(newRow);
 				}
@@ -751,17 +823,20 @@ const OrderCreatePage = () => {
 					productSize: row.productSize,
 					productAddLaborCost: row.productAddLaborCost,
 					isProductWeightSale: row.isProductWeightSale,
-					productWeight: row.productWeight,
 					stoneWeight: row.stoneWeight,
 					materialId: row.materialId,
-					classificationId: row.classificationId,
+					classificationName: row.classificationName,
+					setTypeName: row.setTypeName,
 					colorId: row.colorId,
-					setType: row.setType,
 					priorityName: row.priorityName,
 					mainStoneNote: row.mainStoneNote,
 					assistanceStoneNote: row.assistanceStoneNote,
+					assistantStone: row.assistantStone,
+					assistantStoneId: row.assistantStoneId,
+					assistantStoneName: row.assistantStoneName,
+					assistantStoneCreateAt: row.assistantStoneCreateAt,
 					productStatus: "접수",
-					createAt: new Date().toISOString(),
+					createAt: currentDate,
 					stoneInfos: row.stoneInfos,
 				};
 				return orderApi.createOrder(orderData);
@@ -1080,588 +1155,26 @@ const OrderCreatePage = () => {
 			</div>
 
 			{/* 주문 테이블 */}
-			<div className="order-table-container">
-				<table className="order-create-table">
-					<thead>
-						<tr>
-							<th>No</th>
-							<th>삭제</th>
-							<th>
-								<span className="required-field-basic">*</span>거래처
-							</th>
-							<th>
-								<span className="required-field-basic">*</span>모델번호
-							</th>
-							<th>제조사</th>
-							<th>
-								<span className="required-field-basic">*</span>재질
-							</th>
-							<th>색상</th>
-							<th colSpan={3}>보조석</th>
-							<th colSpan={2}>상품 단가</th>
-							<th colSpan={3}>알 단가</th>
-							<th colSpan={2}>알 개수</th>
-							<th>알중량</th>
-							<th colSpan={2}>알 메모사항</th>
-							<th>사이즈</th>
-							<th>급</th>
-							<th>기타</th>
-							<th>출고일</th>
-						</tr>
-						<tr>
-							<th></th>
-							<th></th>
-							<th></th>
-							<th></th>
-							<th></th>
-							<th></th>
-							<th></th>
-							<th>유형</th>
-							<th>입고여부</th>
-							<th>입고날짜</th>
-							<th>기본</th>
-							<th>추가</th>
-							<th>중심</th>
-							<th>보조</th>
-							<th>추가</th>
-							<th>메인</th>
-							<th>보조</th>
-							<th></th>
-							<th>메인</th>
-							<th>보조</th>
-							<th></th>
-							<th></th>
-							<th></th>
-							<th></th>
-						</tr>
-					</thead>
-					<tbody>
-						{orderRows.map((row, index) => (
-							<tr key={row.id}>
-								<td>{index + 1}</td>
-								<td>
-									<button
-										className="btn-delete-row"
-										onClick={() => resetOrderRow(row.id)}
-										disabled={loading}
-									>
-										🗑️
-									</button>
-								</td>
-								<td>
-									<div className="search-field-container">
-										<input
-											type="text"
-											value={row.storeName}
-											readOnly
-											placeholder="거래처"
-											disabled={!isRowInputEnabled(index)}
-											onClick={() => {
-												if (isRowInputEnabled(index)) {
-													if (!row.storeName) {
-														handleRequiredFieldClick(row.id, "store");
-													}
-												} else {
-													alert(
-														"바로 위 행의 필수값(거래처, 모델번호, 재질)을 먼저 입력해주세요."
-													);
-												}
-											}}
-											onFocus={() => {
-												if (isRowInputEnabled(index)) {
-													handleRowFocus(row.id);
-													if (!row.storeName) {
-														handleRequiredFieldClick(row.id, "store");
-													}
-												}
-											}}
-										/>
-										<span
-											className="search-icon"
-											onClick={() => {
-												if (isRowInputEnabled(index)) {
-													openStoreSearch(row.id);
-												} else {
-													alert("이전 주문장을 완성해 주세요.");
-												}
-											}}
-											style={{
-												opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-												cursor: !isRowInputEnabled(index)
-													? "not-allowed"
-													: "pointer",
-											}}
-										>
-											🔍
-										</span>
-									</div>
-								</td>
-								<td>
-									<div className="search-field-container">
-										<input
-											type="text"
-											value={row.productName}
-											readOnly
-											placeholder="모델번호"
-											disabled={!isRowInputEnabled(index)}
-											onClick={() => {
-												if (isRowInputEnabled(index)) {
-													// 값이 없으면 자동 복사
-													if (!row.productName) {
-														handleRequiredFieldClick(row.id, "product");
-													}
-												} else {
-													alert("이전 주문장을 완성해 주세요.");
-												}
-											}}
-											onFocus={() => {
-												if (isRowInputEnabled(index)) {
-													handleRowFocus(row.id);
-													// 값이 없으면 자동 복사
-													if (!row.productName) {
-														handleRequiredFieldClick(row.id, "product");
-													}
-												}
-											}}
-										/>
-										<span
-											className="search-icon"
-											onClick={() => {
-												if (isRowInputEnabled(index)) {
-													openProductSearch(row.id);
-												} else {
-													alert("이전 주문장을 완성해 주세요.");
-												}
-											}}
-											style={{
-												opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-												cursor: !isRowInputEnabled(index)
-													? "not-allowed"
-													: "pointer",
-											}}
-										>
-											🔍
-										</span>
-									</div>
-								</td>
-								<td>
-									<div className="search-field-container">
-										<input
-											type="text"
-											value={row.factoryName}
-											readOnly
-											placeholder="제조사"
-										/>
-										<span
-											className="search-icon"
-											onClick={() => {
-												if (isRowInputEnabled(index)) {
-													openFactorySearch(row.id);
-												} else {
-													alert("이전 주문장을 완성해 주세요.");
-												}
-											}}
-											style={{
-												opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-												cursor: !isRowInputEnabled(index)
-													? "not-allowed"
-													: "pointer",
-											}}
-										>
-											🔍
-										</span>
-									</div>
-								</td>
-								<td>
-									<select
-										value={row.materialId}
-										onChange={(e) => {
-											if (!validateSequence(row.id, "material")) {
-												return;
-											}
-											const selectedMaterial = materials.find(
-												(m) => m.materialId === e.target.value
-											);
-											updateOrderRow(row.id, "materialId", e.target.value);
-											updateOrderRow(
-												row.id,
-												"materialName",
-												selectedMaterial?.materialName || ""
-											);
-										}}
-										disabled={loading || !isRowInputEnabled(index)}
-										data-row-id={row.id}
-										data-field="material"
-										onClick={() => {
-											if (isRowInputEnabled(index) && !row.materialId) {
-												handleRequiredFieldClick(row.id, "material");
-											} else if (!isRowInputEnabled(index)) {
-												alert("이전 주문장을 완성해 주세요.");
-											}
-										}}
-										onFocus={() => {
-											if (isRowInputEnabled(index)) {
-												handleRowFocus(row.id);
-												if (!row.materialId) {
-													handleRequiredFieldClick(row.id, "material");
-												}
-											}
-										}}
-										style={{
-											opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-											cursor: !isRowInputEnabled(index)
-												? "not-allowed"
-												: "pointer",
-										}}
-									>
-										<option value="">선택</option>
-										{materials.map((material) => (
-											<option
-												key={material.materialId}
-												value={material.materialId}
-											>
-												{material.materialName}
-											</option>
-										))}
-									</select>
-								</td>
-								<td>
-									<select
-										value={row.colorId}
-										onChange={(e) => {
-											if (!validateSequence(row.id, "other")) {
-												return;
-											}
-											const selectedColor = colors.find(
-												(c) => c.colorId === e.target.value
-											);
-											updateOrderRow(row.id, "colorId", e.target.value);
-											updateOrderRow(
-												row.id,
-												"colorName",
-												selectedColor?.colorName || ""
-											);
-										}}
-										disabled={loading || !isRowInputEnabled(index)}
-										onFocus={() => {
-											if (isRowInputEnabled(index)) {
-												handleRowFocus(row.id);
-											}
-										}}
-										style={{
-											opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-											cursor: !isRowInputEnabled(index)
-												? "not-allowed"
-												: "pointer",
-										}}
-									>
-										<option value="">선택</option>
-										{colors.map((color) => (
-											<option key={color.colorId} value={color.colorId}>
-												{color.colorName}
-											</option>
-										))}
-									</select>
-								</td>
-								{/* 보조석 필드들 */}
-								<td>
-									<select
-										value={row.assistanceStoneType}
-										onChange={(e) =>
-											updateOrderRow(
-												row.id,
-												"assistanceStoneType",
-												e.target.value
-											)
-										}
-										disabled={loading || !isRowInputEnabled(index)}
-										style={{
-											opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-										}}
-									>
-										<option value="없음">없음</option>
-										<option value="랩">랩</option>
-										<option value="천연">천연</option>
-										<option value="모이사">모이사</option>
-										<option value="유색석">유색석</option>
-									</select>
-								</td>
-								<td>
-									<select
-										value={row.assistanceStoneArrival}
-										onChange={(e) =>
-											handleAssistanceStoneArrivalChange(row.id, e.target.value)
-										}
-										disabled={loading || !isRowInputEnabled(index)}
-										className={`arrival-status ${
-											row.assistanceStoneArrival === "Y" ? "arrived" : ""
-										}`}
-										style={{
-											opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-										}}
-									>
-										<option value="N">N</option>
-										<option value="Y">Y</option>
-									</select>
-								</td>
-								<td>
-									<input
-										type="date"
-										value={row.assistanceStoneArrivalDate}
-										onChange={(e) =>
-											updateOrderRow(
-												row.id,
-												"assistanceStoneArrivalDate",
-												e.target.value
-											)
-										}
-										disabled={loading || row.assistanceStoneArrival === "N"}
-										style={{
-											backgroundColor:
-												row.assistanceStoneArrival === "N"
-													? "#f5f5f5"
-													: "white",
-										}}
-									/>
-								</td>
-								<td>
-									<input
-										type="text"
-										value={row.mainPrice.toLocaleString()}
-										readOnly
-										disabled={loading}
-										style={{ backgroundColor: "#f5f5f5" }}
-									/>
-								</td>
-								<td>
-									<input
-										type="number"
-										value={row.additionalPrice}
-										onChange={(e) =>
-											updateOrderRow(
-												row.id,
-												"additionalPrice",
-												parseInt(e.target.value)
-											)
-										}
-										disabled={loading || !isRowInputEnabled(index)}
-										placeholder="0"
-										style={{
-											opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-										}}
-									/>
-								</td>
-								<td>
-									<input
-										type="text"
-										value={row.mainStonePrice.toLocaleString()}
-										readOnly
-										disabled={loading}
-										style={{ backgroundColor: "#f5f5f5" }}
-									/>
-								</td>
-								<td>
-									<input
-										type="text"
-										value={row.assistanceStonePrice.toLocaleString()}
-										readOnly
-										disabled={loading}
-										style={{ backgroundColor: "#f5f5f5" }}
-									/>
-								</td>
-								<td>
-									<input
-										type="number"
-										value={row.additionalStonePrice}
-										onChange={(e) =>
-											updateOrderRow(
-												row.id,
-												"additionalStonePrice",
-												parseInt(e.target.value) || 0
-											)
-										}
-										disabled={loading || !isRowInputEnabled(index)}
-										placeholder="추가단가"
-										style={{
-											opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-										}}
-									/>
-								</td>
-								<td>
-									<input
-										type="number"
-										value={row.mainStoneCount}
-										readOnly
-										disabled={loading}
-										style={{ backgroundColor: "#f5f5f5" }}
-									/>
-								</td>
-								<td>
-									<input
-										type="number"
-										value={row.assistanceStoneCount}
-										readOnly
-										disabled={loading}
-										style={{ backgroundColor: "#f5f5f5" }}
-									/>
-								</td>
-								<td>
-									<input
-										type="number"
-										step="0.01"
-										value={row.stoneWeightTotal}
-										onChange={(e) =>
-											updateOrderRow(
-												row.id,
-												"stoneWeightTotal",
-												parseFloat(e.target.value) || 0
-											)
-										}
-										disabled={loading}
-									/>
-								</td>
-								<td>
-									<input
-										type="text"
-										value={row.mainStoneNote}
-										onChange={(e) =>
-											updateOrderRow(row.id, "mainStoneNote", e.target.value)
-										}
-										onFocus={() => handleRowFocus(row.id)}
-										disabled={loading}
-									/>
-								</td>
-								<td>
-									<input
-										type="text"
-										value={row.assistanceStoneNote}
-										onChange={(e) =>
-											updateOrderRow(
-												row.id,
-												"assistanceStoneNote",
-												e.target.value
-											)
-										}
-										onFocus={() => handleRowFocus(row.id)}
-										disabled={loading}
-									/>
-								</td>
-								<td>
-									<input
-										type="text"
-										value={row.productSize}
-										onChange={(e) =>
-											updateOrderRow(row.id, "productSize", e.target.value)
-										}
-										onFocus={() => handleRowFocus(row.id)}
-										disabled={loading}
-										placeholder="호"
-									/>
-								</td>
-								<td>
-									<select
-										value={row.priorityName}
-										onChange={(e) => {
-											if (!validateSequence(row.id, "other")) {
-												return;
-											}
-											const selectedPriority = priorities.find(
-												(p) => p.priorityName === e.target.value
-											);
-											updateOrderRow(row.id, "priorityName", e.target.value);
-
-											// priorityDate만큼 현재 날짜에 더해서 출고일 설정
-											if (selectedPriority && selectedPriority.priorityDate) {
-												const currentDate = new Date();
-												const deliveryDate = new Date(currentDate);
-												deliveryDate.setDate(
-													currentDate.getDate() + selectedPriority.priorityDate
-												);
-												const formattedDate = deliveryDate
-													.toISOString()
-													.split("T")[0];
-												updateOrderRow(row.id, "deliveryDate", formattedDate);
-											}
-										}}
-										disabled={loading || !isRowInputEnabled(index)}
-										style={{
-											opacity: !isRowInputEnabled(index) ? 0.5 : 1,
-											cursor: !isRowInputEnabled(index)
-												? "not-allowed"
-												: "pointer",
-										}}
-									>
-										<option value="">선택</option>
-										{priorities.map((priority) => (
-											<option
-												key={priority.priorityName}
-												value={priority.priorityName}
-											>
-												{priority.priorityName}
-											</option>
-										))}
-									</select>
-								</td>
-								<td>
-									<input
-										type="text"
-										value={row.orderNote}
-										onChange={(e) =>
-											updateOrderRow(row.id, "orderNote", e.target.value)
-										}
-										disabled={loading}
-									/>
-								</td>
-								<td>
-									<input
-										type="date"
-										value={row.deliveryDate}
-										onChange={(e) =>
-											updateOrderRow(row.id, "deliveryDate", e.target.value)
-										}
-										disabled={loading}
-									/>
-								</td>
-							</tr>
-						))}
-						{/* 추가 버튼 행 */}
-						<tr>
-							<td>{orderRows.length + 1}</td>
-							<td>
-								<button
-									className="btn-add-row"
-									onClick={addOrderRow}
-									disabled={loading}
-								>
-									+
-								</button>
-							</td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
+			<OrderTable
+				mode="create"
+				orderRows={orderRows}
+				loading={loading}
+				materials={materials}
+				colors={colors}
+				priorities={priorities}
+				assistantStones={assistantStones}
+				onRowDelete={resetOrderRow}
+				onRowUpdate={updateOrderRow}
+				onRowFocus={handleRowFocus}
+				onRequiredFieldClick={handleRequiredFieldClick}
+				onStoreSearchOpen={openStoreSearch}
+				onProductSearchOpen={openProductSearch}
+				onFactorySearchOpen={openFactorySearch}
+				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
+				onAddOrderRow={addOrderRow}
+				validateSequence={validateSequence}
+				isRowInputEnabled={isRowInputEnabled}
+			/>
 
 			{/* 하단 버튼 */}
 			<div className="form-actions">

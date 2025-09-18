@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { isApiSuccess } from "../../../../libs/api";
+import { isApiSuccess } from "../../../../libs/api/config";
 import { factoryApi } from "../../../../libs/api/factory";
 import type { FactorySearchDto } from "../../../types/factory";
 import FactoryList from "./FactoryList";

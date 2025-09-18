@@ -1,9 +1,9 @@
 import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
+	BrowserRouter,
+	Routes,
+	Route,
+	Navigate,
+	Outlet,
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -19,6 +19,7 @@ import OrderPage from "./pages/order/OrderPage";
 import FixPage from "./pages/order/FixPage";
 import ExpactPage from "./pages/order/ExpactPage";
 import OrderCreatePage from "./pages/order/OrderCreatePage";
+import OrderUpdatePage from "./pages/order/OrderUpdatePage";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
@@ -31,99 +32,129 @@ import "./App.css";
 import "./styles/index.css";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
 
-  // 토큰 자동 갱신 서비스 초기화
-  useTokenAutoRefresh();
+	// 토큰 자동 갱신 서비스 초기화
+	useTokenAutoRefresh();
 
-  useEffect(() => {
-    // 앱 시작 시 토큰 확인
-    const checkAuth = () => {
-      const hasToken = tokenUtils.hasToken();
-      setIsAuthenticated(hasToken);
-      setIsLoading(false);
-    };
+	useEffect(() => {
+		// 앱 시작 시 토큰 확인
+		const checkAuth = async () => {
+			const hasAccessToken = tokenUtils.hasToken();
+			console.log("App.tsx - hasAccessToken:", hasAccessToken);
 
-    checkAuth();
+			if (hasAccessToken) {
+				// AccessToken이 있으면 인증된 상태로 간주
+				setIsAuthenticated(true);
+				setIsLoading(false);
+				return;
+			}
 
-    // 로컬 스토리지 변화 감지 (다른 탭에서의 변화 감지)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "app:accessToken") {
-        checkAuth();
-      }
-    };
+			// AccessToken이 없으면 refreshToken으로 재발급 시도
+			try {
+				console.log("App.tsx - Attempting token refresh...");
+				const { authApi } = await import("../libs/api/auth");
+				const response = await authApi.refreshToken();
 
-    // 현재 탭에서의 토큰 변화 감지를 위한 커스텀 이벤트
-    const handleTokenChange = () => {
-      checkAuth();
-    };
+				if (response.success && response.data?.token) {
+					console.log("App.tsx - Token refresh successful");
+					tokenUtils.setToken(response.data.token);
+					setIsAuthenticated(true);
+				} else {
+					console.log("App.tsx - Token refresh failed");
+					setIsAuthenticated(false);
+				}
+			} catch (error) {
+				console.log("App.tsx - Token refresh error:", error);
+				setIsAuthenticated(false);
+			}
 
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("tokenChange", handleTokenChange);
+			setIsLoading(false);
+		};
 
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("tokenChange", handleTokenChange);
-    };
-  }, []);
+		checkAuth();
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-  };
+		// 로컬 스토리지 변화 감지 (다른 탭에서의 변화 감지)
+		const handleStorageChange = (e: StorageEvent) => {
+			if (e.key === "app:accessToken") {
+				const hasToken = !!e.newValue;
+				setIsAuthenticated(hasToken);
+			}
+		};
 
-  if (isLoading) {
-    return (
-      <div className="app-loading">
-        <div className="spinner"></div>
-        <p>로딩 중...</p>
-      </div>
-    );
-  }
+		// 현재 탭에서의 토큰 변화 감지를 위한 커스텀 이벤트
+		const handleTokenChange = () => {
+			const hasToken = tokenUtils.hasToken();
+			setIsAuthenticated(hasToken);
+		};
 
-  return (
-    <BrowserRouter>
-      {!isAuthenticated ? (
-        <Routes>
-          <Route path="/join" element={<JoinPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      ) : (
-        <Routes>
-          {/* Layout 없이 단독 페이지 렌더링 */}
-          <Route path="/stone/create" element={<StoneCreatePage />} />
+		window.addEventListener("storage", handleStorageChange);
+		window.addEventListener("tokenChange", handleTokenChange);
 
-          {/* Layout 안에서 렌더링 */}
-          <Route
-            element={
-              <Layout onLogout={handleLogout}>
-                <Outlet />
-              </Layout>
-            }
-          >
-            <Route path="/" element={<HomePage />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/catalog" element={<CataLogPage />} />
-            <Route path="/catalog/create" element={<ProductCreatePage />} />
-            <Route path="/catalog/:productId" element={<ProductDetailPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/stone" element={<StonePage />} />
-            <Route path="/stone/create" element={<StoneCreatePage />} />
-            <Route path="/orders" element={<OrderPage />} />
-            <Route path="/orders/create" element={<OrderCreatePage />} />
-            <Route path="/fix" element={<FixPage />} />
-            <Route path="/expact" element={<ExpactPage />} />
-            <Route path="/order-deleted" element={<OrderDeletedPage />} />
-            <Route path="/login" element={<Navigate to="/" replace />} />
-            <Route path="/join" element={<Navigate to="/" replace />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      )}
-    </BrowserRouter>
-  );
+		return () => {
+			window.removeEventListener("storage", handleStorageChange);
+			window.removeEventListener("tokenChange", handleTokenChange);
+		};
+	}, []);
+
+	const handleLogout = () => {
+		setIsAuthenticated(false);
+	};
+
+	if (isLoading) {
+		return (
+			<div className="app-loading">
+				<div className="spinner"></div>
+				<p>로딩 중...</p>
+			</div>
+		);
+	}
+
+	return (
+		<BrowserRouter>
+			{!isAuthenticated ? (
+				<Routes>
+					<Route path="/join" element={<JoinPage />} />
+					<Route path="/login" element={<LoginPage />} />
+					<Route path="*" element={<Navigate to="/login" replace />} />
+				</Routes>
+			) : (
+				<Routes>
+					{/* Layout 없이 단독 페이지 렌더링 */}
+					<Route path="/stone/create" element={<StoneCreatePage />} />
+
+					{/* Layout 안에서 렌더링 */}
+					<Route
+						element={
+							<Layout onLogout={handleLogout}>
+								<Outlet />
+							</Layout>
+						}
+					>
+						<Route path="/" element={<HomePage />} />
+						<Route path="/home" element={<HomePage />} />
+						<Route path="/catalog" element={<CataLogPage />} />
+						<Route path="/catalog/create" element={<ProductCreatePage />} />
+						<Route path="/catalog/:productId" element={<ProductDetailPage />} />
+						<Route path="/profile" element={<ProfilePage />} />
+						<Route path="/settings" element={<SettingsPage />} />
+						<Route path="/stone" element={<StonePage />} />
+						<Route path="/stone/create" element={<StoneCreatePage />} />
+						<Route path="/orders" element={<OrderPage />} />
+            <Route path="/orders/:orderId" element={<OrderUpdatePage />} />
+						<Route path="/orders/create" element={<OrderCreatePage />} />
+						<Route path="/fix" element={<FixPage />} />
+						<Route path="/expact" element={<ExpactPage />} />
+						<Route path="/order-deleted" element={<OrderDeletedPage />} />
+						<Route path="/login" element={<Navigate to="/" replace />} />
+						<Route path="/join" element={<Navigate to="/" replace />} />
+						<Route path="*" element={<Navigate to="/" replace />} />
+					</Route>
+				</Routes>
+			)}
+		</BrowserRouter>
+	);
 }
 
 export default App;

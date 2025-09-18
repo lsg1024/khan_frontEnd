@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-	isApiSuccess,
-	apiRequest,
-	type ApiResponse,
-} from "../../libs/api/config";
+import { isApiSuccess } from "../../libs/api/config";
+import { authApi } from "../../libs/api/auth";
 import { extractSubdomain } from "../../libs/domain";
+import { tokenUtils } from "../utils/tokenUtils";
 import "../styles/pages/LoginPage.css";
 
 function LoginPage() {
@@ -19,33 +17,44 @@ function LoginPage() {
 
 	// 컴포넌트 마운트 시 토큰 체크
 	useEffect(() => {
-		const checkAuthStatus = async () => {
-			const token = localStorage.getItem("app:accessToken");
-
-			if (token) {
+		const checkAuthentication = async () => {
+			// 1. Access Token 유효성 검사 시도
+			const accessToken = tokenUtils.getToken();
+			if (accessToken) {
 				try {
-					// 토큰이 유효한지 서버에 확인
-					const response = await apiRequest.get("/users/info");
-					if (response.success) {
-						navigate("/", { replace: true }); // 루트로 리다이렉트, replace 사용
-						return;
-					} else {
-						// 토큰이 유효하지 않으면 제거
-						localStorage.removeItem("app:accessToken");
-					}
-				} catch (error) {
-					if (error instanceof Error) {
-						localStorage.removeItem("app:accessToken");
-					}
+					await authApi.getProfile();
+					// 성공 시 메인으로 이동하고 함수 종료
+					// 토큰 변화 이벤트 발생시켜 App.tsx 상태 업데이트
+					window.dispatchEvent(new Event("tokenChange"));
+					navigate("/", { replace: true });
+					return;
+				} catch {
+					tokenUtils.removeToken();
 				}
-			} else {
-				// 토큰이 없으면 로그인 페이지에 그대로 있음
 			}
 
+			// 2. Access Token이 없거나 유효하지 않은 경우, Refresh Token으로 재발급 시도
+			try {
+				const response = await authApi.refreshToken();
+				if (response.success && response.data?.token) {
+					// 재발급 성공 시, 새 토큰 저장 후 메인으로 이동
+					tokenUtils.setToken(response.data.token);
+					// 토큰 변화 이벤트 발생시켜 App.tsx 상태 업데이트
+					window.dispatchEvent(new Event("tokenChange"));
+					navigate("/", { replace: true });
+					return;
+				} else {
+					tokenUtils.removeToken();
+				}
+			} catch {
+				tokenUtils.removeToken();
+			}
+
+			// 3. 모든 자동 로그인 시도가 실패한 경우, 로딩 상태를 해제
 			setIsCheckingAuth(false);
 		};
 
-		checkAuthStatus();
+		checkAuthentication();
 	}, [navigate]);
 
 	const handleLogin = async (e: React.FormEvent) => {
@@ -57,8 +66,8 @@ function LoginPage() {
 		}
 
 		try {
-			const data = await apiRequest.login<ApiResponse>("/auth/login", {
-				userId,
+			const data = await authApi.login({
+				userId: userId,
 				password,
 			});
 
@@ -67,17 +76,20 @@ function LoginPage() {
 
 			if (isLoginSuccess) {
 				// 로그인 성공 후 토큰이 저장되었는지 확인
-				const token = localStorage.getItem("app:accessToken");
+				const token = tokenUtils.getToken();
 				if (token) {
 					try {
-						const userInfoResponse = await apiRequest.get("/users/info");
+						const userInfoResponse = await authApi.getProfile();
 						if (userInfoResponse.success) {
+							// 토큰 변화 이벤트 발생시켜 App.tsx 상태 업데이트
+							window.dispatchEvent(new Event("tokenChange"));
 							navigate("/", { replace: true }); // 루트로 리다이렉트, replace 사용
 						} else {
 							setError("인증 정보 확인에 실패했습니다.");
 						}
-					} catch (userInfoError) {
-						console.error("사용자 정보 조회 에러:", userInfoError);
+					} catch {
+						// 토큰 변화 이벤트 발생시켜 App.tsx 상태 업데이트
+						window.dispatchEvent(new Event("tokenChange"));
 						navigate("/");
 					}
 				} else {
@@ -113,8 +125,6 @@ function LoginPage() {
 			} else {
 				setError("네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.");
 			}
-
-			console.error("로그인 에러:", error);
 		}
 	};
 

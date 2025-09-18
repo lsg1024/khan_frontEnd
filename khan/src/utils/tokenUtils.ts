@@ -24,7 +24,6 @@ export const tokenUtils = {
 	removeToken: () => {
 		console.log("AccessToken 삭제됨");
 		localStorage.removeItem("app:accessToken");
-		// 토큰 변경 이벤트 발생
 		window.dispatchEvent(new Event("tokenChange"));
 	},
 

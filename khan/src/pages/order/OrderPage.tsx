@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import Pagination from "../../components/common/Pagination";
@@ -14,8 +14,8 @@ export const OrderPage = () => {
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState({
 		search: "",
-		start: new Date().toISOString().split("T")[0],
-		end: new Date().toISOString().split("T")[0],
+		start: new Date().toISOString().slice(0, 10),
+		end: new Date().toISOString().slice(0, 10),
 		factory: "",
 		store: "",
 		setType: "",
@@ -27,7 +27,22 @@ export const OrderPage = () => {
 		value: string
 	) => {
 		setSearchFilters((prev) => ({ ...prev, [field]: value }));
+
+		if (field === "start" && value > searchFilters.end) {
+			setSearchFilters((prev) => ({ ...prev, end: value }));
+		}
 	};
+
+	const startDateInputRef = useRef<HTMLInputElement>(null);
+	const endDateInputRef = useRef<HTMLInputElement>(null);
+
+	const handleInputStartClick = () => {
+        startDateInputRef.current?.showPicker();
+    };
+
+	const handleInputEndClilck = () => {
+		endDateInputRef.current?.showPicker();
+	}
 
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string>("");
@@ -248,17 +263,23 @@ export const OrderPage = () => {
 							<div className="filter-group-order">
 								<div className="date-range-order">
 									<input
+										ref={startDateInputRef}
+										name="start"
 										type="date"
 										value={searchFilters.start}
 										onChange={(e) =>
 											handleFilterChange("start", e.target.value)
 										}
+										onClick={handleInputStartClick}
 									/>
 									<span>~</span>
 									<input
+										ref={endDateInputRef}
+										name="end"
 										type="date"
 										value={searchFilters.end}
 										onChange={(e) => handleFilterChange("end", e.target.value)}
+										onClick={handleInputEndClilck}
 									/>
 								</div>
 							</div>
@@ -364,7 +385,7 @@ export const OrderPage = () => {
 								<tr>
 									<th>No</th>
 									<th>상품명</th>
-									<th>일자</th>
+									<th>주문/출고</th>
 									<th>판매처</th>
 									<th>이미지</th>
 									<th>재질/색상</th>
@@ -394,20 +415,12 @@ export const OrderPage = () => {
 											{/* << MODIFIED */}
 											<div className="info-row-order">
 												<span className="info-value">
-													{new Date(order.orderDate)
-														.toLocaleDateString()
-														.split(".")
-														.join("-")
-														.slice(0, 11)}
+													{new Date(order.orderDate).toISOString().slice(0, 10)}
 												</span>
 											</div>
 											<div className="info-row-order">
 												<span className="info-value-expect">
-													{new Date(order.orderExpectDate)
-														.toLocaleDateString()
-														.split(".")
-														.join("-")
-														.slice(0, 11)}
+													{new Date(order.orderExpectDate).toISOString().slice(0, 10)}
 												</span>
 											</div>
 										</td>

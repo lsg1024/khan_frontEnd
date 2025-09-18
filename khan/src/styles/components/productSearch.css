@@ -6,6 +6,7 @@
 	justify-items: center;
 	flex: 1;
 	padding: 5px;
+	align-content: start;
 }
 
 .search-product-modal-content {
@@ -21,7 +22,7 @@
 }
 
 .search-product-card {
-	height: 240px;
+	height: auto;
 	width: 180px;
 	border: 1px solid #ddd;
 	cursor: pointer;
