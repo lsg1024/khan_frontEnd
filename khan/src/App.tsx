@@ -53,20 +53,16 @@ function App() {
 
 			// AccessToken이 없으면 refreshToken으로 재발급 시도
 			try {
-				console.log("App.tsx - Attempting token refresh...");
 				const { authApi } = await import("../libs/api/auth");
 				const response = await authApi.refreshToken();
 
 				if (response.success && response.data?.token) {
-					console.log("App.tsx - Token refresh successful");
 					tokenUtils.setToken(response.data.token);
 					setIsAuthenticated(true);
 				} else {
-					console.log("App.tsx - Token refresh failed");
 					setIsAuthenticated(false);
 				}
-			} catch (error) {
-				console.log("App.tsx - Token refresh error:", error);
+			} catch {
 				setIsAuthenticated(false);
 			}
 
@@ -124,6 +120,8 @@ function App() {
 					{/* Layout 없이 단독 페이지 렌더링 */}
 					<Route path="/stone/create" element={<StoneCreatePage />} />
 
+                    <Route path="/orders/update/:flowCode" element={<OrderUpdatePage />}/>
+					<Route path="/orders/create" element={<OrderCreatePage />} />
 					{/* Layout 안에서 렌더링 */}
 					<Route
 						element={
@@ -142,8 +140,8 @@ function App() {
 						<Route path="/stone" element={<StonePage />} />
 						<Route path="/stone/create" element={<StoneCreatePage />} />
 						<Route path="/orders" element={<OrderPage />} />
-            <Route path="/orders/:orderId" element={<OrderUpdatePage />} />
-						<Route path="/orders/create" element={<OrderCreatePage />} />
+						{/* <Route path="/orders/:flowCode" element={<OrderUpdatePage />} />
+						<Route path="/orders/create" element={<OrderCreatePage />} /> */}
 						<Route path="/fix" element={<FixPage />} />
 						<Route path="/expact" element={<ExpactPage />} />
 						<Route path="/order-deleted" element={<OrderDeletedPage />} />

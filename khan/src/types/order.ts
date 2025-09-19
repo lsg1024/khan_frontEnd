@@ -1,13 +1,32 @@
 import type { PageInfo } from "./page";
 
+export interface OrderResponseDetail {
+	createAt: string;
+	shippingAt: string;
+	flowCode: string;
+	storeName: string;
+	productName: string;
+	classification: string;
+	materialName: string;
+	colorName: string;
+	productSize: string;
+	orderNote: string;
+	factoryName: string;
+	priority: string;
+	productStatus: string;
+	orderStatus: string;
+	stoneInfos: StoneInfo[];
+}
+
+
 export interface OrderSearchResponse {
 	content: OrderDto[];
 	page: PageInfo;
 }
 
 export interface OrderDto {
-	orderDate: string;
-	orderExpectDate: string;
+	createAt: string;
+	shippingAt: string;
 	flowCode: string;
 	storeName: string;
 	productName: string;

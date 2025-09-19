@@ -857,7 +857,7 @@ const OrderCreatePage = () => {
 	// 취소
 	const handleCancel = () => {
 		if (window.confirm("작성을 취소하시겠습니까?")) {
-			navigate("/orders");
+			window.close();
 		}
 	};
 

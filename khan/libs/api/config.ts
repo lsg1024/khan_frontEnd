@@ -28,10 +28,6 @@ api.interceptors.request.use((config) => {
 			config.headers = AxiosHeaders.from(config.headers);
 		}
 		(config.headers as AxiosHeaders).set("Authorization", `Bearer ${token}`);
-	} else {
-		console.log(
-			"API 요청 인터셉터 - 토큰이 없어서 Authorization 헤더 설정 안됨"
-		);
 	}
 	return config;
 });
@@ -89,13 +85,11 @@ api.interceptors.response.use(
 			originalRequest._retry = true;
 
 			try {
-				console.log("API 인터셉터 - 401 오류, 토큰 갱신 시도");
 				// 동적 import로 순환 참조 방지
 				const { authApi } = await import("./auth");
 				const response = await authApi.refreshToken();
 
 				if (response.success && response.data?.token) {
-					console.log("API 인터셉터 - 토큰 갱신 성공");
 					tokenUtils.setToken(response.data.token);
 
 					// 새 토큰으로 원래 요청 재시도
@@ -107,11 +101,9 @@ api.interceptors.response.use(
 
 					return api(originalRequest);
 				} else {
-					console.log("API 인터셉터 - 토큰 갱신 실패");
 					throw new Error("Token refresh failed");
 				}
-			} catch (refreshError) {
-				console.log("API 인터셉터 - 토큰 갱신 오류:", refreshError);
+			} catch {
 				tokenUtils.removeToken();
 				window.dispatchEvent(new CustomEvent("tokenExpired"));
 

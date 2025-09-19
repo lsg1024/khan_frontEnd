@@ -8,7 +8,45 @@
 	margin: 0 auto;
 }
 
-/* 돋보기 아이콘이 포함된 검색 필드 스타일 */
+/* 주문 상세 정보 카드 */
+.order-detail-card {
+	background-color: white;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+	padding: 20px;
+	margin-bottom: 20px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.order-detail-card h3 {
+	margin: 0 0 15px 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: #333;
+}
+
+.detail-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 15px;
+}
+
+.detail-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.detail-item label {
+	font-weight: 500;
+	color: #555;
+	min-width: 80px;
+}
+
+.detail-item span {
+	color: #333;
+	font-weight: 400;
+} /* 돋보기 아이콘이 포함된 검색 필드 스타일 */
 .search-field-container {
 	display: flex;
 	align-items: center;
@@ -156,7 +194,7 @@
 	border-radius: 4px;
 	overflow: hidden;
 	border: 1px solid #ddd;
-    object-fit: contain;
+	object-fit: contain;
 }
 
 .product-image {
@@ -220,7 +258,7 @@
 	padding: 8px;
 	overflow-y: auto;
 	min-height: 120px; /* 최소 높이 설정 */
-    color: #333;
+	color: #333;
 }
 
 .info-item .label {
@@ -245,7 +283,7 @@
 	border-radius: 3px;
 	font-size: 11px;
 	line-height: 1.4;
-    color: #333;
+	color: #333;
 }
 
 .stone-item:last-child {

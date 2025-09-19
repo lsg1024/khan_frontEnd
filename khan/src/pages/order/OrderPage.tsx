@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import Pagination from "../../components/common/Pagination";
 import FactorySearch from "../../components/common/product/FactorySearch";
@@ -9,7 +8,6 @@ import type { FactorySearchDto } from "../../types/factory";
 import "../../styles/pages/OrderPage.css";
 
 export const OrderPage = () => {
-	const navigate = useNavigate();
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState({
@@ -62,9 +60,18 @@ export const OrderPage = () => {
 
 	const { handleError } = useErrorHandler();
 
+	const handleOrderCreate = () => {
+		window.open("/orders/create", "주문 생성", "popup=yes,noopener,noreferrer,resizable=yes,scrollbars=yes,width=1300,height=800");
+	};
+
 	// 주문 상세 페이지로 이동
 	const handleOrderClick = (flowCode: string) => {
-		navigate(`/orders/${flowCode}`);
+		const orderData = orders.find(order => order.flowCode === flowCode);
+
+		if (orderData?.imagePath) {
+			sessionStorage.setItem("tempImagePath", orderData.imagePath);
+		}
+		window.open(`/orders/update/${flowCode}`, "주문 수정", "popup=yes,noopener,noreferrer,resizable=yes,scrollbars=yes,width=1300,height=800");
 	};
 
 	// 주문 상태 변경
@@ -127,10 +134,6 @@ export const OrderPage = () => {
 	const handleFactorySearchClose = () => {
 		setIsFactorySearchOpen(false);
 		setSelectedOrderForFactory("");
-	};
-
-	const handleOrderCreate = () => {
-		navigate("/orders/create");
 	};
 
 	// 검색 실행
@@ -415,12 +418,12 @@ export const OrderPage = () => {
 											{/* << MODIFIED */}
 											<div className="info-row-order">
 												<span className="info-value">
-													{new Date(order.orderDate).toISOString().slice(0, 10)}
+													{new Date(order.createAt).toISOString().slice(0, 10)}
 												</span>
 											</div>
 											<div className="info-row-order">
 												<span className="info-value-expect">
-													{new Date(order.orderExpectDate).toISOString().slice(0, 10)}
+													{new Date(order.shippingAt).toISOString().slice(0, 10)}
 												</span>
 											</div>
 										</td>

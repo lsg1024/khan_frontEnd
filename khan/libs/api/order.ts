@@ -4,14 +4,15 @@ import type {
 	OrderSearchResponse,
 	OrderCreateRequest,
 	PastOrderDto,
-	OrderDto
+	OrderResponseDetail,
 } from "../../src/types/order";
 
 export const orderApi = {
-
-	getOrder: async (flowCode: string): Promise<ApiResponse<OrderDto>> => {
+	getOrder: async (
+		flowCode: string
+	): Promise<ApiResponse<OrderResponseDetail>> => {
 		const params = { id: flowCode };
-		return apiRequest.get<OrderDto>("order/order", { params });
+		return apiRequest.get<OrderResponseDetail>("order/order", { params });
 	},
 
 	getOrders: async (
@@ -37,11 +38,17 @@ export const orderApi = {
 
 	getFilterFactories: async (
 		start: string,
-		end: string
+		end: string,
+		factory?: string,
+		store?: string,
+		setType?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
 		if (start) params.start = start;
 		if (end) params.end = end;
+		if (factory) params.factory = factory;
+		if (store) params.store = store;
+		if (setType) params.setType = setType;
 
 		return apiRequest.get("order/filters/factory", { params });
 	},
