@@ -1,22 +1,22 @@
 import React, { useEffect, useRef } from "react";
-import type { ProductDto } from "../../../types/product";
+import type { FactorySearchDto } from "../../../types/factory";
 
-interface ProductSearchProps {
-	onSelectProduct: (product: ProductDto) => void;
+interface FactorySearchProps {
+	onSelectFactory: (factory: FactorySearchDto) => void;
 	onClose?: () => void;
 }
 
-const ProductSearch: React.FC<ProductSearchProps> = ({
-	onSelectProduct,
-	onClose,
+const FactorySearch: React.FC<FactorySearchProps> = ({
+	onSelectFactory,
+	onClose
 }) => {
 	// 함수들을 ref로 저장하여 리렌더링 시에도 동일한 참조 유지
-	const onSelectProductRef = useRef(onSelectProduct);
+	const onSelectFactoryRef = useRef(onSelectFactory);
 	const onCloseRef = useRef(onClose);
 
 	// ref 업데이트
 	useEffect(() => {
-		onSelectProductRef.current = onSelectProduct;
+		onSelectFactoryRef.current = onSelectFactory;
 		onCloseRef.current = onClose;
 	});
 
@@ -24,15 +24,15 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
 	useEffect(() => {
 		// 팝업 창 열기
 		const popup = window.open(
-			"/product-search",
-			"productSearch",
-			"width=1200,height=750,scrollbars=yes,resizable=yes"
+			"/factory-search",
+			"factorySearch",
+			"width=1000,height=450,scrollbars=yes,resizable=yes"
 		);
 
-		// 팝업에서 상품 선택 시 메시지 처리
+		// 팝업에서 제조사 선택 시 메시지 처리
 		const handleMessage = (event: MessageEvent) => {
-			if (event.data?.type === "PRODUCT_SELECTED") {
-				onSelectProductRef.current(event.data.data);
+			if (event.data?.type === "FACTORY_SELECTED") {
+				onSelectFactoryRef.current(event.data.data);
 				window.removeEventListener("message", handleMessage);
 			}
 		};
@@ -44,19 +44,17 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
 			if (popup?.closed) {
 				window.removeEventListener("message", handleMessage);
 				clearInterval(checkClosed);
-				// 팝업이 닫힐 때 부모에게 알림
 				onCloseRef.current?.();
 			}
 		}, 1000);
 
-		// 클린업 함수
 		return () => {
 			window.removeEventListener("message", handleMessage);
 			clearInterval(checkClosed);
 		};
-	}, []); // 빈 의존성 배열로 한 번만 실행
+	}, []); 
 
-	return null; // 실제 UI는 팝업에서 렌더링
+	return null;
 };
 
-export default ProductSearch;
+export default FactorySearch;

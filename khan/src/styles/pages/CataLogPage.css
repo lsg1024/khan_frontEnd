@@ -280,7 +280,6 @@
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	padding: var(--spacing-sm); /* 이미지 주변 패딩 추가 */
 }
 
 .product-image img {

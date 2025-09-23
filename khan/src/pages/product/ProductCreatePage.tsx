@@ -6,7 +6,7 @@ import { productApi } from "../../../libs/api/product";
 import { useErrorHandler } from "../../utils/errorHandler";
 import ProductInfo from "../../components/common/product/BasicInfo";
 import PriceTable from "../../components/common/product/PriceTable";
-import StoneTable from "../../components/common/product/StoneTable";
+import StoneTable from "../../components/common/stone/StoneTable";
 import type {
 	CreateProductRequest,
 	Product,

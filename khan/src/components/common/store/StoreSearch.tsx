@@ -1,22 +1,22 @@
 import React, { useEffect, useRef } from "react";
-import type { ProductDto } from "../../../types/product";
+import type { StoreSearchDto } from "../../../types/store";
 
-interface ProductSearchProps {
-	onSelectProduct: (product: ProductDto) => void;
+interface StoreSearchProps {
+	onSelectStore: (store: StoreSearchDto) => void;
 	onClose?: () => void;
 }
 
-const ProductSearch: React.FC<ProductSearchProps> = ({
-	onSelectProduct,
+const StoreSearch: React.FC<StoreSearchProps> = ({
+	onSelectStore,
 	onClose,
 }) => {
 	// 함수들을 ref로 저장하여 리렌더링 시에도 동일한 참조 유지
-	const onSelectProductRef = useRef(onSelectProduct);
+	const onSelectStoreRef = useRef(onSelectStore);
 	const onCloseRef = useRef(onClose);
 
 	// ref 업데이트
 	useEffect(() => {
-		onSelectProductRef.current = onSelectProduct;
+		onSelectStoreRef.current = onSelectStore;
 		onCloseRef.current = onClose;
 	});
 
@@ -24,15 +24,15 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
 	useEffect(() => {
 		// 팝업 창 열기
 		const popup = window.open(
-			"/product-search",
-			"productSearch",
-			"width=1200,height=750,scrollbars=yes,resizable=yes"
+			"/store-search",
+			"storeSearch",
+			"width=1000,height=450,scrollbars=yes,resizable=yes"
 		);
 
-		// 팝업에서 상품 선택 시 메시지 처리
+		// 팝업에서 거래처 선택 시 메시지 처리
 		const handleMessage = (event: MessageEvent) => {
-			if (event.data?.type === "PRODUCT_SELECTED") {
-				onSelectProductRef.current(event.data.data);
+			if (event.data?.type === "STORE_SELECTED") {
+				onSelectStoreRef.current(event.data.data);
 				window.removeEventListener("message", handleMessage);
 			}
 		};
@@ -59,4 +59,4 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
 	return null; // 실제 UI는 팝업에서 렌더링
 };
 
-export default ProductSearch;
+export default StoreSearch;

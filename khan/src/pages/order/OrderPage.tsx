@@ -1,19 +1,19 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { orderApi } from "../../../libs/api/order";
 import Pagination from "../../components/common/Pagination";
-import FactorySearch from "../../components/common/product/FactorySearch";
+import FactorySearch from "../../components/common/factory/FactorySearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { OrderDto } from "../../types/order";
 import type { FactorySearchDto } from "../../types/factory";
+import { getLocalDate, formatToLocalDate } from "../../utils/dateUtils";
 import "../../styles/pages/OrderPage.css";
 
 export const OrderPage = () => {
-
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState({
 		search: "",
-		start: new Date().toISOString().slice(0, 10),
-		end: new Date().toISOString().slice(0, 10),
+		start: getLocalDate(),
+		end: getLocalDate(),
 		factory: "",
 		store: "",
 		setType: "",
@@ -35,12 +35,12 @@ export const OrderPage = () => {
 	const endDateInputRef = useRef<HTMLInputElement>(null);
 
 	const handleInputStartClick = () => {
-        startDateInputRef.current?.showPicker();
-    };
+		startDateInputRef.current?.showPicker();
+	};
 
 	const handleInputEndClilck = () => {
 		endDateInputRef.current?.showPicker();
-	}
+	};
 
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string>("");
@@ -60,18 +60,52 @@ export const OrderPage = () => {
 
 	const { handleError } = useErrorHandler();
 
+	const orderCreationPopup = useRef<Window | null>(null);
+	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
+
 	const handleOrderCreate = () => {
-		window.open("/orders/create", "주문 생성", "popup=yes,noopener,noreferrer,resizable=yes,scrollbars=yes,width=1300,height=800");
+		const url = "/orders/create";
+		const NAME = "orderCreatePopup";
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
+
+		if (orderCreationPopup.current && !orderCreationPopup.current.closed) {
+			orderCreationPopup.current.focus();
+		} else {
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				orderCreationPopup.current = newPopup;
+			}
+		}
 	};
 
 	// 주문 상세 페이지로 이동
 	const handleOrderClick = (flowCode: string) => {
-		const orderData = orders.find(order => order.flowCode === flowCode);
+		const orderData = orders.find((order) => order.flowCode === flowCode);
 
 		if (orderData?.imagePath) {
 			sessionStorage.setItem("tempImagePath", orderData.imagePath);
 		}
-		window.open(`/orders/update/${flowCode}`, "주문 수정", "popup=yes,noopener,noreferrer,resizable=yes,scrollbars=yes,width=1300,height=800");
+
+		const url = `/orders/update/${flowCode}`;
+		const NAME = `orderUpdate_${flowCode}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
+		const existingPopup = orderUpdatePopups.current.get(flowCode);
+
+		if (existingPopup && !existingPopup.closed) {
+			existingPopup.focus();
+		} else {
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				orderUpdatePopups.current.set(flowCode, newPopup);
+
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						orderUpdatePopups.current.delete(flowCode);
+						clearInterval(checkClosed);
+					}
+				}, 1000);
+			}
+		}
 	};
 
 	// 주문 상태 변경
@@ -83,9 +117,7 @@ export const OrderPage = () => {
 				setLoading(true);
 				const orderId = flowCode; // flowCode를 숫자로 변환
 				await orderApi.updateOrderStatus(orderId, newStatus);
-
 				alert("주문 상태가 성공적으로 변경되었습니다.");
-
 				// 현재 페이지 데이터 새로고침
 				await loadOrders(searchFilters, currentPage);
 			} catch (err) {
@@ -101,40 +133,45 @@ export const OrderPage = () => {
 	const handleFactoryClick = (flowCode: string) => {
 		if (window.confirm("공장을 변경하시겠습니까?")) {
 			setSelectedOrderForFactory(flowCode);
+			console.log("Selected Order for Factory bf:", isFactorySearchOpen);
 			setIsFactorySearchOpen(true);
+			console.log("Selected Order for Factory af:", isFactorySearchOpen);
 		}
 	};
 
 	// 제조사 선택 핸들러
-	const handleFactorySelect = async (factory: FactorySearchDto) => {
-		try {
-			setLoading(true);
-			await orderApi.updateOrderFactory(
-				selectedOrderForFactory,
-				factory.factoryId!
-			);
+	const handleFactorySelect = useCallback(
+		async (factory: FactorySearchDto) => {
+			try {
+				setLoading(true);
+				await orderApi.updateOrderFactory(
+					selectedOrderForFactory,
+					factory.factoryId!
+				);
 
-			alert("제조사가 성공적으로 변경되었습니다.");
+				alert("제조사가 성공적으로 변경되었습니다.");
 
-			// 현재 페이지 데이터 새로고침
-			await loadOrders(searchFilters, currentPage);
+				// 현재 페이지 데이터 새로고침
+				await loadOrders(searchFilters, currentPage);
 
-			// 팝업 닫기
-			setIsFactorySearchOpen(false);
-			setSelectedOrderForFactory("");
-		} catch (err) {
-			handleError(err, setError);
-			alert("제조사 변경에 실패했습니다.");
-		} finally {
-			setLoading(false);
-		}
-	};
+				// 팝업 상태 정리
+				setIsFactorySearchOpen(false);
+				setSelectedOrderForFactory("");
+			} catch (err) {
+				handleError(err, setError);
+				alert("제조사 변경에 실패했습니다.");
+			} finally {
+				setLoading(false);
+			}
+		},
+		[] // eslint-disable-line react-hooks/exhaustive-deps
+	);
 
-	// 제조사 검색 팝업 닫기
-	const handleFactorySearchClose = () => {
+	// 제조사 검색 팝업 닫기 핸들러
+	const handleFactorySearchClose = useCallback(() => {
 		setIsFactorySearchOpen(false);
 		setSelectedOrderForFactory("");
-	};
+	}, []);
 
 	// 검색 실행
 	const handleSearch = () => {
@@ -146,8 +183,8 @@ export const OrderPage = () => {
 	const handleReset = () => {
 		const resetFilters = {
 			search: "",
-			start: "2025-08-04",
-			end: "2025-09-11",
+			start: getLocalDate(),
+			end: getLocalDate(),
 			factory: "",
 			store: "",
 			setType: "",
@@ -235,7 +272,27 @@ export const OrderPage = () => {
 			await Promise.all([loadOrders(searchFilters, 1), fetchDropdownData()]);
 		};
 
+		// effect 시작 시점에 ref 값들을 복사
+		const creationPopupRef = orderCreationPopup;
+		const updatePopupsRef = orderUpdatePopups;
+
 		initializeData();
+
+		// 컴포넌트 언마운트 시 모든 팝업 참조 정리
+		return () => {
+			// 주문 생성 팝업 정리
+			if (creationPopupRef.current && !creationPopupRef.current.closed) {
+				creationPopupRef.current = null;
+			}
+
+			// 주문 상세 팝업들 정리
+			updatePopupsRef.current.forEach((popup) => {
+				if (popup && !popup.closed) {
+					// 팝업 참조만 제거 (실제 창은 닫지 않음)
+				}
+			});
+			updatePopupsRef.current.clear();
+		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 로딩 상태 렌더링
@@ -418,12 +475,12 @@ export const OrderPage = () => {
 											{/* << MODIFIED */}
 											<div className="info-row-order">
 												<span className="info-value">
-													{new Date(order.createAt).toISOString().slice(0, 10)}
+													{formatToLocalDate(order.createAt)}
 												</span>
 											</div>
 											<div className="info-row-order">
 												<span className="info-value-expect">
-													{new Date(order.shippingAt).toISOString().slice(0, 10)}
+													{formatToLocalDate(order.shippingAt)}
 												</span>
 											</div>
 										</td>
@@ -526,11 +583,12 @@ export const OrderPage = () => {
 				</div>
 
 				{/* 제조사 검색 팝업 */}
-				<FactorySearch
-					isOpen={isFactorySearchOpen}
-					onClose={handleFactorySearchClose}
-					onSelectFactory={handleFactorySelect}
-				/>
+				{isFactorySearchOpen && (
+					<FactorySearch
+						onSelectFactory={handleFactorySelect}
+						onClose={handleFactorySearchClose}
+					/>
+				)}
 			</div>
 		</>
 	);

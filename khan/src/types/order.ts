@@ -4,20 +4,52 @@ export interface OrderResponseDetail {
 	createAt: string;
 	shippingAt: string;
 	flowCode: string;
+	storeId: string;
 	storeName: string;
+	factoryId: string; // 서버에서 제공하는 factoryId
+	factoryName: string;
+	productId: string;
 	productName: string;
 	classification: string;
 	materialName: string;
 	colorName: string;
+	setType: string;
 	productSize: string;
 	orderNote: string;
-	factoryName: string;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
 	priority: string;
 	productStatus: string;
 	orderStatus: string;
+	assistantStone: boolean;
+	assistantStoneName: string | null;
+	assistantStoneCreateAt: string | null;
 	stoneInfos: StoneInfo[];
 }
 
+export interface OrderRequestDetail {
+	storeId: string;
+	orderNote: string;
+	factoryId: string;
+	productId: string;
+	productSize: string;
+	isProductWeightSale: boolean;
+	productAddLaborCost: number;
+	materialId: string;
+	colorId: string;
+	priorityName: string;
+	stoneWeight: number;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
+	assistantStone: boolean;
+	assistantStoneId: number;
+	assistantStoneName: string | null;
+	assistantStoneCreateAt: string | null;
+	createAt: string;
+	shippingAt: string;
+	productStatus: string;
+	stoneInfos: StoneInfo[];
+}
 
 export interface OrderSearchResponse {
 	content: OrderDto[];
@@ -55,8 +87,9 @@ export interface StoneInfo {
 	purchaseCost: string;
 	laborCost: number;
 	quantity: number;
-	isMainStone: boolean;
-	isIncludeStone: boolean;
+	mainStone: boolean;
+	includeStone: boolean;
+	grade?: string; // 스톤 등급
 }
 
 // 주문 생성 요청 데이터 (백엔드 JSON 구조와 정확히 일치)
@@ -71,16 +104,17 @@ export interface OrderCreateRequest {
 	materialId: string;
 	classificationName: string;
 	colorId: string;
-	setTypeName: string
+	setTypeName: string;
 	priorityName: string;
 	stoneWeight: number;
 	mainStoneNote: string;
 	assistanceStoneNote: string;
 	assistantStone: boolean;
-	assistantStoneId : number;
-	assistantStoneName : string;
-	assistantStoneCreateAt : string;
+	assistantStoneId: number;
+	assistantStoneName: string;
+	assistantStoneCreateAt: string;
 	createAt: string;
+	shippingAt: string;
 	productStatus: string;
 	stoneInfos: StoneInfo[];
 }
@@ -136,15 +170,16 @@ export interface OrderRowData {
 	assistanceStoneNote: string;
 	orderNote: string;
 	stoneInfos: StoneInfo[];
-	mainPrice: number | ''; // 기본 판매단가
-	additionalPrice: number | ''; // 추가 판매단가
-	mainStonePrice: number | ''; // 중심 판매단가
-	assistanceStonePrice: number | ''; // 보조 판매단가
-	mainStoneCount: number | ''; // 메인 개당알수
-	assistanceStoneCount: number | ''; // 보조 개당알수
-	additionalStonePrice: number | ''; // 추가 스톤 판매단가
-	stoneWeightTotal: number | ''; // 알중량
+	mainPrice: number | ""; // 기본 판매단가
+	additionalPrice: number | ""; // 추가 판매단가
+	mainStonePrice: number | ""; // 중심 판매단가
+	assistanceStonePrice: number | ""; // 보조 판매단가
+	mainStoneCount: number | ""; // 메인 개당알수
+	assistanceStoneCount: number | ""; // 보조 개당알수
+	additionalStonePrice: number | ""; // 추가 스톤 판매단가
+	stoneWeightTotal: number | ""; // 알중량
 	createAt: string; // 생성일
+	shippingAt: string; // 출고일
 	// 보조석 관련 필드
 	assistantStoneId: number;
 	assistantStone: boolean; // 입고여부 (Y/N)

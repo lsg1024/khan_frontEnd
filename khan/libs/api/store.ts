@@ -5,9 +5,9 @@ import type { StoreSearchResponse } from "../../src/types/store";
 
 export const storeApi = {
     // 판매처 검색 (페이징 지원)
-    getStores: async (name?: string, page: number = 1): Promise<ApiResponse<StoreSearchResponse>> => {
+    getStores: async (name?: string, page: number = 1, size = 12): Promise<ApiResponse<StoreSearchResponse>> => {
         return apiRequest.get<StoreSearchResponse>("account/stores", 
-            { params: {search: name || "", page: page} });
+            { params: {search: name || "", page: page, size: size} });
     },
 
     // 판매처 상세 조회
@@ -28,5 +28,10 @@ export const storeApi = {
     // 판매처 삭제
     deleteStore: async (storeId: string): Promise<ApiResponse<unknown>> => {
         return apiRequest.delete(`account/stores/${storeId}`);
+    },
+
+    // 판매처 등급
+    getStoreGrade: async (storeId: string): Promise<ApiResponse<string>> => {
+        return apiRequest.get("account/stores/grade", { params: { id: storeId } });
     }
 };

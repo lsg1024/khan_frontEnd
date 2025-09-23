@@ -46,11 +46,11 @@ const FactoryList: React.FC<FactoryListProps> = ({
 									<span
 										className={`level-badge level-${factory.level.toLowerCase()}`}
 									>
-										{factory.level === "ONE"
+										{factory.level === "1"
 											? "1급"
-											: factory.level === "TWO"
+											: factory.level === "2"
 											? "2급"
-											: factory.level === "THREE"
+											: factory.level === "3"
 											? "3급"
 											: "4급"}
 									</span>

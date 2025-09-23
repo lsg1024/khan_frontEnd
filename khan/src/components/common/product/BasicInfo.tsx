@@ -6,7 +6,7 @@ import type { SetTypeDto } from "../../../types/setType";
 import { classificationApi } from "../../../../libs/api/classification";
 import { materialApi } from "../../../../libs/api/material";
 import { setTypeApi } from "../../../../libs/api/setType";
-import FactorySearch from "./FactorySearch";
+import FactorySearch from "../factory/FactorySearch";
 import "../../../styles/components/BasicInfo.css";
 
 const BasicInfo: React.FC<ProductInfo> = ({
@@ -236,7 +236,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 						<span className="label">제조사:</span>
 						{editable ? (
 							<div
-								className={`factory-search-container ${
+								className={`basicinfo-factory-search-container ${
 									validationErrors.factoryId ? "error" : ""
 								}`}
 							>
@@ -375,11 +375,12 @@ const BasicInfo: React.FC<ProductInfo> = ({
 			</div>
 
 			{/* 제조사 검색 모달 */}
-			<FactorySearch
-				isOpen={isFactoryModalOpen}
-				onClose={() => setIsFactoryModalOpen(false)}
-				onSelectFactory={handleFactorySelect}
-			/>
+			{isFactoryModalOpen && (
+				<FactorySearch
+					onClose={() => setIsFactoryModalOpen(false)}
+					onSelectFactory={handleFactorySelect}
+				/>
+			)}
 		</div>
 	);
 };

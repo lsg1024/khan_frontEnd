@@ -5,9 +5,9 @@ import type { FactorySearchResponse } from "../../src/types/factory";
 
 export const factoryApi = {
     // 제조사 검색 (페이징 지원)
-    getFactories: async (name?: string, page: number = 1): Promise<ApiResponse<FactorySearchResponse>> => {
+    getFactories: async (name?: string, page: number = 1, size: number = 12): Promise<ApiResponse<FactorySearchResponse>> => {
         return apiRequest.get<FactorySearchResponse>("account/factories", 
-            { params: {search: name || "", page: page} });
+            { params: {search: name || "", page: page, size: size} });
     },
 
     // 제조사 상세 조회

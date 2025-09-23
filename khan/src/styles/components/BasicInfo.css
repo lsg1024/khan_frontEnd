@@ -360,7 +360,7 @@
 }
 
 /* 제조사 검색 관련 스타일 */
-.factory-search-container {
+.basicinfo-factory-search-container {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;

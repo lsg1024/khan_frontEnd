@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { orderApi } from "../../../libs/api/order";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
@@ -7,23 +6,62 @@ import { priorityApi } from "../../../libs/api/priority";
 import { productApi } from "../../../libs/api/product";
 import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { useErrorHandler } from "../../utils/errorHandler";
+import {
+	addBusinessDays,
+	getLocalDate,
+	formatDateToString,
+} from "../../utils/dateUtils";
 import type {
 	OrderRowData,
 	OrderCreateRequest,
 	PastOrderDto,
+	StoneInfo,
 } from "../../types/order";
 import type { Product, ProductDto } from "../../types/product";
 import type { ProductStoneDto } from "../../types/stone";
 import type { FactorySearchDto } from "../../types/factory";
 import type { StoreSearchDto } from "../../types/store";
-import StoreSearch from "../../components/common/product/StoreSearch";
-import FactorySearch from "../../components/common/product/FactorySearch";
+import StoreSearch from "../../components/common/store/StoreSearch";
+import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import OrderTable from "../../components/common/order/OrderTable";
 import "../../styles/pages/OrderCreatePage.css";
 
+// 스톤 계산
+const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
+	const details = {
+		mainStonePrice: 0,
+		assistanceStonePrice: 0,
+		additionalStonePrice: 0,
+		mainStoneCount: 0,
+		assistanceStoneCount: 0,
+		stoneWeightTotal: 0,
+	};
+
+	if (!stoneInfos || stoneInfos.length === 0) {
+		return details;
+	}
+
+	stoneInfos.forEach((stone) => {
+		const quantity = stone.quantity || 0;
+		const weight = stone.stoneWeight || 0;
+		const laborCost = stone.laborCost || 0;
+
+		if (stone.includeStone) {
+			details.stoneWeightTotal += Number(weight) * Number(quantity);
+			if (stone.mainStone) {
+				details.mainStoneCount += quantity;
+				details.mainStonePrice += laborCost * quantity;
+			} else {
+				details.assistanceStoneCount += quantity;
+				details.assistanceStonePrice += laborCost * quantity;
+			}
+		}
+	});
+	return details;
+};
+
 const OrderCreatePage = () => {
-	const navigate = useNavigate();
 	const { handleError } = useErrorHandler();
 
 	// 주문 행 데이터
@@ -68,7 +106,20 @@ const OrderCreatePage = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 
-	const currentDate = new Date().toISOString().split("T")[0];
+	const currentDate = getLocalDate();
+
+	const foundPriority = priorities.find(
+		(p) => p.priorityName === priorities[0]?.priorityName
+	);
+
+	let deliveryDate = currentDate;
+	if (foundPriority && currentDate) {
+		const calculatedDate = addBusinessDays(
+			currentDate,
+			foundPriority.priorityDate
+		);
+		deliveryDate = formatDateToString(calculatedDate);
+	}
 
 	// 새 주문 행 추가
 	const addOrderRow = () => {
@@ -110,6 +161,7 @@ const OrderCreatePage = () => {
 			assistanceStoneCount: "",
 			stoneWeightTotal: "",
 			createAt: currentDate,
+			shippingAt: deliveryDate,
 			// 보조석 관련 필드
 			assistantStone: false,
 			assistantStoneId: 0,
@@ -160,7 +212,8 @@ const OrderCreatePage = () => {
 							mainStoneCount: "",
 							assistanceStoneCount: "",
 							stoneWeightTotal: "",
-							deliveryDate: currentDate,
+							createAt: currentDate,
+							shippingAt: deliveryDate,
 							assistanceStoneType: "없음",
 							assistanceStoneArrival: "N",
 							assistanceStoneArrivalDate: "",
@@ -582,6 +635,12 @@ const OrderCreatePage = () => {
 		setSelectedRowForStore("");
 	};
 
+	// 거래처 검색 팝업 닫기 핸들러
+	const handleStoreSearchClose = useCallback(() => {
+		setIsStoreSearchOpen(false);
+		setSelectedRowForStore("");
+	}, []);
+
 	// 제조사 검색 모달 열기
 	const openFactorySearch = (rowId: string) => {
 		setSelectedRowForFactory(rowId);
@@ -602,6 +661,12 @@ const OrderCreatePage = () => {
 		setSelectedRowForFactory("");
 	};
 
+	// 제조사 검색 팝업 닫기 핸들러
+	const handleFactorySearchClose = useCallback(() => {
+		setIsFactoryModalOpen(false);
+		setSelectedRowForFactory("");
+	}, []);
+
 	// 상품 검색 모달 열기
 	const openProductSearch = (rowId: string) => {
 		if (!validateSequence(rowId, "product")) {
@@ -609,6 +674,84 @@ const OrderCreatePage = () => {
 		}
 		setSelectedRowForProduct(rowId);
 		setIsProductSearchOpen(true);
+	};
+
+	// 스톤 정보 관리 모달 열기
+	const openStoneInfoManager = (rowId: string) => {
+		const url = `/orders/stone-info?rowId=${rowId}&origin=${window.location.origin}`;
+		const NAME = `stoneInfo_${rowId}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=800";
+
+		const popup = window.open(url, NAME, FEATURES);
+		if (popup) {
+			// 팝업에서 스톤 정보 요청 시 응답
+			const handleMessage = (event: MessageEvent) => {
+				if (
+					event.data.type === "REQUEST_STONE_INFO" &&
+					event.data.rowId === rowId
+				) {
+					const row = orderRows.find((r) => r.id === rowId);
+					popup.postMessage(
+						{
+							type: "STONE_INFO_DATA",
+							stoneInfos: row?.stoneInfos || [],
+						},
+						window.location.origin
+					);
+				} else if (
+					event.data.type === "STONE_INFO_SAVE" &&
+					event.data.rowId === rowId
+				) {
+					// 스톤 정보 업데이트
+					updateOrderRow(rowId, "stoneInfos", event.data.stoneInfos);
+
+					// 스톤 정보 변경 시 알 단가 자동 계산
+					const calculatedStoneData = calculateStoneDetails(
+						event.data.stoneInfos
+					);
+					updateOrderRow(
+						rowId,
+						"mainStonePrice",
+						calculatedStoneData.mainStonePrice
+					);
+					updateOrderRow(
+						rowId,
+						"assistanceStonePrice",
+						calculatedStoneData.assistanceStonePrice
+					);
+					updateOrderRow(
+						rowId,
+						"additionalStonePrice",
+						calculatedStoneData.additionalStonePrice
+					);
+					updateOrderRow(
+						rowId,
+						"mainStoneCount",
+						calculatedStoneData.mainStoneCount
+					);
+					updateOrderRow(
+						rowId,
+						"assistanceStoneCount",
+						calculatedStoneData.assistanceStoneCount
+					);
+					updateOrderRow(
+						rowId,
+						"stoneWeightTotal",
+						calculatedStoneData.stoneWeightTotal
+					);
+				}
+			};
+
+			window.addEventListener("message", handleMessage);
+
+			// 팝업이 닫힐 때 이벤트 리스너 제거
+			const checkClosed = setInterval(() => {
+				if (popup.closed) {
+					window.removeEventListener("message", handleMessage);
+					clearInterval(checkClosed);
+				}
+			}, 1000);
+		}
 	};
 
 	// 상품 선택 처리
@@ -682,6 +825,12 @@ const OrderCreatePage = () => {
 		setSelectedRowForProduct("");
 	};
 
+	// 상품 검색 팝업 닫기 핸들러
+	const handleProductSearchClose = useCallback(() => {
+		setIsProductSearchOpen(false);
+		setSelectedRowForProduct("");
+	}, []);
+
 	// 초기 데이터 로드
 	useEffect(() => {
 		const loadInitialData = async () => {
@@ -711,13 +860,6 @@ const OrderCreatePage = () => {
 					}));
 					setColors(colors);
 				}
-				if (priorityRes.success) {
-					const priorities = (priorityRes.data || []).map((p) => ({
-						priorityName: p.priorityName,
-						priorityDate: p.priorityDate,
-					}));
-					setPriorities(priorities);
-				}
 				if (assistantStoneRes.success) {
 					const assistantStones = (assistantStoneRes.data || []).map((a) => ({
 						assistantStoneId: a.assistantStoneId,
@@ -726,66 +868,72 @@ const OrderCreatePage = () => {
 					setAssistantStones(assistantStones);
 				}
 
-				// 기본 priority 값 (서버에서 받아온 첫 번째 데이터 사용)
-				const defaultPriority =
-					priorityRes.data && priorityRes.data[0]
-						? priorityRes.data[0]
-						: { priorityName: "일반", priorityDate: 7 };
+				if (priorityRes.success && priorityRes.data) {
+					const loadedPriorities = (priorityRes.data || []).map((p) => ({
+						priorityName: p.priorityName,
+						priorityDate: p.priorityDate,
+					}));
+					setPriorities(loadedPriorities);
 
-				const defaultDeliveryDate = new Date();
-				defaultDeliveryDate.setDate(
-					defaultDeliveryDate.getDate() + defaultPriority.priorityDate
-				);
-				const formattedDefaultDate = defaultDeliveryDate
-					.toISOString()
-					.split("T")[0];
+					const defaultPriority =
+						loadedPriorities.length > 0
+							? loadedPriorities[0]
+							: { priorityName: "일반", priorityDate: 7 };
 
-				// 초기 10개 행 생성
-				const initialRowCount = 10; // 행 개수를 변수로 관리
-				const initialRows: OrderRowData[] = [];
-				for (let i = 0; i < initialRowCount; i++) {
-					const newRow: OrderRowData = {
-						id: `${Date.now()}-${i}`,
-						storeId: "",
-						storeName: "",
-						grade: "1",
-						productId: "",
-						productName: "",
-						classificationName: "",
-						setTypeName: "",
-						materialId: "",
-						materialName: "",
-						colorId: "1",
-						colorName: "",
-						factoryId: "",
-						factoryName: "",
-						productSize: "",
-						stoneWeight: 0,
-						productAddLaborCost: 0,
-						isProductWeightSale: false,
-						priorityName: defaultPriority.priorityName,
-						mainStoneNote: "",
-						assistanceStoneNote: "",
-						orderNote: "",
-						stoneInfos: [],
-						mainPrice: "", // 중심단가
-						additionalPrice: "", // 추가단가
-						mainStonePrice: "",
-						assistanceStonePrice: "",
-						mainStoneCount: "",
-						assistanceStoneCount: "",
-						additionalStonePrice: "", // 추가 스톤 판매단가
-						stoneWeightTotal: "",
-						createAt: formattedDefaultDate,
-						// 보조석 관련 필드
-						assistantStone: false,
-						assistantStoneId: 1,
-						assistantStoneName: "",
-						assistantStoneCreateAt: "",
-					};
-					initialRows.push(newRow);
+					const calculatedDate = addBusinessDays(
+						new Date(),
+						defaultPriority.priorityDate
+					);
+					const defaultDeliveryDate = formatDateToString(calculatedDate);
+
+					// 초기 10개 행 생성
+					const initialRowCount = 10; // 행 개수를 변수로 관리
+					const initialRows: OrderRowData[] = [];
+					for (let i = 0; i < initialRowCount; i++) {
+						const newRow: OrderRowData = {
+							id: `${Date.now()}-${i}`,
+							storeId: "",
+							storeName: "",
+							grade: "1",
+							productId: "",
+							productName: "",
+							classificationName: "",
+							setTypeName: "",
+							materialId: "",
+							materialName: "",
+							colorId: "1",
+							colorName: "",
+							factoryId: "",
+							factoryName: "",
+							productSize: "",
+							stoneWeight: 0,
+							productAddLaborCost: 0,
+							isProductWeightSale: false,
+							priorityName: priorities[0]?.priorityName || "일반",
+							mainStoneNote: "",
+							assistanceStoneNote: "",
+							orderNote: "",
+							stoneInfos: [],
+							mainPrice: "", // 중심단가
+							additionalPrice: "", // 추가단가
+							mainStonePrice: "",
+							assistanceStonePrice: "",
+							mainStoneCount: "",
+							assistanceStoneCount: "",
+							additionalStonePrice: "", // 추가 스톤 판매단가
+							stoneWeightTotal: "",
+							createAt: currentDate,
+							shippingAt: defaultDeliveryDate,
+							// 보조석 관련 필드
+							assistantStone: false,
+							assistantStoneId: 1,
+							assistantStoneName: "",
+							assistantStoneCreateAt: "",
+						};
+						initialRows.push(newRow);
+					}
+					setOrderRows(initialRows);
 				}
-				setOrderRows(initialRows);
 			} catch (err) {
 				handleError(err, setError);
 			} finally {
@@ -815,6 +963,16 @@ const OrderCreatePage = () => {
 
 			// 유효한 주문 행만 API 요청으로 처리
 			const promises = validRows.map((row) => {
+				// 우선순위 정보를 찾아서 영업일 기준으로 출고일 계산
+				const priority = priorities.find(
+					(p) => p.priorityName === row.priorityName
+				);
+				const priorityDays = priority?.priorityDate || 7; // 기본값 7일
+
+				// 현재 날짜에서 영업일 기준으로 출고일 계산
+				const shippingDate = addBusinessDays(currentDate, priorityDays);
+				const shippingAtFormatted = formatDateToString(shippingDate);
+
 				const orderData: OrderCreateRequest = {
 					storeId: row.storeId,
 					orderNote: row.orderNote,
@@ -837,15 +995,15 @@ const OrderCreatePage = () => {
 					assistantStoneCreateAt: row.assistantStoneCreateAt,
 					productStatus: "접수",
 					createAt: currentDate,
+					shippingAt: shippingAtFormatted,
 					stoneInfos: row.stoneInfos,
 				};
 				return orderApi.createOrder(orderData);
 			});
-
 			await Promise.all(promises);
 
 			alert(`${validRows.length}개의 주문이 성공적으로 등록되었습니다.`);
-			navigate("/orders");
+			window.close();
 		} catch (err) {
 			handleError(err, setError);
 			alert("주문 등록에 실패했습니다.");
@@ -1172,6 +1330,7 @@ const OrderCreatePage = () => {
 				onFactorySearchOpen={openFactorySearch}
 				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
 				onAddOrderRow={addOrderRow}
+				onStoneInfoOpen={openStoneInfoManager}
 				validateSequence={validateSequence}
 				isRowInputEnabled={isRowInputEnabled}
 			/>
@@ -1194,27 +1353,27 @@ const OrderCreatePage = () => {
 				</button>
 			</div>
 
-			{/* 검색 모달들 */}
-			<StoreSearch
-				isOpen={isStoreSearchOpen}
-				onClose={() => {
-					setIsStoreSearchOpen(false);
-					setSelectedRowForStore("");
-				}}
-				onSelectStore={handleStoreSelect}
-			/>
+			{/* 검색 컴포넌트들 - 팝업 방식 */}
+			{isStoreSearchOpen && (
+				<StoreSearch
+					onSelectStore={handleStoreSelect}
+					onClose={handleStoreSearchClose}
+				/>
+			)}
 
-			<FactorySearch
-				isOpen={isFactoryModalOpen}
-				onClose={() => setIsFactoryModalOpen(false)}
-				onSelectFactory={handleFactorySelect}
-			/>
+			{isFactoryModalOpen && (
+				<FactorySearch
+					onSelectFactory={handleFactorySelect}
+					onClose={handleFactorySearchClose}
+				/>
+			)}
 
-			<ProductSearch
-				isOpen={isProductSearchOpen}
-				onClose={() => setIsProductSearchOpen(false)}
-				onSelectProduct={handleProductSelect}
-			/>
+			{isProductSearchOpen && (
+				<ProductSearch
+					onSelectProduct={handleProductSelect}
+					onClose={handleProductSearchClose}
+				/>
+			)}
 		</div>
 	);
 };

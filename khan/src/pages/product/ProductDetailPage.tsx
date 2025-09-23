@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
-import StoneTable from "../../components/common/product/StoneTable";
+import StoneTable from "../../components/common/stone/StoneTable";
 import PriceTable from "../../components/common/product/PriceTable";
 import ProductInfo from "../../components/common/product/BasicInfo";
 import { productApi } from "../../../libs/api/product";

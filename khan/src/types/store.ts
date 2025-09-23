@@ -16,7 +16,7 @@ export interface StoreSearchDto {
 }
 
 
-// 공장 검색 API 응답
+// 상점 검색 API 응답
 export interface StoreSearchResponse {
     content: StoreSearchDto[];
     page: PageInfo;

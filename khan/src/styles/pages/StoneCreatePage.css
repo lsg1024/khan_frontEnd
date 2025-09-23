@@ -1,9 +1,8 @@
 /* 컨테이너 */
 .stone-create-page {
-	padding: 8px;
 	background: #f8f9fa;
-	min-height: 100vh;
 	box-sizing: border-box;
+	height: 100%;
 }
 
 /* 섹션 카드 */

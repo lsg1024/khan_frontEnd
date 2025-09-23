@@ -1,22 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { isApiSuccess } from "../../../../libs/api/config";
-import { storeApi } from "../../../../libs/api/store";
-import type { StoreSearchDto, StoreSearchResponse } from "../../../types/store";
-import StoreList from "../product/StoreList";
-import Pagination from "../Pagination";
-import "../../../styles/components/accountSearch.css";
+import { isApiSuccess } from "../../../libs/api/config";
+import { storeApi } from "../../../libs/api/store";
+import type { StoreSearchDto, StoreSearchResponse } from "../../types/store";
+import StoreList from "../../components/common/store/StoreList";
+import Pagination from "../../components/common/Pagination";
+import "../../styles/pages/StoreSearchPage.css";
 
-interface StoreSearchProps {
-	isOpen: boolean;
-	onClose: () => void;
-	onSelectStore: (store: StoreSearchDto) => void;
-}
-
-const StoreSearch: React.FC<StoreSearchProps> = ({
-	isOpen,
-	onClose,
-	onSelectStore,
-}) => {
+const StoreSearchPage: React.FC = () => {
 	const [searchName, setSearchName] = useState("");
 	const [stores, setStores] = useState<StoreSearchDto[]>([]);
 	const [loading, setLoading] = useState(false);
@@ -27,13 +17,15 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 
 	const [error, setError] = useState<string>("");
 
+	const size = 5;
+
 	// 검색 API 호출
 	const performSearch = useCallback(async (name: string, page: number) => {
 		setLoading(true);
 		setError("");
 
 		try {
-			const res = await storeApi.getStores(name, page);
+			const res = await storeApi.getStores(name, page, size);
 
 			// success=false 응답 처리
 			if (!isApiSuccess(res)) {
@@ -66,14 +58,10 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 		}
 	}, []);
 
-	// 모달이 열릴 때 초기 데이터 로드
+	// 초기 데이터 로드
 	useEffect(() => {
-		if (isOpen) {
-			setSearchName("");
-			setCurrentPage(1);
-			performSearch("", 1);
-		}
-	}, [isOpen, performSearch]);
+		performSearch("", 1);
+	}, [performSearch]);
 
 	// 검색 처리
 	const handleSearch = () => {
@@ -88,35 +76,32 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 		}
 	};
 
-	// 모달 닫기
-	const handleClose = () => {
-		setSearchName("");
-		setStores([]);
-		setCurrentPage(1);
-		setTotalPages(0);
-		setTotalElements(0);
-		setError("");
-		onClose();
-	};
-
-	// 오버레이 클릭 처리
-	const handleOverlayClick = (e: React.MouseEvent) => {
-		if (e.target === e.currentTarget) {
-			handleClose();
+	// 거래처 선택 처리
+	const handleStoreSelect = (store: StoreSearchDto) => {
+		// 부모 창에 선택된 거래처 정보 전달
+		if (window.opener) {
+			window.opener.postMessage(
+				{
+					type: "STORE_SELECTED",
+					data: store,
+				},
+				"*"
+			);
+			window.close();
 		}
 	};
 
-	if (!isOpen) return null;
+	// 창 닫기
+	const handleClose = () => {
+		window.close();
+	};
 
 	return (
-		<div
-			className="search-modal-overlay store-search-modal-overlay"
-			onClick={handleOverlayClick}
-		>
-			<div className="search-modal-content store-search-modal-content">
-				{/* 모달 헤더 */}
-				<div className="search-modal-header store-search-modal-header">
-					<h3>거래처 검색</h3>
+		<div className="store-search-page">
+			<div className="store-search-container">
+				{/* 헤더 */}
+				<div className="store-search-header">
+					<h2>거래처 검색</h2>
 					<button className="close-button" onClick={handleClose}>
 						×
 					</button>
@@ -145,30 +130,30 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 
 				{/* 결과 섹션 */}
 				<div className="search-results">
-					<div className="results-content">
-						{loading && (
-							<div className="loading-state">
-								<div className="spinner"></div>
-								<p>검색 중...</p>
-							</div>
-						)}
+					{loading && (
+						<div className="loading-state">
+							<div className="spinner"></div>
+							<p>검색 중...</p>
+						</div>
+					)}
 
-						{error && (
-							<div className="error-state">
-								<p>{error}</p>
-							</div>
-						)}
+					{error && (
+						<div className="error-state">
+							<p>{error}</p>
+						</div>
+					)}
 
-						{!loading && !error && stores.length === 0 && (
-							<div className="empty-state">
-								<p>검색된 거래처가 없습니다.</p>
-							</div>
-						)}
+					{!loading && !error && stores.length === 0 && (
+						<div className="empty-state">
+							<p>검색된 거래처가 없습니다.</p>
+						</div>
+					)}
 
-						{!loading && !error && stores.length > 0 && (
-							<StoreList stores={stores} onSelectStore={onSelectStore} />
-						)}
-					</div>
+					{!loading && !error && stores.length > 0 && (
+						<div className="stores-list">
+							<StoreList stores={stores} onSelectStore={handleStoreSelect} />
+						</div>
+					)}
 
 					{/* 페이지네이션 */}
 					<Pagination
@@ -187,4 +172,4 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 	);
 };
 
-export default StoreSearch;
+export default StoreSearchPage;

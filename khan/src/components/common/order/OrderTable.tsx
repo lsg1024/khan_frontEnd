@@ -1,4 +1,5 @@
 import React from "react";
+import { addBusinessDays, formatDateToString } from "../../../utils/dateUtils";
 import type { OrderRowData } from "../../../types/order";
 
 // 공통 Props
@@ -10,6 +11,7 @@ interface BaseOrderTableProps {
 	priorities: { priorityName: string; priorityDate: number }[];
 	assistantStones: { assistantStoneId: number; assistantStoneName: string }[];
 	onRowUpdate: (id: string, field: keyof OrderRowData, value: unknown) => void;
+	onStoneInfoOpen?: (rowId: string) => void; // 스톤 정보 관리 함수 추가
 }
 
 // Create 모드 전용 Props
@@ -145,6 +147,12 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 			return props.isRowInputEnabled(currentIndex);
 		}
 		return true; // update 모드에서는 기본적으로 true
+	};
+
+	const safeOnStoneInfoOpen = (rowId: string) => {
+		if (props.onStoneInfoOpen) {
+			props.onStoneInfoOpen(rowId);
+		}
 	};
 	return (
 		<div className="order-table-container">
@@ -554,24 +562,44 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								/>
 							</td>
 							<td>
-								<input
-									type="text"
-									value={row.additionalStonePrice.toLocaleString()}
-									onChange={(e) => {
-										const value = e.target.value.replace(/,/g, "");
-										onRowUpdate(row.id, "additionalStonePrice", value);
-									}}
-									placeholder="0"
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								/>
+								<div className="search-field-container">
+									<input
+										type="text"
+										value={row.additionalStonePrice.toLocaleString()}
+										onChange={(e) => {
+											const value = e.target.value.replace(/,/g, "");
+											onRowUpdate(row.id, "additionalStonePrice", value);
+										}}
+										placeholder="0"
+										disabled={loading || !safeIsRowInputEnabled(index)}
+										onFocus={() => {
+											if (mode === "create" && safeIsRowInputEnabled(index)) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+										}}
+									/>
+									<span
+										className="search-icon"
+										onClick={() => {
+											if (safeIsRowInputEnabled(index)) {
+												safeOnStoneInfoOpen(row.id);
+											} else {
+												alert("이전 주문장을 완성해 주세요.");
+											}
+										}}
+										style={{
+											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+											cursor: !safeIsRowInputEnabled(index)
+												? "not-allowed"
+												: "pointer",
+										}}
+									>
+										🔍
+									</span>
+								</div>
 							</td>
 							<td>
 								<input
@@ -679,17 +707,15 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										);
 										onRowUpdate(row.id, "priorityName", e.target.value);
 
-										// priorityDate만큼 현재 날짜에 더해서 출고일 설정
+										// priorityDate만큼 영업일 기준으로 출고일 설정
 										if (selectedPriority && selectedPriority.priorityDate) {
 											const currentDate = new Date();
-											const deliveryDate = new Date(currentDate);
-											deliveryDate.setDate(
-												currentDate.getDate() + selectedPriority.priorityDate
+											const deliveryDate = addBusinessDays(
+												currentDate,
+												selectedPriority.priorityDate
 											);
-											const formattedDate = deliveryDate
-												.toISOString()
-												.split("T")[0];
-											onRowUpdate(row.id, "createAt", formattedDate);
+											const formattedDate = formatDateToString(deliveryDate);
+											onRowUpdate(row.id, "shippingAt", formattedDate);
 										}
 									}}
 									disabled={loading || !safeIsRowInputEnabled(index)}
@@ -738,9 +764,9 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 							<td>
 								<input
 									type="date"
-									value={row.createAt}
+									value={row.shippingAt}
 									onChange={(e) =>
-										onRowUpdate(row.id, "createAt", e.target.value)
+										onRowUpdate(row.id, "shippingAt", e.target.value)
 									}
 									disabled={loading || !safeIsRowInputEnabled(index)}
 									onFocus={() => {

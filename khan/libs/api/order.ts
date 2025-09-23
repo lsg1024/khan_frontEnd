@@ -5,6 +5,7 @@ import type {
 	OrderCreateRequest,
 	PastOrderDto,
 	OrderResponseDetail,
+	OrderRequestDetail
 } from "../../src/types/order";
 
 export const orderApi = {
@@ -34,6 +35,14 @@ export const orderApi = {
 		if (setType) params.setType = setType;
 
 		return apiRequest.get<OrderSearchResponse>("order/orders", { params });
+	},
+
+	orderUpdate: async (
+		flowCode: string,
+		orderData: OrderRequestDetail
+	): Promise<ApiResponse<string>> => {
+		const params = { id: flowCode };
+		return apiRequest.patch<string>("order/order", orderData, { params });
 	},
 
 	getFilterFactories: async (

@@ -23,9 +23,9 @@ const sidebarItems: SidebarItem[] = [
 		icon: "📝",
 		children: [
 			{ path: "/orders", label: "주문 목록", icon: "📋" },
-			{ path: "/fix", label: "수정", icon: "🔧" },
-			{ path: "/expact", label: "출고", icon: "📦" },
-			{ path: "/order-deleted", label: "주문 삭제", icon: "🗑️" },
+			{ path: "/fix", label: "수리 목록", icon: "🔧" },
+			{ path: "/expact", label: "출고 목록", icon: "📦" },
+			{ path: "/order-deleted", label: "삭제 목록", icon: "🗑️" },
 		],
 	},
 	{ path: "/settings", label: "설정", icon: "⚙️" },

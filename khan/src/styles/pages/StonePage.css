@@ -114,21 +114,6 @@
 	cursor: not-allowed;
 }
 
-/* 결과 정보 */
-.results-info {
-	background: white;
-	padding: 15px 20px;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	margin-bottom: 20px;
-}
-
-.results-info p {
-	margin: 0;
-	color: #666;
-	font-size: 14px;
-}
-
 /* 로딩 컨테이너 */
 .loading-container {
 	display: flex;

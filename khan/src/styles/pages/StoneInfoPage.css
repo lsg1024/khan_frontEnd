@@ -1,0 +1,322 @@
+/* StoneInfoManager.css */
+.stone-info-manager {
+	background: white;
+	height: 100%;
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+}
+
+.stone-info-manager-overlay {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.stone-info-manager-modal {
+	background: white;
+	flex-direction: column;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+	height: 100%;
+}
+
+.stone-info-manager-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px;
+	border-bottom: 1px solid #e0e0e0;
+	background: #f8f9fa;
+	border-radius: 8px 8px 0 0;
+}
+
+.stone-info-header h2 {
+	margin: 0;
+	color: #333;
+	font-size: 1.5rem;
+	color: black;
+}
+
+.stone-info-manager-close-btn {
+	background: none;
+	border: none;
+	font-size: 1.5rem;
+	cursor: pointer;
+	color: #666;
+	padding: 5px;
+}
+
+.stone-info-manager-close-btn:hover {
+	color: #333;
+}
+
+.stone-info-manager-content {
+	flex: 1;
+	padding: 10px;
+	overflow-y: auto;
+	height: 100%;
+	width: 1000px;
+}
+
+.stone-info-manager-error {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px;
+	background: #ffebee;
+	border: 1px solid #f8bbd9;
+	border-radius: 4px;
+	color: #c62828;
+	margin-bottom: 20px;
+}
+
+.stone-info-manager-loading {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	padding: 40px;
+}
+
+.stone-info-manager-actions {
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 10px;
+}
+
+.stone-info-add-btn {
+	background: #2196f3;
+	color: white;
+	border: none;
+	padding: 5px 10px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: background-color 0.2s;
+}
+
+.stone-info-add-btn:hover {
+	background: #1976d2;
+}
+
+.stone-search-btn {
+	background: #ffffff;
+	border: 1px solid #ddd;
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	color: #666;
+	transition: all 0.2s;
+	text-align: left;
+	min-width: 120px;
+}
+
+.stone-search-btn:hover {
+	border-color: #2196f3;
+	color: #2196f3;
+}
+
+.stone-search-btn:focus {
+	outline: none;
+	border-color: #2196f3;
+	box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.stone-info-table-container {
+	overflow-x: auto;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+}
+
+.stone-info-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 10px;
+}
+
+.stone-info-table th,
+.stone-info-table td {
+	padding: 6px 4px;
+	border-bottom: 1px solid #e0e0e0;
+	text-align: center;
+	white-space: nowrap;
+	color: black;
+}
+
+.stone-info-table th {
+	background: #f5f5f5;
+	font-weight: 600;
+	color: #333;
+	border-bottom: 2px solid #ddd;
+}
+
+.stone-info-table tbody tr:hover {
+	background: #f9f9f9;
+}
+
+.stone-info-table input,
+.stone-info-table select {
+	width: 100%;
+	min-width: 80px;
+	padding: 3px 4px;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	font-size: 13px;
+	background: white;
+	color: black;
+}
+
+.stone-info-table input[type="checkbox"] {
+	width: auto;
+	min-width: auto;
+	margin: 0;
+	transform: scale(1.2);
+}
+
+.stone-info-table input[type="number"] {
+	text-align: right;
+}
+
+.stone-info-table select {
+	min-width: 120px;
+}
+
+.grade-select {
+	min-width: 150px;
+	max-width: 200px;
+	font-size: 12px;
+	padding: 4px 6px;
+}
+
+.stone-info-delete-btn {
+	background: #f44336;
+	color: white;
+	border: none;
+	padding: 3px 4px;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: background-color 0.2s;
+}
+
+.stone-info-delete-btn:hover {
+	background: #d32f2f;
+}
+
+.stone-info-manager-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 20px;
+	border-top: 1px solid #e0e0e0;
+	background: #f8f9fa;
+}
+
+.stone-info-cancel-btn,
+.stone-info-save-btn {
+	padding: 10px 24px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: background-color 0.2s;
+}
+
+.stone-info-cancel-btn {
+	background: #9e9e9e;
+	color: white;
+}
+
+.stone-info-cancel-btn:hover {
+	background: #757575;
+}
+
+.stone-info-save-btn {
+	background: #4caf50;
+	color: white;
+}
+
+.stone-info-save-btn:hover {
+	background: #388e3c;
+}
+
+/* 스톤 정보 합계 스타일 */
+.stone-info-summary {
+	margin: 10px 0;
+	padding: 10px;
+	background-color: #f8f9fa;
+	border: 1px solid #e9ecef;
+	border-radius: 8px;
+}
+
+.stone-info-summary h4 {
+	margin: 0 0 15px 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: #495057;
+}
+
+.summary-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 10px;
+}
+
+.summary-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 4px 6px;
+	background-color: white;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	font-size: 10px;
+}
+
+.summary-item label {
+	font-weight: 500;
+	color: #6c757d;
+	margin-right: 10px;
+}
+
+.summary-item span {
+	font-weight: 600;
+	color: #495057;
+}
+
+/* 반응형 대응 */
+@media (max-width: 768px) {
+	.stone-info-manager-modal {
+		width: 95%;
+		max-height: 90vh;
+	}
+
+	.stone-info-manager-header,
+	.stone-info-manager-content,
+	.stone-info-manager-footer {
+		padding: 15px;
+	}
+
+	.stone-info-table {
+		font-size: 12px;
+	}
+
+	.stone-info-table th,
+	.stone-info-table td {
+		padding: 8px 6px;
+	}
+
+	.stone-info-table input,
+	.stone-info-table select {
+		min-width: 60px;
+		padding: 4px 6px;
+		font-size: 12px;
+	}
+
+	.summary-grid {
+		grid-template-columns: 1fr;
+	}
+}

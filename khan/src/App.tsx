@@ -21,6 +21,11 @@ import ExpactPage from "./pages/order/ExpactPage";
 import OrderCreatePage from "./pages/order/OrderCreatePage";
 import OrderUpdatePage from "./pages/order/OrderUpdatePage";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
+import StoneSearchPage from "./pages/StoneSearchPage";
+import StoneInfoPage from "./pages/order/StoneInfoPage";
+import FactorySearchPage from "./pages/search/FactorySearchPage";
+import StoreSearchPage from "./pages/search/StoreSearchPage";
+import ProductSearchPage from "./pages/search/ProductSearchPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 
@@ -120,8 +125,16 @@ function App() {
 					{/* Layout 없이 단독 페이지 렌더링 */}
 					<Route path="/stone/create" element={<StoneCreatePage />} />
 
-                    <Route path="/orders/update/:flowCode" element={<OrderUpdatePage />}/>
+					<Route
+						path="/orders/update/:flowCode"
+						element={<OrderUpdatePage />}
+					/>
 					<Route path="/orders/create" element={<OrderCreatePage />} />
+					<Route path="/orders/stone-info" element={<StoneInfoPage />} />
+					<Route path="/stone-search" element={<StoneSearchPage />} />
+					<Route path="/factory-search" element={<FactorySearchPage />} />
+					<Route path="/store-search" element={<StoreSearchPage />} />
+					<Route path="/product-search" element={<ProductSearchPage />} />
 					{/* Layout 안에서 렌더링 */}
 					<Route
 						element={
