@@ -29,6 +29,14 @@ import "../../styles/pages/OrderCreatePage.css";
 
 const POPUP_ORIGIN = window.location.origin;
 
+type UpdateMode = "order" | "fix" | "expact";
+
+const MODE_TO_STATUS = {
+	order: "ORDER",
+	fix: "FIX",
+	expact: "EXPACT",
+} as const satisfies Record<UpdateMode, "ORDER" | "FIX" | "EXPACT">;
+
 // 스톤 계산
 const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
 	const details = {
@@ -64,7 +72,11 @@ const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
 };
 
 const OrderUpdatePage: React.FC = () => {
-	const { flowCode } = useParams<{ flowCode: string }>();
+	const { mode, flowCode } = useParams<{
+		mode: UpdateMode;
+		flowCode: string;
+	}>();
+
 	const { handleError } = useErrorHandler();
 
 	// 팝업 참조를 저장하는 ref
@@ -105,7 +117,8 @@ const OrderUpdatePage: React.FC = () => {
 		{ assistantStoneId: number; assistantStoneName: string }[]
 	>([]);
 
-	// 주문 상세 정보를 OrderRowData로 변환
+	const orderStatus = MODE_TO_STATUS[mode as UpdateMode];
+
 	const convertToOrderRowData = (
 		detail: OrderResponseDetail,
 		grade: string,
@@ -180,9 +193,16 @@ const OrderUpdatePage: React.FC = () => {
 		field: keyof OrderRowData,
 		value: unknown
 	) => {
-		setOrderRows((prevRows) =>
-			prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row))
-		);
+		setOrderRows((prevRows) => {
+			const updatedRows = prevRows.map((row) => {
+				if (row.id === id) {
+					const updatedRow = { ...row, [field]: value };
+					return updatedRow;
+				}
+				return row;
+			});
+			return updatedRows;
+		});
 	};
 
 	// 검색 모달 핸들러들
@@ -330,12 +350,13 @@ const OrderUpdatePage: React.FC = () => {
 	// 검색 결과 선택 핸들러들
 	const handleStoreSelect = (store: StoreSearchDto) => {
 		if (selectedRowForStore) {
-			updateOrderRow(
-				selectedRowForStore,
-				"storeId",
-				store.storeId?.toString() || ""
-			);
-			updateOrderRow(selectedRowForStore, "storeName", store.storeName);
+			if (store.storeId === undefined || store.storeId === null) {
+				alert("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.");
+				return;
+			}
+
+			updateOrderRow(selectedRowForStore, "storeId", store.storeId.toString());
+			updateOrderRow(selectedRowForStore, "storeName", store.storeName || "");
 		}
 		setIsStoreSearchOpen(false);
 		setSelectedRowForStore("");
@@ -349,10 +370,30 @@ const OrderUpdatePage: React.FC = () => {
 
 	const handleProductSelect = (product: ProductDto) => {
 		if (selectedRowForProduct) {
-			updateOrderRow(selectedRowForProduct, "productId", product.productId);
-			updateOrderRow(selectedRowForProduct, "productName", product.productName);
-			updateOrderRow(selectedRowForProduct, "factoryId", product.factoryId);
-			updateOrderRow(selectedRowForProduct, "factoryName", product.factoryName);
+			if (!product.productId) {
+				alert("상품 ID가 누락되었습니다. 다른 상품을 선택해주세요.");
+				return;
+			}
+
+			if (!product.factoryId) {
+				alert("제조사 ID가 누락되었습니다. 다른 상품을 선택해주세요.");
+				return;
+			}
+
+			const productIdValue = product.productId;
+			const factoryIdValue = product.factoryId;
+			updateOrderRow(selectedRowForProduct, "productId", productIdValue);
+			updateOrderRow(
+				selectedRowForProduct,
+				"productName",
+				product.productName || ""
+			);
+			updateOrderRow(selectedRowForProduct, "factoryId", factoryIdValue);
+			updateOrderRow(
+				selectedRowForProduct,
+				"factoryName",
+				product.factoryName || ""
+			);
 		}
 		setIsProductSearchOpen(false);
 		setSelectedRowForProduct("");
@@ -366,12 +407,18 @@ const OrderUpdatePage: React.FC = () => {
 
 	const handleFactorySelect = (factory: FactorySearchDto) => {
 		if (selectedRowForFactory) {
+			if (factory.factoryId === undefined || factory.factoryId === null) {
+				alert("제조사 ID가 누락되었습니다. 다른 제조사를 선택해주세요.");
+				return;
+			}
+
+			const factoryIdValue = factory.factoryId.toString();
+			updateOrderRow(selectedRowForFactory, "factoryId", factoryIdValue);
 			updateOrderRow(
 				selectedRowForFactory,
-				"factoryId",
-				factory.factoryId?.toString() || ""
+				"factoryName",
+				factory.factoryName || ""
 			);
-			updateOrderRow(selectedRowForFactory, "factoryName", factory.factoryName);
 		}
 		setIsFactoryModalOpen(false);
 		setSelectedRowForFactory("");
@@ -492,8 +539,6 @@ const OrderUpdatePage: React.FC = () => {
 
 			const currentRow = orderRows[0];
 
-			console.log("업데이트할 주문 데이터:", currentRow.factoryId);
-
 			// OrderCreateRequest 형식으로 데이터 변환
 			const orderUpdateData: OrderRequestDetail = {
 				storeId: currentRow.storeId,
@@ -518,17 +563,34 @@ const OrderUpdatePage: React.FC = () => {
 				productStatus: orderDetail.productStatus,
 				stoneInfos: currentRow.stoneInfos,
 			};
-			const response = await orderApi.orderUpdate(flowCode!, orderUpdateData);
+			// 필수 필드 검증
+			if (!orderUpdateData.storeId) {
+				alert("거래처 정보가 누락되었습니다.");
+				return;
+			}
+			if (!orderUpdateData.factoryId) {
+				alert("제조사 정보가 누락되었습니다.");
+				return;
+			}
+			if (!orderUpdateData.productId) {
+				alert("상품 정보가 누락되었습니다.");
+				return;
+			}
+			const response = await orderApi.orderUpdate(
+				flowCode!,
+				orderStatus!,
+				orderUpdateData
+			);
 
 			if (response.success) {
 				alert("주문이 성공적으로 업데이트되었습니다.");
+
 				window.close();
 			} else {
 				throw new Error(response.message || "주문 업데이트에 실패했습니다.");
 			}
 		} catch (err) {
 			handleError(err, setError);
-			console.error("주문 업데이트 오류:", err);
 			alert("주문 업데이트에 실패했습니다.");
 		} finally {
 			setLoading(false);

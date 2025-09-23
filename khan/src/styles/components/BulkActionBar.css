@@ -1,0 +1,103 @@
+/* BulkActionBar 컴포넌트 스타일 */
+.bulk-action-bar {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 12px 16px;
+	background-color: white;
+	flex-direction: row;
+}
+
+.bulk-action-info {
+	display: flex;
+	align-items: center;
+}
+
+.bulk-action-buttons {
+	display: flex;
+	gap: 12px;
+}
+
+.bulk-action-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: 8px 16px;
+	font-size: 10px;
+	font-weight: 500;
+	text-decoration: none;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+	cursor: pointer;
+	border: 1px solid transparent;
+}
+
+.bulk-action-btn:hover:not(.disabled) {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.bulk-action-btn.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+/* 재고등록 버튼 */
+.bulk-action-btn.stock-register {
+	background-color: #28a745;
+	color: white;
+	border-color: #28a745;
+}
+
+.bulk-action-btn.stock-register:hover:not(.disabled) {
+	background-color: #218838;
+	border-color: #1e7e34;
+}
+
+/* 판매등록 버튼 */
+.bulk-action-btn.sales-register {
+	background-color: #007bff;
+	color: white;
+	border-color: #007bff;
+}
+
+.bulk-action-btn.sales-register:hover:not(.disabled) {
+	background-color: #0056b3;
+	border-color: #004085;
+}
+
+/* 삭제 버튼 */
+.bulk-action-btn.delete {
+	background-color: #dc3545;
+	color: white;
+	border-color: #dc3545;
+}
+
+.bulk-action-btn.delete:hover:not(.disabled) {
+	background-color: #c82333;
+	border-color: #bd2130;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+	.bulk-action-bar {
+		flex-direction: column;
+		gap: 12px;
+		align-items: stretch;
+	}
+
+	.bulk-action-info {
+		justify-content: center;
+	}
+
+	.bulk-action-buttons {
+		justify-content: center;
+		flex-wrap: wrap;
+	}
+
+	.bulk-action-btn {
+		flex: 1;
+		min-width: 100px;
+		justify-content: center;
+	}
+}

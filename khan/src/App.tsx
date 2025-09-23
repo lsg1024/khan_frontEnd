@@ -126,7 +126,7 @@ function App() {
 					<Route path="/stone/create" element={<StoneCreatePage />} />
 
 					<Route
-						path="/orders/update/:flowCode"
+						path="/orders/update/:mode/:flowCode"
 						element={<OrderUpdatePage />}
 					/>
 					<Route path="/orders/create" element={<OrderCreatePage />} />
@@ -153,8 +153,6 @@ function App() {
 						<Route path="/stone" element={<StonePage />} />
 						<Route path="/stone/create" element={<StoneCreatePage />} />
 						<Route path="/orders" element={<OrderPage />} />
-						{/* <Route path="/orders/:flowCode" element={<OrderUpdatePage />} />
-						<Route path="/orders/create" element={<OrderCreatePage />} /> */}
 						<Route path="/fix" element={<FixPage />} />
 						<Route path="/expact" element={<ExpactPage />} />
 						<Route path="/order-deleted" element={<OrderDeletedPage />} />

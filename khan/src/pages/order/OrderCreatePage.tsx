@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback,  } from "react";
+import { useParams } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
@@ -26,6 +27,14 @@ import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import OrderTable from "../../components/common/order/OrderTable";
 import "../../styles/pages/OrderCreatePage.css";
+
+type UpdateMode = "order" | "fix" | "expact";
+
+const MODE_TO_STATUS = {
+	order: "ORDER",
+	fix: "FIX",
+	expact: "EXPACT",
+} as const satisfies Record<UpdateMode, "ORDER" | "FIX" | "EXPACT">;
 
 // 스톤 계산
 const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
@@ -63,9 +72,13 @@ const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
 
 const OrderCreatePage = () => {
 	const { handleError } = useErrorHandler();
+	const { mode } = useParams<{
+		mode: UpdateMode;
+	}>();
 
 	// 주문 행 데이터
 	const [orderRows, setOrderRows] = useState<OrderRowData[]>([]);
+	const orderStatus = MODE_TO_STATUS[mode as UpdateMode];
 
 	// 검색 모달 상태
 	const [isStoreSearchOpen, setIsStoreSearchOpen] = useState(false);
@@ -625,10 +638,10 @@ const OrderCreatePage = () => {
 	// 거래처 선택 처리
 	const handleStoreSelect = (store: StoreSearchDto) => {
 		if (selectedRowForStore) {
-			const storeIdValue = store.storeId?.toString() || "";
+			const storeIdValue = store.storeId?.toString();
 
 			updateOrderRow(selectedRowForStore, "storeId", storeIdValue);
-			updateOrderRow(selectedRowForStore, "storeName", store.storeName);
+			updateOrderRow(selectedRowForStore, "storeName", store.storeName || "");
 			updateOrderRow(selectedRowForStore, "grade", store.level || "1");
 		}
 		setIsStoreSearchOpen(false);
@@ -653,9 +666,13 @@ const OrderCreatePage = () => {
 			updateOrderRow(
 				selectedRowForFactory,
 				"factoryId",
-				factory.factoryId?.toString() || ""
+				factory.factoryId?.toString()
 			);
-			updateOrderRow(selectedRowForFactory, "factoryName", factory.factoryName);
+			updateOrderRow(
+				selectedRowForFactory,
+				"factoryName",
+				factory.factoryName || ""
+			);
 		}
 		setIsFactoryModalOpen(false);
 		setSelectedRowForFactory("");
@@ -757,8 +774,15 @@ const OrderCreatePage = () => {
 	// 상품 선택 처리
 	const handleProductSelect = (product: ProductDto) => {
 		if (selectedRowForProduct) {
-			updateOrderRow(selectedRowForProduct, "productId", product.productId);
-			updateOrderRow(selectedRowForProduct, "productName", product.productName);
+			const productIdValue = product.productId;
+			const factoryIdValue = product.factoryId;
+
+			updateOrderRow(selectedRowForProduct, "productId", productIdValue);
+			updateOrderRow(
+				selectedRowForProduct,
+				"productName",
+				product.productName || ""
+			);
 			updateOrderRow(
 				selectedRowForProduct,
 				"classificationName",
@@ -769,12 +793,16 @@ const OrderCreatePage = () => {
 				"setTypeName",
 				currentProductDetail?.setTypeDto.setTypeName || ""
 			);
-			updateOrderRow(selectedRowForProduct, "factoryId", product.factoryId);
-			updateOrderRow(selectedRowForProduct, "factoryName", product.factoryName);
+			updateOrderRow(selectedRowForProduct, "factoryId", factoryIdValue);
+			updateOrderRow(
+				selectedRowForProduct,
+				"factoryName",
+				product.factoryName || ""
+			);
 			updateOrderRow(
 				selectedRowForProduct,
 				"mainPrice",
-				product.productLaborCost
+				product.productLaborCost || 0
 			);
 
 			const mainStone = product.productStones.find((stone) => stone.mainStone);
@@ -998,11 +1026,13 @@ const OrderCreatePage = () => {
 					shippingAt: shippingAtFormatted,
 					stoneInfos: row.stoneInfos,
 				};
-				return orderApi.createOrder(orderData);
+
+				return orderApi.createOrder("ORDER", orderData);
 			});
 			await Promise.all(promises);
 
 			alert(`${validRows.length}개의 주문이 성공적으로 등록되었습니다.`);
+
 			window.close();
 		} catch (err) {
 			handleError(err, setError);
