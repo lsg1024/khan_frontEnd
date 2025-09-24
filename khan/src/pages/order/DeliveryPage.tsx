@@ -3,7 +3,7 @@ import Pagination from "../../components/common/Pagination";
 import BulkActionBar from "../../components/common/BulkActionBar";
 import OrderSearch from "../../hooks/OrderSearch";
 import { useErrorHandler } from "../../utils/errorHandler";
-import { fixApi } from "../../../libs/api/fix";
+import { deliveryApi } from "../../../libs/api/delivery";
 import { orderApi } from "../../../libs/api/order";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import type { FactorySearchDto } from "../../types/factory";
@@ -12,14 +12,14 @@ import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
 import "../../styles/pages/OrderPage.css";
 
-export const FixPage = () => {
+export const ExpactPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
-	const [fixes, setFixes] = useState<OrderDto[]>([]); // 수리 데이터 상태
-	const [selectedFix, setSelectedFix] = useState<string>(""); // 수리 선택으로 변경
+	const [expacts, setExpacts] = useState<OrderDto[]>([]);
+	const [selectedExpact, setSelectedExpact] = useState<string>("");
 	const [factories, setFactories] = useState<string[]>([]);
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
@@ -28,10 +28,9 @@ export const FixPage = () => {
 
 	// 제조사 변경 관련 상태
 	const [isFactorySearchOpen, setIsFactorySearchOpen] = useState(false);
-	const [selectedFixForFactory, setSelectedFixForFactory] =
+	const [selectedExpactForFactory, setSelectedExpactForFactory] =
 		useState<string>("");
 
-	// 체크박스 선택 관련 상태 (단일 선택만 허용)
 	const orderCreationPopup = useRef<Window | null>(null);
 	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
 
@@ -44,7 +43,6 @@ export const FixPage = () => {
 		store: "",
 		setType: "",
 	});
-
 	// 검색 필터 변경 핸들러
 	const handleFilterChange = (
 		field: keyof typeof searchFilters,
@@ -57,52 +55,10 @@ export const FixPage = () => {
 		}
 	};
 
-	// 주문 데이터 로드 함수
-	const loadFixes = useCallback(
-		async (filters: typeof searchFilters, page: number = 1) => {
-			setLoading(true);
-			setError("");
-
-			// 페이지 변경 시 선택 상태 초기화
-			setSelectedFix("");
-			try {
-				const response = await fixApi.getFixes(
-					filters.start,
-					filters.end,
-					"FIX",
-					filters.search,
-					filters.factory,
-					filters.store,
-					filters.setType,
-					page
-				);
-
-				if (response.success && response.data) {
-					const pageData = response.data.page;
-					const content = response.data.content || [];
-
-					setFixes(content || []);
-					setCurrentPage(page);
-					setTotalPages(pageData.totalPages || 1);
-					setTotalElements(pageData.totalElements || 0);
-				}
-			} catch (err) {
-				handleError(err, setError);
-				setFixes([]);
-				setCurrentPage(1);
-				setTotalPages(0);
-				setTotalElements(0);
-			} finally {
-				setLoading(false);
-			}
-		},
-		[] // eslint-disable-line react-hooks/exhaustive-deps
-	);
-
 	// 검색 실행
 	const handleSearch = () => {
 		setCurrentPage(1);
-		loadFixes(searchFilters, 1);
+		loadExpacts(searchFilters, 1);
 	};
 
 	// 검색 초기화
@@ -117,74 +73,29 @@ export const FixPage = () => {
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
-		loadFixes(resetFilters, 1);
-	};
-
-	const handleFixCreate = () => {
-		// 수리 생성 팝업 - order_type=FIX 파라미터로 수리 주문 생성
-		const url = "/orders/create/fix";
-		const NAME = "fixCreatePopup";
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-
-		if (orderCreationPopup.current && !orderCreationPopup.current.closed) {
-			orderCreationPopup.current.focus();
-		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
-			if (newPopup) {
-				orderCreationPopup.current = newPopup;
-			}
-		}
+		loadExpacts(resetFilters, 1);
 	};
 
 	// 체크박스 관련 핸들러 (단일 선택)
-	const handleSelectFix = (flowCode: string, checked: boolean) => {
+	const handleSelectExpact = (flowCode: string, checked: boolean) => {
 		if (checked) {
 			// 다른 체크박스가 선택되어 있으면 해제하고 새로운 것 선택
-			setSelectedFix(flowCode);
+			setSelectedExpact(flowCode);
 		} else {
 			// 선택 해제
-			setSelectedFix("");
+			setSelectedExpact("");
 		}
 	};
 
-	// 대량 작업 핸들러 (단일 선택)
-	const handleStockRegister = () => {
-		if (selectedFix) {
-			console.log("재고등록 대상:", selectedFix);
-			// TODO: 재고등록 API 호출
-			alert(`선택된 수리를 재고등록 처리합니다.`);
-		}
-	};
+	const handleExpactClick = (flowCode: string) => {
+		const expactData = expacts.find((expact) => expact.flowCode === flowCode);
 
-	const handleSalesRegister = () => {
-		if (selectedFix) {
-			console.log("판매등록 대상:", selectedFix);
-			// TODO: 판매등록 API 호출
-			alert(`선택된 수리를 판매등록 처리합니다.`);
-		}
-	};
-
-	const handleBulkDelete = () => {
-		if (selectedFix) {
-			if (window.confirm(`선택된 수리를 삭제하시겠습니까?`)) {
-				console.log("삭제 대상:", selectedFix);
-				// TODO: 삭제 API 호출
-				alert(`선택된 수리를 삭제 처리합니다.`);
-				setSelectedFix("");
-			}
-		}
-	};
-
-	// 수리 상세 페이지로 이동
-	const handleFixClick = (flowCode: string) => {
-		const fixData = fixes.find((fix) => fix.flowCode === flowCode);
-
-		if (fixData?.imagePath) {
-			sessionStorage.setItem("tempImagePath", fixData.imagePath);
+		if (expactData?.imagePath) {
+			sessionStorage.setItem("tempImagePath", expactData.imagePath);
 		}
 
-		const url = `/orders/update/fix/${flowCode}`;
-		const NAME = `fixUpdate_${flowCode}`;
+		const url = `/orders/update/expact/${flowCode}`;
+		const NAME = `expactUpdate_${flowCode}`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
 		const existingPopup = orderUpdatePopups.current.get(flowCode);
 
@@ -205,19 +116,46 @@ export const FixPage = () => {
 		}
 	};
 
-	// 수리 상태 변경
+	// 대량 작업 핸들러 (단일 선택)
+	const handleStockRegister = () => {
+		if (selectedExpact) {
+			console.log("재고등록 대상:", selectedExpact);
+			// TODO: 재고등록 API 호출
+			alert(`선택된 수리를 재고등록 처리합니다.`);
+		}
+	};
+
+	const handleSalesRegister = () => {
+		if (selectedExpact) {
+			console.log("판매등록 대상:", selectedExpact);
+			// TODO: 판매등록 API 호출
+			alert(`선택된 수리를 판매등록 처리합니다.`);
+		}
+	};
+
+	const handleBulkDelete = () => {
+		if (selectedExpact) {
+			if (window.confirm(`선택된 수리를 삭제하시겠습니까?`)) {
+				console.log("삭제 대상:", selectedExpact);
+				// TODO: 삭제 API 호출
+				alert(`선택된 수리를 삭제 처리합니다.`);
+				setSelectedExpact("");
+			}
+		}
+	};
+
 	const handleStatusChange = async (flowCode: string, newStatus: string) => {
-		const confirmMessage = `수리 상태를 "${newStatus}"로 변경하시겠습니까?`;
+		const confirmMessage = `출고 상태를 "${newStatus}"로 변경하시겠습니까?`;
 
 		if (window.confirm(confirmMessage)) {
 			try {
 				setLoading(true);
 				await orderApi.updateOrderStatus(flowCode, newStatus);
-				alert("수리 상태가 성공적으로 변경되었습니다.");
-				await loadFixes(searchFilters, currentPage);
+				alert("출고 상태가 성공적으로 변경되었습니다.");
+				await loadExpacts(searchFilters, currentPage);
 			} catch (err) {
 				handleError(err, setError);
-				alert("수리 상태 변경에 실패했습니다.");
+				alert("출고 상태 변경에 실패했습니다.");
 			} finally {
 				setLoading(false);
 			}
@@ -227,10 +165,16 @@ export const FixPage = () => {
 	// 제조사 클릭 핸들러
 	const handleFactoryClick = (flowCode: string) => {
 		if (window.confirm("공장을 변경하시겠습니까?")) {
-			setSelectedFixForFactory(flowCode);
+			setSelectedExpactForFactory(flowCode);
 			setIsFactorySearchOpen(true);
 		}
 	};
+
+	// 제조사 검색 팝업 닫기 핸들러
+	const handleFactorySearchClose = useCallback(() => {
+		setIsFactorySearchOpen(false);
+		setSelectedExpactForFactory("");
+	}, []);
 
 	// 제조사 선택 핸들러
 	const handleFactorySelect = useCallback(
@@ -238,18 +182,18 @@ export const FixPage = () => {
 			try {
 				setLoading(true);
 				await orderApi.updateOrderFactory(
-					selectedFixForFactory,
+					selectedExpactForFactory,
 					factory.factoryId!
 				);
 
 				alert("제조사가 성공적으로 변경되었습니다.");
 
 				// 현재 페이지 데이터 새로고침
-				await loadFixes(searchFilters, currentPage);
+				await loadExpacts(searchFilters, currentPage);
 
 				// 팝업 상태 정리
 				setIsFactorySearchOpen(false);
-				setSelectedFixForFactory("");
+				setSelectedExpactForFactory("");
 			} catch (err) {
 				handleError(err, setError);
 				alert("제조사 변경에 실패했습니다.");
@@ -260,11 +204,45 @@ export const FixPage = () => {
 		[] // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
-	// 제조사 검색 팝업 닫기 핸들러
-	const handleFactorySearchClose = useCallback(() => {
-		setIsFactorySearchOpen(false);
-		setSelectedFixForFactory("");
-	}, []);
+	const loadExpacts = useCallback(
+		async (filters: typeof searchFilters, page: number = 1) => {
+			setLoading(true);
+			setError("");
+
+			setSelectedExpact("");
+			try {
+				const response = await deliveryApi.getExpacts(
+					filters.start,
+					filters.end,
+					"EXPACT",
+					filters.search,
+					filters.factory,
+					filters.store,
+					filters.setType,
+					page
+				);
+
+				if (response.success && response.data) {
+					const pageData = response.data.page;
+					const content = response.data.content || [];
+
+					setExpacts(content || []);
+					setCurrentPage(page);
+					setTotalPages(pageData.totalPages || 1);
+					setTotalElements(pageData.totalElements || 0);
+				}
+			} catch (err) {
+				handleError(err, setError);
+				setExpacts([]);
+				setCurrentPage(1);
+				setTotalPages(0);
+				setTotalElements(0);
+			} finally {
+				setLoading(false);
+			}
+		},
+		[] // eslint-disable-line react-hooks/exhaustive-deps
+	);
 
 	const fetchDropdownData = async () => {
 		setDropdownLoading(true);
@@ -273,7 +251,7 @@ export const FixPage = () => {
 			const factoryResponse = await orderApi.getFilterFactories(
 				searchFilters.start,
 				searchFilters.end,
-				"FIX"
+				"EXPACT"
 			);
 			setFactories(factoryResponse.data || []);
 
@@ -281,7 +259,7 @@ export const FixPage = () => {
 			const storeResponse = await orderApi.getFilterStores(
 				searchFilters.start,
 				searchFilters.end,
-				"FIX"
+				"EXPACT"
 			);
 			setStores(storeResponse.data || []);
 
@@ -289,7 +267,7 @@ export const FixPage = () => {
 			const setTypeResponse = await orderApi.getFilterSetTypes(
 				searchFilters.start,
 				searchFilters.end,
-				"FIX"
+				"EXPACT"
 			);
 			setSetTypes(setTypeResponse.data || []);
 		} catch (err) {
@@ -304,7 +282,7 @@ export const FixPage = () => {
 			setCurrentPage(1);
 			setError("");
 
-			await Promise.all([loadFixes(searchFilters, 1), fetchDropdownData()]);
+			await Promise.all([loadExpacts(searchFilters, 1), fetchDropdownData()]);
 		};
 
 		const creationPopupRef = orderCreationPopup;
@@ -345,7 +323,7 @@ export const FixPage = () => {
 					onFilterChange={handleFilterChange}
 					onSearch={handleSearch}
 					onReset={handleReset}
-					onCreate={handleFixCreate}
+					// onCreate={handleCreate} // 출고는 생성 기능 없음
 					factories={factories}
 					stores={stores}
 					setTypes={setTypes}
@@ -356,19 +334,19 @@ export const FixPage = () => {
 				{/* 수리 목록 */}
 				<div className="order-list">
 					<MainList
-						dtos={fixes}
-						selected={selectedFix}
+						dtos={expacts}
+						selected={selectedExpact}
 						currentPage={currentPage}
 						loading={loading}
-						onSelect={handleSelectFix}
-						onClick={handleFixClick}
+						onSelect={handleSelectExpact}
+						onClick={handleExpactClick}
 						onStatusChange={handleStatusChange}
 						onFactoryClick={handleFactoryClick}
 					/>
 
 					{/* 하단 액션 바 */}
 					<BulkActionBar
-						selectedCount={selectedFix ? 1 : 0}
+						selectedCount={selectedExpact ? 1 : 0}
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}
 						onDelete={handleBulkDelete}
@@ -383,7 +361,7 @@ export const FixPage = () => {
 						loading={loading}
 						onPageChange={(page) => {
 							setCurrentPage(page);
-							loadFixes(searchFilters, page);
+							loadExpacts(searchFilters, page);
 						}}
 						className="order"
 					/>
@@ -401,4 +379,4 @@ export const FixPage = () => {
 	);
 };
 
-export default FixPage;
+export default ExpactPage;

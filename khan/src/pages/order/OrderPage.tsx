@@ -7,7 +7,8 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import type { OrderDto } from "../../types/order";
 import type { FactorySearchDto } from "../../types/factory";
 import OrderSearch from "../../hooks/OrderSearch";
-import { getLocalDate, formatToLocalDate } from "../../utils/dateUtils";
+import MainList from "../../components/common/order/MainList";
+import { getLocalDate } from "../../utils/dateUtils";
 import "../../styles/pages/OrderPage.css";
 
 export const OrderPage = () => {
@@ -58,7 +59,7 @@ export const OrderPage = () => {
 	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
 
 	const handleOrderCreate = () => {
-		const url = "/orders/create";
+		const url = "/orders/create/order";
 		const NAME = "orderCreatePopup";
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
 
@@ -127,9 +128,7 @@ export const OrderPage = () => {
 	const handleFactoryClick = (flowCode: string) => {
 		if (window.confirm("공장을 변경하시겠습니까?")) {
 			setSelectedOrderForFactory(flowCode);
-			console.log("Selected Order for Factory bf:", isFactorySearchOpen);
 			setIsFactorySearchOpen(true);
-			console.log("Selected Order for Factory af:", isFactorySearchOpen);
 		}
 	};
 
@@ -137,19 +136,10 @@ export const OrderPage = () => {
 	const handleFactorySelect = useCallback(
 		async (factory: FactorySearchDto) => {
 			try {
-				console.log("=== 제조사 선택 핸들러 시작 (OrderPage) ===");
-				console.log("선택된 제조사:", factory);
-				console.log("selectedOrderForFactory:", selectedOrderForFactory);
-
-				// factoryId 확인 (null/undefined 체크 강화)
 				if (factory.factoryId === undefined || factory.factoryId === null) {
-					console.error("❌ factoryId가 누락되었습니다:", factory.factoryId);
 					alert("제조사 ID가 누락되었습니다. 다른 제조사를 선택해주세요.");
 					return;
 				}
-
-				console.log("factoryId:", factory.factoryId);
-				console.log("factoryName:", factory.factoryName);
 
 				setLoading(true);
 				await orderApi.updateOrderFactory(
@@ -165,10 +155,7 @@ export const OrderPage = () => {
 				// 팝업 상태 정리
 				setIsFactorySearchOpen(false);
 				setSelectedOrderForFactory("");
-
-				console.log("제조사 변경 완료 (OrderPage)");
 			} catch (err) {
-				console.error("❌ 제조사 변경 오류:", err);
 				handleError(err, setError);
 				alert("제조사 변경에 실패했습니다.");
 			} finally {
@@ -311,8 +298,8 @@ export const OrderPage = () => {
 				"ORDER"
 			);
 			setSetTypes(setTypeResponse.data || []);
-		} catch (err) {
-			console.error("드롭다운 데이터 로드 실패:", err);
+		} catch {
+			alert("드롭다운 데이터를 불러오는 중 오류가 발생했습니다.");
 		} finally {
 			setDropdownLoading(false);
 		}
@@ -387,158 +374,16 @@ export const OrderPage = () => {
 
 				{/* 주문 목록 */}
 				<div className="order-list">
-					{orders.length === 0 ? (
-						<div className="no-data-order">
-							<p>조회된 주문이 없습니다.</p>
-						</div>
-					) : (
-						<table className="order-table">
-							<thead>
-								<tr>
-									<th>선택</th>
-									<th>No</th>
-									<th>상품명</th>
-									<th>주문/출고</th>
-									<th>판매처</th>
-									<th>이미지</th>
-									<th>재질/색상</th>
-									<th>메인/보조</th>
-									<th>사이즈</th>
-									<th>세트타입</th>
-									<th>재고</th>
-									<th>급</th>
-									<th>비고</th>
-									<th>상품상태</th>
-									<th>제조사</th>
-								</tr>
-							</thead>
-							<tbody>
-								{orders.map((order, index) => (
-									<tr
-										key={order.flowCode}
-										className={`
-											${selectedOrder === order.flowCode ? "selected-row" : ""}
-											${order.productStatus === "대기" ? "row-waiting" : ""}
-										`}
-									>
-										<td>
-											<input
-												type="checkbox"
-												checked={selectedOrder === order.flowCode}
-												onChange={(e) =>
-													handleSelectOrder(order.flowCode, e.target.checked)
-												}
-											/>
-										</td>
-										<td>
-											<button
-												className="order-no-btn"
-												onClick={() => handleOrderClick(order.flowCode)}
-											>
-												{(currentPage - 1) * 16 + index + 1}
-											</button>
-										</td>
-										<td className="product-name-order">{order.productName}</td>
-										<td className="info-cell">
-											{/* << MODIFIED */}
-											<div className="info-row-order">
-												<span className="info-value">
-													{formatToLocalDate(order.createAt)}
-												</span>
-											</div>
-											<div className="info-row-order">
-												<span className="info-value-expect">
-													{formatToLocalDate(order.shippingAt)}
-												</span>
-											</div>
-										</td>
-										<td>{order.storeName}</td>
-										<th className="image-cell-order">
-											<img
-												className="order-image"
-												src={
-													order.imagePath
-														? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${order.imagePath}`
-														: "/images/not_ready.png"
-												}
-												alt={order.productName}
-												onError={(e) => {
-													e.currentTarget.src = "/images/not_ready.png";
-												}}
-											/>
-										</th>
-										<td className="info-cell">
-											<div className="info-row-order">
-												<span className="info-label"></span>
-												<span
-													className={`info-value ${
-														order.materialName === "18K" ? "highlight-18k" : ""
-													}`}
-												>
-													{order.materialName}
-												</span>
-											</div>
-											<div className="info-row-order">
-												<span className="info-label"></span>
-												<span className="info-value">{order.colorName}</span>
-											</div>
-										</td>
-										<td className="info-cell">
-											{" "}
-											{/* << MODIFIED */}
-											<div className="info-row-order">
-												<span className="info-value-stone-note">
-													{order.orderMainStoneNote}
-												</span>
-											</div>
-											<div className="info-row-order">
-												<span className="info-value-stone-note">
-													{order.orderAssistanceStoneNote}
-												</span>
-											</div>
-										</td>
-										<td>{order.productSize}</td>
-										<td>{order.setType}</td>
-										<td>{order.stockQuantity}</td>
-										<td>
-											<span
-												className={`priority-badge-order ${order.priority}`}
-											>
-												{order.priority}
-											</span>
-										</td>
-										<td className="note-cell-order">{order.orderNote}</td>
-										<td
-											className={`${
-												order.productStatus === "대기" ? "status-waiting" : ""
-											}`}
-										>
-											<select
-												className="status-dropdown-order"
-												value={order.productStatus}
-												onChange={(e) =>
-													handleStatusChange(order.flowCode, e.target.value)
-												}
-												disabled={loading}
-											>
-												<option value="접수">접수</option>
-												<option value="대기">대기</option>
-											</select>
-										</td>
-										<td>
-											<button
-												className="factory-name-btn"
-												onClick={() => handleFactoryClick(order.flowCode)}
-												disabled={loading}
-											>
-												<ul>{order.factoryName}</ul>
-											</button>
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					)}
+					<MainList
+						dtos={orders}
+						selected={selectedOrder}
+						currentPage={currentPage}
+						loading={loading}
+						onSelect={handleSelectOrder}
+						onClick={handleOrderClick}
+						onStatusChange={handleStatusChange}
+						onFactoryClick={handleFactoryClick}
+					/>
 
 					{/* 대량 작업 바 */}
 					<BulkActionBar

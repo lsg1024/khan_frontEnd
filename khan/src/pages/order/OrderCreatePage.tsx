@@ -1027,7 +1027,7 @@ const OrderCreatePage = () => {
 					stoneInfos: row.stoneInfos,
 				};
 
-				return orderApi.createOrder("ORDER", orderData);
+				return orderApi.createOrder(orderStatus, orderData);
 			});
 			await Promise.all(promises);
 

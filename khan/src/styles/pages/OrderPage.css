@@ -535,8 +535,3 @@
 .order-table tbody tr.selected-row {
 	background-color: #e3f2fd;
 }
-
-/* BulkActionBar 주문 페이지 전용 스타일 */
-.bulk-action-bar.order {
-	margin: 16px 0 8px 0;
-}

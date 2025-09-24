@@ -253,18 +253,16 @@ const ProductSearchPage: React.FC = () => {
 					</div>
 
 					{/* 페이지네이션 */}
-					{totalPages > 1 && (
-						<Pagination
-							currentPage={currentPage}
-							totalPages={totalPages}
-							totalElements={totalElements}
-							loading={loading}
-							onPageChange={(page) => {
-								performSearch(searchTerm, page);
-							}}
-							className="product"
-						/>
-					)}
+					<Pagination
+						currentPage={currentPage}
+						totalPages={totalPages}
+						totalElements={totalElements}
+						loading={loading}
+						onPageChange={(page) => {
+							performSearch(searchTerm, page);
+						}}
+						className="product"
+					/>
 				</div>
 			</div>
 		</div>

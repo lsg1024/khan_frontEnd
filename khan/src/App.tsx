@@ -17,7 +17,7 @@ import StonePage from "./pages/stone/StonePage";
 import StoneCreatePage from "./pages/stone/StoneCreatePage";
 import OrderPage from "./pages/order/OrderPage";
 import FixPage from "./pages/order/FixPage";
-import ExpactPage from "./pages/order/ExpactPage";
+import ExpactPage from "./pages/order/DeliveryPage";
 import OrderCreatePage from "./pages/order/OrderCreatePage";
 import OrderUpdatePage from "./pages/order/OrderUpdatePage";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
@@ -125,11 +125,8 @@ function App() {
 					{/* Layout 없이 단독 페이지 렌더링 */}
 					<Route path="/stone/create" element={<StoneCreatePage />} />
 
-					<Route
-						path="/orders/update/:mode/:flowCode"
-						element={<OrderUpdatePage />}
-					/>
-					<Route path="/orders/create" element={<OrderCreatePage />} />
+					<Route path="/orders/update/:mode/:flowCode" element={<OrderUpdatePage />}/>
+					<Route path="/orders/create/:mode" element={<OrderCreatePage />} />
 					<Route path="/orders/stone-info" element={<StoneInfoPage />} />
 					<Route path="/stone-search" element={<StoneSearchPage />} />
 					<Route path="/factory-search" element={<FactorySearchPage />} />
