@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Pagination from "../../components/common/Pagination";
 import BulkActionBar from "../../components/common/BulkActionBar";
 import OrderSearch from "../../hooks/OrderSearch";
+import type { SearchFilters } from "../../hooks/OrderSearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { deliveryApi } from "../../../libs/api/delivery";
 import { orderApi } from "../../../libs/api/order";
@@ -35,25 +36,31 @@ export const ExpactPage = () => {
 	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
 
 	// 검색 관련 상태
-	const [searchFilters, setSearchFilters] = useState({
+	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
 		search: "",
 		start: getLocalDate(),
 		end: getLocalDate(),
 		factory: "",
 		store: "",
 		setType: "",
+		color: "",
+		sortField: "",
+		sortOrder: "" as const,
 	});
 	// 검색 필터 변경 핸들러
-	const handleFilterChange = (
-		field: keyof typeof searchFilters,
-		value: string
+	const handleFilterChange = <K extends keyof SearchFilters>(
+		field: K,
+		value: SearchFilters[K]
 	) => {
 		setSearchFilters((prev) => ({ ...prev, [field]: value }));
 
-		if (field === "start" && value > searchFilters.end) {
-			setSearchFilters((prev) => ({ ...prev, end: value }));
+		// start 선택 시 end 자동 보정 (문자열 날짜 비교)
+		if (field === "start" && (value as string) > prevEnd()) {
+			setSearchFilters((prev) => ({ ...prev, end: value as string }));
 		}
 	};
+
+	const prevEnd = () => searchFilters.end;
 
 	// 검색 실행
 	const handleSearch = () => {
@@ -63,13 +70,16 @@ export const ExpactPage = () => {
 
 	// 검색 초기화
 	const handleReset = () => {
-		const resetFilters = {
+		const resetFilters: SearchFilters = {
 			search: "",
 			start: getLocalDate(),
 			end: getLocalDate(),
 			factory: "",
 			store: "",
 			setType: "",
+			color: "",
+			sortField: "",
+			sortOrder: "" as const,
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);

@@ -24,6 +24,9 @@ export const orderApi = {
 		factory?: string,
 		store?: string,
 		setType?: string,
+		color?: string,
+		sortField?: string,
+		sortOrder?: "ASC" | "DESC" | "",
 		page: number = 1
 	): Promise<ApiResponse<OrderSearchResponse>> => {
 		const params: Record<string, string> = { page: page.toString() };
@@ -34,7 +37,11 @@ export const orderApi = {
 		if (factory) params.factory = factory;
 		if (store) params.store = store;
 		if (setType) params.setType = setType;
+		if (color) params.color = color;
+		if (sortField) params.sortField = sortField;
+		if (sortOrder) params.sortOrder = sortOrder;
 		params.order_status = order_status;
+		
 
 		return apiRequest.get<OrderSearchResponse>("order/orders", { params });
 	},
@@ -172,6 +179,9 @@ export const orderApi = {
 		factory?: string,
 		store?: string,
 		setType?: string,
+		color?: string,
+		sortField?: string,
+		sortOrder?: "ASC" | "DESC" | "",
 		page: number = 1
 	): Promise<ApiResponse<OrderSearchResponse>> => {
 		const params: Record<string, string> = { page: page.toString() };
@@ -182,6 +192,9 @@ export const orderApi = {
 		if (factory) params.factory = factory;
 		if (store) params.store = store;
 		if (setType) params.setType = setType;
+		if (color) params.color = color;
+		if (sortField) params.sortField = sortField;
+		if (sortOrder) params.sortOrder = sortOrder;
 		params.order_status = order_status;
 
 		return apiRequest.get<OrderSearchResponse>("order/orders/deleted", { params });

@@ -86,7 +86,7 @@ const FixList = ({
 								</span>
 							</div>
 						</td>
-						
+						<td>{dto.orderStatus}</td>
 						<td>{dto.storeName}</td>
 						<th className="image-cell-order">
 							<img

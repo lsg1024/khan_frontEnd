@@ -6,6 +6,7 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import { fixApi } from "../../../libs/api/fix";
 import { orderApi } from "../../../libs/api/order";
 import FactorySearch from "../../components/common/factory/FactorySearch";
+import type {  SearchFilters } from "../../hooks/OrderSearch";
 import type { FactorySearchDto } from "../../types/factory";
 import type { OrderDto } from "../../types/order";
 import MainList from "../../components/common/order/MainList";
@@ -36,30 +37,36 @@ export const FixPage = () => {
 	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
 
 	// 검색 관련 상태
-	const [searchFilters, setSearchFilters] = useState({
+	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
 		search: "",
 		start: getLocalDate(),
 		end: getLocalDate(),
 		factory: "",
 		store: "",
 		setType: "",
+		color: "",
+		sortField: "",
+		sortOrder: "",
 	});
 
 	// 검색 필터 변경 핸들러
-	const handleFilterChange = (
-		field: keyof typeof searchFilters,
-		value: string
+	const handleFilterChange = <K extends keyof SearchFilters>(
+		field: K,
+		value: SearchFilters[K]
 	) => {
 		setSearchFilters((prev) => ({ ...prev, [field]: value }));
 
-		if (field === "start" && value > searchFilters.end) {
-			setSearchFilters((prev) => ({ ...prev, end: value }));
+		// start 선택 시 end 자동 보정 (문자열 날짜 비교)
+		if (field === "start" && (value as string) > prevEnd()) {
+			setSearchFilters((prev) => ({ ...prev, end: value as string }));
 		}
 	};
 
+	const prevEnd = () => searchFilters.end;
+
 	// 주문 데이터 로드 함수
 	const loadFixes = useCallback(
-		async (filters: typeof searchFilters, page: number = 1) => {
+		async (filters: SearchFilters, page: number = 1) => {
 			setLoading(true);
 			setError("");
 
@@ -74,6 +81,9 @@ export const FixPage = () => {
 					filters.factory,
 					filters.store,
 					filters.setType,
+					filters.color,
+					filters.sortField,
+					filters.sortOrder as "ASC" | "DESC" | "",
 					page
 				);
 
@@ -107,13 +117,16 @@ export const FixPage = () => {
 
 	// 검색 초기화
 	const handleReset = () => {
-		const resetFilters = {
+		const resetFilters: SearchFilters = {
 			search: "",
 			start: getLocalDate(),
 			end: getLocalDate(),
 			factory: "",
 			store: "",
 			setType: "",
+			color: "",
+			sortField: "",
+			sortOrder: "",
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);

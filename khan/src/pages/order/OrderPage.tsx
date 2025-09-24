@@ -7,33 +7,12 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import type { OrderDto } from "../../types/order";
 import type { FactorySearchDto } from "../../types/factory";
 import OrderSearch from "../../hooks/OrderSearch";
+import type { SearchFilters } from "../../hooks/OrderSearch";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
 import "../../styles/pages/OrderPage.css";
 
 export const OrderPage = () => {
-	// 검색 관련 상태
-	const [searchFilters, setSearchFilters] = useState({
-		search: "",
-		start: getLocalDate(),
-		end: getLocalDate(),
-		factory: "",
-		store: "",
-		setType: "",
-	});
-
-	// 검색 필터 변경 핸들러
-	const handleFilterChange = (
-		field: keyof typeof searchFilters,
-		value: string
-	) => {
-		setSearchFilters((prev) => ({ ...prev, [field]: value }));
-
-		if (field === "start" && value > searchFilters.end) {
-			setSearchFilters((prev) => ({ ...prev, end: value }));
-		}
-	};
-
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
@@ -57,6 +36,34 @@ export const OrderPage = () => {
 
 	const orderCreationPopup = useRef<Window | null>(null);
 	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
+
+	// 검색 관련 상태
+	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+		search: "",
+		start: getLocalDate(),
+		end: getLocalDate(),
+		factory: "",
+		store: "",
+		setType: "",
+		color: "",
+		sortField: "",
+		sortOrder: "" as const,
+	});
+
+	// 검색 필터 변경 핸들러
+	const handleFilterChange = <K extends keyof SearchFilters>(
+		field: K,
+		value: SearchFilters[K]
+	) => {
+		setSearchFilters((prev) => ({ ...prev, [field]: value }));
+
+		// start 선택 시 end 자동 보정 (문자열 날짜 비교)
+		if (field === "start" && (value as string) > prevEnd()) {
+			setSearchFilters((prev) => ({ ...prev, end: value as string }));
+		}
+	};
+
+	const prevEnd = () => searchFilters.end;
 
 	const handleOrderCreate = () => {
 		const url = "/orders/create/order";
@@ -216,13 +223,16 @@ export const OrderPage = () => {
 
 	// 검색 초기화
 	const handleReset = () => {
-		const resetFilters = {
+		const resetFilters : SearchFilters = {
 			search: "",
 			start: getLocalDate(),
 			end: getLocalDate(),
 			factory: "",
 			store: "",
 			setType: "",
+			color: "",
+			sortField: "",
+			sortOrder: "" as const,
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
@@ -235,7 +245,6 @@ export const OrderPage = () => {
 			setLoading(true);
 			setError("");
 
-			// 페이지 변경 시 선택 상태 초기화
 			setSelectedOrder("");
 
 			try {
@@ -247,6 +256,9 @@ export const OrderPage = () => {
 					filters.factory,
 					filters.store,
 					filters.setType,
+					filters.color,
+					filters.sortField,
+					filters.sortOrder as "ASC" | "DESC" | "",
 					page
 				);
 
@@ -299,7 +311,7 @@ export const OrderPage = () => {
 			);
 			setSetTypes(setTypeResponse.data || []);
 		} catch {
-			alert("드롭다운 데이터를 불러오는 중 오류가 발생했습니다.");
+			// 에러 처리
 		} finally {
 			setDropdownLoading(false);
 		}
@@ -309,8 +321,6 @@ export const OrderPage = () => {
 		const initializeData = async () => {
 			setCurrentPage(1);
 			setError("");
-
-			// 드롭다운 데이터와 주문 데이터를 병렬로 로드
 			await Promise.all([loadOrders(searchFilters, 1), fetchDropdownData()]);
 		};
 

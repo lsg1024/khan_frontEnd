@@ -1,17 +1,23 @@
 import React, { useRef } from "react";
 
-interface SearchFilters {
+export interface SearchFilters {
 	search: string;
 	start: string;
 	end: string;
 	factory: string;
 	store: string;
 	setType: string;
+	color: string;
+	sortField: string;
+	sortOrder: "ASC" | "DESC" | "";
 }
 
 interface OrderSearchProps {
 	searchFilters: SearchFilters;
-	onFilterChange: (field: keyof SearchFilters, value: string) => void;
+	onFilterChange: (
+		field: keyof SearchFilters,
+		value: string | "ASC" | "DESC" | ""
+	) => void;
 	onSearch: () => void;
 	onReset: () => void;
 	onCreate?: () => void;
@@ -123,17 +129,65 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 								))}
 							</select>
 						</div>
+
+						<div className="filter-group-order">
+							<select
+								id="color"
+								value={searchFilters.color}
+								onChange={(e) => onFilterChange("color", e.target.value)}
+								disabled={dropdownLoading}
+							>
+								<option value="">색상</option>
+								{setTypes.map((setType) => (
+									<option key={setType} value={setType}>
+										{setType}
+									</option>
+								))}
+							</select>
+						</div>
 					</div>
 
 					<div className="search-controls-order">
+
+						<div className="filter-group-order">
+							<select
+								id="sortField"
+								value={searchFilters.sortField}
+								onChange={(e) => onFilterChange("sortField", e.target.value)}
+								disabled={dropdownLoading}
+							>
+								<option value="">정렬 기준</option>
+								<option value="factory">제조사</option>
+								<option value="store">판매처</option>
+								<option value="setType">세트</option>
+								<option value="color">색상</option>
+							</select>
+						</div>
+
+						<div className="filter-group-order">
+							<select
+								id="sortOrder"
+								value={searchFilters.sortOrder}
+								onChange={(e) =>
+									onFilterChange("sortOrder", e.target.value as "ASC" | "DESC")
+								}
+								disabled={dropdownLoading}
+							>
+								<option value="">정렬 방식</option>
+								<option value="ASC">오름차순</option>
+								<option value="DESC">내림차순</option>
+							</select>
+						</div>
+
 						<input
 							type="text"
-							placeholder="상품명으로 검색..."
+							placeholder="검색..."
 							value={searchFilters.search}
 							onChange={(e) => onFilterChange("search", e.target.value)}
 							onKeyDown={(e) => e.key === "Enter" && onSearch()}
 							className="search-input-order"
 						/>
+
 						<div className="search-buttons-order">
 							<button
 								onClick={onSearch}
