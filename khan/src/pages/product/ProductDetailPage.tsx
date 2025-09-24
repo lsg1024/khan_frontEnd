@@ -13,7 +13,6 @@ import type {
 	CreateProductRequest,
 } from "../../types/product";
 import "../../styles/pages/ProductDetailPage.css";
-import "../../styles/components/common.css";
 
 function ProductDetailPage() {
 	const { productId } = useParams<{ productId: string }>();

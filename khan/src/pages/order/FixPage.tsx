@@ -351,6 +351,7 @@ export const FixPage = () => {
 					setTypes={setTypes}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
+					onStart={true}
 				/>
 
 				{/* 수리 목록 */}

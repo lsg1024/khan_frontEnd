@@ -370,6 +370,7 @@ export const OrderPage = () => {
 					setTypes={setTypes}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
+					onStart={true}
 				/>
 
 				{/* 주문 목록 */}

@@ -329,6 +329,7 @@ export const ExpactPage = () => {
 					setTypes={setTypes}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
+					onStart={false}
 				/>
 
 				{/* 수리 목록 */}

@@ -8,9 +8,9 @@
 @import "./utils/utilities.css";
 
 /* 3. 공통 컴포넌트 */
-@import "./components/common.css";
-@import "./components/layout.css";
-@import "./components/pagination.css";
+@import "../styles/common.css";
+@import "../styles/layout.css";
+@import "../styles/pagination.css";
 
 /* 4. 페이지별 스타일 (필요시 개별 페이지에서 import) */
 /* @import './pages/LoginPage.css'; */

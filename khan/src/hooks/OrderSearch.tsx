@@ -15,6 +15,7 @@ interface OrderSearchProps {
 	onSearch: () => void;
 	onReset: () => void;
 	onCreate?: () => void;
+	onStart: boolean;
 	factories: string[];
 	stores: string[];
 	setTypes: string[];
@@ -28,6 +29,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 	onSearch,
 	onReset,
 	onCreate,
+	onStart,
 	factories,
 	stores,
 	setTypes,
@@ -52,7 +54,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 					<div className="filter-row-order">
 						<div className="filter-group-order">
 							<div className="date-range-order">
-								{onCreate && (
+								{onStart && (
 									<input
 										ref={startDateInputRef}
 										name="start"
@@ -62,7 +64,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 										onClick={handleInputStartClick}
 									/>
 								)}
-								{onCreate && <span>~</span>}
+								{onStart && <span>~</span>}
 								<input
 									ref={endDateInputRef}
 									name="end"

@@ -150,4 +150,40 @@ export const orderApi = {
 		};
 		return apiRequest.patch("order/orders/status", null, { params });
 	},
+
+	// 주문 삭제
+	deleteOrder: async (flowCode: string): Promise<ApiResponse<string>> => {
+		const params = { id: flowCode };
+		return apiRequest.delete<string>("order/order", { params });
+	},
+
+	// 주문 복원
+	restoreOrder: async (flowCode: string): Promise<ApiResponse<string>> => {
+		const params = { id: flowCode };
+		return apiRequest.patch<string>("order/order/restore", null, { params });
+	},
+
+	// 주문 삭제 목록
+	getDeletedOrders: async (
+		start: string,
+		end: string,
+		order_status: string,
+		search?: string,
+		factory?: string,
+		store?: string,
+		setType?: string,
+		page: number = 1
+	): Promise<ApiResponse<OrderSearchResponse>> => {
+		const params: Record<string, string> = { page: page.toString() };
+
+		if (start) params.start = start;
+		if (end) params.end = end;
+		if (search) params.search = search;
+		if (factory) params.factory = factory;
+		if (store) params.store = store;
+		if (setType) params.setType = setType;
+		params.order_status = order_status;
+
+		return apiRequest.get<OrderSearchResponse>("order/orders/deleted", { params });
+	}
 };

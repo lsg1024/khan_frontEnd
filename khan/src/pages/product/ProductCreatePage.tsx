@@ -15,7 +15,6 @@ import type {
 import type { ProductWorkGradePolicyGroupDto } from "../../types/price";
 import type { ProductStoneDto } from "../../types/stone";
 import "../../styles/pages/ProductDetailPage.css";
-import "../../styles/components/common.css";
 
 const buildCreatePayload = (p: Product): CreateProductRequest => ({
 	factoryId: p.factoryId || undefined,

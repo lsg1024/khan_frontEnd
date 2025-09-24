@@ -11,7 +11,7 @@ export const deliveryApi = {
 		flowCode: string
 	): Promise<ApiResponse<OrderResponseDetail>> => {
 		const params = { id: flowCode };
-		return apiRequest.get<OrderResponseDetail>("order/delivery", { params });
+		return apiRequest.get<OrderResponseDetail>("order/orders/delivery", { params });
 	},
 
 	// Expact 주문 목록 조회 (페이징 및 검색 옵션 지원)
@@ -35,6 +35,6 @@ export const deliveryApi = {
 		if (setType) params.setType = setType;
 		params.order_status = order_status;
 
-		return apiRequest.get<OrderSearchResponse>("order/deliveries", { params });
+		return apiRequest.get<OrderSearchResponse>("order/orders/deliveries", { params });
 	},
 };
