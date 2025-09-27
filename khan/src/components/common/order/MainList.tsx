@@ -12,7 +12,7 @@ interface MainListProps {
 	onFactoryClick: (flowCode: string) => void;
 }
 
-const FixList = ({
+const MainList = ({
 	dtos,
 	selected,
 	currentPage,
@@ -56,13 +56,16 @@ const FixList = ({
 				{dtos.map((dto, index) => (
 					<tr
 						key={dto.flowCode}
-						className={selected === dto.flowCode ? "selected-row" : ""}
-					>
+						className={`
+							${selected === dto.flowCode ? "selected-row" : ""}
+							${dto.orderStatus === "DELETED" ? "disabled-row" : ""}`}
+							>
 						<td>
 							<input
 								type="checkbox"
 								checked={selected === dto.flowCode}
 								onChange={(e) => onSelect(dto.flowCode, e.target.checked)}
+								disabled={dto.orderStatus === "DELETED"}
 							/>
 						</td>
 						<td>
@@ -164,4 +167,4 @@ const FixList = ({
 	);
 };
 
-export default FixList;
+export default MainList;

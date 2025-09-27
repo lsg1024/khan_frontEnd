@@ -21,6 +21,7 @@ interface OrderSearchProps {
 	onSearch: () => void;
 	onReset: () => void;
 	onCreate?: () => void;
+	onExcel?: () => void;
 	onStart: boolean;
 	factories: string[];
 	stores: string[];
@@ -35,6 +36,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 	onSearch,
 	onReset,
 	onCreate,
+	onExcel,
 	onStart,
 	factories,
 	stores,
@@ -148,7 +150,6 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 					</div>
 
 					<div className="search-controls-order">
-
 						<div className="filter-group-order">
 							<select
 								id="sortField"
@@ -212,6 +213,13 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 									생성
 								</button>
 							)}
+							<button
+								onClick={onExcel}
+								className="order-btn-order"
+								disabled={loading}
+							>
+								엑셀 다운로드
+							</button>
 						</div>
 					</div>
 				</div>

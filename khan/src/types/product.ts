@@ -50,7 +50,7 @@ export interface CreateProductRequest {
         productGroupId: string;
         productPurchasePrice: number;
         colorId: string;
-        gradePolicyDtos: Array<{
+        policyDtos: Array<{
             workGradePolicyId: string;
             laborCost: number;
         }>;

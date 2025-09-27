@@ -18,7 +18,7 @@ import "../../styles/pages/ProductDetailPage.css";
 
 const buildCreatePayload = (p: Product): CreateProductRequest => ({
 	factoryId: p.factoryId || undefined,
-	productFactoryName: p.factoryName ?? "",
+	productFactoryName: p.productFactoryName ?? "",
 	productName: p.productName ?? "",
 	setType: p.setTypeDto?.setTypeId ?? "",
 	classification: p.classificationDto?.classificationId ?? "",
@@ -31,7 +31,7 @@ const buildCreatePayload = (p: Product): CreateProductRequest => ({
 			productPurchasePrice: g.productPurchasePrice ?? 0,
 			colorId: g.colorId,
 			note: g.note ?? "",
-			gradePolicyDtos: (g.gradePolicyDtos || []).map((pol) => ({
+			policyDtos: (g.policyDtos || []).map((pol) => ({
 				workGradePolicyId: pol.workGradePolicyId, // workGradePolicyId 값을 grade 필드로 매핑
 				laborCost: pol.laborCost ?? 0,
 			})),
@@ -122,7 +122,7 @@ const ProductCreatePage = () => {
 				errors["productWorkGradePolicyGroupDto[0].productPurchasePrice"] =
 					"구매 공임을 입력하세요.";
 			}
-			const policies = base.gradePolicyDtos || [];
+			const policies = base.policyDtos || [];
 			(["GRADE_1", "GRADE_2", "GRADE_3", "GRADE_4"] as const).forEach(
 				(g, order) => {
 					const idx = policies.findIndex((p) => p.grade === g);
@@ -130,8 +130,8 @@ const ProductCreatePage = () => {
 					if (!item || item.laborCost == null || item.laborCost <= 0) {
 						const key =
 							idx >= 0
-								? `productWorkGradePolicyGroupDto[0].gradePolicyDtos[${idx}].laborCost`
-								: `productWorkGradePolicyGroupDto[0].gradePolicyDtos[${order}].laborCost`;
+								? `productWorkGradePolicyGroupDto[0].policyDtos[${idx}].laborCost`
+								: `productWorkGradePolicyGroupDto[0].policyDtos[${order}].laborCost`;
 						errors[key] = `${g.replace("GRADE_", "")}등급 공임을 입력하세요.`;
 					}
 				}
@@ -275,6 +275,14 @@ const ProductCreatePage = () => {
 
 	return (
 		<div className="product-detail-page">
+			{/* 에러 메시지 */}
+			{error && (
+				<div className="error-message">
+					<span>⚠️</span>
+					<p>{error}</p>
+				</div>
+			)}
+
 			<div className="detail-content">
 				<div className="top-section">
 					<ProductInfo
@@ -334,13 +342,6 @@ const ProductCreatePage = () => {
 						{loading ? "생성 중..." : "생성"}
 					</button>
 				</div>
-
-				{error && (
-					<div className="error-container" style={{ marginTop: 12 }}>
-						<span className="error-icon">⚠️</span>
-						<p>{error}</p>
-					</div>
-				)}
 			</div>
 		</div>
 	);

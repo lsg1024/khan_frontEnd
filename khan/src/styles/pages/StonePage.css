@@ -86,7 +86,7 @@
 }
 
 .create-button:hover:not(:disabled) {
-	background-color: #0056b3;
+	background-color: #218838;
 }
 
 .create-button:disabled {
@@ -106,7 +106,7 @@
 }
 
 .excel-button:hover:not(:disabled) {
-	background-color: #545b62;
+	background-color: #218838;
 }
 
 .excel-button:disabled {

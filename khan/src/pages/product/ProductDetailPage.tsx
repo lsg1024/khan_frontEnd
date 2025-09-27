@@ -262,7 +262,7 @@ function ProductDetailPage() {
 						productPurchasePrice: group.productPurchasePrice,
 						colorId: group.colorId || "",
 						note: group.note || "",
-						gradePolicyDtos: group.gradePolicyDtos.map((policy) => ({
+						policyDtos: group.policyDtos.map((policy) => ({
 							workGradePolicyId: policy.workGradePolicyId,
 							laborCost: policy.laborCost,
 						})),

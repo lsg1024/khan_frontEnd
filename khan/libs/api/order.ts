@@ -1,4 +1,5 @@
-import { apiRequest } from "./config";
+import { type AxiosResponse } from "axios";
+import { api, apiRequest } from "./config";
 import type { ApiResponse } from "./config";
 import type {
 	OrderSearchResponse,
@@ -41,7 +42,6 @@ export const orderApi = {
 		if (sortField) params.sortField = sortField;
 		if (sortOrder) params.sortOrder = sortOrder;
 		params.order_status = order_status;
-		
 
 		return apiRequest.get<OrderSearchResponse>("order/orders", { params });
 	},
@@ -61,7 +61,7 @@ export const orderApi = {
 		order_status: string,
 		factory?: string,
 		store?: string,
-		setType?: string,
+		setType?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
 		if (start) params.start = start;
@@ -103,7 +103,7 @@ export const orderApi = {
 	// 제조사 변경
 	updateOrderFactory: async (
 		flowCode: string,
-		factoryId: number,
+		factoryId: number
 	): Promise<ApiResponse<string>> => {
 		const requestBody = {
 			factoryId: factoryId,
@@ -197,6 +197,63 @@ export const orderApi = {
 		if (sortOrder) params.sortOrder = sortOrder;
 		params.order_status = order_status;
 
-		return apiRequest.get<OrderSearchResponse>("order/orders/deleted", { params });
-	}
+		return apiRequest.get<OrderSearchResponse>("order/orders/deleted", {
+			params,
+		});
+	},
+
+	// 엑셀 다운로드
+	downloadOrdersExcel: async (
+		start: string,
+		end: string,
+		order_status: string,
+		search?: string,
+		factory?: string,
+		store?: string,
+		setType?: string,
+		color?: string
+	): Promise<AxiosResponse<Blob>> => {
+		const params: Record<string, string> = {};
+
+		if (start) params.start = start;
+		if (end) params.end = end;
+		if (search) params.search = search;
+		if (factory) params.factory = factory;
+		if (store) params.store = store;
+		if (setType) params.setType = setType;
+		if (color) params.color = color;
+		params.order_status = order_status;
+
+		Object.keys(params).forEach(
+			(key) =>
+				(params[key] === undefined || params[key] === null) &&
+				delete params[key]
+		);
+
+		return api.get("order/orders/excel/order-book", {
+			params,
+			responseType: "blob",
+		});
+	},
+
+	updateDeliveryDate: async (
+		flowCode: string,
+		newDate: string
+	): Promise<ApiResponse<string>> => {
+		const requestBody = {
+			deliveryDate: newDate,
+		};
+		const params: Record<string, string> = {};
+		params.id = flowCode;
+		return apiRequest.patch("order/orders/delivery-date", requestBody, { params });
+	},
+
+	// 재고등록
+	updateStockRegister: async (
+		flowCode: string,
+		order_status: string
+	): Promise<ApiResponse<string>> => {
+		const params = { id: flowCode, order_status: order_status };
+		return apiRequest.patch<string>("order/orders/stock-register", null, { params });
+	},
 };

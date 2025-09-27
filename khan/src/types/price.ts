@@ -12,7 +12,7 @@ export interface ProductWorkGradePolicyGroupDto {
     productPurchasePrice: number;
     colorId: string;
     colorName: string;
-    gradePolicyDtos: GradePolicyDto[];
+    policyDtos: GradePolicyDto[];
     note: string;
 }
 

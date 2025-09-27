@@ -41,7 +41,7 @@ const makeTemplateGroup = (index: number): ProductWorkGradePolicyGroupDto => {
 		colorId: "", // 선택 유도 (빈 값)
 		colorName: "",
 		productPurchasePrice: 0,
-		gradePolicyDtos: normalizePolicies([], gid),
+		policyDtos: normalizePolicies([], gid),
 		note: "",
 	};
 };
@@ -52,7 +52,7 @@ const isRowDirty = (row: ProductWorkGradePolicyGroupDto): boolean => {
 		!!row.colorId ||
 		(row.productPurchasePrice ?? 0) > 0 ||
 		!!row.note?.trim() ||
-		(row.gradePolicyDtos || []).some((p) => (p.laborCost ?? 0) > 0)
+		(row.policyDtos || []).some((p) => (p.laborCost ?? 0) > 0)
 	);
 };
 
@@ -90,9 +90,9 @@ const PriceTable: React.FC<PriceTableProps> = ({
 			if (g) {
 				out.push({
 					...g,
-					gradePolicyDtos: normalizePolicies(
-						g.gradePolicyDtos,
-						g.productGroupId || `new-${i + 1}`
+					policyDtos: normalizePolicies(
+						g.policyDtos,
+						g.productGroupId || `GRADE_${i + 1}`
 					),
 				});
 			} else {
@@ -112,9 +112,9 @@ const PriceTable: React.FC<PriceTableProps> = ({
 				// gradePolicyDtos 안전화
 				.map((r, idx) => ({
 					...r,
-					gradePolicyDtos: normalizePolicies(
-						r.gradePolicyDtos,
-						r.productGroupId || `new-${idx + 1}`
+					policyDtos: normalizePolicies(
+						r.policyDtos,
+						r.productGroupId || `GRADE_${idx + 1}`
 					),
 				}));
 			onPriceGroupChange(cleaned);
@@ -175,10 +175,10 @@ const PriceTable: React.FC<PriceTableProps> = ({
 		const laborCost = onlyNum ? parseInt(onlyNum) : 0;
 
 		updateRowByIndex(rowIndex, (row) => {
-			const next = (row.gradePolicyDtos || []).map((p) =>
+			const next = (row.policyDtos || []).map((p) =>
 				p.workGradePolicyId === workGradePolicyId ? { ...p, laborCost } : p
 			);
-			return { ...row, gradePolicyDtos: next };
+			return { ...row, policyDtos: next };
 		});
 	};
 
@@ -206,7 +206,7 @@ const PriceTable: React.FC<PriceTableProps> = ({
 				</thead>
 				<tbody>
 					{displayRows.map((group, index) => (
-						<tr key={`${group.productGroupId || "new"}-${index}`}>
+						<tr key={`${group.productGroupId || "GRADE_"}${index}`}>
 							{/* 구분 */}
 							<td>
 								<span className="fixed-text">
@@ -292,10 +292,10 @@ const PriceTable: React.FC<PriceTableProps> = ({
 
 							{/* 1~4등급 공임 */}
 							{GRADE_ORDER.map((grade, n) => {
-								const policy = group.gradePolicyDtos.find(
+								const policy = group.policyDtos.find(
 									(p) => p.grade === grade
 								);
-								const idx = group.gradePolicyDtos.findIndex(
+								const idx = group.policyDtos.findIndex(
 									(p) => p.grade === grade
 								);
 								const errKey = `productWorkGradePolicyGroupDto[${index}].gradePolicyDtos[${

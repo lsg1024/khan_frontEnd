@@ -23,7 +23,7 @@ interface CreateModeProps extends BaseOrderTableProps {
 	onRowFocus: (rowId: string) => Promise<void>;
 	onRequiredFieldClick: (
 		currentRowId: string,
-		fieldType: "store" | "product" | "material"
+		fieldType: "store" | "product" | "material" | "color"
 	) => void;
 	onAssistanceStoneArrivalChange: (id: string, value: string) => void;
 	validateSequence: (
@@ -46,13 +46,13 @@ interface UpdateModeProps extends BaseOrderTableProps {
 	onProductSearchOpen: (rowId: string) => void;
 	onFactorySearchOpen: (rowId: string) => void;
 
-	// Update 모드에서 선택적 (일반적으로 사용하지 않음)
+	// Update 모드에서 선택적
 	onRowDelete?: (id: string) => void;
 	onAddOrderRow?: () => void;
 	onRowFocus?: (rowId: string) => Promise<void>;
 	onRequiredFieldClick?: (
 		currentRowId: string,
-		fieldType: "store" | "product" | "material"
+		fieldType: "store" | "product" | "material" | "color"
 	) => void;
 	onAssistanceStoneArrivalChange?: (id: string, value: string) => void;
 	validateSequence?: (
@@ -98,7 +98,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 
 	const safeOnRequiredFieldClick = (
 		currentRowId: string,
-		fieldType: "store" | "product" | "material"
+		fieldType: "store" | "product" | "material" | "color"
 	) => {
 		if ("onRequiredFieldClick" in props && props.onRequiredFieldClick) {
 			props.onRequiredFieldClick(currentRowId, fieldType);
@@ -193,8 +193,8 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 						<th></th>
 						<th></th>
 						<th></th>
-						<th>입고여부</th>
 						<th>유형</th>
+						<th>입고여부</th>
 						<th>입고날짜</th>
 						<th>기본</th>
 						<th>추가</th>
@@ -394,17 +394,11 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										if (!safeValidateSequence(row.id, "color")) {
 											return;
 										}
-										let selectedValue = e.target.value;
-
-										if (selectedValue === "") {
-											selectedValue = "1";
-										}
-
 										const selectedColor = colors.find(
-											(c) => c.colorId === selectedValue
+											(c) => c.colorId === e.target.value
 										);
 
-										onRowUpdate(row.id, "colorId", selectedValue);
+										onRowUpdate(row.id, "colorId", e.target.value);
 										onRowUpdate(
 											row.id,
 											"colorName",
@@ -412,6 +406,15 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										);
 									}}
 									disabled={loading || !safeIsRowInputEnabled(index)}
+									onClick={() => {
+										if (
+											mode === "create" &&
+											safeIsRowInputEnabled(index) &&
+											!row.colorId
+										) {
+											safeOnRequiredFieldClick(row.id, "color");
+										}
+									}}
 									onFocus={() => {
 										if (mode === "create" && safeIsRowInputEnabled(index)) {
 											safeOnRowFocus(row.id);
@@ -433,24 +436,6 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								</select>
 							</td>
 							{/* 보조석 필드들 */}
-							<td>
-								<select
-									value={row.assistantStone ? "Y" : "N"}
-									onChange={(e) =>
-										safeOnAssistanceStoneArrivalChange(row.id, e.target.value)
-									}
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									className={`arrival-status ${
-										row.assistantStone === true ? "arrived" : ""
-									}`}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								>
-									<option value="N">N</option>
-									<option value="Y">Y</option>
-								</select>
-							</td>
 							<td>
 								<select
 									value={row.assistantStoneId}
@@ -485,7 +470,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											: "pointer",
 									}}
 								>
-									<option value={0}>선택</option>
+									<option value="">선택</option>
 									{assistantStones.map((stone) => (
 										<option
 											key={stone.assistantStoneId}
@@ -494,6 +479,24 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											{stone.assistantStoneName}
 										</option>
 									))}
+								</select>
+							</td>
+							<td>
+								<select
+									value={row.assistantStone ? "Y" : "N"}
+									onChange={(e) =>
+										safeOnAssistanceStoneArrivalChange(row.id, e.target.value)
+									}
+									disabled={loading || !safeIsRowInputEnabled(index)}
+									className={`arrival-status ${
+										row.assistantStone === true ? "arrived" : ""
+									}`}
+									style={{
+										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+									}}
+								>
+									<option value="N">N</option>
+									<option value="Y">Y</option>
 								</select>
 							</td>
 							<td>

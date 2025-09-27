@@ -1,9 +1,8 @@
-/* BulkActionBar 컴포넌트 스타일 */
 .bulk-action-bar {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	padding: 12px 16px;
+	padding: 4px 8px;
 	background-color: white;
 	flex-direction: row;
 }
@@ -15,13 +14,25 @@
 
 .bulk-action-buttons {
 	display: flex;
-	gap: 12px;
+	gap: 6px;
 }
+
+.change-delivery-date {
+	background-color: #17a2b8;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	font-size: 10px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
 
 .bulk-action-btn {
 	display: inline-flex;
 	align-items: center;
-	padding: 8px 16px;
+	padding: 6px 10px;
 	font-size: 10px;
 	font-weight: 500;
 	text-decoration: none;

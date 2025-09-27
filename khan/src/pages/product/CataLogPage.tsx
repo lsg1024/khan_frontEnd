@@ -333,7 +333,7 @@ function CataLogPage() {
 						style={{ cursor: "pointer" }}
 					>
 						{/* 상품 이미지 */}
-						<div className="product-image">
+						<div>
 							<img
 								src={
 									product.productImagePath
@@ -398,7 +398,7 @@ function CataLogPage() {
 								)}
 								{/* 매입가와 판매가를 한 줄로 */}
 								<div className="detail-row combined price-row-combined">
-									<div className="detail-item">
+									<div>
 										<span className="price-label">판매가:</span>
 										<span className="selling-price">
 											{calculateTotalLaborCost(product).toLocaleString()}원

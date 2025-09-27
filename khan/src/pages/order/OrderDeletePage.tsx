@@ -134,7 +134,6 @@ export const OrderDeletedPage = () => {
 	// 체크박스 관련 핸들러 (단일 선택)
 	const handleSelectDeleted = (flowCode: string, checked: boolean) => {
 		if (checked) {
-			// 다른 체크박스가 선택되어 있으면 해제하고 새로운 것 선택
 			setSelectedDeleted(flowCode);
 		} else {
 			// 선택 해제

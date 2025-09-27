@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback,  } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import { materialApi } from "../../../libs/api/material";
@@ -345,28 +345,22 @@ const OrderCreatePage = () => {
 		setCurrentProductDetail(productDetail);
 
 		if (productDetail && rowId) {
-			// 업데이트할 대상 행(row)을 찾습니다.
 			const targetRow = orderRows.find((row) => row.id === rowId);
 			if (!targetRow) return;
 
-			// 1. 대상 행에서 거래처 등급(grade)을 가져옵니다.
-			const storeGrade = targetRow.grade || "1"; // 등급 값이 없으면 기본값 '1' 사용
+			const storeGrade = targetRow.grade || "1"; 
 			const policyGrade = `GRADE_${storeGrade}`;
 
-			// 2. productStoneDtos를 순회하며 stoneInfos 형식으로 변환합니다.
 			const transformedStoneInfos = productDetail.productStoneDtos.map(
 				(stone) => {
-					// 거래처 등급에 맞는 공임 정책(policy)을 찾습니다.
 					const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
 						(policy) => policy.grade === policyGrade
 					);
 
-					// 일치하는 공임을 사용하고, 없으면 첫 번째 등급의 공임이나 0을 사용합니다.
 					const laborCost = matchingPolicy
 						? matchingPolicy.laborCost
 						: stone.stoneWorkGradePolicyDtos[0]?.laborCost || 0;
 
-					// OrderCreateRequest의 stoneInfos 형식에 맞게 객체를 구성합니다.
 					return {
 						stoneId: stone.stoneId,
 						stoneName: stone.stoneName,
@@ -376,15 +370,13 @@ const OrderCreatePage = () => {
 						quantity: stone.stoneQuantity,
 						mainStone: stone.mainStone,
 						includeStone: stone.includeStone,
-						addLaborCost: 0, // 추가 공임은 기본 0으로 설정
+						addLaborCost: 0,
 					};
 				}
 			);
 
-			// 3. 가공된 스톤 정보로 주문 행을 업데이트합니다.
 			updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
 
-			// 기존의 다른 필드 업데이트 로직
 			updateOrderRow(
 				rowId,
 				"classificationName",
@@ -395,11 +387,6 @@ const OrderCreatePage = () => {
 				"setTypeName",
 				productDetail.setTypeDto.setTypeName || ""
 			);
-			// updateOrderRow(
-			//     rowId,
-			//     "colorId",
-			//     productDetail.colorDtos.length > 0 ? productDetail
-			// )
 		}
 	};
 
@@ -929,7 +916,7 @@ const OrderCreatePage = () => {
 							setTypeName: "",
 							materialId: "",
 							materialName: "",
-							colorId: "1",
+							colorId: "",
 							colorName: "",
 							factoryId: "",
 							factoryName: "",
@@ -954,7 +941,7 @@ const OrderCreatePage = () => {
 							shippingAt: defaultDeliveryDate,
 							// 보조석 관련 필드
 							assistantStone: false,
-							assistantStoneId: 1,
+							assistantStoneId: 0,
 							assistantStoneName: "",
 							assistantStoneCreateAt: "",
 						};
@@ -1162,10 +1149,10 @@ const OrderCreatePage = () => {
 												currentProductDetail.productWorkGradePolicyGroupDto
 													.length > 0 &&
 												currentProductDetail.productWorkGradePolicyGroupDto[0]
-													.gradePolicyDtos &&
+													.policyDtos &&
 												currentProductDetail.productWorkGradePolicyGroupDto[0]
-													.gradePolicyDtos.length > 0
-													? currentProductDetail.productWorkGradePolicyGroupDto[0].gradePolicyDtos[0].laborCost.toLocaleString() +
+													.policyDtos.length > 0
+													? currentProductDetail.productWorkGradePolicyGroupDto[0].policyDtos[0].laborCost.toLocaleString() +
 													  "원"
 													: "-"}
 											</span>

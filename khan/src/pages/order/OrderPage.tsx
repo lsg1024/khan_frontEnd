@@ -24,6 +24,10 @@ export const OrderPage = () => {
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
 
+	// 출고일 변경 관련 상태
+	const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false);
+	const [newDeliveryDate, setNewDeliveryDate] = useState<Date>(new Date());
+
 	// 제조사 변경 관련 상태
 	const [isFactorySearchOpen, setIsFactorySearchOpen] = useState(false);
 	const [selectedOrderForFactory, setSelectedOrderForFactory] =
@@ -77,6 +81,58 @@ export const OrderPage = () => {
 			if (newPopup) {
 				orderCreationPopup.current = newPopup;
 			}
+		}
+	};
+
+	const handleExcelDownload = async () => {
+		try {
+			setLoading(true);
+			setError("");
+			// API 호출 (response는 AxiosResponse 객체가 됨)
+			const response = await orderApi.downloadOrdersExcel(
+				searchFilters.start,
+				searchFilters.end,
+				"ORDER", // order_status 값
+				searchFilters.search,
+				searchFilters.factory,
+				searchFilters.store,
+				searchFilters.setType,
+				searchFilters.color
+			);
+
+			// 1. response.data가 Blob 객체입니다.
+			const blob = new Blob([response.data], {
+				type: response.headers["content-type"],
+			});
+
+			// 2. 서버가 'Content-Disposition' 헤더에 포함한 파일명을 추출합니다.
+			const contentDisposition = response.headers["content-disposition"];
+			let fileName = "주문장.xlsx"; // 기본 파일명
+			if (contentDisposition) {
+				// 정규식을 사용하여 "filename=" 뒤의 값을 추출
+				const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+				if (fileNameMatch && fileNameMatch.length === 2) {
+					// UTF-8 디코딩을 통해 한글 파일명 깨짐 방지
+					fileName = decodeURIComponent(fileNameMatch[1]);
+				}
+			}
+
+			// 3. 다운로드를 위한 가상 링크(<a>) 생성 및 실행
+			const url = window.URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = url;
+			link.setAttribute("download", fileName); // 추출한 파일명 설정
+			document.body.appendChild(link);
+			link.click();
+
+			// 4. 생성된 링크와 URL 정리
+			link.parentNode?.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		} catch (err) {
+			handleError(err, setError);
+			alert("엑셀 다운로드에 실패했습니다.");
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -181,37 +237,10 @@ export const OrderPage = () => {
 	// 체크박스 관련 핸들러 (단일 선택)
 	const handleSelectOrder = (flowCode: string, checked: boolean) => {
 		if (checked) {
-			// 다른 체크박스가 선택되어 있으면 해제하고 새로운 것 선택
 			setSelectedOrder(flowCode);
 		} else {
 			// 선택 해제
 			setSelectedOrder("");
-		}
-	};
-
-	// 대량 작업 핸들러 (단일 선택)
-	const handleStockRegister = () => {
-		if (selectedOrder) {
-			console.log("재고등록 대상:", selectedOrder);
-			// TODO: 재고등록 API 호출
-			alert(`선택된 주문을 재고등록 처리합니다.`);
-		}
-	};
-
-	const handleSalesRegister = () => {
-		if (selectedOrder) {
-			console.log("판매등록 대상:", selectedOrder);
-			// TODO: 판매등록 API 호출
-			alert(`선택된 주문을 판매등록 처리합니다.`);
-		}
-	};
-
-	const handleBulkDelete = () => {
-		if (selectedOrder) {
-			if (window.confirm(`선택된 주문을 삭제하시겠습니까?`)) {
-				alert(`선택된 주문을 삭제 처리합니다.`);
-				setSelectedOrder("");
-			}
 		}
 	};
 
@@ -223,7 +252,7 @@ export const OrderPage = () => {
 
 	// 검색 초기화
 	const handleReset = () => {
-		const resetFilters : SearchFilters = {
+		const resetFilters: SearchFilters = {
 			search: "",
 			start: getLocalDate(),
 			end: getLocalDate(),
@@ -283,6 +312,94 @@ export const OrderPage = () => {
 		},
 		[handleError]
 	);
+
+	// 대량 작업 핸들러
+	const handleSaveDeliveryDate = async () => {
+		if (!selectedOrder) return;
+
+		const isoDateString = newDeliveryDate.toISOString();
+		const confirmMessage = `선택된 주문의 출고일 ${isoDateString.split("T")[0]}(으)로 변경하시겠습니까?`;
+
+		if (window.confirm(confirmMessage)) {
+			try {
+				setLoading(true);
+				await orderApi.updateDeliveryDate(selectedOrder, isoDateString);
+				alert("출고일 성공적으로 변경되었습니다.");
+
+				// 데이터 새로고침
+				await loadOrders(searchFilters, currentPage);
+			} catch (err) {
+				handleError(err, setError);
+				alert("출고일 변경에 실패했습니다.");
+			} finally {
+				setIsDatePickerOpen(false); // 날짜 선택창 닫기
+				setLoading(false);
+			}
+		}
+	};
+
+	const handleChangeDeliveryDate = () => {
+		if (!selectedOrder) {
+			alert("출고일 변경할 주문을 먼저 선택해주세요.");
+			return;
+		}
+
+		const targetOrder = orders.find(
+			(order) => order.flowCode === selectedOrder
+		);
+
+		if (targetOrder) {
+			const initialDate = targetOrder.shippingAt
+				? new Date(targetOrder.shippingAt)
+				: new Date();
+			setNewDeliveryDate(initialDate);
+		}
+		setIsDatePickerOpen(true); // 날짜 선택창 열기
+	};
+
+	const handleCloseDatePicker = () => {
+		setIsDatePickerOpen(false);
+	};
+
+	// 재고등록
+	const handleStockRegister = async () => {
+		if (!selectedOrder) {
+			alert("재고등록할 주문을 먼저 선택해주세요.");
+			return;
+		}
+
+		alert("재고등록하시");
+
+		const targetOrder = orders.find(
+			(order) => order.flowCode === selectedOrder
+		);
+
+		if (targetOrder) {
+			const response = await orderApi.updateStockRegister(targetOrder.flowCode, "STOCK");
+			if (!response.success) {
+				alert(response.data || "재고등록에 실패했습니다.");
+				return;
+			} else {
+				alert(response.data || "재고등록이 완료되었습니다.");
+			}
+		}
+	};
+
+	const handleSalesRegister = () => {
+		if (selectedOrder) {
+			console.log("판매등록 대상:", selectedOrder);
+			alert(`선택된 주문을 판매등록 처리합니다.`);
+		}
+	};
+
+	const handleBulkDelete = () => {
+		if (selectedOrder) {
+			if (window.confirm(`선택된 주문을 삭제하시겠습니까?`)) {
+				alert(`선택된 주문을 삭제 처리합니다.`);
+				setSelectedOrder("");
+			}
+		}
+	};
 
 	const fetchDropdownData = async () => {
 		setDropdownLoading(true);
@@ -368,6 +485,36 @@ export const OrderPage = () => {
 					</div>
 				)}
 
+				{/* 출고일 변경 모달 */}
+				{isDatePickerOpen && (
+					<div className="date-picker-modal-overlay">
+						<div className="date-picker-modal">
+							<h3>출고일 변경</h3>
+							<p>주문번호: {selectedOrder}</p>
+							<input
+								type="date"
+								value={newDeliveryDate.toISOString().split("T")[0]}
+								onChange={(e) => setNewDeliveryDate(new Date(e.target.value))}
+								className="date-picker-input"
+							/>
+							<div className="date-picker-actions">
+								<button
+									onClick={handleSaveDeliveryDate}
+									className="date-btn-save"
+								>
+									저장
+								</button>
+								<button
+									onClick={handleCloseDatePicker}
+									className="date-btn-cancel"
+								>
+									취소
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+
 				{/* 검색 영역 */}
 				<OrderSearch
 					searchFilters={searchFilters}
@@ -375,6 +522,7 @@ export const OrderPage = () => {
 					onSearch={handleSearch}
 					onReset={handleReset}
 					onCreate={handleOrderCreate}
+					onExcel={handleExcelDownload}
 					factories={factories}
 					stores={stores}
 					setTypes={setTypes}
@@ -399,6 +547,7 @@ export const OrderPage = () => {
 					{/* 대량 작업 바 */}
 					<BulkActionBar
 						selectedCount={selectedOrder ? 1 : 0}
+						onChangeDeliveryDate={handleChangeDeliveryDate}
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}
 						onDelete={handleBulkDelete}

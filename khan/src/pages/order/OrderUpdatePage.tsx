@@ -10,6 +10,7 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import {
 	addBusinessDays,
 	formatDateToString,
+	getLocalDate,
 	formatToLocalDate,
 } from "../../utils/dateUtils";
 import type {
@@ -118,6 +119,7 @@ const OrderUpdatePage: React.FC = () => {
 	>([]);
 
 	const orderStatus = MODE_TO_STATUS[mode as UpdateMode];
+	const currentDate = getLocalDate();
 
 	const convertToOrderRowData = (
 		detail: OrderResponseDetail,
@@ -203,6 +205,18 @@ const OrderUpdatePage: React.FC = () => {
 			});
 			return updatedRows;
 		});
+	};
+
+	const handleAssistanceStoneArrivalChange = (id: string, value: string) => {
+		if (value === "Y") {
+			// Y로 변경 시 현재 날짜를 자동 설정
+			updateOrderRow(id, "assistantStone", true);
+			updateOrderRow(id, "assistantStoneCreateAt", currentDate);
+		} else {
+			// N으로 변경 시 날짜 초기화
+			updateOrderRow(id, "assistantStone", false);
+			updateOrderRow(id, "assistantStoneCreateAt", "");
+		}
 	};
 
 	// 검색 모달 핸들러들
@@ -663,6 +677,7 @@ const OrderUpdatePage: React.FC = () => {
 				priorities={priorities}
 				assistantStones={assistantStones}
 				onRowUpdate={updateOrderRow}
+				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
 				onStoreSearchOpen={handleStoreSearchOpen}
 				onProductSearchOpen={handleProductSearchOpen}
 				onFactorySearchOpen={handleFactorySearchOpen}

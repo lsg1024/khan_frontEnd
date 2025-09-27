@@ -3,6 +3,7 @@ import "../../styles/components/BulkActionBar.css";
 
 interface BulkActionBarProps {
 	selectedCount: number;
+	onChangeDeliveryDate?: () => void;
 	onStockRegister?: () => void;
 	onSalesRegister?: () => void;
 	onDelete?: () => void;
@@ -11,6 +12,7 @@ interface BulkActionBarProps {
 
 const BulkActionBar: React.FC<BulkActionBarProps> = ({
 	selectedCount,
+	onChangeDeliveryDate,
 	onStockRegister,
 	onSalesRegister,
 	onDelete,
@@ -19,6 +21,22 @@ const BulkActionBar: React.FC<BulkActionBarProps> = ({
 	return (
 		<div className={`bulk-action-bar ${className}`}>
 			<div className="bulk-action-buttons">
+				{onChangeDeliveryDate && (
+					<a
+						href="#"
+						className={`bulk-action-btn change-delivery-date ${
+							selectedCount === 0 ? "disabled" : ""
+						}`}
+						onClick={(e) => {
+							e.preventDefault();
+							if (selectedCount > 0) {
+								onChangeDeliveryDate();
+							}
+						}}
+					>
+						출고일변경
+					</a>
+				)}
 				{onStockRegister && (
 					<a
 						href="#"

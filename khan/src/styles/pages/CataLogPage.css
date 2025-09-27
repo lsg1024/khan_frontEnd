@@ -123,7 +123,7 @@
 
 .search-buttons-catalog .search-button,
 .reset-button {
-	padding: 0.5rem;
+	padding: 8px 16px;
 	border-radius: var(--border-radius-md);
 	font-weight: var(--font-weight-medium);
 	cursor: pointer;
@@ -140,18 +140,19 @@
 }
 
 .search-buttons-catalog .search-button:hover:not(:disabled) {
-	background-color: var(--primary-hover);
+	background-color: #0056b3;
 }
 
 .search-buttons-catalog .reset-button {
-	background-color: var(--bg-secondary);
+	background-color: #545b62;
 	color: var(--text-primary);
 	border: 1px solid var(--border-color);
 	border-radius: 5px;
 }
 
 .search-buttons-catalog .reset-button:hover:not(:disabled) {
-	background-color: var(--bg-hover);
+	background-color: #434a52;
+	border-color: #6c757d;
 }
 
 .search-buttons-catalog .create-button {
@@ -162,7 +163,7 @@
 }
 
 .search-buttons-catalog .create-button:hover:not(:disabled) {
-	background-color: var(--bg-hover);
+	background-color: #218838;
 }
 
 .search-buttons-catalog .search-button:disabled,
@@ -357,13 +358,12 @@
 .detail-row.combined {
 	display: flex;
 	justify-content: space-between;
-	align-items: flex-start; /* center에서 flex-start로 변경 */
+	align-items: flex-start;
 }
 
 .detail-item {
 	display: flex;
-	align-items: flex-start; /* center에서 flex-start로 변경하여 위쪽 정렬 */
-	gap: 4px; /* 간격 증가 */
+	align-items: flex-start;
 }
 
 /* 가격 정보 한 줄 스타일 - 배경 제거 */
@@ -383,13 +383,14 @@
 .detail-row .label,
 .price-label {
 	font-weight: var(--font-weight-medium);
-	color: var(--text-muted);
-	font-size: 12px; /* 9px에서 12px로 되돌림 */
+	color: white;
+	font-size: 12px;
+	margin-right: 2px;
 }
 
 .detail-row .value {
 	color: var(--text-primary);
-	font-size: 12px; /* 9px에서 12px로 되돌림 */
+	font-size: 12px;
 }
 
 /* 메모장 내부 value 스타일 */
