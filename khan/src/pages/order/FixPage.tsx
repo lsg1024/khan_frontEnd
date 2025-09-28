@@ -6,7 +6,7 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import { fixApi } from "../../../libs/api/fix";
 import { orderApi } from "../../../libs/api/order";
 import FactorySearch from "../../components/common/factory/FactorySearch";
-import type {  SearchFilters } from "../../hooks/OrderSearch";
+import type { SearchFilters } from "../../hooks/OrderSearch";
 import type { FactorySearchDto } from "../../types/factory";
 import type { OrderDto } from "../../types/order";
 import MainList from "../../components/common/order/MainList";
@@ -20,7 +20,7 @@ export const FixPage = () => {
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [fixes, setFixes] = useState<OrderDto[]>([]); // 수리 데이터 상태
-	const [selectedFix, setSelectedFix] = useState<string>(""); // 수리 선택으로 변경
+	const [selectedFix, setSelectedFix] = useState<string[]>([]); // 수리 선택으로 변경
 	const [factories, setFactories] = useState<string[]>([]);
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
@@ -71,7 +71,7 @@ export const FixPage = () => {
 			setError("");
 
 			// 페이지 변경 시 선택 상태 초기화
-			setSelectedFix("");
+			setSelectedFix([]);
 			try {
 				const response = await fixApi.getFixes(
 					filters.start,
@@ -149,14 +149,13 @@ export const FixPage = () => {
 		}
 	};
 
-	// 체크박스 관련 핸들러 (단일 선택)
 	const handleSelectFix = (flowCode: string, checked: boolean) => {
 		if (checked) {
-			// 다른 체크박스가 선택되어 있으면 해제하고 새로운 것 선택
-			setSelectedFix(flowCode);
+			// 선택 추가
+			setSelectedFix((prev) => [...prev, flowCode]);
 		} else {
 			// 선택 해제
-			setSelectedFix("");
+			setSelectedFix((prev) => prev.filter((id) => id !== flowCode));
 		}
 	};
 
@@ -183,7 +182,7 @@ export const FixPage = () => {
 				console.log("삭제 대상:", selectedFix);
 				// TODO: 삭제 API 호출
 				alert(`선택된 수리를 삭제 처리합니다.`);
-				setSelectedFix("");
+				setSelectedFix([]);
 			}
 		}
 	};
@@ -325,7 +324,19 @@ export const FixPage = () => {
 
 		initializeData();
 
+		const handleOrderCreated = (event: MessageEvent) => {
+			if (event.data && event.data.type === "ORDER_CREATED") {
+				// 주문 목록 새로고침
+				loadFixes(searchFilters, 1);
+				setCurrentPage(1);
+				alert("수리 주문이 성공적으로 생성되었습니다.");
+			}
+		};
+
+		window.addEventListener("message", handleOrderCreated);
+
 		return () => {
+			window.removeEventListener("message", handleOrderCreated);
 			// 주문 생성 팝업 정리
 			if (creationPopupRef.current && !creationPopupRef.current.closed) {
 				creationPopupRef.current = null;

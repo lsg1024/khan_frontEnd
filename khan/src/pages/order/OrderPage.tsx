@@ -33,8 +33,8 @@ export const OrderPage = () => {
 	const [selectedOrderForFactory, setSelectedOrderForFactory] =
 		useState<string>("");
 
-	// 체크박스 선택 관련 상태 (단일 선택만 허용)
-	const [selectedOrder, setSelectedOrder] = useState<string>("");
+	// 체크박스 선택 관련 상태 (다중 선택 허용)
+	const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
 	const { handleError } = useErrorHandler();
 
@@ -80,6 +80,21 @@ export const OrderPage = () => {
 			const newPopup = window.open(url, NAME, FEATURES);
 			if (newPopup) {
 				orderCreationPopup.current = newPopup;
+
+				// 팝업 닫힘 감지를 위한 인터벌 설정
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						console.log("주문 생성 팝업이 닫혔습니다.");
+						// 팝업이 닫힌 후 잠시 후 목록 새로고침 (팝업에서 메시지를 보낼 시간을 주기 위해)
+						setTimeout(() => {
+							console.log("주문 목록을 새로고침합니다.");
+							loadOrders(searchFilters, currentPage);
+						}, 500);
+
+						clearInterval(checkClosed);
+						orderCreationPopup.current = null;
+					}
+				}, 1000);
 			}
 		}
 	};
@@ -88,7 +103,6 @@ export const OrderPage = () => {
 		try {
 			setLoading(true);
 			setError("");
-			// API 호출 (response는 AxiosResponse 객체가 됨)
 			const response = await orderApi.downloadOrdersExcel(
 				searchFilters.start,
 				searchFilters.end,
@@ -234,13 +248,14 @@ export const OrderPage = () => {
 		setSelectedOrderForFactory("");
 	}, []);
 
-	// 체크박스 관련 핸들러 (단일 선택)
+	// 체크박스 관련 핸들러 (다중 선택)
 	const handleSelectOrder = (flowCode: string, checked: boolean) => {
 		if (checked) {
-			setSelectedOrder(flowCode);
+			// 선택 추가
+			setSelectedOrders((prev) => [...prev, flowCode]);
 		} else {
 			// 선택 해제
-			setSelectedOrder("");
+			setSelectedOrders((prev) => prev.filter((id) => id !== flowCode));
 		}
 	};
 
@@ -274,7 +289,7 @@ export const OrderPage = () => {
 			setLoading(true);
 			setError("");
 
-			setSelectedOrder("");
+			setSelectedOrders([]);
 
 			try {
 				const response = await orderApi.getOrders(
@@ -315,16 +330,24 @@ export const OrderPage = () => {
 
 	// 대량 작업 핸들러
 	const handleSaveDeliveryDate = async () => {
-		if (!selectedOrder) return;
+		if (selectedOrders.length === 0) return;
 
 		const isoDateString = newDeliveryDate.toISOString();
-		const confirmMessage = `선택된 주문의 출고일 ${isoDateString.split("T")[0]}(으)로 변경하시겠습니까?`;
+		const confirmMessage = `선택된 ${selectedOrders.length}개 주문의 출고일을 ${
+			isoDateString.split("T")[0]
+		}(으)로 변경하시겠습니까?`;
 
 		if (window.confirm(confirmMessage)) {
 			try {
 				setLoading(true);
-				await orderApi.updateDeliveryDate(selectedOrder, isoDateString);
-				alert("출고일 성공적으로 변경되었습니다.");
+				// 선택된 모든 주문의 출고일 변경
+				const promises = selectedOrders.map((orderId) =>
+					orderApi.updateDeliveryDate(orderId, isoDateString)
+				);
+				await Promise.all(promises);
+				alert(
+					`${selectedOrders.length}개 주문의 출고일이 성공적으로 변경되었습니다.`
+				);
 
 				// 데이터 새로고침
 				await loadOrders(searchFilters, currentPage);
@@ -339,13 +362,13 @@ export const OrderPage = () => {
 	};
 
 	const handleChangeDeliveryDate = () => {
-		if (!selectedOrder) {
-			alert("출고일 변경할 주문을 먼저 선택해주세요.");
+		if (selectedOrders.length !== 1) {
+			alert("출고일 변경은 주문을 1개만 선택해야 합니다.");
 			return;
 		}
 
 		const targetOrder = orders.find(
-			(order) => order.flowCode === selectedOrder
+			(order) => order.flowCode === selectedOrders[0]
 		);
 
 		if (targetOrder) {
@@ -354,49 +377,66 @@ export const OrderPage = () => {
 				: new Date();
 			setNewDeliveryDate(initialDate);
 		}
-		setIsDatePickerOpen(true); // 날짜 선택창 열기
+		setIsDatePickerOpen(true);
 	};
 
 	const handleCloseDatePicker = () => {
 		setIsDatePickerOpen(false);
 	};
 
-	// 재고등록
-	const handleStockRegister = async () => {
-		if (!selectedOrder) {
-			alert("재고등록할 주문을 먼저 선택해주세요.");
-			return;
-		}
+	const stockRegisterPopups = useRef<Map<string, Window>>(new Map());
 
-		alert("재고등록하시");
+const handleStockRegister = () => {
+    if (selectedOrders.length === 0) {
+        alert("재고등록할 주문을 먼저 선택해주세요.");
+        return;
+    }
 
-		const targetOrder = orders.find(
-			(order) => order.flowCode === selectedOrder
-		);
+    // 1. 선택된 주문 ID들을 콤마(,)로 구분된 하나의 문자열로 합칩니다.
+    const ids = selectedOrders.join(',');
 
-		if (targetOrder) {
-			const response = await orderApi.updateStockRegister(targetOrder.flowCode, "STOCK");
-			if (!response.success) {
-				alert(response.data || "재고등록에 실패했습니다.");
-				return;
-			} else {
-				alert(response.data || "재고등록이 완료되었습니다.");
-			}
-		}
-	};
+    // 2. 이 ID들을 URL 쿼리 파라미터로 넘겨 새 페이지를 엽니다.
+    const url = `/orders/register-stock?ids=${ids}`;
+    const NAME = `stockRegisterBulk`;
+    const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800"; // 높이를 충분히 확보
+
+    // 재고 등록 팝업은 하나만 열리도록 관리
+    const existingPopup = stockRegisterPopups.current.get(NAME);
+
+    if (existingPopup && !existingPopup.closed) {
+        existingPopup.focus();
+    } else {
+        const newPopup = window.open(url, NAME, FEATURES);
+        if (newPopup) {
+            stockRegisterPopups.current.set(NAME, newPopup);
+
+            const checkClosed = setInterval(() => {
+                if (newPopup.closed) {
+                    stockRegisterPopups.current.delete(NAME);
+                    loadOrders(searchFilters, currentPage);
+                    clearInterval(checkClosed);
+                }
+            }, 1000);
+        }
+    }
+};
 
 	const handleSalesRegister = () => {
-		if (selectedOrder) {
-			console.log("판매등록 대상:", selectedOrder);
-			alert(`선택된 주문을 판매등록 처리합니다.`);
+		if (selectedOrders.length > 0) {
+			console.log("판매등록 대상:", selectedOrders);
+			alert(`선택된 ${selectedOrders.length}개 주문을 판매등록 처리합니다.`);
 		}
 	};
 
 	const handleBulkDelete = () => {
-		if (selectedOrder) {
-			if (window.confirm(`선택된 주문을 삭제하시겠습니까?`)) {
-				alert(`선택된 주문을 삭제 처리합니다.`);
-				setSelectedOrder("");
+		if (selectedOrders.length > 0) {
+			if (
+				window.confirm(
+					`선택된 ${selectedOrders.length}개 주문을 삭제하시겠습니까?`
+				)
+			) {
+				alert(`선택된 ${selectedOrders.length}개 주문을 삭제 처리합니다.`);
+				setSelectedOrders([]);
 			}
 		}
 	};
@@ -404,7 +444,6 @@ export const OrderPage = () => {
 	const fetchDropdownData = async () => {
 		setDropdownLoading(true);
 		try {
-			// 공장 데이터 가져오기 -> 서버에서 distinct 이용해 종합 페이지에서 가져오도록
 			const factoryResponse = await orderApi.getFilterFactories(
 				searchFilters.start,
 				searchFilters.end,
@@ -412,7 +451,6 @@ export const OrderPage = () => {
 			);
 			setFactories(factoryResponse.data || []);
 
-			// 판매처 데이터 가져오기
 			const storeResponse = await orderApi.getFilterStores(
 				searchFilters.start,
 				searchFilters.end,
@@ -420,7 +458,6 @@ export const OrderPage = () => {
 			);
 			setStores(storeResponse.data || []);
 
-			// 세트타입 데이터 가져오기
 			const setTypeResponse = await orderApi.getFilterSetTypes(
 				searchFilters.start,
 				searchFilters.end,
@@ -441,26 +478,40 @@ export const OrderPage = () => {
 			await Promise.all([loadOrders(searchFilters, 1), fetchDropdownData()]);
 		};
 
-		// effect 시작 시점에 ref 값들을 복사
 		const creationPopupRef = orderCreationPopup;
 		const updatePopupsRef = orderUpdatePopups;
+		const stockRegisterPopupsRef = stockRegisterPopups;
 
 		initializeData();
 
-		// 컴포넌트 언마운트 시 모든 팝업 참조 정리
+		const handleOrderCreated = (event: MessageEvent) => {
+			if (event.data && event.data.type === "ORDER_CREATED") {
+				console.log("주문 생성 완료 메시지 수신:", event.data);
+				// 주문 목록 새로고침
+				loadOrders(searchFilters, 1);
+				setCurrentPage(1);
+				alert("주문이 성공적으로 생성되었습니다.");
+			}
+		};
+
+		window.addEventListener("message", handleOrderCreated);
+
 		return () => {
-			// 주문 생성 팝업 정리
+			window.removeEventListener("message", handleOrderCreated);
+
 			if (creationPopupRef.current && !creationPopupRef.current.closed) {
 				creationPopupRef.current = null;
 			}
 
-			// 주문 상세 팝업들 정리
-			updatePopupsRef.current.forEach((popup) => {
+			updatePopupsRef.current.clear();
+
+			// 재고등록 팝업들 정리
+			stockRegisterPopupsRef.current.forEach((popup) => {
 				if (popup && !popup.closed) {
 					// 팝업 참조만 제거 (실제 창은 닫지 않음)
 				}
 			});
-			updatePopupsRef.current.clear();
+			stockRegisterPopupsRef.current.clear();
 		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -490,7 +541,7 @@ export const OrderPage = () => {
 					<div className="date-picker-modal-overlay">
 						<div className="date-picker-modal">
 							<h3>출고일 변경</h3>
-							<p>주문번호: {selectedOrder}</p>
+							<p>주문번호: {selectedOrders}</p>
 							<input
 								type="date"
 								value={newDeliveryDate.toISOString().split("T")[0]}
@@ -535,7 +586,7 @@ export const OrderPage = () => {
 				<div className="order-list">
 					<MainList
 						dtos={orders}
-						selected={selectedOrder}
+						selected={selectedOrders}
 						currentPage={currentPage}
 						loading={loading}
 						onSelect={handleSelectOrder}
@@ -546,7 +597,7 @@ export const OrderPage = () => {
 
 					{/* 대량 작업 바 */}
 					<BulkActionBar
-						selectedCount={selectedOrder ? 1 : 0}
+						selectedCount={selectedOrders.length}
 						onChangeDeliveryDate={handleChangeDeliveryDate}
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}

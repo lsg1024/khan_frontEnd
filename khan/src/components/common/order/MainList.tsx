@@ -3,7 +3,7 @@ import { formatToLocalDate } from "../../../utils/dateUtils";
 
 interface MainListProps {
 	dtos: OrderDto[];
-	selected: string;
+	selected: string[];
 	currentPage: number;
 	loading: boolean;
 	onSelect: (flowCode: string, checked: boolean) => void;
@@ -57,13 +57,13 @@ const MainList = ({
 					<tr
 						key={dto.flowCode}
 						className={`
-							${selected === dto.flowCode ? "selected-row" : ""}
+							${selected.includes(dto.flowCode) ? "selected-row" : ""}
 							${dto.orderStatus === "DELETED" ? "disabled-row" : ""}`}
-							>
+					>
 						<td>
 							<input
 								type="checkbox"
-								checked={selected === dto.flowCode}
+								checked={selected.includes(dto.flowCode)}
 								onChange={(e) => onSelect(dto.flowCode, e.target.checked)}
 								disabled={dto.orderStatus === "DELETED"}
 							/>

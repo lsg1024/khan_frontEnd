@@ -20,6 +20,7 @@ import FixPage from "./pages/order/FixPage";
 import ExpactPage from "./pages/order/DeliveryPage";
 import OrderCreatePage from "./pages/order/OrderCreatePage";
 import OrderUpdatePage from "./pages/order/OrderUpdatePage";
+import StockRegisterPage from "./pages/stock/StockRegisterPage";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
 import StoneSearchPage from "./pages/StoneSearchPage";
 import StoneInfoPage from "./pages/order/StoneInfoPage";
@@ -126,6 +127,7 @@ function App() {
 					<Route path="/stone/create" element={<StoneCreatePage />} />
 
 					<Route path="/orders/update/:mode/:flowCode" element={<OrderUpdatePage />}/>
+					<Route path="/orders/register-stock" element={<StockRegisterPage />} />
 					<Route path="/orders/create/:mode" element={<OrderCreatePage />} />
 					<Route path="/orders/stone-info" element={<StoneInfoPage />} />
 					<Route path="/stone-search" element={<StoneSearchPage />} />

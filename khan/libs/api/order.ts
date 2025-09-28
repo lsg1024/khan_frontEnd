@@ -245,15 +245,24 @@ export const orderApi = {
 		};
 		const params: Record<string, string> = {};
 		params.id = flowCode;
-		return apiRequest.patch("order/orders/delivery-date", requestBody, { params });
+		return apiRequest.patch("order/orders/delivery-date", requestBody, {
+			params,
+		});
 	},
 
 	// 재고등록
 	updateStockRegister: async (
 		flowCode: string,
-		order_status: string
+		order_status: string,
+		orderData: Partial<OrderRequestDetail>
 	): Promise<ApiResponse<string>> => {
 		const params = { id: flowCode, order_status: order_status };
-		return apiRequest.patch<string>("order/orders/stock-register", null, { params });
+
+		const requestBody = {
+			...orderData,
+		};
+		return apiRequest.patch<string>("order/order/stock-register", requestBody, {
+			params,
+		});
 	},
 };

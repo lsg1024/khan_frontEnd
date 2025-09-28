@@ -26,6 +26,7 @@ interface OrderSearchProps {
 	factories: string[];
 	stores: string[];
 	setTypes: string[];
+	// colors: string[];
 	loading: boolean;
 	dropdownLoading: boolean;
 }
@@ -41,6 +42,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 	factories,
 	stores,
 	setTypes,
+	// colors,
 	loading,
 	dropdownLoading,
 }) => {
@@ -140,9 +142,9 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 								disabled={dropdownLoading}
 							>
 								<option value="">색상</option>
-								{setTypes.map((setType) => (
-									<option key={setType} value={setType}>
-										{setType}
+								{setTypes.map((color) => (
+									<option key={color} value={color}>
+										{color}
 									</option>
 								))}
 							</select>

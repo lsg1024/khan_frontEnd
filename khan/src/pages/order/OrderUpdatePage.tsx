@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
@@ -77,6 +77,8 @@ const OrderUpdatePage: React.FC = () => {
 		mode: UpdateMode;
 		flowCode: string;
 	}>();
+	const [searchParams] = useSearchParams();
+	const stockMode = searchParams.get("mode") === "stock";
 
 	const { handleError } = useErrorHandler();
 
@@ -642,7 +644,7 @@ const OrderUpdatePage: React.FC = () => {
 			{/* 주문 상세 정보 카드 */}
 			<div className="order-detail-card">
 				<img src={initialImagePath} alt="Product" />
-				<h3>주문 정보</h3>
+				<h3>{stockMode ? "재고 등록" : "주문 정보"}</h3>
 				<div className="detail-grid">
 					<div className="detail-item">
 						<label>주문코드:</label>
@@ -694,7 +696,7 @@ const OrderUpdatePage: React.FC = () => {
 					취소
 				</button>
 				<button className="btn-submit" onClick={handleSave} disabled={loading}>
-					{loading ? "저장 중..." : "저장"}
+					{loading ? "저장 중..." : stockMode ? "등록" : "수정"}
 				</button>
 			</div>
 

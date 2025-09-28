@@ -18,7 +18,7 @@ export const OrderDeletedPage = () => {
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [deleteds, setDeleteds] = useState<OrderDto[]>([]); // 삭제된 주문 데이터 상태
-	const [selectedDeleted, setSelectedDeleted] = useState<string>(""); // 삭제된 주문 선택
+	const [selectedDeleted, setSelectedDeleted] = useState<string[]>([]); // 삭제된 주문 선택
 	const [factories, setFactories] = useState<string[]>([]);
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
@@ -69,7 +69,7 @@ export const OrderDeletedPage = () => {
 			setError("");
 
 			// 페이지 변경 시 선택 상태 초기화
-			setSelectedDeleted("");
+			setSelectedDeleted([]);
 			try {
 				const response = await orderApi.getDeletedOrders(
 					filters.start,
@@ -131,13 +131,13 @@ export const OrderDeletedPage = () => {
 		loadDeleteds(resetFilters, 1);
 	};
 
-	// 체크박스 관련 핸들러 (단일 선택)
 	const handleSelectDeleted = (flowCode: string, checked: boolean) => {
 		if (checked) {
-			setSelectedDeleted(flowCode);
+			// 선택 추가
+			setSelectedDeleted((prev) => [...prev, flowCode]);
 		} else {
 			// 선택 해제
-			setSelectedDeleted("");
+			setSelectedDeleted((prev) => prev.filter((id) => id !== flowCode));
 		}
 	};
 

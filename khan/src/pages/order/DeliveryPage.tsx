@@ -20,7 +20,7 @@ export const ExpactPage = () => {
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [expacts, setExpacts] = useState<OrderDto[]>([]);
-	const [selectedExpact, setSelectedExpact] = useState<string>("");
+	const [selectedExpact, setSelectedExpact] = useState<string[]>([]);
 	const [factories, setFactories] = useState<string[]>([]);
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
@@ -86,14 +86,14 @@ export const ExpactPage = () => {
 		loadExpacts(resetFilters, 1);
 	};
 
-	// 체크박스 관련 핸들러 (단일 선택)
+	// 체크박스 관련 핸들러 (다중 선택)
 	const handleSelectExpact = (flowCode: string, checked: boolean) => {
 		if (checked) {
-			// 다른 체크박스가 선택되어 있으면 해제하고 새로운 것 선택
-			setSelectedExpact(flowCode);
+			// 선택 추가
+			setSelectedExpact((prev) => [...prev, flowCode]);
 		} else {
 			// 선택 해제
-			setSelectedExpact("");
+			setSelectedExpact((prev) => prev.filter((id) => id !== flowCode));
 		}
 	};
 
@@ -149,7 +149,7 @@ export const ExpactPage = () => {
 				console.log("삭제 대상:", selectedExpact);
 				// TODO: 삭제 API 호출
 				alert(`선택된 수리를 삭제 처리합니다.`);
-				setSelectedExpact("");
+				setSelectedExpact([]);
 			}
 		}
 	};
@@ -219,7 +219,7 @@ export const ExpactPage = () => {
 			setLoading(true);
 			setError("");
 
-			setSelectedExpact("");
+			setSelectedExpact([]);
 			try {
 				const response = await deliveryApi.getExpacts(
 					filters.start,
@@ -337,6 +337,7 @@ export const ExpactPage = () => {
 					factories={factories}
 					stores={stores}
 					setTypes={setTypes}
+					// colors={colors}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
 					onStart={false}

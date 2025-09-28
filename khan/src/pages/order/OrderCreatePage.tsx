@@ -348,7 +348,7 @@ const OrderCreatePage = () => {
 			const targetRow = orderRows.find((row) => row.id === rowId);
 			if (!targetRow) return;
 
-			const storeGrade = targetRow.grade || "1"; 
+			const storeGrade = targetRow.grade || "1";
 			const policyGrade = `GRADE_${storeGrade}`;
 
 			const transformedStoneInfos = productDetail.productStoneDtos.map(
@@ -1019,6 +1019,18 @@ const OrderCreatePage = () => {
 			await Promise.all(promises);
 
 			alert(`${validRows.length}개의 주문이 성공적으로 등록되었습니다.`);
+
+			// 부모 창에 주문 생성 완료 메시지 전송
+			if (window.opener && !window.opener.closed) {
+				window.opener.postMessage(
+					{
+						type: "ORDER_CREATED",
+						count: validRows.length,
+						timestamp: new Date().toISOString(),
+					},
+					"*"
+				);
+			}
 
 			window.close();
 		} catch (err) {
