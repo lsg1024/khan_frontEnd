@@ -1,118 +1,89 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { orderApi } from "../../../libs/api/order";
+import { stockApi } from "../../../libs/api/stock";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
-import { priorityApi } from "../../../libs/api/priority";
 import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { storeApi } from "../../../libs/api/store";
 import { useErrorHandler } from "../../utils/errorHandler";
-import {
-	addBusinessDays,
-	formatDateToString,
-	formatToLocalDate,
-	getLocalDate,
-} from "../../utils/dateUtils";
+import { getLocalDate } from "../../utils/dateUtils";
 import type {
-	OrderRowData,
-	OrderResponseDetail,
-	StoneInfo,
-	OrderRequestDetail,
-} from "../../types/order";
+	StockOrderRowData,
+	StockRegisterRequest,
+	StockRegisterResponse,
+} from "../../types/stock";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import type { FactorySearchDto } from "../../types/factory";
 import type { StoreSearchDto } from "../../types/store";
 import type { ProductDto } from "../../types/product";
-import OrderTable from "../../components/common/order/OrderTable";
 import "../../styles/pages/OrderCreatePage.css";
+import StockTable from "../../components/common/stock/StockTable";
+import { calculateStoneDetails } from "../../utils/CalculateStone";
 
 const POPUP_ORIGIN = window.location.origin;
 
-const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
-	const details = {
-		mainStonePrice: 0,
-		assistanceStonePrice: 0,
-		additionalStonePrice: 0,
-		mainStoneCount: 0,
-		assistanceStoneCount: 0,
-		stoneWeightTotal: 0,
-	};
-	if (!stoneInfos) return details;
-	stoneInfos.forEach((stone) => {
-		const quantity = stone.quantity || 0,
-			weight = stone.stoneWeight || 0,
-			laborCost = stone.laborCost || 0;
-		if (stone.includeStone) {
-			details.stoneWeightTotal += Number(weight) * Number(quantity);
-			if (stone.mainStone) {
-				details.mainStoneCount += quantity;
-				details.mainStonePrice += laborCost * quantity;
-			} else {
-				details.assistanceStoneCount += quantity;
-				details.assistanceStonePrice += laborCost * quantity;
-			}
-		}
-	});
-	return details;
-};
-
-const convertToOrderRowData = (
-	detail: OrderResponseDetail,
+const convertToStockOrderRowData = (
+	response: StockRegisterResponse,
 	grade: string,
 	materials: { materialId: string; materialName: string }[],
 	colors: { colorId: string; colorName: string }[],
-	priorities: { priorityName: string; priorityDate: number }[]
-): OrderRowData => {
-	const calculatedStoneData = calculateStoneDetails(detail.stoneInfos);
+	assistantStones: { assistantStoneId: string; assistantStoneName: string }[]
+): StockOrderRowData => {
+	const calculatedStoneData = calculateStoneDetails(response.stoneInfos);
+
 	const foundMaterial = materials.find(
-		(m) => m.materialName === detail.materialName
+		(m) => m.materialName === response.materialName
 	);
-	const foundColor = colors.find((c) => c.colorName === detail.colorName);
-	const foundPriority = priorities.find(
-		(p) => p.priorityName === detail.priority
+	const foundColor = colors.find((c) => c.colorName === response.colorName);
+	const foundAssistantStone = assistantStones.find(
+		(a) => a.assistantStoneName === response.assistantStoneName
 	);
-	let deliveryDate = detail.createAt;
-	if (foundPriority && detail.createAt) {
-		deliveryDate = formatDateToString(
-			addBusinessDays(detail.createAt, foundPriority.priorityDate)
-		);
-	}
-	const baseRowData: Omit<OrderRowData, keyof typeof calculatedStoneData> = {
-		id: detail.flowCode,
-		storeId: detail.storeId,
-		storeName: detail.storeName,
+
+	const stockRow: StockOrderRowData = {
+		createAt: response.createAt,
+		id: response.flowCode,
+		storeId: response.storeId,
+		storeName: response.storeName,
 		grade: grade,
-		productId: detail.productId,
-		productName: detail.productName,
-		classificationName: detail.classification,
+		productId: response.productId,
+		productName: response.productName,
+		productPurchaseCost: response.productPurchaseCost || 0,
 		materialId: foundMaterial?.materialId || "",
-		materialName: detail.materialName,
+		materialName: response.materialName,
 		colorId: foundColor?.colorId || "",
-		colorName: detail.colorName,
-		setTypeName: detail.setType,
-		factoryId: detail.factoryId,
-		factoryName: detail.factoryName,
-		productSize: detail.productSize,
-		orderNote: detail.orderNote,
-		mainStoneNote: detail.mainStoneNote,
-		assistanceStoneNote: detail.assistanceStoneNote,
-		priorityName: detail.priority,
-		stoneInfos: detail.stoneInfos || [],
-		createAt: formatToLocalDate(detail.createAt),
-		shippingAt: deliveryDate,
-		assistantStone: detail.assistantStone || false,
-		assistantStoneId: 0,
-		assistantStoneName: detail.assistantStoneName || "",
-		assistantStoneCreateAt: detail.assistantStoneCreateAt || "",
-		mainPrice: 0,
-		additionalPrice: 0,
-		stoneWeight: 0,
-		productAddLaborCost: 0,
+		colorName: response.colorName,
+		factoryId: response.factoryId,
+		factoryName: response.factoryName,
+		productSize: response.productSize,
+		goldWeight: response.goldWeight || "0",
+		stoneWeight: response.stoneWeight || "0",
 		isProductWeightSale: false,
+		mainStoneNote: response.mainStoneNote,
+		assistanceStoneNote: response.assistanceStoneNote,
+		orderNote: response.orderNote,
+		stoneInfos: response.stoneInfos || [],
+		productLaborCost: response.productLaborCost || 0,
+		productAddLaborCost: response.productAddLaborCost || 0,
+		mainStonePrice: calculatedStoneData.mainStonePrice,
+		assistanceStonePrice: calculatedStoneData.assistanceStonePrice,
+		mainStoneCount: calculatedStoneData.mainStoneCount,
+		assistanceStoneCount: calculatedStoneData.assistanceStoneCount,
+		additionalStonePrice: calculatedStoneData.additionalStonePrice,
+		stoneWeightTotal: calculatedStoneData.stoneWeightTotal,
+		// 보조석 관련 필드
+		assistantStone: response.assistantStone || false,
+		assistantStoneId: foundAssistantStone?.assistantStoneId || "",
+		assistantStoneName: response.assistantStoneName || "",
+		assistantStoneCreateAt: response.assistantStoneCreateAt || "",
+		totalWeight: (
+			Number(response.goldWeight) + Number(response.stoneWeight)
+		).toFixed(3) as unknown as number,
+		storeHarry: response.storeHarry,
 	};
-	return { ...baseRowData, ...calculatedStoneData };
+
+	return { ...stockRow, ...calculatedStoneData };
 };
 
 const StockRegisterPage: React.FC = () => {
@@ -120,7 +91,7 @@ const StockRegisterPage: React.FC = () => {
 	const { handleError } = useErrorHandler();
 
 	// 1. 상태: 단일 객체/값에서 배열 또는 Map 형태로 변경
-	const [orderRows, setOrderRows] = useState<OrderRowData[]>([]);
+	const [orderRows, setOrderRows] = useState<StockOrderRowData[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 
@@ -131,13 +102,9 @@ const StockRegisterPage: React.FC = () => {
 	const [colors, setColors] = useState<
 		{ colorId: string; colorName: string }[]
 	>([]);
-	const [priorities, setPriorities] = useState<
-		{ priorityName: string; priorityDate: number }[]
-	>([]);
 	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: number; assistantStoneName: string }[]
+		{ assistantStoneId: string; assistantStoneName: string }[]
 	>([]);
-	const popupMapRef = useRef<{ [key: string]: Window }>({});
 
 	const [isStoreSearchOpen, setIsStoreSearchOpen] = useState(false);
 	const [selectedRowForStore, setSelectedRowForStore] = useState<string>("");
@@ -147,7 +114,6 @@ const StockRegisterPage: React.FC = () => {
 	const [isProductSearchOpen, setIsProductSearchOpen] = useState(false);
 	const [selectedRowForProduct, setSelectedRowForProduct] =
 		useState<string>("");
-	const [storeGrade, setStoreGrade] = useState<string>("");
 
 	const currentDate = getLocalDate();
 
@@ -248,7 +214,81 @@ const StockRegisterPage: React.FC = () => {
 		setSelectedRowForFactory("");
 	}, []);
 
-	// 2. 데이터 로딩: URL에서 ID들을 읽어와 모든 주문 정보를 병렬로 가져옴
+	// 스톤 정보 관리 팝업 열기
+	const openStoneInfoManager = (rowId: string) => {
+		const url = `/orders/stone-info?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
+		const NAME = `stoneInfo_${rowId}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=400";
+		const popup = window.open(url, NAME, FEATURES);
+		if (popup) {
+			const handleMessage = (event: MessageEvent) => {
+				if (
+					event.data.type === "REQUEST_STONE_INFO" &&
+					event.data.rowId === rowId
+				) {
+					const row = orderRows.find((r) => r.id === rowId);
+					popup.postMessage(
+						{
+							type: "STONE_INFO_DATA",
+							stoneInfos: row?.stoneInfos || [],
+						},
+						window.location.origin
+					);
+				} else if (
+					event.data.type === "STONE_INFO_SAVE" &&
+					event.data.rowId === rowId
+				) {
+					// 스톤 정보 업데이트
+					onRowUpdate(rowId, "stoneInfos", event.data.stoneInfos);
+
+					// 스톤 정보 변경 시 알 단가 자동 계산
+					const calculatedStoneData = calculateStoneDetails(
+						event.data.stoneInfos
+					);
+					onRowUpdate(
+						rowId,
+						"mainStonePrice",
+						calculatedStoneData.mainStonePrice
+					);
+					onRowUpdate(
+						rowId,
+						"assistanceStonePrice",
+						calculatedStoneData.assistanceStonePrice
+					);
+					onRowUpdate(
+						rowId,
+						"additionalStonePrice",
+						calculatedStoneData.additionalStonePrice
+					);
+					onRowUpdate(
+						rowId,
+						"mainStoneCount",
+						calculatedStoneData.mainStoneCount
+					);
+					onRowUpdate(
+						rowId,
+						"assistanceStoneCount",
+						calculatedStoneData.assistanceStoneCount
+					);
+					onRowUpdate(
+						rowId,
+						"stoneWeightTotal",
+						calculatedStoneData.stoneWeightTotal
+					);
+				}
+			};
+			window.addEventListener("message", handleMessage);
+
+			// 팝업이 닫힐 때 이벤트 리스너 제거
+			const checkClosed = setInterval(() => {
+				if (popup.closed) {
+					window.removeEventListener("message", handleMessage);
+					clearInterval(checkClosed);
+				}
+			}, 1000);
+		}
+	};
+
 	useEffect(() => {
 		const idsParam = searchParams.get("ids");
 		if (!idsParam) {
@@ -260,22 +300,14 @@ const StockRegisterPage: React.FC = () => {
 
 		const loadAllData = async () => {
 			try {
-				// 드롭다운 데이터와 주문 상세 정보들을 모두 병렬로 요청
-				const [
-					materialRes,
-					colorRes,
-					priorityRes,
-					assistantStoneRes,
-					...orderResponses
-				] = await Promise.all([
-					materialApi.getMaterials(),
-					colorApi.getColors(),
-					priorityApi.getPriorities(),
-					assistantStoneApi.getAssistantStones(),
-					...ids.map((id) => orderApi.getOrder(id)),
-				]);
+				const [materialRes, colorRes, assistantStoneRes, stockOrdersRes] =
+					await Promise.all([
+						materialApi.getMaterials(),
+						colorApi.getColors(),
+						assistantStoneApi.getAssistantStones(),
+						stockApi.getStockDetail(ids),
+					]);
 
-				// 드롭다운 데이터 저장
 				const loadedMaterials = materialRes.success
 					? (materialRes.data || []).map((m) => ({
 							materialId: m.materialId?.toString() || "",
@@ -288,46 +320,35 @@ const StockRegisterPage: React.FC = () => {
 							colorName: c.colorName,
 					  }))
 					: [];
-				const loadedPriorities = priorityRes.success
-					? (priorityRes.data || []).map((p) => ({
-							priorityName: p.priorityName,
-							priorityDate: p.priorityDate,
-					  }))
-					: [];
 				const loadedAssistantStones = assistantStoneRes.success
 					? (assistantStoneRes.data || []).map((a) => ({
-							assistantStoneId: a.assistantStoneId,
+							assistantStoneId: a.assistantStoneId?.toString() || "",
 							assistantStoneName: a.assistantStoneName,
 					  }))
 					: [];
 				setMaterials(loadedMaterials);
 				setColors(loadedColors);
-				setPriorities(loadedPriorities);
 				setAssistantStones(loadedAssistantStones);
+				if (stockOrdersRes.success && stockOrdersRes.data) {
+					const stockResponses = stockOrdersRes.data;
 
-				// 주문 상세 정보들을 OrderRowData로 변환
-				const fetchedOrderDetails = orderResponses
-					.filter((res) => res.success && res.data)
-					.map((res) => res.data as OrderResponseDetail);
+					const gradePromises = stockResponses.map((res) =>
+						storeApi.getStoreGrade(res.storeId)
+					);
+					const gradeResults = await Promise.all(gradePromises);
+					const grades = gradeResults.map((res) => res.data);
 
-				// 각 주문의 등급(grade) 정보도 병렬로 가져오기
-				const gradePromises = fetchedOrderDetails.map((detail) =>
-					storeApi.getStoreGrade(detail.storeId)
-				);
-				const gradeResults = await Promise.all(gradePromises);
-				const grades = gradeResults.map((res) => res.data);
-
-				const allRows = fetchedOrderDetails.map((detail, index) =>
-					convertToOrderRowData(
-						detail,
-						grades[index] ?? "1",
-						loadedMaterials,
-						loadedColors,
-						loadedPriorities
-					)
-				);
-
-				setOrderRows(allRows);
+					const allRows = stockResponses.map((response, index) =>
+						convertToStockOrderRowData(
+							response,
+							grades[index] ?? "1",
+							loadedMaterials,
+							loadedColors,
+							loadedAssistantStones
+						)
+					);
+					setOrderRows(allRows);
+				}
 			} catch (err) {
 				handleError(err, setError);
 			} finally {
@@ -336,12 +357,11 @@ const StockRegisterPage: React.FC = () => {
 		};
 
 		loadAllData();
-	}, [searchParams, handleError]);
+	}, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	// 3. Row 업데이트: 특정 주문 Row의 특정 필드만 업데이트 (기존 로직과 동일)
 	const onRowUpdate = (
 		id: string,
-		field: keyof OrderRowData,
+		field: keyof StockOrderRowData,
 		value: unknown
 	) => {
 		setOrderRows((prevRows) =>
@@ -349,7 +369,6 @@ const StockRegisterPage: React.FC = () => {
 		);
 	};
 
-	// 4. 저장 핸들러: 변경된 모든 주문 데이터를 한 번에 서버로 전송
 	const handleSave = async () => {
 		if (orderRows.length === 0) {
 			alert("저장할 정보가 없습니다.");
@@ -367,10 +386,52 @@ const StockRegisterPage: React.FC = () => {
 		setLoading(true);
 		try {
 			const savePromises = orderRows.map((row) => {
-				const orderUpdateData: Partial<OrderRequestDetail> = {
-					/* 재고 등록에 필요한 데이터만 포함 */
+				const stockDto: StockRegisterRequest = {
+					orderRequest: {
+						createAt: row.createAt,
+						id: row.id,
+						storeId: row.storeId,
+						storeName: row.storeName,
+						grade: row.grade,
+						productId: row.productId,
+						productName: row.productName,
+						materialId: row.materialId,
+						materialName: row.materialName,
+						colorId: row.colorId,
+						colorName: row.colorName,
+						factoryId: row.factoryId,
+						factoryName: row.factoryName,
+						productSize: row.productSize,
+						stoneWeight: row.stoneWeight,
+						goldWeight: row.goldWeight,
+						isProductWeightSale: row.isProductWeightSale,
+						mainStoneNote: row.mainStoneNote,
+						assistanceStoneNote: row.assistanceStoneNote,
+						orderNote: row.orderNote,
+						stoneInfos: row.stoneInfos,
+						productLaborCost: row.productLaborCost || 0,
+						productAddLaborCost: row.productAddLaborCost || 0,
+						mainStonePrice: row.mainStonePrice || 0,
+						assistanceStonePrice: row.assistanceStonePrice || 0,
+						mainStoneCount: row.mainStoneCount || 0,
+						assistanceStoneCount: row.assistanceStoneCount || 0,
+						additionalStonePrice: row.additionalStonePrice || 0,
+						stoneWeightTotal: row.stoneWeightTotal || 0,
+						// 보조석 관련 필드
+						assistantStoneId: row.assistantStoneId || "",
+						assistantStone: row.assistantStone || false,
+						assistantStoneName: row.assistantStoneName || "",
+						assistantStoneCreateAt: row.assistantStoneCreateAt || "",
+						totalWeight: row.totalWeight || 0,
+						storeHarry: row.storeHarry || "",
+						productPurchaseCost: row.productPurchaseCost || 0,
+					},
+					productPurchaseCost: row.productPurchaseCost,
+					totalWeight: row.totalWeight,
+					storeHarry: row.storeHarry,
 				};
-				return orderApi.updateStockRegister(row.id, "STOCK", orderUpdateData); // 예시 API 호출
+
+				return stockApi.updateStockRegister(row.id, "STOCK", stockDto);
 			});
 
 			await Promise.all(savePromises);
@@ -378,7 +439,7 @@ const StockRegisterPage: React.FC = () => {
 			alert(
 				`총 ${orderRows.length}개의 주문이 성공적으로 재고 등록되었습니다.`
 			);
-			// 부모창에 완료 메시지를 보내고 스스로 닫기
+
 			if (window.opener) {
 				window.opener.postMessage(
 					{ type: "STOCK_REGISTERED" },
@@ -424,62 +485,25 @@ const StockRegisterPage: React.FC = () => {
 		}
 	};
 
-	const handleStoreSearchOpen = (rowId: string) => {
-		setSelectedRowForStore(rowId);
-		setIsStoreSearchOpen(true);
-	};
-
-	const handleProductSearchOpen = (rowId: string) => {
-		setSelectedRowForProduct(rowId);
-		setIsProductSearchOpen(true);
-	};
-
-	const handleFactorySearchOpen = (rowId: string) => {
-		setSelectedRowForFactory(rowId);
-		setIsFactoryModalOpen(true);
-	};
-
-	// 스톤 정보 관리 모달 열기
-	const openStoneInfoManager = (rowId: string) => {
-		const url = `/orders/stone-info?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
-		const NAME = `stoneInfo_${rowId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=400";
-
-		const popup = window.open(url, NAME, FEATURES);
-		if (popup) {
-			popupMapRef.current[rowId] = popup; // ref에 팝업 참조 저장
-			popup.focus();
-		} else {
-			alert("팝업이 차단되었습니다. 브라우저 설정을 확인해주세요.");
-		}
-	};
-
 	return (
 		<div className="order-update-page">
 			<div className="page-header">
 				<h3>일괄 재고 등록</h3>
 				<p>총 {orderRows.length}개의 주문을 등록합니다.</p>
 			</div>
-
-			{/* 5. UI 렌더링: 가져온 주문 개수만큼 OrderTable을 반복하여 표시 */}
 			<div className="bulk-order-item">
-				<OrderTable
-					mode="update"
-					orderRows={orderRows} // 👈 전체 주문 데이터(배열)를 그대로 전달
+				<StockTable
+					orderRows={orderRows}
 					loading={loading}
 					materials={materials}
 					colors={colors}
-					priorities={priorities}
 					assistantStones={assistantStones}
 					onRowUpdate={onRowUpdate}
 					onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
-					onStoreSearchOpen={handleStoreSearchOpen}
-					onProductSearchOpen={handleProductSearchOpen}
-					onFactorySearchOpen={handleFactorySearchOpen}
 					onStoneInfoOpen={openStoneInfoManager}
 				/>
 			</div>
-            
+
 			{/* 저장/취소 버튼 */}
 			<div className="detail-button-group">
 				<button

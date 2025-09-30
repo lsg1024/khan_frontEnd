@@ -28,10 +28,6 @@
 	transition: all 0.2s ease;
 	cursor: pointer;
 	border: 1px solid transparent;
-	/* 기본 상태: 어두운 색상 */
-	background-color: #6c757d;
-	color: #ffffff;
-	border-color: #6c757d;
 }
 
 .bulk-action-btn:hover:not(.disabled) {
@@ -40,15 +36,13 @@
 }
 
 .bulk-action-btn.disabled {
-	background-color: #6c757d;
-	color: #adb5bd;
-	border-color: #6c757d;
+	opacity: 0.5;
 	cursor: not-allowed;
 	pointer-events: none;
 }
 
 /* 출고일변경 버튼 - 활성화될 때만 색상 표시 */
-.bulk-action-btn.change-delivery-date:not(.disabled) {
+.bulk-action-btn.change-delivery-date {
 	background-color: #17a2b8;
 	color: white;
 	border-color: #17a2b8;
@@ -60,7 +54,7 @@
 }
 
 /* 재고등록 버튼 - 활성화될 때만 색상 표시 */
-.bulk-action-btn.stock-register:not(.disabled) {
+.bulk-action-btn.stock-register {
 	background-color: #28a745;
 	color: white;
 	border-color: #28a745;
@@ -72,11 +66,12 @@
 }
 
 /* 판매등록 버튼 - 활성화될 때만 색상 표시 */
-.bulk-action-btn.sales-register:not(.disabled) {
+.bulk-action-btn.sales-register {
 	background-color: #007bff;
 	color: white;
 	border-color: #007bff;
 }
+
 
 .bulk-action-btn.sales-register:hover:not(.disabled) {
 	background-color: #0056b3;
@@ -84,7 +79,7 @@
 }
 
 /* 삭제 버튼 - 활성화될 때만 색상 표시 */
-.bulk-action-btn.delete:not(.disabled) {
+.bulk-action-btn.delete {
 	background-color: #dc3545;
 	color: white;
 	border-color: #dc3545;

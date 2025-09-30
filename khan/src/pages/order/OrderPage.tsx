@@ -106,7 +106,7 @@ export const OrderPage = () => {
 			const response = await orderApi.downloadOrdersExcel(
 				searchFilters.start,
 				searchFilters.end,
-				"ORDER", // order_status 값
+				"ORDER",
 				searchFilters.search,
 				searchFilters.factory,
 				searchFilters.store,
@@ -114,32 +114,26 @@ export const OrderPage = () => {
 				searchFilters.color
 			);
 
-			// 1. response.data가 Blob 객체입니다.
 			const blob = new Blob([response.data], {
 				type: response.headers["content-type"],
 			});
 
-			// 2. 서버가 'Content-Disposition' 헤더에 포함한 파일명을 추출합니다.
 			const contentDisposition = response.headers["content-disposition"];
 			let fileName = "주문장.xlsx"; // 기본 파일명
 			if (contentDisposition) {
-				// 정규식을 사용하여 "filename=" 뒤의 값을 추출
 				const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
 				if (fileNameMatch && fileNameMatch.length === 2) {
-					// UTF-8 디코딩을 통해 한글 파일명 깨짐 방지
 					fileName = decodeURIComponent(fileNameMatch[1]);
 				}
 			}
 
-			// 3. 다운로드를 위한 가상 링크(<a>) 생성 및 실행
 			const url = window.URL.createObjectURL(blob);
 			const link = document.createElement("a");
 			link.href = url;
-			link.setAttribute("download", fileName); // 추출한 파일명 설정
+			link.setAttribute("download", fileName);
 			document.body.appendChild(link);
 			link.click();
 
-			// 4. 생성된 링크와 URL 정리
 			link.parentNode?.removeChild(link);
 			window.URL.revokeObjectURL(url);
 		} catch (err) {
@@ -151,7 +145,7 @@ export const OrderPage = () => {
 	};
 
 	// 주문 상세 페이지로 이동
-	const handleOrderClick = (flowCode: string) => {
+	const handleDetailClick = (flowCode: string) => {
 		const orderData = orders.find((order) => order.flowCode === flowCode);
 
 		if (orderData?.imagePath) {
@@ -314,6 +308,8 @@ export const OrderPage = () => {
 					setCurrentPage(page);
 					setTotalPages(pageData.totalPages || 1);
 					setTotalElements(pageData.totalElements || 0);
+
+					return content;
 				}
 			} catch (err) {
 				handleError(err, setError);
@@ -386,40 +382,37 @@ export const OrderPage = () => {
 
 	const stockRegisterPopups = useRef<Map<string, Window>>(new Map());
 
-const handleStockRegister = () => {
-    if (selectedOrders.length === 0) {
-        alert("재고등록할 주문을 먼저 선택해주세요.");
-        return;
-    }
+	const handleStockRegister = () => {
+		if (selectedOrders.length === 0) {
+			alert("재고등록할 주문을 먼저 선택해주세요.");
+			return;
+		}
 
-    // 1. 선택된 주문 ID들을 콤마(,)로 구분된 하나의 문자열로 합칩니다.
-    const ids = selectedOrders.join(',');
+		const ids = selectedOrders.join(",");
 
-    // 2. 이 ID들을 URL 쿼리 파라미터로 넘겨 새 페이지를 엽니다.
-    const url = `/orders/register-stock?ids=${ids}`;
-    const NAME = `stockRegisterBulk`;
-    const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800"; // 높이를 충분히 확보
+		const url = `/orders/register-stock?ids=${ids}`;
+		const NAME = `stockRegisterBulk`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
 
-    // 재고 등록 팝업은 하나만 열리도록 관리
-    const existingPopup = stockRegisterPopups.current.get(NAME);
+		const existingPopup = stockRegisterPopups.current.get(NAME);
 
-    if (existingPopup && !existingPopup.closed) {
-        existingPopup.focus();
-    } else {
-        const newPopup = window.open(url, NAME, FEATURES);
-        if (newPopup) {
-            stockRegisterPopups.current.set(NAME, newPopup);
+		if (existingPopup && !existingPopup.closed) {
+			existingPopup.focus();
+		} else {
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				stockRegisterPopups.current.set(NAME, newPopup);
 
-            const checkClosed = setInterval(() => {
-                if (newPopup.closed) {
-                    stockRegisterPopups.current.delete(NAME);
-                    loadOrders(searchFilters, currentPage);
-                    clearInterval(checkClosed);
-                }
-            }, 1000);
-        }
-    }
-};
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						stockRegisterPopups.current.delete(NAME);
+						loadOrders(searchFilters, currentPage);
+						clearInterval(checkClosed);
+					}
+				}, 1000);
+			}
+		}
+	};
 
 	const handleSalesRegister = () => {
 		if (selectedOrders.length > 0) {
@@ -590,7 +583,7 @@ const handleStockRegister = () => {
 						currentPage={currentPage}
 						loading={loading}
 						onSelect={handleSelectOrder}
-						onClick={handleOrderClick}
+						onClick={handleDetailClick}
 						onStatusChange={handleStatusChange}
 						onFactoryClick={handleFactoryClick}
 					/>

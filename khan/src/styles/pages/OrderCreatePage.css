@@ -9,7 +9,6 @@
 }
 
 /* 주문 상세 정보 카드 */
-
 .order-update-page {
 	padding: 10px;
 	background-color: var(--background-color);
@@ -140,6 +139,13 @@
 	font-weight: 600;
 	color: #333;
 }
+
+.page-header h3 {
+	font-size: 24px;
+	font-weight: 600;
+	color: #333;
+}
+
 
 .header-actions .btn-add-row {
 	background-color: var(--primary-color);
@@ -466,7 +472,6 @@
 .order-create-table select,
 .order-create-table input {
 	width: 100%;
-	min-width: 45px;
 	padding: 2px 3px;
 	border: 1px solid #ddd;
 	border-radius: 3px;

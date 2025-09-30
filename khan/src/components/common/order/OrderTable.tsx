@@ -438,7 +438,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 							{/* 보조석 필드들 */}
 							<td>
 								<select
-									value={row.assistantStoneId}
+									value={row.assistantStoneId === "1" && !row.assistantStoneName ? "" : row.assistantStoneId}
 									onChange={(e) => {
 										if (!safeValidateSequence(row.id, "other")) {
 											return;

@@ -1,5 +1,5 @@
 // 공통 에러 처리 유틸리티
-import type { ApiResponse } from "../../libs/api";
+import type { ApiResponse } from "../../libs/api/config";
 
 export interface ErrorHandlerOptions {
 	showAlert?: boolean;
@@ -93,7 +93,7 @@ export function useErrorHandler() {
 			const message = handleApiError(error, {
 				onError: (_msg, statusCode) => {
 					if (statusCode === 403 && onUnauthorized) {
-						onUnauthorized();
+						onUnauthorized(); // 리프레쉬 토큰 이용한 재로그인?
 					}
 				},
 			});

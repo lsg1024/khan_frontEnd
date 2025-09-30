@@ -16,7 +16,6 @@ import type {
 	OrderRowData,
 	OrderCreateRequest,
 	PastOrderDto,
-	StoneInfo,
 } from "../../types/order";
 import type { Product, ProductDto } from "../../types/product";
 import type { ProductStoneDto } from "../../types/stone";
@@ -26,6 +25,7 @@ import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import OrderTable from "../../components/common/order/OrderTable";
+import { calculateStoneDetails } from "../../utils/CalculateStone";
 import "../../styles/pages/OrderCreatePage.css";
 
 type UpdateMode = "order" | "fix" | "expact";
@@ -35,40 +35,6 @@ const MODE_TO_STATUS = {
 	fix: "FIX",
 	expact: "EXPACT",
 } as const satisfies Record<UpdateMode, "ORDER" | "FIX" | "EXPACT">;
-
-// 스톤 계산
-const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
-	const details = {
-		mainStonePrice: 0,
-		assistanceStonePrice: 0,
-		additionalStonePrice: 0,
-		mainStoneCount: 0,
-		assistanceStoneCount: 0,
-		stoneWeightTotal: 0,
-	};
-
-	if (!stoneInfos || stoneInfos.length === 0) {
-		return details;
-	}
-
-	stoneInfos.forEach((stone) => {
-		const quantity = stone.quantity || 0;
-		const weight = stone.stoneWeight || 0;
-		const laborCost = stone.laborCost || 0;
-
-		if (stone.includeStone) {
-			details.stoneWeightTotal += Number(weight) * Number(quantity);
-			if (stone.mainStone) {
-				details.mainStoneCount += quantity;
-				details.mainStonePrice += laborCost * quantity;
-			} else {
-				details.assistanceStoneCount += quantity;
-				details.assistanceStonePrice += laborCost * quantity;
-			}
-		}
-	});
-	return details;
-};
 
 const OrderCreatePage = () => {
 	const { handleError } = useErrorHandler();
@@ -177,7 +143,7 @@ const OrderCreatePage = () => {
 			shippingAt: deliveryDate,
 			// 보조석 관련 필드
 			assistantStone: false,
-			assistantStoneId: 0,
+			assistantStoneId: "1",
 			assistantStoneName: "",
 			assistantStoneCreateAt: "",
 		};
@@ -849,6 +815,7 @@ const OrderCreatePage = () => {
 	// 초기 데이터 로드
 	useEffect(() => {
 		const loadInitialData = async () => {
+			console.log("mode = ", mode);
 			try {
 				setLoading(true);
 
@@ -941,7 +908,7 @@ const OrderCreatePage = () => {
 							shippingAt: defaultDeliveryDate,
 							// 보조석 관련 필드
 							assistantStone: false,
-							assistantStoneId: 0,
+							assistantStoneId: "1",
 							assistantStoneName: "",
 							assistantStoneCreateAt: "",
 						};
@@ -976,15 +943,11 @@ const OrderCreatePage = () => {
 		try {
 			setLoading(true);
 
-			// 유효한 주문 행만 API 요청으로 처리
 			const promises = validRows.map((row) => {
-				// 우선순위 정보를 찾아서 영업일 기준으로 출고일 계산
 				const priority = priorities.find(
 					(p) => p.priorityName === row.priorityName
 				);
-				const priorityDays = priority?.priorityDate || 7; // 기본값 7일
-
-				// 현재 날짜에서 영업일 기준으로 출고일 계산
+				const priorityDays = priority?.priorityDate || 7;
 				const shippingDate = addBusinessDays(currentDate, priorityDays);
 				const shippingAtFormatted = formatDateToString(shippingDate);
 
@@ -1005,10 +968,8 @@ const OrderCreatePage = () => {
 					mainStoneNote: row.mainStoneNote,
 					assistanceStoneNote: row.assistanceStoneNote,
 					assistantStone: row.assistantStone,
-					assistantStoneId: row.assistantStoneId,
-					assistantStoneName: row.assistantStoneName,
+					assistantStoneId: row.assistantStoneId || "1",
 					assistantStoneCreateAt: row.assistantStoneCreateAt,
-					productStatus: "접수",
 					createAt: currentDate,
 					shippingAt: shippingAtFormatted,
 					stoneInfos: row.stoneInfos,
@@ -1016,21 +977,22 @@ const OrderCreatePage = () => {
 
 				return orderApi.createOrder(orderStatus, orderData);
 			});
-			await Promise.all(promises);
+			const responses = await Promise.all(promises);
+			const createdFlowCodes = responses
+				.map((res) => res.data)
+				.filter(Boolean);
 
-			alert(`${validRows.length}개의 주문이 성공적으로 등록되었습니다.`);
-
-			// 부모 창에 주문 생성 완료 메시지 전송
-			if (window.opener && !window.opener.closed) {
+			if (window.opener) {
 				window.opener.postMessage(
 					{
 						type: "ORDER_CREATED",
-						count: validRows.length,
-						timestamp: new Date().toISOString(),
+						flowCodes: createdFlowCodes,
 					},
-					"*"
+					window.location.origin
 				);
 			}
+
+			console.log("Created flow codes:", createdFlowCodes);
 
 			window.close();
 		} catch (err) {

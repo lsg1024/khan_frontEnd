@@ -16,9 +16,9 @@ import {
 import type {
 	OrderRowData,
 	OrderResponseDetail,
-	StoneInfo,
 	OrderRequestDetail,
 } from "../../types/order";
+import type { StoneInfo } from "../../types/stone";
 import OrderTable from "../../components/common/order/OrderTable";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
@@ -69,6 +69,10 @@ const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
 			}
 		}
 	});
+	details.mainStonePrice = Math.round(details.mainStonePrice * 1000) / 1000;
+	details.assistanceStonePrice =
+		Math.round(details.assistanceStonePrice * 1000) / 1000;
+	details.stoneWeightTotal = Math.round(details.stoneWeightTotal * 1000) / 1000;
 	return details;
 };
 
@@ -128,7 +132,8 @@ const OrderUpdatePage: React.FC = () => {
 		grade: string,
 		materials: { materialId: string; materialName: string }[],
 		colors: { colorId: string; colorName: string }[],
-		priorities: { priorityName: string; priorityDate: number }[]
+		priorities: { priorityName: string; priorityDate: number }[],
+		assistantStonesParam: { assistantStoneId: number; assistantStoneName: string }[]
 	): OrderRowData => {
 		const calculatedStoneData = calculateStoneDetails(detail.stoneInfos);
 
@@ -141,8 +146,8 @@ const OrderUpdatePage: React.FC = () => {
 		const foundPriority = priorities.find(
 			(p) => p.priorityName === detail.priority
 		);
-		let deliveryDate = detail.createAt;
 
+		let deliveryDate = detail.createAt;
 		if (foundPriority && detail.createAt) {
 			const calculatedDate = addBusinessDays(
 				detail.createAt,
@@ -150,6 +155,11 @@ const OrderUpdatePage: React.FC = () => {
 			);
 			deliveryDate = formatDateToString(calculatedDate);
 		}
+
+		const foundAssistantStone = assistantStonesParam.find(
+            (a) => a.assistantStoneId.toString() === (detail.assistantStoneId?.toString() ?? "")
+        );
+
 		const baseRowData: Omit<OrderRowData, keyof typeof calculatedStoneData> = {
 			id: detail.flowCode,
 			storeId: detail.storeId,
@@ -174,8 +184,8 @@ const OrderUpdatePage: React.FC = () => {
 			createAt: formatToLocalDate(detail.createAt),
 			shippingAt: deliveryDate,
 			assistantStone: detail.assistantStone || false,
-			assistantStoneId: 0,
-			assistantStoneName: detail.assistantStoneName || "",
+			assistantStoneId: detail.assistantStoneId?.toString() ?? "",
+			assistantStoneName: foundAssistantStone?.assistantStoneName || detail.assistantStoneName || "",
 			assistantStoneCreateAt: detail.assistantStoneCreateAt || "",
 
 			mainPrice: 0,
@@ -357,11 +367,12 @@ const OrderUpdatePage: React.FC = () => {
 				storeGrade,
 				materials,
 				colors,
-				priorities
+				priorities,
+				assistantStones
 			);
 			setOrderRows([rowData]);
 		}
-	}, [orderDetail, materials, colors, priorities, storeGrade]);
+	}, [orderDetail, materials, colors, priorities, storeGrade]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 검색 결과 선택 핸들러들
 	const handleStoreSelect = (store: StoreSearchDto) => {
@@ -478,6 +489,8 @@ const OrderUpdatePage: React.FC = () => {
 				let colorsData: { colorId: string; colorName: string }[] = [];
 				let prioritiesData: { priorityName: string; priorityDate: number }[] =
 					[];
+				let assistantStonesData: { assistantStoneId: number; assistantStoneName: string }[] =
+					[];
 
 				if (materialRes.success) {
 					materialsData = (materialRes.data || []).map((m) => ({
@@ -503,6 +516,14 @@ const OrderUpdatePage: React.FC = () => {
 					setPriorities(prioritiesData);
 				}
 
+				if (assistantStoneRes.success) {
+					assistantStonesData = (assistantStoneRes.data || []).map((a) => ({
+						assistantStoneId: a.assistantStoneId,
+						assistantStoneName: a.assistantStoneName,
+					}));
+					setAssistantStones(assistantStonesData);
+				}
+
 				// 주문 상세 정보를 OrderRowData로 변환 (드롭다운 데이터와 함께)
 				if (orderRes.success && orderRes.data) {
 					const detail = orderRes.data as OrderResponseDetail;
@@ -521,7 +542,8 @@ const OrderUpdatePage: React.FC = () => {
 						grade,
 						materialsData,
 						colorsData,
-						prioritiesData
+						prioritiesData,
+						assistantStonesData
 					);
 					setOrderRows([rowData]);
 				}
@@ -571,12 +593,11 @@ const OrderUpdatePage: React.FC = () => {
 				mainStoneNote: currentRow.mainStoneNote,
 				assistanceStoneNote: currentRow.assistanceStoneNote,
 				assistantStone: currentRow.assistantStone,
-				assistantStoneId: currentRow.assistantStoneId,
+				assistantStoneId: currentRow.assistantStoneId || "1", // 기본값 설정
 				assistantStoneName: currentRow.assistantStoneName,
 				assistantStoneCreateAt: currentRow.assistantStoneCreateAt,
 				createAt: formatToLocalDate(currentRow.createAt),
 				shippingAt: currentRow.shippingAt,
-				productStatus: orderDetail.productStatus,
 				stoneInfos: currentRow.stoneInfos,
 			};
 			// 필수 필드 검증
@@ -657,10 +678,6 @@ const OrderUpdatePage: React.FC = () => {
 								? formatToLocalDate(orderDetail.createAt)
 								: "-"}
 						</span>
-					</div>
-					<div className="detail-item">
-						<label>상품 상태:</label>
-						<span>{orderDetail?.productStatus}</span>
 					</div>
 					<div className="detail-item">
 						<label>주문 상태:</label>

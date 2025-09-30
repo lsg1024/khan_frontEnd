@@ -1,4 +1,5 @@
 import type { PageInfo } from "./page";
+import type { StoneInfo } from "./stone";
 
 export interface OrderResponseDetail {
 	createAt: string;
@@ -19,8 +20,8 @@ export interface OrderResponseDetail {
 	mainStoneNote: string;
 	assistanceStoneNote: string;
 	priority: string;
-	productStatus: string;
 	orderStatus: string;
+	assistantStoneId: string;
 	assistantStone: boolean;
 	assistantStoneName: string | null;
 	assistantStoneCreateAt: string | null;
@@ -42,12 +43,11 @@ export interface OrderRequestDetail {
 	mainStoneNote: string;
 	assistanceStoneNote: string;
 	assistantStone: boolean;
-	assistantStoneId: number;
+	assistantStoneId: string;
 	assistantStoneName: string | null;
 	assistantStoneCreateAt: string | null;
 	createAt: string;
 	shippingAt: string;
-	productStatus: string;
 	stoneInfos: StoneInfo[];
 }
 
@@ -79,19 +79,6 @@ export interface OrderDto {
 	orderStatus: string;
 }
 
-// 주문 생성을 위한 스톤 정보
-export interface StoneInfo {
-	stoneId: string;
-	stoneName: string;
-	stoneWeight: string;
-	purchaseCost: string;
-	laborCost: number;
-	quantity: number;
-	mainStone: boolean;
-	includeStone: boolean;
-	grade?: string; // 스톤 등급
-}
-
 // 주문 생성 요청 데이터 (백엔드 JSON 구조와 정확히 일치)
 export interface OrderCreateRequest {
 	storeId: string;
@@ -110,12 +97,10 @@ export interface OrderCreateRequest {
 	mainStoneNote: string;
 	assistanceStoneNote: string;
 	assistantStone: boolean;
-	assistantStoneId: number;
-	assistantStoneName: string;
+	assistantStoneId: string;
 	assistantStoneCreateAt: string;
 	createAt: string;
 	shippingAt: string;
-	productStatus: string;
 	stoneInfos: StoneInfo[];
 }
 
@@ -181,7 +166,7 @@ export interface OrderRowData {
 	createAt: string; // 생성일
 	shippingAt: string; // 출고일
 	// 보조석 관련 필드
-	assistantStoneId: number;
+	assistantStoneId: string | "1"; // 기본값 설정
 	assistantStone: boolean; // 입고여부 (Y/N)
 	assistantStoneName: string; // 보조석 아이디 (없음, 랩, 천연, 모이사, 유색석)
 	assistantStoneCreateAt: string; // 입고날짜

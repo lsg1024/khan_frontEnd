@@ -249,20 +249,4 @@ export const orderApi = {
 			params,
 		});
 	},
-
-	// 재고등록
-	updateStockRegister: async (
-		flowCode: string,
-		order_status: string,
-		orderData: Partial<OrderRequestDetail>
-	): Promise<ApiResponse<string>> => {
-		const params = { id: flowCode, order_status: order_status };
-
-		const requestBody = {
-			...orderData,
-		};
-		return apiRequest.patch<string>("order/order/stock-register", requestBody, {
-			params,
-		});
-	},
 };

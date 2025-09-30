@@ -100,3 +100,15 @@ export interface StoneEditState {
 		note?: string;
 	};
 }
+
+export interface StoneInfo {
+	stoneId: string;
+	stoneName: string;
+	stoneWeight: string;
+	purchaseCost: string;
+	laborCost: number;
+	quantity: number;
+	mainStone: boolean;
+	includeStone: boolean;
+	grade?: string; // 스톤 등급
+}
