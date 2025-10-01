@@ -41,33 +41,6 @@ export interface StockOrderRowData {
 	storeHarry: string;
 }
 
-export interface StockRegisterRequest {
-	createAt: string;
-	flowCode: string;
-	materialId: string;
-	materialName: string;
-	colorId: string;
-	colorName: string;
-	productSize: string;
-	isProductWeightSale: boolean;
-	productPurchaseCost: number; // 매입단가
-	productLaborCost: number; // 매출 단가
-	productAddLaborCost: number; // 추가 매출 단가
-	storeHarry: string;
-	goldWeight: string;
-	stoneWeight: string;
-	orderNote: string;
-	mainStoneNote: string;
-	assistanceStoneNote: string;	
-	// 보조석 관련 필드
-	assistantStoneId: string;
-	assistantStone: boolean; // 입고여부 (Y/N)
-	assistantStoneName: string; // 보조석 아이디 (없음, 랩, 천연, 모이사, 유색석)
-	assistantStoneCreateAt: string; // 입고날짜
-	stoneInfos: StoneInfo[];
-	addStoneLaborCost: number; // 추가 스톤 판매단가
-}
-
 export interface StockRegisterResponse {
 	createAt: string;
 	flowCode: string;
@@ -78,6 +51,7 @@ export interface StockRegisterResponse {
 	productId: string;
 	productName: string;
 	productSize: string;
+	isProductWeightSale: boolean;
 	storeHarry: string;
 	productPurchaseCost: number;
 	productLaborCost: number;
@@ -90,11 +64,38 @@ export interface StockRegisterResponse {
 	mainStoneNote: string;
 	assistanceStoneNote: string;
 	assistantStone: boolean;
+	assistantStoneId: string;
 	assistantStoneName: string;
 	assistantStoneCreateAt: string;
 	stoneInfos: StoneInfo[];
+	stoneAddLaborCost: number;
 }
 
+export interface StockRegisterRequest {
+	createAt: string;
+	flowCode: string;
+	materialId: string;
+	materialName: string;
+	colorId: string;
+	colorName: string;
+	productSize: string;
+	isProductWeightSale: boolean;
+	productPurchaseCost: number;
+	productLaborCost: number;
+	productAddLaborCost: number;
+	storeHarry: string;
+	goldWeight: string;
+	stoneWeight: string;
+	orderNote: string;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
+	assistantStoneId: string;
+	assistantStone: boolean;
+	assistantStoneName: string;
+	assistantStoneCreateAt: string;
+	stoneInfos: StoneInfo[];
+	stoneAddLaborCost: number;
+}
 
 export interface StockResponseDetail {
 	createAt: string;
@@ -107,6 +108,7 @@ export interface StockResponseDetail {
 	productId: string;
 	productName: string;
 	productSize: string;
+	isProductWeightSale: boolean;
 	productPurchaseCost: number;
 	productLaborCost: number;
 	productAddLaborCost: number;
@@ -126,4 +128,5 @@ export interface StockResponseDetail {
 	assistantStoneName: string;
 	assistantStoneCreateAt: string;
 	stoneInfos: StoneInfo[];
+	stoneAddLaborCost: number;
 }

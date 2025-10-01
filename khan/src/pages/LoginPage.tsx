@@ -24,7 +24,6 @@ function LoginPage() {
 				try {
 					await authApi.getProfile();
 					// 성공 시 메인으로 이동하고 함수 종료
-					// 토큰 변화 이벤트 발생시켜 App.tsx 상태 업데이트
 					window.dispatchEvent(new Event("tokenChange"));
 					navigate("/", { replace: true });
 					return;
@@ -33,21 +32,19 @@ function LoginPage() {
 				}
 			}
 
-			// 2. Access Token이 없거나 유효하지 않은 경우, Refresh Token으로 재발급 시도
+			// 2. HttpOnly 쿠키의 refreshToken으로 재발급 시도
 			try {
 				const response = await authApi.refreshToken();
 				if (response.success && response.data?.token) {
 					// 재발급 성공 시, 새 토큰 저장 후 메인으로 이동
 					tokenUtils.setToken(response.data.token);
-					// 토큰 변화 이벤트 발생시켜 App.tsx 상태 업데이트
 					window.dispatchEvent(new Event("tokenChange"));
 					navigate("/", { replace: true });
 					return;
-				} else {
-					tokenUtils.removeToken();
 				}
 			} catch {
-				tokenUtils.removeToken();
+				// refreshToken도 없거나 만료된 경우
+				console.log("RefreshToken이 없거나 만료됨");
 			}
 
 			// 3. 모든 자동 로그인 시도가 실패한 경우, 로딩 상태를 해제

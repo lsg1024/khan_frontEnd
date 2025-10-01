@@ -333,6 +333,14 @@
 	font-weight: 600;
 }
 
+.stock-row {
+	background-color: #ffe0e0 !important;
+}
+
+.stock-row.selected-row {
+	background-color: #ffc0c0 !important;
+}
+
 /* 배지 스타일 */
 .priority-badge-order,
 .status-badge-order {
@@ -347,14 +355,14 @@
 
 /* 상태 드롭다운 스타일 */
 .status-dropdown-order {
-	padding: 6px 10px;
+	padding: 4px 6px;
 	border: 1px solid #ddd;
 	border-radius: 4px;
 	background-color: white;
 	cursor: pointer;
-	min-width: 70px;
 	color: #000;
 	transition: border-color 0.2s;
+	font-size: 10px;
 }
 
 .status-dropdown-order:focus {

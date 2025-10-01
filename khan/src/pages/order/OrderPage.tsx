@@ -6,8 +6,8 @@ import FactorySearch from "../../components/common/factory/FactorySearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { OrderDto } from "../../types/order";
 import type { FactorySearchDto } from "../../types/factory";
-import OrderSearch from "../../hooks/OrderSearch";
-import type { SearchFilters } from "../../hooks/OrderSearch";
+import OrderSearch from "../../components/common/order/OrderSearch";
+import type { SearchFilters } from "../../components/common/order/OrderSearch";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
 import "../../styles/pages/OrderPage.css";
@@ -171,19 +171,19 @@ export const OrderPage = () => {
 
 	// 주문 상태 변경
 	const handleStatusChange = async (flowCode: string, newStatus: string) => {
-		const confirmMessage = `주문 상태를 "${newStatus}"로 변경하시겠습니까?`;
+		const confirmMessage = `주문 상태를 ${newStatus}로 변경하시겠습니까?`;
 
 		if (window.confirm(confirmMessage)) {
 			try {
 				setLoading(true);
-				const orderId = flowCode; // flowCode를 숫자로 변환
+				const orderId = flowCode; 
 				await orderApi.updateOrderStatus(orderId, newStatus);
 				alert("주문 상태가 성공적으로 변경되었습니다.");
 				// 현재 페이지 데이터 새로고침
 				await loadOrders(searchFilters, currentPage);
 			} catch (err) {
 				handleError(err, setError);
-				alert("주문 상태 변경에 실패했습니다.");
+				alert(error);
 			} finally {
 				setLoading(false);
 			}

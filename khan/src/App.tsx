@@ -22,7 +22,7 @@ import OrderCreatePage from "./pages/order/OrderCreatePage";
 import OrderUpdatePage from "./pages/order/OrderUpdatePage";
 import StockRegisterPage from "./pages/stock/StockRegisterPage";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
-import StoneSearchPage from "./pages/StoneSearchPage";
+import StoneSearchPage from "./pages/stone/StoneSearchPage";
 import StoneInfoPage from "./pages/order/StoneInfoPage";
 import FactorySearchPage from "./pages/search/FactorySearchPage";
 import StoreSearchPage from "./pages/search/StoreSearchPage";
@@ -32,7 +32,6 @@ import SettingsPage from "./pages/SettingsPage";
 
 import Layout from "./components/layout/Layout";
 import { tokenUtils } from "./utils/tokenUtils";
-import { useTokenAutoRefresh } from "./utils/useTokenAutoRefresh";
 
 import "./App.css";
 import "./styles/index.css";
@@ -41,37 +40,12 @@ function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
-	// 토큰 자동 갱신 서비스 초기화
-	useTokenAutoRefresh();
-
 	useEffect(() => {
 		// 앱 시작 시 토큰 확인
-		const checkAuth = async () => {
+		const checkAuth = () => {
 			const hasAccessToken = tokenUtils.hasToken();
 			console.log("App.tsx - hasAccessToken:", hasAccessToken);
-
-			if (hasAccessToken) {
-				// AccessToken이 있으면 인증된 상태로 간주
-				setIsAuthenticated(true);
-				setIsLoading(false);
-				return;
-			}
-
-			// AccessToken이 없으면 refreshToken으로 재발급 시도
-			try {
-				const { authApi } = await import("../libs/api/auth");
-				const response = await authApi.refreshToken();
-
-				if (response.success && response.data?.token) {
-					tokenUtils.setToken(response.data.token);
-					setIsAuthenticated(true);
-				} else {
-					setIsAuthenticated(false);
-				}
-			} catch {
-				setIsAuthenticated(false);
-			}
-
+			setIsAuthenticated(hasAccessToken);
 			setIsLoading(false);
 		};
 
@@ -126,8 +100,14 @@ function App() {
 					{/* Layout 없이 단독 페이지 렌더링 */}
 					<Route path="/stone/create" element={<StoneCreatePage />} />
 
-					<Route path="/orders/update/:mode/:flowCode" element={<OrderUpdatePage />}/>
-					<Route path="/orders/register-stock" element={<StockRegisterPage />} />
+					<Route
+						path="/orders/update/:mode/:flowCode"
+						element={<OrderUpdatePage />}
+					/>
+					<Route
+						path="/orders/register-stock"
+						element={<StockRegisterPage />}
+					/>
 					<Route path="/orders/create/:mode" element={<OrderCreatePage />} />
 					<Route path="/orders/stone-info" element={<StoneInfoPage />} />
 					<Route path="/stone-search" element={<StoneSearchPage />} />

@@ -58,7 +58,9 @@ const MainList = ({
 						key={dto.flowCode}
 						className={`
 							${selected.includes(dto.flowCode) ? "selected-row" : ""}
-							${dto.orderStatus === "DELETED" ? "disabled-row" : ""}`}
+							${dto.orderStatus === "DELETED" ? "disabled-row" : ""}
+							${dto.orderStatus === "재고" ? "stock-row" : ""} 
+							`}
 					>
 						<td>
 							<input
@@ -89,9 +91,9 @@ const MainList = ({
 								</span>
 							</div>
 						</td>
-						<td>{dto.orderStatus}</td>
+						<td className="order-status-cell">{dto.orderStatus}</td>
 						<td>{dto.storeName}</td>
-						<th className="image-cell-order">
+						<td className="info-cell">
 							<img
 								className="order-image"
 								src={
@@ -104,7 +106,7 @@ const MainList = ({
 									e.currentTarget.src = "/images/not_ready.png";
 								}}
 							/>
-						</th>
+						</td>
 						<td className="info-cell">
 							<div className="info-row-order">
 								<span

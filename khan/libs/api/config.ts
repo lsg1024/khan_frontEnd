@@ -59,58 +59,14 @@ api.interceptors.response.use(
 
 		return res;
 	},
-	async (err) => {
-		const originalRequest = err.config;
-
-		// 로그인, 재발급 요청은 리트라이 하지 않음
-		if (
-			originalRequest.url?.includes("/auth/login") ||
-			originalRequest.url?.includes("/auth/reissue")
-		) {
-			return Promise.reject(err);
-		}
-
-		// 이미 재시도한 요청은 다시 시도하지 않음
-		if (originalRequest._retry) {
+	(err) => {
+		// 401, 403 에러 시 토큰 제거하고 로그인 페이지로 리다이렉트
+		if (err.response?.status === 401 || err.response?.status === 403) {
 			tokenUtils.removeToken();
 			window.dispatchEvent(new CustomEvent("tokenExpired"));
 
 			if (window.location.pathname !== "/login") {
 				window.location.href = "/login";
-			}
-			return Promise.reject(err);
-		}
-
-		if (err.response?.status === 401) {
-			originalRequest._retry = true;
-
-			try {
-				// 동적 import로 순환 참조 방지
-				const { authApi } = await import("./auth");
-				const response = await authApi.refreshToken();
-
-				if (response.success && response.data?.token) {
-					tokenUtils.setToken(response.data.token);
-
-					// 새 토큰으로 원래 요청 재시도
-					const token = tokenUtils.getToken();
-					if (token) {
-						originalRequest.headers = originalRequest.headers || {};
-						originalRequest.headers["Authorization"] = `Bearer ${token}`;
-					}
-
-					return api(originalRequest);
-				} else {
-					throw new Error("Token refresh failed");
-				}
-			} catch {
-				tokenUtils.removeToken();
-				window.dispatchEvent(new CustomEvent("tokenExpired"));
-
-				if (window.location.pathname !== "/login") {
-					window.location.href = "/login";
-				}
-				return Promise.reject(err);
 			}
 		}
 

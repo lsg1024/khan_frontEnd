@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Pagination from "../../components/common/Pagination";
-import OrderSearch from "../../hooks/OrderSearch";
-import type { SearchFilters } from "../../hooks/OrderSearch";
+import OrderSearch from "../../components/common/order/OrderSearch";
+import type { SearchFilters } from "../../components/common/order/OrderSearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { orderApi } from "../../../libs/api/order";
 import FactorySearch from "../../components/common/factory/FactorySearch";

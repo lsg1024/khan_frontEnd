@@ -1,6 +1,6 @@
 import React from "react";
 import type { StockOrderRowData } from "../../../types/stock";
-import "../../../styles/pages/StockRegisterPage.css"
+import "../../../styles/pages/StockRegisterPage.css";
 
 interface StockTableProps {
 	orderRows: StockOrderRowData[];
@@ -59,23 +59,37 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 						<th className="none">
 							<span className="required-field-basic">*</span>색상
 						</th>
-						<th className="none" colSpan={3}>보조석</th>
-						<th className="none" colSpan={2}>상품 단가</th>
-						<th className="none" colSpan={3}>알 단가</th>
-						<th className="none" colSpan={2}>알 개수</th>
+						<th className="none" colSpan={3}>
+							보조석
+						</th>
+						<th className="none" colSpan={2}>
+							상품 단가
+						</th>
+						<th className="none" colSpan={3}>
+							알 단가
+						</th>
+						<th className="none" colSpan={2}>
+							알 개수
+						</th>
 						<th className="none">알중량</th>
-						<th className="none" colSpan={2}>알 메모사항</th>
+						<th className="none" colSpan={2}>
+							알 메모사항
+						</th>
 						<th className="none">사이즈</th>
 						<th className="none">기타</th>
 
 						{/* 총중량 (3 컬럼) */}
-						<th className="none" colSpan={3}>총중량</th>
+						<th className="none" colSpan={3}>
+							총중량
+						</th>
 
 						{/* 매입헤리 */}
 						<th className="none">매입헤리</th>
 
 						{/* 매입단가 (2 컬럼) */}
-						<th className="none" colSpan={2}>매입단가</th>
+						<th className="none" colSpan={2}>
+							매입단가
+						</th>
 					</tr>
 					<tr>
 						<th></th>
@@ -350,6 +364,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											onRowUpdate(row.id, "productSize", e.target.value)
 										}
 										disabled={loading}
+										placeholder={row.productSize ? "" : "사이즈 입력"}
 									/>
 								</td>
 								{/* 기타메모 */}
@@ -361,6 +376,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											onRowUpdate(row.id, "orderNote", e.target.value)
 										}
 										disabled={loading}
+										placeholder={row.orderNote ? "" : "기타 메모"}
 									/>
 								</td>
 								{/* 총중량 (3 컬럼) */}
@@ -396,6 +412,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										}
 										disabled={loading}
 										className="text-right"
+										placeholder={row.storeHarry ? "" : "헤리 입력"}
 									/>
 								</td>
 
@@ -403,7 +420,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td>
 									<input
 										type="number"
-										value={row.productPurchaseCost}
+										value={row.productPurchaseCost || ""}
 										onChange={(e) =>
 											onRowUpdate(
 												row.id,
@@ -413,6 +430,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										}
 										disabled={loading}
 										className="text-right"
+										placeholder={row.productPurchaseCost ? "" : "0"}
 									/>
 								</td>
 								{/* 매입단가 (2 컬럼) */}

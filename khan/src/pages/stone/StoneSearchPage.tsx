@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { stoneApi } from "../../libs/api/stone";
-import type { StoneSearchDto } from "../types/stone";
-import { useErrorHandler } from "../utils/errorHandler";
-import Pagination from "../components/common/Pagination";
-import "../styles/pages/StoneSearchPage.css";
+import { stoneApi } from "../../../libs/api/stone";
+import type { StoneSearchDto } from "../../types/stone";
+import { useErrorHandler } from "../../utils/errorHandler";
+import Pagination from "../../components/common/Pagination";
+import "../../styles/pages/StoneSearchPage.css";
 
 const StoneSearchPage: React.FC = () => {
 	const [searchParams] = useSearchParams();
@@ -216,7 +216,6 @@ const StoneSearchPage: React.FC = () => {
 						onPageChange={handlePageChange}
 						className="stone-search"
 					/>
-		
 				</div>
 			</div>
 		</div>

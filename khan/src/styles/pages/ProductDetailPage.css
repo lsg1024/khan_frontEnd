@@ -535,21 +535,18 @@
 .action-buttons {
 	display: flex;
 	justify-content: center;
-	gap: 1rem;
-	margin-top: 1rem;
-	padding: 1rem 0;
+	margin-top: 5px;
+	padding: 10px;
 	border-top: 1px solid #e9ecef;
 }
 
 .action-buttons .save-button {
-	padding: 0.6rem 1.5rem;
 	background-color: #28a745;
 	color: white;
 	border: none;
 	border-radius: 4px;
 	cursor: pointer;
-	font-size: 0.95rem;
-	font-weight: 500;
+	font-size: 12px;
 	transition: background-color 0.3s;
 }
 
@@ -563,14 +560,12 @@
 }
 
 .action-buttons .back-button {
-	padding: 0.6rem 1.5rem;
 	background-color: #6c757d;
 	color: white;
 	border: none;
 	border-radius: 4px;
 	cursor: pointer;
-	font-size: 0.95rem;
-	font-weight: 500;
+	font-size: 12px;
 	transition: background-color 0.3s;
 }
 

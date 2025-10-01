@@ -74,6 +74,22 @@ export function handleApiError(
  * React 컴포넌트에서 사용하기 위한 커스텀 훅
  */
 export function useErrorHandler() {
+	const tryRefreshToken = async (): Promise<boolean> => {
+		try {
+			const { authApi } = await import("../../libs/api/auth");
+			const response = await authApi.refreshToken();
+
+			if (response.success && response.data?.token) {
+				const { tokenUtils } = await import("./tokenUtils");
+				tokenUtils.setToken(response.data.token);
+				return true;
+			}
+			return false;
+		} catch {
+			return false;
+		}
+	};
+
 	return {
 		handleError: (error: unknown, setError: (message: string) => void) => {
 			const message = handleApiError(error);
@@ -84,16 +100,38 @@ export function useErrorHandler() {
 			handleApiError(error, { showAlert: true });
 		},
 
-		// 403 에러 시 자동 로그아웃 처리
-		handleErrorWithAuth: (
+		// 403 에러 시 토큰 재발급 시도 후 처리
+		handleErrorWithAuth: async (
 			error: unknown,
 			setError: (message: string) => void,
-			onUnauthorized?: () => void
+			onRefreshSuccess?: () => void,
+			onRefreshFailed?: () => void
 		) => {
 			const message = handleApiError(error, {
-				onError: (_msg, statusCode) => {
-					if (statusCode === 403 && onUnauthorized) {
-						onUnauthorized(); // 리프레쉬 토큰 이용한 재로그인?
+				onError: async (_msg, statusCode) => {
+					if (statusCode === 403) {
+						// 403 에러 시 토큰 재발급 시도
+						const refreshSuccess = await tryRefreshToken();
+
+						if (refreshSuccess) {
+							// 재발급 성공 시 콜백 실행
+							if (onRefreshSuccess) {
+								onRefreshSuccess();
+							}
+						} else {
+							// 재발급 실패 시 로그인 페이지로 이동
+							const { tokenUtils } = await import("./tokenUtils");
+							tokenUtils.removeToken();
+							window.dispatchEvent(new CustomEvent("tokenExpired"));
+
+							if (window.location.pathname !== "/login") {
+								window.location.href = "/login";
+							}
+
+							if (onRefreshFailed) {
+								onRefreshFailed();
+							}
+						}
 					}
 				},
 			});

@@ -16,7 +16,7 @@ const FactoryList: React.FC<FactoryListProps> = ({
 	};
 
 	return (
-		<div className="accounts-list">
+		<div className="account-list-container">
 			{factories.length > 0 ? (
 				<>
 					<div className="accounts-table">
