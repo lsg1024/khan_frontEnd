@@ -105,8 +105,9 @@ export interface StoneInfo {
 	stoneId: string;
 	stoneName: string;
 	stoneWeight: string;
-	purchaseCost: string;
+	purchaseCost: number;
 	laborCost: number;
+	addLaborCost: number;
 	quantity: number;
 	mainStone: boolean;
 	includeStone: boolean;

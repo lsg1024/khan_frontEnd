@@ -25,7 +25,7 @@ import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import OrderTable from "../../components/common/order/OrderTable";
-import { calculateStoneDetails } from "../../utils/CalculateStone";
+import { calculateStoneDetails } from "../../utils/calculateStone";
 import "../../styles/pages/OrderCreatePage.css";
 
 type UpdateMode = "order" | "fix" | "expact";
@@ -978,10 +978,12 @@ const OrderCreatePage = () => {
 				return orderApi.createOrder(orderStatus, orderData);
 			});
 			const responses = await Promise.all(promises);
-			const createdFlowCodes = responses
-				.map((res) => res.data)
-				.filter(Boolean);
+			const createdFlowCodes = responses.map((res) => res.data).filter(Boolean);
 
+			// 팝업창에서 먼저 alert 표시
+			alert(`${createdFlowCodes.length}개의 주문이 성공적으로 생성되었습니다.`);
+
+			// 부모창에 메시지 전송
 			if (window.opener) {
 				window.opener.postMessage(
 					{
@@ -994,6 +996,7 @@ const OrderCreatePage = () => {
 
 			console.log("Created flow codes:", createdFlowCodes);
 
+			// 팝업창 닫기
 			window.close();
 		} catch (err) {
 			handleError(err, setError);

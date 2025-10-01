@@ -20,7 +20,7 @@ import type { StoreSearchDto } from "../../types/store";
 import type { ProductDto } from "../../types/product";
 import "../../styles/pages/OrderCreatePage.css";
 import StockTable from "../../components/common/stock/StockTable";
-import { calculateStoneDetails } from "../../utils/CalculateStone";
+import { calculateStoneDetails } from "../../utils/calculateStone";
 
 const POPUP_ORIGIN = window.location.origin;
 
@@ -387,48 +387,30 @@ const StockRegisterPage: React.FC = () => {
 		try {
 			const savePromises = orderRows.map((row) => {
 				const stockDto: StockRegisterRequest = {
-					orderRequest: {
-						createAt: row.createAt,
-						id: row.id,
-						storeId: row.storeId,
-						storeName: row.storeName,
-						grade: row.grade,
-						productId: row.productId,
-						productName: row.productName,
-						materialId: row.materialId,
-						materialName: row.materialName,
-						colorId: row.colorId,
-						colorName: row.colorName,
-						factoryId: row.factoryId,
-						factoryName: row.factoryName,
-						productSize: row.productSize,
-						stoneWeight: row.stoneWeight,
-						goldWeight: row.goldWeight,
-						isProductWeightSale: row.isProductWeightSale,
-						mainStoneNote: row.mainStoneNote,
-						assistanceStoneNote: row.assistanceStoneNote,
-						orderNote: row.orderNote,
-						stoneInfos: row.stoneInfos,
-						productLaborCost: row.productLaborCost || 0,
-						productAddLaborCost: row.productAddLaborCost || 0,
-						mainStonePrice: row.mainStonePrice || 0,
-						assistanceStonePrice: row.assistanceStonePrice || 0,
-						mainStoneCount: row.mainStoneCount || 0,
-						assistanceStoneCount: row.assistanceStoneCount || 0,
-						additionalStonePrice: row.additionalStonePrice || 0,
-						stoneWeightTotal: row.stoneWeightTotal || 0,
-						// 보조석 관련 필드
-						assistantStoneId: row.assistantStoneId || "",
-						assistantStone: row.assistantStone || false,
-						assistantStoneName: row.assistantStoneName || "",
-						assistantStoneCreateAt: row.assistantStoneCreateAt || "",
-						totalWeight: row.totalWeight || 0,
-						storeHarry: row.storeHarry || "",
-						productPurchaseCost: row.productPurchaseCost || 0,
-					},
-					productPurchaseCost: row.productPurchaseCost,
-					totalWeight: row.totalWeight,
-					storeHarry: row.storeHarry,
+					createAt: row.createAt,
+					flowCode: row.id,
+					materialId: row.materialId,
+					materialName: row.materialName,
+					colorId: row.colorId,
+					colorName: row.colorName,
+					productSize: row.productSize,
+                    isProductWeightSale: row.isProductWeightSale,
+                    productPurchaseCost: row.productPurchaseCost || 0,
+                    productLaborCost: row.productLaborCost || 0,
+					productAddLaborCost: row.productAddLaborCost || 0,
+                    storeHarry: row.storeHarry,
+                    goldWeight: row.goldWeight || "0",
+					stoneWeight: row.stoneWeight || "0",
+                    orderNote: row.orderNote || "",
+					mainStoneNote: row.mainStoneNote || "",
+					assistanceStoneNote: row.assistanceStoneNote || "",
+					// 보조석 관련 필드
+					assistantStoneId: row.assistantStoneId || "1",
+					assistantStone: row.assistantStone || false,
+					assistantStoneName: row.assistantStoneName || "",
+                    assistantStoneCreateAt: row.assistantStoneCreateAt || "",
+                    stoneInfos: row.stoneInfos || [],
+					addStoneLaborCost: row.productAddLaborCost || 0,
 				};
 
 				return stockApi.updateStockRegister(row.id, "STOCK", stockDto);

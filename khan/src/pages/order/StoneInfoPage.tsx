@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { stoneApi } from "../../../libs/api/stone";
-import type { StoneInfo } from "../../types/order";
+import type { StoneInfo } from "../../types/stone";
 import type { StoneSearchDto } from "../../types/stone";
 import StoneSearch from "../../components/common/stone/StoneSearch";
 import "../../styles/pages/StoneInfoPage.css";
@@ -202,8 +202,9 @@ const StoneInfoPage: React.FC = () => {
 			stoneId: "",
 			stoneName: "",
 			stoneWeight: "0",
-			purchaseCost: "0",
+			purchaseCost: 0,
 			laborCost: 0,
+			addLaborCost: 0,
 			quantity: 1,
 			includeStone: true,
 			mainStone: false,
@@ -255,7 +256,7 @@ const StoneInfoPage: React.FC = () => {
 					selectedStone.stonePurchasePrice
 				);
 				updatedStoneInfos[index].purchaseCost =
-					String(selectedStone.stonePurchasePrice) || "0";
+					selectedStone.stonePurchasePrice || 0;
 
 				if (gradePolicy) {
 					updatedStoneInfos[index].laborCost = gradePolicy.laborCost;
@@ -276,21 +277,29 @@ const StoneInfoPage: React.FC = () => {
 			mainStoneCount: 0,
 			assistanceStoneCount: 0,
 			totalStoneWeight: 0,
+			totalLaborCost: 0,
+			totalAddLaborCost: 0,
 		};
 
 		stoneInfos.forEach((stone) => {
 			const quantity = stone.quantity || 0;
 			const weight = parseFloat(stone.stoneWeight) || 0;
+			const purchaseCost = stone.purchaseCost || 0;
 			const laborCost = stone.laborCost || 0;
+			const addLaborCost = stone.addLaborCost || 0;
 
 			if (stone.includeStone) {
 				summary.totalStoneWeight += weight * quantity;
 				if (stone.mainStone) {
 					summary.mainStoneCount += quantity;
-					summary.mainStonePrice += laborCost * quantity;
+					summary.mainStonePrice += purchaseCost * quantity;
+					summary.totalAddLaborCost += addLaborCost * quantity;
+					summary.totalLaborCost += laborCost * quantity;
 				} else {
 					summary.assistanceStoneCount += quantity;
-					summary.assistanceStonePrice += laborCost * quantity;
+					summary.assistanceStonePrice += purchaseCost * quantity;
+					summary.totalAddLaborCost += addLaborCost * quantity;
+					summary.totalLaborCost += laborCost * quantity;
 				}
 			}
 		});
@@ -354,7 +363,7 @@ const StoneInfoPage: React.FC = () => {
 					stoneId: stone.stoneId,
 					stoneName: stone.stoneName,
 					stoneWeight: stone.stoneWeight, // 스톤 중량 설정
-					purchaseCost: stone.stonePurchasePrice.toString(), // 매입단가 설정
+					purchaseCost: stone.stonePurchasePrice, // 매입단가 설정
 					grade: gradeToUse, // 기존 grade 유지 또는 기본 등급 설정
 					laborCost: laborCostToUse, // 선택된 등급에 해당하는 공임 설정
 				};
@@ -421,6 +430,7 @@ const StoneInfoPage: React.FC = () => {
 										<th>중량</th>
 										<th>매입단가</th>
 										<th>공임</th>
+										<th>추가공임</th>
 										<th>수량</th>
 									</tr>
 								</thead>
@@ -576,6 +586,20 @@ const StoneInfoPage: React.FC = () => {
 												<td>
 													<input
 														type="number"
+														value={info.addLaborCost}
+														onChange={(e) =>
+															updateStoneInfo(
+																index,
+																"addLaborCost",
+																parseFloat(e.target.value) || 0
+															)
+														}
+														placeholder="0"
+													/>
+												</td>
+												<td>
+													<input
+														type="number"
 														value={info.quantity}
 														onChange={(e) =>
 															updateStoneInfo(
@@ -611,6 +635,20 @@ const StoneInfoPage: React.FC = () => {
 										<label>보조스톤 단가:</label>
 										<span>
 											{calculateStoneSummary().assistanceStonePrice.toLocaleString()}
+											원
+										</span>
+									</div>
+									<div className="summary-item">
+										<label>기본 공임:</label>
+										<span>
+											{calculateStoneSummary().totalLaborCost.toLocaleString()}
+											원
+										</span>
+									</div>
+									<div className="summary-item">
+										<label>추가 공임:</label>
+										<span>
+											{calculateStoneSummary().totalAddLaborCost.toLocaleString()}
 											원
 										</span>
 									</div>

@@ -81,16 +81,11 @@ export const OrderPage = () => {
 			if (newPopup) {
 				orderCreationPopup.current = newPopup;
 
-				// 팝업 닫힘 감지를 위한 인터벌 설정
+				// 팝업 닫힘 감지를 위한 인터벌 설정 (참조 정리만 수행)
 				const checkClosed = setInterval(() => {
 					if (newPopup.closed) {
 						console.log("주문 생성 팝업이 닫혔습니다.");
-						// 팝업이 닫힌 후 잠시 후 목록 새로고침 (팝업에서 메시지를 보낼 시간을 주기 위해)
-						setTimeout(() => {
-							console.log("주문 목록을 새로고침합니다.");
-							loadOrders(searchFilters, currentPage);
-						}, 500);
-
+						// 참조만 정리하고 새로고침은 메시지 이벤트에서만 처리
 						clearInterval(checkClosed);
 						orderCreationPopup.current = null;
 					}
@@ -479,11 +474,11 @@ export const OrderPage = () => {
 
 		const handleOrderCreated = (event: MessageEvent) => {
 			if (event.data && event.data.type === "ORDER_CREATED") {
-				console.log("주문 생성 완료 메시지 수신:", event.data);
-				// 주문 목록 새로고침
-				loadOrders(searchFilters, 1);
-				setCurrentPage(1);
-				alert("주문이 성공적으로 생성되었습니다.");
+				if (event.data.flowCodes && event.data.flowCodes.length > 0) {
+					// 주문 목록 새로고침
+					loadOrders(searchFilters, 1);
+					setCurrentPage(1);
+				}
 			}
 		};
 
