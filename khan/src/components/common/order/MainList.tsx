@@ -7,7 +7,7 @@ interface MainListProps {
 	currentPage: number;
 	loading: boolean;
 	onSelect: (flowCode: string, checked: boolean) => void;
-	onClick: (flowCode: string) => void;
+	onClick?: (flowCode: string) => void;
 	onStatusChange: (flowCode: string, newStatus: string) => void;
 	onFactoryClick: (flowCode: string) => void;
 }
@@ -73,7 +73,7 @@ const MainList = ({
 						<td>
 							<button
 								className="order-no-btn"
-								onClick={() => onClick(dto.flowCode)}
+								onClick={() => onClick?.(dto.flowCode)}
 							>
 								{(currentPage - 1) * 16 + index + 1}
 							</button>

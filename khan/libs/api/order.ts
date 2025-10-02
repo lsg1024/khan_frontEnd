@@ -158,18 +158,6 @@ export const orderApi = {
 		return apiRequest.patch("order/orders/status", null, { params });
 	},
 
-	// 주문 삭제
-	deleteOrder: async (flowCode: string): Promise<ApiResponse<string>> => {
-		const params = { id: flowCode };
-		return apiRequest.delete<string>("order/order", { params });
-	},
-
-	// 주문 복원
-	restoreOrder: async (flowCode: string): Promise<ApiResponse<string>> => {
-		const params = { id: flowCode };
-		return apiRequest.patch<string>("order/order/restore", null, { params });
-	},
-
 	// 주문 삭제 목록
 	getDeletedOrders: async (
 		start: string,
@@ -201,6 +189,13 @@ export const orderApi = {
 			params,
 		});
 	},
+
+		// 주문 삭제
+	deleteOrder: async (flowCode: string): Promise<ApiResponse<string>> => {
+		const params = { id: flowCode };
+		return apiRequest.delete<string>("order/orders/delete", { params });
+	},
+
 
 	// 엑셀 다운로드
 	downloadOrdersExcel: async (

@@ -176,7 +176,7 @@ export const OrderPage = () => {
 		if (window.confirm(confirmMessage)) {
 			try {
 				setLoading(true);
-				const orderId = flowCode; 
+				const orderId = flowCode;
 				await orderApi.updateOrderStatus(orderId, newStatus);
 				alert("주문 상태가 성공적으로 변경되었습니다.");
 				// 현재 페이지 데이터 새로고침
@@ -416,15 +416,37 @@ export const OrderPage = () => {
 		}
 	};
 
-	const handleBulkDelete = () => {
-		if (selectedOrders.length > 0) {
-			if (
-				window.confirm(
-					`선택된 ${selectedOrders.length}개 주문을 삭제하시겠습니까?`
-				)
-			) {
-				alert(`선택된 ${selectedOrders.length}개 주문을 삭제 처리합니다.`);
+	const handleBulkDelete = async () => {
+		if (selectedOrders.length === 0) {
+			alert("삭제할 주문을 먼저 선택해주세요.");
+			return;
+		}
+
+		const confirmMessage = `선택된 ${selectedOrders.length}개 주문을 삭제하시겠습니까?`;
+
+		if (window.confirm(confirmMessage)) {
+			try {
+				setLoading(true);
+
+				// 선택된 모든 주문 삭제 요청
+				const deletePromises = selectedOrders.map((flowCode) =>
+					orderApi.deleteOrder(flowCode)
+				);
+
+				await Promise.all(deletePromises);
+
+				alert(
+					`선택된 ${selectedOrders.length}개 주문이 성공적으로 삭제되었습니다.`
+				);
+
+				// 선택 초기화 및 목록 새로고침
 				setSelectedOrders([]);
+				await loadOrders(searchFilters, currentPage);
+			} catch (err) {
+				handleError(err, setError);
+				alert("주문 삭제에 실패했습니다.");
+			} finally {
+				setLoading(false);
 			}
 		}
 	};

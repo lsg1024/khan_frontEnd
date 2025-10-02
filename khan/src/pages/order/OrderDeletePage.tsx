@@ -4,8 +4,6 @@ import OrderSearch from "../../components/common/order/OrderSearch";
 import type { SearchFilters } from "../../components/common/order/OrderSearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { orderApi } from "../../../libs/api/order";
-import FactorySearch from "../../components/common/factory/FactorySearch";
-import type { FactorySearchDto } from "../../types/factory";
 import type { OrderDto } from "../../types/order";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
@@ -24,11 +22,6 @@ export const OrderDeletedPage = () => {
 	const [setTypes, setSetTypes] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
-
-	// 제조사 변경 관련 상태
-	const [isFactorySearchOpen, setIsFactorySearchOpen] = useState(false);
-	const [selectedFixForFactory, setSelectedFixForFactory] =
-		useState<string>("");
 
 	// 체크박스 선택 관련 상태 (단일 선택만 허용)
 	const orderCreationPopup = useRef<Window | null>(null);
@@ -131,107 +124,26 @@ export const OrderDeletedPage = () => {
 		loadDeleteds(resetFilters, 1);
 	};
 
-	const handleSelectDeleted = (flowCode: string, checked: boolean) => {
-		if (checked) {
-			// 선택 추가
-			setSelectedDeleted((prev) => [...prev, flowCode]);
-		} else {
-			// 선택 해제
-			setSelectedDeleted((prev) => prev.filter((id) => id !== flowCode));
-		}
+	// 체크박스 선택 기능 비활성화 (조회 전용)
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const handleSelectDeleted = (_flowCode: string, _checked: boolean) => {
+		// 삭제된 주문은 선택 기능 비활성화
+		return;
 	};
 
-	// 삭제 상세 페이지로 이동
-	const handleDeletedClick = (flowCode: string) => {
-		const deletedData = deleteds.find(
-			(deleted) => deleted.flowCode === flowCode
-		);
-
-		if (deletedData?.imagePath) {
-			sessionStorage.setItem("tempImagePath", deletedData.imagePath);
-		}
-
-		const url = `/orders/update/deleted/${flowCode}`;
-		const NAME = `deleted_${flowCode}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
-		const existingPopup = orderUpdatePopups.current.get(flowCode);
-
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.focus();
-		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
-			if (newPopup) {
-				orderUpdatePopups.current.set(flowCode, newPopup);
-
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						orderUpdatePopups.current.delete(flowCode);
-						clearInterval(checkClosed);
-					}
-				}, 1000);
-			}
-		}
+	// 상태 변경 기능 비활성화 (조회 전용)
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const handleStatusChange = async (_flowCode: string, _newStatus: string) => {
+		// 삭제된 주문은 상태 변경 금지
+		return;
 	};
 
-	const handleStatusChange = async (flowCode: string, newStatus: string) => {
-		const confirmMessage = `수리 상태를 "${newStatus}"로 변경하시겠습니까?`;
-
-		if (window.confirm(confirmMessage)) {
-			try {
-				setLoading(true);
-				await orderApi.updateOrderStatus(flowCode, newStatus);
-				alert("수리 상태가 성공적으로 변경되었습니다.");
-				await loadDeleteds(searchFilters, currentPage);
-			} catch (err) {
-				handleError(err, setError);
-				alert("수리 상태 변경에 실패했습니다.");
-			} finally {
-				setLoading(false);
-			}
-		}
+	// 제조사 변경 기능 비활성화 (조회 전용)
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const handleFactoryClick = (_flowCode: string) => {
+		// 삭제된 주문은 제조사 변경 금지
+		return;
 	};
-
-	// 제조사 클릭 핸들러
-	const handleFactoryClick = (flowCode: string) => {
-		if (window.confirm("공장을 변경하시겠습니까?")) {
-			setSelectedFixForFactory(flowCode);
-			setIsFactorySearchOpen(true);
-		}
-	};
-
-	// 제조사 선택 핸들러
-	const handleFactorySelect = useCallback(
-		async (factory: FactorySearchDto) => {
-			try {
-				setLoading(true);
-				await orderApi.updateOrderFactory(
-					selectedFixForFactory,
-					factory.factoryId!
-				);
-
-				alert("제조사가 성공적으로 변경되었습니다.");
-
-				// 현재 페이지 데이터 새로고침
-				await loadDeleteds(searchFilters, currentPage);
-
-				// 팝업 상태 정리
-				setIsFactorySearchOpen(false);
-				setSelectedFixForFactory("");
-			} catch (err) {
-				handleError(err, setError);
-				alert("제조사 변경에 실패했습니다.");
-			} finally {
-				setLoading(false);
-			}
-		},
-		[] // eslint-disable-line react-hooks/exhaustive-deps
-	);
-
-	// 제조사 검색 팝업 닫기 핸들러
-	const handleFactorySearchClose = useCallback(() => {
-		setIsFactorySearchOpen(false);
-		setSelectedFixForFactory("");
-	}, []);
 
 	const fetchDropdownData = async () => {
 		setDropdownLoading(true);
@@ -312,7 +224,6 @@ export const OrderDeletedPage = () => {
 					onFilterChange={handleFilterChange}
 					onSearch={handleSearch}
 					onReset={handleReset}
-					// onCreate={handleCreate} // 삭제된 주문은 생성 기능 없음
 					factories={factories}
 					stores={stores}
 					setTypes={setTypes}
@@ -329,11 +240,9 @@ export const OrderDeletedPage = () => {
 						currentPage={currentPage}
 						loading={loading}
 						onSelect={handleSelectDeleted}
-						onClick={handleDeletedClick}
 						onStatusChange={handleStatusChange}
 						onFactoryClick={handleFactoryClick}
-					/>
-
+					/>{" "}
 					{/* 페이지네이션 */}
 					<Pagination
 						currentPage={currentPage}
@@ -347,13 +256,7 @@ export const OrderDeletedPage = () => {
 						className="order"
 					/>
 				</div>
-				{/* 제조사 검색 팝업 */}
-				{isFactorySearchOpen && (
-					<FactorySearch
-						onSelectFactory={handleFactorySelect}
-						onClose={handleFactorySearchClose}
-					/>
-				)}
+				{/* 삭제된 주문은 제조사 변경 기능 비활성화 */}
 			</div>
 		</>
 	);

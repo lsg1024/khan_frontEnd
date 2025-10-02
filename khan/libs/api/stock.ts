@@ -29,7 +29,6 @@ export const stockApi = {
 			...orderData,
 		};
 
-		console.log("updateStockRegister requestBody:", requestBody);
 		return apiRequest.patch<string>(
 			"order/orders/stock-register",
 			requestBody,

@@ -15,7 +15,6 @@ function LoginPage() {
 	const [error, setError] = useState("");
 	const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-	// 컴포넌트 마운트 시 토큰 체크
 	useEffect(() => {
 		const checkAuthentication = async () => {
 			// 1. Access Token 유효성 검사 시도
@@ -23,7 +22,6 @@ function LoginPage() {
 			if (accessToken) {
 				try {
 					await authApi.getProfile();
-					// 성공 시 메인으로 이동하고 함수 종료
 					window.dispatchEvent(new Event("tokenChange"));
 					navigate("/", { replace: true });
 					return;
@@ -32,7 +30,6 @@ function LoginPage() {
 				}
 			}
 
-			// 2. HttpOnly 쿠키의 refreshToken으로 재발급 시도
 			try {
 				const response = await authApi.refreshToken();
 				if (response.success && response.data?.token) {
@@ -43,7 +40,6 @@ function LoginPage() {
 					return;
 				}
 			} catch {
-				// refreshToken도 없거나 만료된 경우
 				console.log("RefreshToken이 없거나 만료됨");
 			}
 

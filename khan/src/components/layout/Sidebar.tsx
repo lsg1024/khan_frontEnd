@@ -19,13 +19,42 @@ const sidebarItems: SidebarItem[] = [
 	{ path: "/stone", label: "스톤", icon: "💎" },
 	{
 		path: "/orders",
-		label: "주문",
+		label: "주문 관리",
 		icon: "📝",
 		children: [
 			{ path: "/orders", label: "주문 목록", icon: "📋" },
 			{ path: "/fix", label: "수리 목록", icon: "🔧" },
-			{ path: "/expact", label: "출고 목록", icon: "📦" },
+			{ path: "/expact", label: "출고 목록", icon: "🚚" },
 			{ path: "/order-deleted", label: "삭제 목록", icon: "🗑️" },
+		],
+	},
+	{
+		path: "/stocks",
+		label: "재고 관리",
+		icon: "📦",
+		children: [
+			{ path: "/stocks", label: "재고 목록", icon: "📋" },
+			{ path: "/stocks/accumulated", label: "누적 재고", icon: "🗃️" },
+			{ path: "/stocks/return", label: "반납 재고", icon: "🔄" },
+			{ path: "/stocks/delete", label: "삭제 재고", icon: "🗑️" },
+		],
+	},
+	{
+		path: "/sales",
+		label: "판매 관리",
+		icon: "💰",
+		children: [
+			{ path: "/sales/records", label: "판매 목록", icon: "📈" },
+			{ path: "/sales/receipts", label: "미수 금액", icon: "🧾" },
+		],
+	},
+	{
+		path: "/rental",
+		label: "주얼리 상품 대여 관리",
+		icon: "💍",
+		children: [
+			{ path: "/rental/now", label: "대여 현황", icon: "📋" },
+			{ path: "/rental/records", label: "누적 대여", icon: "🗃️" },
 		],
 	},
 	{ path: "/settings", label: "설정", icon: "⚙️" },
