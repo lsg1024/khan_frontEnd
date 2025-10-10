@@ -21,6 +21,7 @@ import ExpactPage from "./pages/order/DeliveryPage";
 import OrderCreatePage from "./pages/order/OrderCreatePage";
 import OrderUpdatePage from "./pages/order/OrderUpdatePage";
 import StockRegisterPage from "./pages/stock/StockRegisterPage";
+import StockPage from "./pages/stock/StockPage";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
 import StoneSearchPage from "./pages/stone/StoneSearchPage";
 import StoneInfoPage from "./pages/order/StoneInfoPage";
@@ -31,61 +32,50 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 
 import Layout from "./components/layout/Layout";
-import { tokenUtils } from "./utils/tokenUtils";
 
 import "./App.css";
 import "./styles/index.css";
+import { tokenUtils } from "./utils/tokenUtils";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
-
-	useEffect(() => {
-		// 앱 시작 시 토큰 확인
-		const checkAuth = () => {
-			const hasAccessToken = tokenUtils.hasToken();
-			console.log("App.tsx - hasAccessToken:", hasAccessToken);
-			setIsAuthenticated(hasAccessToken);
-			setIsLoading(false);
-		};
-
-		checkAuth();
-
-		// 로컬 스토리지 변화 감지 (다른 탭에서의 변화 감지)
-		const handleStorageChange = (e: StorageEvent) => {
-			if (e.key === "app:accessToken") {
-				const hasToken = !!e.newValue;
-				setIsAuthenticated(hasToken);
-			}
-		};
-
-		// 현재 탭에서의 토큰 변화 감지를 위한 커스텀 이벤트
-		const handleTokenChange = () => {
-			const hasToken = tokenUtils.hasToken();
-			setIsAuthenticated(hasToken);
-		};
-
-		window.addEventListener("storage", handleStorageChange);
-		window.addEventListener("tokenChange", handleTokenChange);
-
-		return () => {
-			window.removeEventListener("storage", handleStorageChange);
-			window.removeEventListener("tokenChange", handleTokenChange);
-		};
-	}, []);
 
 	const handleLogout = () => {
 		setIsAuthenticated(false);
 	};
 
-	if (isLoading) {
-		return (
-			<div className="app-loading">
-				<div className="spinner"></div>
-				<p>로딩 중...</p>
-			</div>
-		);
-	}
+	useEffect(() => {
+		// 초기 토큰 확인
+		const token = tokenUtils.getToken();
+		if (token) {
+			setIsAuthenticated(true);
+		} else {
+			setIsAuthenticated(false);
+		}
+
+		// 토큰 변화 이벤트 리스너 등록
+		const handleTokenChange = () => {
+			const hasToken = tokenUtils.hasToken();
+			console.log("App: 토큰 변화 감지, hasToken:", hasToken);
+			setIsAuthenticated(hasToken);
+		};
+
+		// 토큰 만료 이벤트 리스너 등록
+		const handleTokenExpired = () => {
+			console.log("App: 토큰 만료 이벤트");
+			setIsAuthenticated(false);
+		};
+
+		// 이벤트 리스너 등록
+		window.addEventListener("tokenChange", handleTokenChange);
+		window.addEventListener("tokenExpired", handleTokenExpired);
+
+		// 컴포넌트 언마운트 시 이벤트 리스너 제거
+		return () => {
+			window.removeEventListener("tokenChange", handleTokenChange);
+			window.removeEventListener("tokenExpired", handleTokenExpired);
+		};
+	}, []);
 
 	return (
 		<BrowserRouter>
@@ -135,6 +125,7 @@ function App() {
 						<Route path="/fix" element={<FixPage />} />
 						<Route path="/expact" element={<ExpactPage />} />
 						<Route path="/order-deleted" element={<OrderDeletedPage />} />
+						<Route path="/stocks" element={<StockPage />} />
 						<Route path="/login" element={<Navigate to="/" replace />} />
 						<Route path="/join" element={<Navigate to="/" replace />} />
 						<Route path="*" element={<Navigate to="/" replace />} />

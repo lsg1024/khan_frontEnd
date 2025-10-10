@@ -16,39 +16,29 @@ function LoginPage() {
 	const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
 	useEffect(() => {
+		console.log("LoginPage: 컴포넌트 마운트, 인증 상태 확인 시작...");
 		const checkAuthentication = async () => {
-			// 1. Access Token 유효성 검사 시도
-			const accessToken = tokenUtils.getToken();
-			if (accessToken) {
-				try {
-					await authApi.getProfile();
-					window.dispatchEvent(new Event("tokenChange"));
-					navigate("/", { replace: true });
-					return;
-				} catch {
-					tokenUtils.removeToken();
-				}
-			}
-
 			try {
-				const response = await authApi.refreshToken();
-				if (response.success && response.data?.token) {
-					// 재발급 성공 시, 새 토큰 저장 후 메인으로 이동
-					tokenUtils.setToken(response.data.token);
+				const response = await authApi.getProfile();
+
+				if (response.success) {
+					console.log("LoginPage: 인증 성공. 메인 페이지로 이동.");
+					setIsCheckingAuth(false); 
 					window.dispatchEvent(new Event("tokenChange"));
 					navigate("/", { replace: true });
 					return;
 				}
-			} catch {
-				console.log("RefreshToken이 없거나 만료됨");
+			} catch (error) {
+				console.log("LoginPage: 인증 실패:", error);
 			}
 
-			// 3. 모든 자동 로그인 시도가 실패한 경우, 로딩 상태를 해제
+			// 인증 실패 시에만 여기 도달
+			console.log("LoginPage: 최종 인증 실패. 로그인 폼 표시.");
 			setIsCheckingAuth(false);
 		};
 
 		checkAuthentication();
-	}, [navigate]);
+	}, []);
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -64,7 +54,6 @@ function LoginPage() {
 				password,
 			});
 
-			// 204 No Content 응답이거나 성공 응답 처리
 			const isLoginSuccess = !data || isApiSuccess(data);
 
 			if (isLoginSuccess) {

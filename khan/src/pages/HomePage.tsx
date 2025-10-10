@@ -83,7 +83,7 @@ function HomePage() {
 					<p>토큰이 유효하지 않거나 서버에 문제가 있을 수 있습니다.</p>
 					<div className="debug-info">
 						<p>
-							<strong>현재 토큰:</strong> {tokenUtils.getToken() || "없음"}
+							<strong>현재 닉네임:</strong> {tokenUtils.getNickname() || "없음"}
 						</p>
 						<p>
 							<strong>토큰 존재 여부:</strong>{" "}

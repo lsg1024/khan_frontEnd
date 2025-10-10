@@ -17,6 +17,24 @@ export const api = axios.create({
 	timeout: 15000,
 });
 
+let isRefreshing = false;
+let failedQueue: Array<{
+	resolve: (value?: unknown) => void;
+	reject: (reason?: unknown) => void;
+}> = [];
+
+// 큐에 쌓인 요청들을 처리하는 함수
+const processQueue = (error: Error | null) => {
+	failedQueue.forEach((prom) => {
+		if (error) {
+			prom.reject(error);
+		} else {
+			prom.resolve();
+		}
+	});
+	failedQueue = [];
+};
+
 // 개발용 Bearer 토큰 인터셉터
 api.interceptors.request.use((config) => {
 	const token = tokenUtils.getToken();
@@ -59,14 +77,78 @@ api.interceptors.response.use(
 
 		return res;
 	},
-	(err) => {
-		// 401, 403 에러 시 토큰 제거하고 로그인 페이지로 리다이렉트
-		if (err.response?.status === 401 || err.response?.status === 403) {
-			tokenUtils.removeToken();
-			window.dispatchEvent(new CustomEvent("tokenExpired"));
+	async (err) => {
+		// 401 에러 시 재발급 요청 실패 시 로그아웃 처리
+		console.log("API 응답 에러 인터셉터:", err);
+		const originalRequest = err.config;
+		if (err.response?.status === 401 && !originalRequest._retry) {
+			if (isRefreshing) {
+				// 이미 토큰 재발급이 진행 중이라면, 현재 요청을 큐에 추가하고 대기
+				return new Promise((resolve, reject) => {
+					failedQueue.push({ resolve, reject });
+				})
+					.then(() => {
+						// 재발급 성공 후, 헤더에 새 토큰을 설정하여 원래 요청을 다시 보냄
+						originalRequest.headers["Authorization"] =
+							"Bearer " + tokenUtils.getToken();
+						return api(originalRequest);
+					})
+					.catch((err) => {
+						return Promise.reject(err);
+					});
+			}
 
-			if (window.location.pathname !== "/login") {
-				window.location.href = "/login";
+			originalRequest._retry = true; // 재시도 플래그 설정 (무한 루프 방지)
+			isRefreshing = true;
+
+			try {
+				// reissue 요청은 인터셉터를 우회하여 직접 fetch 사용
+				const response = await fetch(`${getApiBaseUrl()}/auth/reissue`, {
+					method: "POST",
+					credentials: "include",
+					headers: {
+						"Content-Type": "application/json",
+					},
+				});
+
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				const data = await response.json();
+				if (!data.success) {
+					throw new Error("Token refresh failed");
+				}
+
+				// Authorization 헤더에서 새 토큰 추출
+				const authHeader =
+					response.headers.get("Authorization") ||
+					response.headers.get("authorization");
+				if (authHeader && authHeader.startsWith("Bearer ")) {
+					const newToken = authHeader.substring(7);
+					tokenUtils.setToken(newToken);
+				}
+
+				// 재발급 성공 시
+				console.log("토큰 재발급 성공");
+
+				processQueue(null);
+
+				originalRequest.headers["Authorization"] =
+					"Bearer " + tokenUtils.getToken();
+				return api(originalRequest);
+			} catch (refreshError) {
+				console.error("토큰 재발급 실패:", refreshError);
+
+				processQueue(refreshError as Error);
+
+				// 로그아웃 처리
+				tokenUtils.removeToken();
+				window.dispatchEvent(new CustomEvent("tokenExpired"));
+
+				return Promise.reject(refreshError);
+			} finally {
+				isRefreshing = false;
 			}
 		}
 
@@ -139,24 +221,6 @@ export const apiRequest = {
 		if (authHeader && authHeader.startsWith("Bearer ")) {
 			const token = authHeader.substring(7);
 			tokenUtils.setToken(token);
-		} else {
-			if (
-				response.data &&
-				typeof response.data === "object" &&
-				"data" in response.data
-			) {
-				const responseData = response.data.data as Record<string, unknown>;
-				if (
-					responseData &&
-					typeof responseData === "object" &&
-					"token" in responseData
-				) {
-					const token = responseData.token;
-					if (typeof token === "string" && token.length > 0) {
-						tokenUtils.setToken(token);
-					}
-				}
-			}
 		}
 
 		return response.data;

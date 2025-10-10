@@ -22,7 +22,6 @@ export const tokenUtils = {
 
 	// AccessToken 삭제 (로그아웃)
 	removeToken: () => {
-		console.log("AccessToken 삭제됨");
 		localStorage.removeItem("app:accessToken");
 		window.dispatchEvent(new Event("tokenChange"));
 	},
