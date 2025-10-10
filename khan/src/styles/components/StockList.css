@@ -1,0 +1,269 @@
+/* StockList 스타일 */
+.stock-list {
+	margin: 20px 0;
+	overflow-x: auto;
+	background-color: white;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stock-table {
+	width: 100%;
+	font-size: 10px;
+    margin-bottom: 10px;
+	color: #000;
+	border-collapse: collapse;
+}
+
+/* 행끼리 구분선 추가 */
+.stock-table tbody tr {
+	border-bottom: 2px solid #e9ecef;
+}
+
+.stock-table tbody tr:last-child {
+	border-bottom: none;
+}
+
+.stock-table tbody tr:hover {
+	background-color: #f8f9fa;
+}
+
+.stock-table th {
+	padding: 2px 6px;
+	text-align: center;
+	font-weight: 600;
+	color: #000;
+	border-bottom: 1px solid #dee2e6;
+	border-right: 1px solid #f1f3f4;
+	white-space: nowrap;
+	background-color: #f8f9fa;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+/* 헤더 마지막 셀에는 오른쪽 테두리 제거 */
+.stock-table th:last-child {
+	border-right: none;
+}
+
+.stock-table-twin {
+	width: 50px;
+}
+
+.stock-table td {
+	padding: 2px 4px;
+	text-align: center;
+	border-right: 1px solid #f1f3f4;
+	vertical-align: middle;
+	color: #000;
+}
+
+/* 마지막 셀에는 오른쪽 테두리 제거 */
+.stock-table td:last-child {
+	border-right: none;
+}
+
+/* 행 hover 효과 */
+.stock-row {
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.stock-row:hover {
+	background-color: #f8f9fa;
+}
+
+/* 개별 셀 스타일 */
+.no-cell {
+	width: 30px;
+	min-width: 30px;
+}
+
+.serial-cell {
+	width: 60px;
+	min-width: 60px;
+	font-family: monospace;
+}
+
+.order-cell {
+	width: 30px;
+	min-width: 30px;
+}
+
+.date-cell {
+	width: 60px;
+	min-width: 60px;
+}
+
+.size-note-cell {
+	width: 50px;
+	min-width: 50px;
+}
+
+.size-note-content {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	align-items: center;
+	min-width: 50px;
+	text-align: center !important;
+}
+
+.size-note-content .size {
+	font-weight: bold;
+	color: #333;
+}
+
+.size-note-content .note {
+	font-size: 11px;
+	color: #666;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* MainList와 일관성을 위한 info-value 스타일 */
+.info-row-order {
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 2px;
+}
+
+.info-row-order:last-child {
+	margin-bottom: 0;
+}
+
+.info-value-stock {
+	font-size: 12px;
+	color: #000;
+}
+
+.info-value-stock-expect {
+	color: #d32f2f;
+	font-size: 12px;
+}
+
+.material-cell,
+.color-cell {
+	width: 30px;
+	min-width: 30px;
+}
+
+.stone-note-cell {
+	width: 80px;
+	min-width: 80px;
+}
+
+.stone-note-content {
+	min-width: 80px;
+	text-align: center !important;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	align-items: center;
+}
+
+.stone-note-content .main-note {
+	font-size: 11px;
+	color: #333;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.stone-note-content .assistance-note {
+	font-size: 11px;
+	color: #666;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.main-quantity-cell,
+.assistance-quantity-cell {
+	width: 20px;
+	min-width: 20px;
+}
+
+.gold-weight-cell,
+.stone-weight-cell {
+	width: 40px;
+	min-width: 40px;
+}
+
+.product-labor-cost-cell,
+.add-labor-cost-cell,
+.main-stone-labor-cost-cell,
+.assistance-stone-labor-cost-cell,
+.stone-add-labor-cost-cell,
+.product-purchase-cost-cell,
+.stone-purchase-cost-cell {
+	width: 50px;
+	min-width: 50px;
+}
+
+.assistant-stone-cell {
+	width: 20px;
+	min-width: 20px;
+}
+
+.assistant-stone-cell .status {
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-weight: bold;
+	width: 40px;
+	min-width: 40px;
+}
+
+.assistant-stone-cell .status.active {
+	background-color: #d4edda;
+	color: #155724;
+}
+
+.assistant-stone-cell .status.inactive {
+	background-color: #f8d7da;
+	color: #721c24;
+}
+
+.assistant-stone-name-cell {
+	width: 60px;
+	min-width: 60px;
+}
+
+/* 로딩 및 빈 데이터 메시지 */
+.loading-message,
+.no-data-message {
+	text-align: center;
+	padding: 60px 20px;
+	color: #666;
+	font-size: 16px;
+}
+
+.loading-message {
+	color: #007bff;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1400px) {
+	.stock-list {
+		overflow-x: scroll;
+	}
+
+	.stock-table {
+		min-width: 1600px;
+	}
+}
+
+@media (max-width: 768px) {
+	.stock-table {
+		font-size: 12px;
+		min-width: 1400px;
+	}
+
+	.stock-table th,
+	.stock-table td {
+		padding: 6px;
+	}
+}

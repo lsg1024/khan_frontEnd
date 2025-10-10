@@ -100,6 +100,19 @@ export const orderApi = {
 		return apiRequest.get("order/filters/set-type", { params });
 	},
 
+	getFilterColors: async (
+		start: string,
+		end: string,
+		order_status: string
+	): Promise<ApiResponse<string[]>> => {
+		const params: Record<string, string> = {};
+		if (start) params.start = start;
+		if (end) params.end = end;
+		params.order_status = order_status;
+
+		return apiRequest.get("order/filters/color", { params });
+	},
+
 	// 제조사 변경
 	updateOrderFactory: async (
 		flowCode: string,

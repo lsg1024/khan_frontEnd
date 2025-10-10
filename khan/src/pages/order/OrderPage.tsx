@@ -23,6 +23,7 @@ export const OrderPage = () => {
 	const [factories, setFactories] = useState<string[]>([]);
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
+	const [colors, setColors] = useState<string[]>([]);
 
 	// 출고일 변경 관련 상태
 	const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false);
@@ -384,8 +385,9 @@ export const OrderPage = () => {
 		}
 
 		const ids = selectedOrders.join(",");
+		const stock = "STOCK";
 
-		const url = `/orders/register-stock?ids=${ids}`;
+		const url = `/orders/register-stock?ids=${ids}&type=${stock}`;
 		const NAME = `stockRegisterBulk`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
 
@@ -410,9 +412,35 @@ export const OrderPage = () => {
 	};
 
 	const handleSalesRegister = () => {
-		if (selectedOrders.length > 0) {
-			console.log("판매등록 대상:", selectedOrders);
-			alert(`선택된 ${selectedOrders.length}개 주문을 판매등록 처리합니다.`);
+		if (selectedOrders.length === 0) {
+			alert("매출 등록할 주문을 먼저 선택해주세요.");
+			return;
+		}
+
+		const ids = selectedOrders.join(",");
+		const sale = "SALES";
+
+		const url = `/orders/register-stock?ids=${ids}&type=${sale}`;
+		const NAME = `stockRegisterBulk`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
+
+		const existingPopup = stockRegisterPopups.current.get(NAME);
+
+		if (existingPopup && !existingPopup.closed) {
+			existingPopup.focus();
+		} else {
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				stockRegisterPopups.current.set(NAME, newPopup);
+
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						stockRegisterPopups.current.delete(NAME);
+						loadOrders(searchFilters, currentPage);
+						clearInterval(checkClosed);
+					}
+				}, 1000);
+			}
 		}
 	};
 
@@ -474,6 +502,13 @@ export const OrderPage = () => {
 				"ORDER"
 			);
 			setSetTypes(setTypeResponse.data || []);
+
+			const colorResponse = await orderApi.getFilterColors(
+				searchFilters.start,
+				searchFilters.end,
+				"ORDER"
+			);
+			setColors(colorResponse.data || []);
 		} catch {
 			// 에러 처리
 		} finally {
@@ -502,6 +537,16 @@ export const OrderPage = () => {
 					setCurrentPage(1);
 				}
 			}
+
+			// 재고등록 및 판매등록 완료 메시지 처리
+			if (
+				event.data &&
+				(event.data.type === "STOCK_REGISTERED" ||
+					event.data.type === "SALES_REGISTERED")
+			) {
+				// 주문 목록 새로고침
+				loadOrders(searchFilters, currentPage);
+			}
 		};
 
 		window.addEventListener("message", handleOrderCreated);
@@ -529,8 +574,10 @@ export const OrderPage = () => {
 	if (loading) {
 		return (
 			<>
-				<div className="spinner"></div>
-				<p>주문을 불러오는 중...</p>
+				<div className="loading-container">
+					<div className="spinner"></div>
+					<p>주문을 불러오는 중...</p>
+				</div>
 			</>
 		);
 	}
@@ -587,6 +634,7 @@ export const OrderPage = () => {
 					factories={factories}
 					stores={stores}
 					setTypes={setTypes}
+					colors={colors}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
 					onStart={true}

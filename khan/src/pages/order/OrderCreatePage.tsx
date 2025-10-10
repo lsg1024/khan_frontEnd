@@ -1015,12 +1015,12 @@ const OrderCreatePage = () => {
 
 	if (loading && orderRows.length === 0) {
 		return (
-			<div className="order-create-page">
+			<>
 				<div className="loading-container">
 					<div className="spinner"></div>
-					<p>데이터를 불러오는 중...</p>
+					<p>데이터 불러오는 중...</p>
 				</div>
-			</div>
+			</>
 		);
 	}
 

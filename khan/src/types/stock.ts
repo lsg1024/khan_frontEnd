@@ -1,4 +1,5 @@
 import type { StoneInfo } from "./stone";
+import type { PageInfo } from "./page";
 
 export interface StockOrderRowData {
 	createAt: string;
@@ -97,36 +98,35 @@ export interface StockRegisterRequest {
 	stoneAddLaborCost: number;
 }
 
-export interface StockResponseDetail {
-	createAt: string;
-	shippingAt: string;
+export interface StockSearchResponse {
+	content: StockResponse[];
+	page: PageInfo;
+}
+
+export interface StockResponse {
 	flowCode: string;
-	storeId: string;
+	createAt: string;
+	originStatus: string;
+	currentStatus: string;
 	storeName: string;
-	factoryId: string;
-	factoryName: string;
-	productId: string;
-	productName: string;
 	productSize: string;
-	isProductWeightSale: boolean;
-	productPurchaseCost: number;
+	stockNote: string;
+	materialName: string;
+	classificationName: string;
+	colorName: string;
 	productLaborCost: number;
 	productAddLaborCost: number;
-	goldWeight: string;
-	stoneWeight: string;
-	classification: string;
-	materialName: string;
-	colorName: string;
-	setType: string;
-	orderNote: string;
+	assistantStoneName: string;
+	assistantStone: boolean;
+	mainStoneLaborCost: number;
+	assistanceStoneLaborCost: number;
+	stoneAddLaborCost: number;
 	mainStoneNote: string;
 	assistanceStoneNote: string;
-	priority: string;
-	productStatus: string;
-	orderStatus: string;
-	assistantStone: boolean;
-	assistantStoneName: string;
-	assistantStoneCreateAt: string;
-	stoneInfos: StoneInfo[];
-	stoneAddLaborCost: number;
+	mainStoneQuantity: number;
+	assistanceStoneQuantity: number;
+	goldWeight: string;
+	stoneWeight: string;
+	productPurchaseCost: number;
+	stonePurchaseCost: number;
 }

@@ -24,6 +24,7 @@ export const ExpactPage = () => {
 	const [factories, setFactories] = useState<string[]>([]);
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
+	const [colors, setColors] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
 
@@ -280,6 +281,13 @@ export const ExpactPage = () => {
 				"EXPACT"
 			);
 			setSetTypes(setTypeResponse.data || []);
+			// 색상 데이터 가져오기
+			const colorResponse = await orderApi.getFilterColors(
+				searchFilters.start,
+				searchFilters.end,
+				"EXPACT"
+			);
+			setColors(colorResponse.data || []);
 		} catch (err) {
 			console.error("드롭다운 데이터 로드 실패:", err);
 		} finally {
@@ -337,7 +345,7 @@ export const ExpactPage = () => {
 					factories={factories}
 					stores={stores}
 					setTypes={setTypes}
-					// colors={colors}
+					colors={colors}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
 					onStart={false}

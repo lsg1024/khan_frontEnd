@@ -26,7 +26,7 @@ interface OrderSearchProps {
 	factories: string[];
 	stores: string[];
 	setTypes: string[];
-	// colors: string[];
+	colors: string[];
 	loading: boolean;
 	dropdownLoading: boolean;
 }
@@ -42,7 +42,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 	factories,
 	stores,
 	setTypes,
-	// colors,
+	colors,
 	loading,
 	dropdownLoading,
 }) => {
@@ -59,11 +59,11 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 
 	return (
 		<>
-			<div className="search-section-order">
-				<div className="search-filters-order">
-					<div className="filter-row-order">
-						<div className="filter-group-order">
-							<div className="date-range-order">
+			<div className="search-section-common">
+				<div className="search-filters-common">
+					<div className="filter-row-common">
+						<div className="filter-group-common">
+							<div className="date-range-common">
 								{onStart && (
 									<input
 										ref={startDateInputRef}
@@ -86,7 +86,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 							</div>
 						</div>
 
-						<div className="filter-group-order">
+						<div className="filter-group-common">
 							<select
 								id="factoryId"
 								value={searchFilters.factory}
@@ -102,7 +102,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 							</select>
 						</div>
 
-						<div className="filter-group-order">
+						<div className="filter-group-common">
 							<select
 								id="storeId"
 								value={searchFilters.store}
@@ -118,7 +118,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 							</select>
 						</div>
 
-						<div className="filter-group-order">
+						<div className="filter-group-common">
 							<select
 								id="setType"
 								value={searchFilters.setType}
@@ -134,7 +134,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 							</select>
 						</div>
 
-						<div className="filter-group-order">
+						<div className="filter-group-common">
 							<select
 								id="color"
 								value={searchFilters.color}
@@ -142,7 +142,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 								disabled={dropdownLoading}
 							>
 								<option value="">색상</option>
-								{setTypes.map((color) => (
+								{colors.map((color) => (
 									<option key={color} value={color}>
 										{color}
 									</option>
@@ -151,8 +151,8 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 						</div>
 					</div>
 
-					<div className="search-controls-order">
-						<div className="filter-group-order">
+					<div className="search-controls-common">
+						<div className="filter-group-common">
 							<select
 								id="sortField"
 								value={searchFilters.sortField}
@@ -167,7 +167,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 							</select>
 						</div>
 
-						<div className="filter-group-order">
+						<div className="filter-group-common">
 							<select
 								id="sortOrder"
 								value={searchFilters.sortOrder}
@@ -188,20 +188,20 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 							value={searchFilters.search}
 							onChange={(e) => onFilterChange("search", e.target.value)}
 							onKeyDown={(e) => e.key === "Enter" && onSearch()}
-							className="search-input-order"
+							className="search-input-common"
 						/>
 
-						<div className="search-buttons-order">
+						<div className="search-buttons-common">
 							<button
 								onClick={onSearch}
-								className="search-btn-order"
+								className="search-btn-common"
 								disabled={loading}
 							>
 								검색
 							</button>
 							<button
 								onClick={onReset}
-								className="reset-btn-order"
+								className="reset-btn-common"
 								disabled={loading}
 							>
 								초기화
@@ -209,7 +209,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 							{onCreate && (
 								<button
 									onClick={onCreate}
-									className="order-btn-order"
+									className="common-btn-common"
 									disabled={loading}
 								>
 									생성
@@ -217,7 +217,7 @@ const OrderSearch: React.FC<OrderSearchProps> = ({
 							)}
 							<button
 								onClick={onExcel}
-								className="order-btn-order"
+								className="common-btn-common"
 								disabled={loading}
 							>
 								엑셀 다운로드

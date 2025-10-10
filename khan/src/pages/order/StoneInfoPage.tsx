@@ -405,10 +405,12 @@ const StoneInfoPage: React.FC = () => {
 				)}
 
 				{loading ? (
-					<div className="stone-info-manager-loading">
-						<div className="spinner"></div>
-						<p>데이터를 불러오는 중...</p>
-					</div>
+					<>
+						<div className="loading-container">
+							<div className="spinner"></div>
+							<p>스톤정보를 불러오는 중...</p>
+						</div>
+					</>
 				) : (
 					<>
 						<div className="stone-info-manager-actions">

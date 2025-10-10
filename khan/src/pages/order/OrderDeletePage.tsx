@@ -20,6 +20,7 @@ export const OrderDeletedPage = () => {
 	const [factories, setFactories] = useState<string[]>([]);
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
+	const [colors, setColors] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
 
@@ -171,6 +172,12 @@ export const OrderDeletedPage = () => {
 				"DELETED"
 			);
 			setSetTypes(setTypeResponse.data || []);
+			const colorResponse = await orderApi.getFilterColors(
+				searchFilters.start,
+				searchFilters.end,
+				"DELETED"
+			);
+			setColors(colorResponse.data || []);
 		} catch (err) {
 			console.error("드롭다운 데이터 로드 실패:", err);
 		} finally {
@@ -227,6 +234,7 @@ export const OrderDeletedPage = () => {
 					factories={factories}
 					stores={stores}
 					setTypes={setTypes}
+					colors={colors}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
 					onStart={true}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { stockApi } from "../../../libs/api/stock";
+import { saleApi } from "../../../libs/api/sale";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
 import { assistantStoneApi } from "../../../libs/api/assistantStone";
@@ -375,9 +376,15 @@ const StockRegisterPage: React.FC = () => {
 			return;
 		}
 
+		// type 파라미터에 따라 메시지와 API 호출 구분
+		const typeParam = searchParams.get("type");
+		const isStockRegister = typeParam === "STOCK";
+		const actionText = isStockRegister ? "재고 등록" : "판매 등록";
+		const apiStatus = isStockRegister ? "STOCK" : "SALES";
+
 		if (
 			!window.confirm(
-				`총 ${orderRows.length}개의 주문을 일괄 재고 등록하시겠습니까?`
+				`총 ${orderRows.length}개의 주문을 일괄 ${actionText}하시겠습니까?`
 			)
 		) {
 			return;
@@ -413,44 +420,45 @@ const StockRegisterPage: React.FC = () => {
 					stoneAddLaborCost: row.productAddLaborCost || 0,
 				};
 
-				return stockApi.updateStockRegister(row.id, "STOCK", stockDto);
+				// type에 따라 다른 API 호출
+				if (isStockRegister) {
+					return stockApi.updateStockRegister(row.id, apiStatus, stockDto);
+				} else {
+					// 판매 등록은 saleApi 사용
+					return saleApi.updateSaleRegister(row.id, apiStatus, stockDto);
+				}
 			});
 
 			await Promise.all(savePromises);
 
 			alert(
-				`총 ${orderRows.length}개의 주문이 성공적으로 재고 등록되었습니다.`
+				`총 ${orderRows.length}개의 주문이 성공적으로 ${actionText}되었습니다.`
 			);
 
+			// 메시지 전송 시 타입에 따라 구분
 			if (window.opener) {
+				const messageType = isStockRegister
+					? "STOCK_REGISTERED"
+					: "SALES_REGISTERED";
 				window.opener.postMessage(
-					{ type: "STOCK_REGISTERED" },
+					{ type: messageType },
 					window.location.origin
 				);
 			}
 			window.close();
 		} catch (err) {
 			handleError(err, setError);
-			alert("일괄 재고 등록에 실패했습니다.");
+			alert(`일괄 ${actionText}에 실패했습니다.`);
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	if (loading) {
+	if (loading || error) {
 		return (
 			<div className="loading-container">
 				<div className="spinner"></div>
 				<p>주문 정보를 불러오는 중...</p>
-			</div>
-		);
-	}
-
-	if (error) {
-		return (
-			<div className="error-message">
-				<span>⚠️</span>
-				<p>{error}</p>
 			</div>
 		);
 	}
@@ -467,10 +475,16 @@ const StockRegisterPage: React.FC = () => {
 		}
 	};
 
+	// type에 따른 제목과 버튼 텍스트 결정
+	const typeParam = searchParams.get("type");
+	const isStockRegister = typeParam === "STOCK";
+	const pageTitle = isStockRegister ? "일괄 재고 등록" : "일괄 판매 등록";
+	const buttonText = isStockRegister ? "재고 등록" : "판매 등록";
+
 	return (
 		<div className="order-update-page">
 			<div className="page-header">
-				<h3>일괄 재고 등록</h3>
+				<h3>{pageTitle}</h3>
 				<p>총 {orderRows.length}개의 주문을 등록합니다.</p>
 			</div>
 			<div className="bulk-order-item">
@@ -496,7 +510,7 @@ const StockRegisterPage: React.FC = () => {
 					취소
 				</button>
 				<button className="btn-submit" onClick={handleSave} disabled={loading}>
-					{loading ? "저장 중..." : `전체 ${orderRows.length}개 등록`}
+					{loading ? "저장 중..." : `전체 ${orderRows.length}개 ${buttonText}`}
 				</button>
 			</div>
 

@@ -643,12 +643,12 @@ const OrderUpdatePage: React.FC = () => {
 
 	if (loading && !orderDetail) {
 		return (
-			<div className="order-update-page">
+			<>
 				<div className="loading-container">
 					<div className="spinner"></div>
-					<p>주문 정보를 불러오는 중...</p>
+					<p>주문정보를 불러오는 중...</p>
 				</div>
-			</div>
+			</>
 		);
 	}
 

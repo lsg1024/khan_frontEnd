@@ -4,15 +4,6 @@
 	min-height: 100vh;
 }
 
-/* 로딩 스타일 */
-.loading-container {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 60px 20px;
-}
-
 .spinner {
 	width: 40px;
 	height: 40px;
@@ -43,151 +34,6 @@
 	padding: 12px;
 	border-radius: 4px;
 	margin-bottom: 20px;
-}
-
-/* 검색 영역 */
-.search-section-order {
-	min-width: 1100px;
-	background-color: white;
-	border-radius: 8px;
-	padding: 10px;
-	margin-bottom: 10px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.search-filters-order {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
-
-.filter-row-order {
-	display: flex;
-	gap: 10px;
-	width: 100%;
-	flex-direction: row;
-	justify-content: center;
-}
-
-.filter-group-order label {
-	font-weight: 500;
-	color: var(--text-color);
-	font-size: 12px;
-}
-
-.filter-group-order select {
-	padding: 4px 6px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	background-color: white;
-	color: #000;
-	font-size: 12px;
-}
-
-.date-range-order {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	color: #000;
-}
-
-.date-range-order input[type="date"] {
-	padding: 4px 6px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	background-color: white;
-	color: #000;
-	font-size: 12px;
-	-moz-appearance: textfield;
-	appearance: textfield;
-	text-align: center;
-}
-
-/* 모든 date input의 캘린더 아이콘 숨김 */
-.date-range-order input[type="date"]::-webkit-calendar-picker-indicator {
-	display: none;
-	-webkit-appearance: none;
-}
-
-.date-range-order span {
-	color: var(--text-color);
-	font-weight: 500;
-}
-
-.search-controls-order {
-	display: flex;
-	gap: 10px;
-	width: 100%;
-	max-height: 30px;
-	flex-direction: row;
-	justify-content: center;
-}
-
-.search-input-order {
-	margin-right: 10px;
-	font-size: 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	background-color: white;
-}
-
-.search-buttons-order {
-	display: flex;
-	gap: 5px; /* 버튼들 사이의 간격 */
-}
-
-.search-btn-order,
-.reset-btn-order,
-.order-btn-order {
-	padding: 8px 16px;
-	border: none;
-	border-radius: 6px;
-	font-size: 10px;
-	font-weight: 500;
-	cursor: pointer;
-	transition: background-color 0.2s ease;
-}
-
-.search-btn-order {
-	background-color: #007bff;
-	color: white;
-}
-
-.search-btn-order:hover:not(:disabled) {
-	background-color: #0056b3;
-}
-
-.reset-btn-order {
-	background-color: #6c757d;
-	color: white;
-}
-
-.reset-btn-order:hover:not(:disabled) {
-	background-color: #5a6268;
-}
-
-.order-btn-order {
-	background-color: #28a745;
-	color: white;
-}
-
-.order-btn-order:hover:not(:disabled) {
-	background-color: #218838;
-}
-
-.search-btn-order:disabled,
-.reset-btn-order:disabled,
-.order-btn-order:disabled {
-	opacity: 0.6;
-	cursor: not-allowed;
-}
-
-.results-info-order {
-	margin-top: 15px;
-	padding: 10px 0;
-	font-size: 14px;
-	color: var(--text-secondary);
-	font-weight: 500;
 }
 
 /* 주문 목록 */
@@ -241,12 +87,12 @@
 
 .order-table {
 	width: 100%;
-	font-size: 13px;
+	font-size: 10px;
 	color: #000; /* 검정색으로 변경 */
 }
 
 .order-table th {
-	padding: 4px 12px;
+	padding: 2px 6px;
 	text-align: center;
 	font-weight: 600;
 	color: #000; /* 검정색으로 변경 */
@@ -255,7 +101,7 @@
 }
 
 .order-table td {
-	padding: 4px 8px;
+	padding: 2px 4px;
 	text-align: center;
 	border-bottom: 1px solid #dee2e6;
 	vertical-align: middle;
@@ -520,7 +366,6 @@
 .order-table td:first-child {
 	width: 40px;
 	text-align: center;
-	padding: 8px 4px;
 }
 
 /* 헤더 체크박스 스타일 */
