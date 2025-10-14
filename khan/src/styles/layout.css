@@ -308,6 +308,8 @@
 	overflow-y: auto;
 	transition: all 0.3s ease;
 	transform: translateX(0);
+	scrollbar-width: none;
+	-ms-overflow-style: none;
 }
 
 /* 사이드바 토글 상태 */

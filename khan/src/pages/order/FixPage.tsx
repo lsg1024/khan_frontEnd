@@ -160,30 +160,104 @@ export const FixPage = () => {
 		}
 	};
 
-	// 대량 작업 핸들러 (단일 선택)
+	const stockRegisterPopups = useRef<Map<string, Window>>(new Map());
+
+	// 대량 작업 핸들러
 	const handleStockRegister = () => {
-		if (selectedFix) {
-			console.log("재고등록 대상:", selectedFix);
-			// TODO: 재고등록 API 호출
-			alert(`선택된 수리를 재고등록 처리합니다.`);
+		if (selectedFix.length === 0) {
+			alert("등록할 값을 먼저 선택해주세요.");
+			return;
+		}
+
+		const ids = selectedFix.join(",");
+		const stock = "STOCK";
+
+		const url = `/orders/register-stock?ids=${ids}&type=${stock}`;
+		const NAME = `stockRegisterBulk`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
+
+		const existingPopup = stockRegisterPopups.current.get(NAME);
+
+		if (existingPopup && !existingPopup.closed) {
+			existingPopup.focus();
+		} else {
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				stockRegisterPopups.current.set(NAME, newPopup);
+
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						stockRegisterPopups.current.delete(NAME);
+						clearInterval(checkClosed);
+						// 팝업 닫힘 시 자동 새로고침 제거 - 메시지 이벤트에서만 처리
+					}
+				}, 1000);
+			}
 		}
 	};
 
 	const handleSalesRegister = () => {
-		if (selectedFix) {
-			console.log("판매등록 대상:", selectedFix);
-			// TODO: 판매등록 API 호출
-			alert(`선택된 수리를 판매등록 처리합니다.`);
+		if (selectedFix.length === 0) {
+			alert("등록할 값을 먼저 선택해주세요.");
+			return;
+		}
+
+		const ids = selectedFix.join(",");
+		const sale = "SALES";
+
+		const url = `/orders/register-stock?ids=${ids}&type=${sale}`;
+		const NAME = `stockRegisterBulk`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
+
+		const existingPopup = stockRegisterPopups.current.get(NAME);
+
+		if (existingPopup && !existingPopup.closed) {
+			existingPopup.focus();
+		} else {
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				stockRegisterPopups.current.set(NAME, newPopup);
+
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						stockRegisterPopups.current.delete(NAME);
+						clearInterval(checkClosed);
+						// 팝업 닫힘 시 자동 새로고침 제거 - 메시지 이벤트에서만 처리
+					}
+				}, 1000);
+			}
 		}
 	};
 
-	const handleBulkDelete = () => {
-		if (selectedFix) {
-			if (window.confirm(`선택된 수리를 삭제하시겠습니까?`)) {
-				console.log("삭제 대상:", selectedFix);
-				// TODO: 삭제 API 호출
-				alert(`선택된 수리를 삭제 처리합니다.`);
+	const handleBulkDelete = async () => {
+		if (selectedFix.length === 0) {
+			alert("삭제할 값을 먼저 선택해주세요.");
+			return;
+		}
+
+		const confirmMessage = `선택된 ${selectedFix.length}개 값을 삭제하시겠습니까?`;
+
+		if (window.confirm(confirmMessage)) {
+			try {
+				setLoading(true);
+
+				// 선택된 모든 수리 삭제 요청
+				const deletePromises = selectedFix.map((flowCode) =>
+					orderApi.deleteOrder(flowCode)
+				);
+
+				await Promise.all(deletePromises);
+
+				alert(`선택된 ${selectedFix.length}개 값이 성공적으로 삭제되었습니다.`);
+
+				// 선택 초기화 및 목록 새로고침
 				setSelectedFix([]);
+				await loadFixes(searchFilters, currentPage);
+			} catch (err) {
+				handleError(err, setError);
+				alert("수리 삭제에 실패했습니다.");
+			} finally {
+				setLoading(false);
 			}
 		}
 	};
@@ -328,6 +402,7 @@ export const FixPage = () => {
 
 		const creationPopupRef = orderCreationPopup;
 		const updatePopupsRef = orderUpdatePopups;
+		const stockRegisterPopupsRef = stockRegisterPopups;
 
 		initializeData();
 
@@ -337,6 +412,17 @@ export const FixPage = () => {
 				loadFixes(searchFilters, 1);
 				setCurrentPage(1);
 				alert("수리 주문이 성공적으로 생성되었습니다.");
+			}
+
+			// 재고등록 및 판매등록 완료 메시지 처리 (새로고침만)
+			if (
+				event.data &&
+				(event.data.type === "STOCK_REGISTERED" ||
+					event.data.type === "SALES_REGISTERED")
+			) {
+				// 선택 해제 및 목록 새로고침만 처리 (alert 제거)
+				setSelectedFix([]);
+				loadFixes(searchFilters, currentPage);
 			}
 		};
 
@@ -356,6 +442,14 @@ export const FixPage = () => {
 				}
 			});
 			updatePopupsRef.current.clear();
+
+			// 재고등록 팝업들 정리
+			stockRegisterPopupsRef.current.forEach((popup) => {
+				if (popup && !popup.closed) {
+					// 팝업 참조만 제거 (실제 창은 닫지 않음)
+				}
+			});
+			stockRegisterPopupsRef.current.clear();
 		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -401,7 +495,7 @@ export const FixPage = () => {
 
 					{/* 하단 액션 바 */}
 					<BulkActionBar
-						selectedCount={selectedFix ? 1 : 0}
+						selectedCount={selectedFix.length}
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}
 						onDelete={handleBulkDelete}

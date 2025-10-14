@@ -85,6 +85,7 @@ export interface ProductStone {
 export interface ProductDto {
     productId: string;
     productName: string;
+    productFactoryName: string;
     productWeight: string;
     productMaterial: string;
     factoryId: string;

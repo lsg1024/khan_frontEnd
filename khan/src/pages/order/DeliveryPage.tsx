@@ -35,6 +35,7 @@ export const ExpactPage = () => {
 
 	const orderCreationPopup = useRef<Window | null>(null);
 	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
+	const stockRegisterPopups = useRef<Map<string, Window>>(new Map());
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
@@ -127,30 +128,134 @@ export const ExpactPage = () => {
 		}
 	};
 
-	// 대량 작업 핸들러 (단일 선택)
+	// 대량 작업 핸들러
 	const handleStockRegister = () => {
-		if (selectedExpact) {
-			console.log("재고등록 대상:", selectedExpact);
-			// TODO: 재고등록 API 호출
-			alert(`선택된 수리를 재고등록 처리합니다.`);
+		if (selectedExpact.length === 0) {
+			alert("등록할 값을 선택해주세요.");
+			return;
+		}
+
+		try {
+			const url = "/stock/register";
+			const NAME = "stockRegister";
+			const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=800";
+
+			// 기존 팝업이 열려있으면 닫기
+			const existingPopup = stockRegisterPopups.current.get(NAME);
+			if (existingPopup && !existingPopup.closed) {
+				existingPopup.close();
+				stockRegisterPopups.current.delete(NAME);
+			}
+
+			// 새 팝업 열기
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				stockRegisterPopups.current.set(NAME, newPopup);
+
+				// 선택된 출고 정보를 팝업으로 전달
+				newPopup.addEventListener("load", () => {
+					const selectedOrders = expacts.filter((expact) =>
+						selectedExpact.includes(expact.flowCode!)
+					);
+					newPopup.postMessage(
+						{
+							type: "BULK_STOCK_REGISTER",
+							data: selectedOrders,
+						},
+						"*"
+					);
+				});
+
+				// 팝업 닫힘 감지
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						stockRegisterPopups.current.delete(NAME);
+						clearInterval(checkClosed);
+					}
+				}, 1000);
+			}
+		} catch (err) {
+			console.error("재고등록 팝업 열기 실패:", err);
+			alert("재고등록 팝업을 열 수 없습니다.");
 		}
 	};
 
 	const handleSalesRegister = () => {
-		if (selectedExpact) {
-			console.log("판매등록 대상:", selectedExpact);
-			// TODO: 판매등록 API 호출
-			alert(`선택된 수리를 판매등록 처리합니다.`);
+		if (selectedExpact.length === 0) {
+			alert("등록할 값을 선택해주세요.");
+			return;
+		}
+
+		try {
+			const url = "/stock/register";
+			const NAME = "salesRegister";
+			const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=800";
+
+			// 기존 팝업이 열려있으면 닫기
+			const existingPopup = stockRegisterPopups.current.get(NAME);
+			if (existingPopup && !existingPopup.closed) {
+				existingPopup.close();
+				stockRegisterPopups.current.delete(NAME);
+			}
+
+			// 새 팝업 열기
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				stockRegisterPopups.current.set(NAME, newPopup);
+
+				// 선택된 출고 정보를 팝업으로 전달
+				newPopup.addEventListener("load", () => {
+					const selectedOrders = expacts.filter((expact) =>
+						selectedExpact.includes(expact.flowCode!)
+					);
+					newPopup.postMessage(
+						{
+							type: "BULK_SALES_REGISTER",
+							data: selectedOrders,
+						},
+						"*"
+					);
+				});
+
+				// 팝업 닫힘 감지
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						stockRegisterPopups.current.delete(NAME);
+						clearInterval(checkClosed);
+					}
+				}, 1000);
+			}
+		} catch (err) {
+			console.error("판매등록 팝업 열기 실패:", err);
+			alert("판매등록 팝업을 열 수 없습니다.");
 		}
 	};
 
-	const handleBulkDelete = () => {
-		if (selectedExpact) {
-			if (window.confirm(`선택된 수리를 삭제하시겠습니까?`)) {
-				console.log("삭제 대상:", selectedExpact);
-				// TODO: 삭제 API 호출
-				alert(`선택된 수리를 삭제 처리합니다.`);
+	const handleBulkDelete = async () => {
+		if (selectedExpact.length === 0) {
+			alert("삭제할 값을 선택해주세요.");
+			return;
+		}
+
+		if (
+			window.confirm(
+				`선택된 ${selectedExpact.length}개의 값을 삭제하시겠습니까?`
+			)
+		) {
+			try {
+				setLoading(true);
+				// 각 출고를 개별적으로 삭제
+				for (const flowCode of selectedExpact) {
+					await orderApi.deleteOrder(flowCode);
+				}
+				alert("선택된 값이 성공적으로 삭제되었습니다.");
 				setSelectedExpact([]);
+				await loadExpacts(searchFilters, currentPage);
+			} catch (err) {
+				handleError(err, setError);
+				alert("출고 삭제에 실패했습니다.");
+			} finally {
+				setLoading(false);
 			}
 		}
 	};
@@ -305,10 +410,38 @@ export const ExpactPage = () => {
 
 		const creationPopupRef = orderCreationPopup;
 		const updatePopupsRef = orderUpdatePopups;
+		const stockRegisterPopupsRef = stockRegisterPopups;
 
 		initializeData();
 
+		// 메시지 이벤트 핸들러
+		const handleMessage = (event: MessageEvent) => {
+			// 기존 메시지 타입 처리
+			if (event.data?.type === "STOCK_REGISTER_COMPLETED") {
+				alert("재고등록이 완료되었습니다.");
+				setSelectedExpact([]);
+				loadExpacts(searchFilters, currentPage);
+			} else if (event.data?.type === "SALES_REGISTER_COMPLETED") {
+				alert("판매등록이 완료되었습니다.");
+				setSelectedExpact([]);
+				loadExpacts(searchFilters, currentPage);
+			}
+			// 새로운 메시지 타입 처리 (새로고침만)
+			else if (
+				event.data?.type === "STOCK_REGISTERED" ||
+				event.data?.type === "SALES_REGISTERED"
+			) {
+				// 선택 해제 및 목록 새로고침만 처리 (alert 제거)
+				setSelectedExpact([]);
+				loadExpacts(searchFilters, currentPage);
+			}
+		};
+
+		window.addEventListener("message", handleMessage);
+
 		return () => {
+			window.removeEventListener("message", handleMessage);
+
 			// 주문 생성 팝업 정리
 			if (creationPopupRef.current && !creationPopupRef.current.closed) {
 				creationPopupRef.current = null;
@@ -321,6 +454,14 @@ export const ExpactPage = () => {
 				}
 			});
 			updatePopupsRef.current.clear();
+
+			// 재고/판매 등록 팝업들 정리
+			stockRegisterPopupsRef.current.forEach((popup) => {
+				if (popup && !popup.closed) {
+					popup.close();
+				}
+			});
+			stockRegisterPopupsRef.current.clear();
 		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -366,7 +507,7 @@ export const ExpactPage = () => {
 
 					{/* 하단 액션 바 */}
 					<BulkActionBar
-						selectedCount={selectedExpact ? 1 : 0}
+						selectedCount={selectedExpact.length}
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}
 						onDelete={handleBulkDelete}

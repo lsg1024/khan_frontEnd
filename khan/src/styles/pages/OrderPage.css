@@ -184,7 +184,7 @@
 }
 
 .stock-row.selected-row {
-	background-color: #ffc0c0 !important;
+	background-color: #ffe0e0 !important; /* 선택되어도 동일한 재고 배경색 유지 */
 }
 
 /* 배지 스타일 */

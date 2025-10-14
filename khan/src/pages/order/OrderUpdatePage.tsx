@@ -88,6 +88,9 @@ const OrderUpdatePage: React.FC = () => {
 
 	// 팝업 참조를 저장하는 ref
 	const popupMapRef = useRef<{ [key: string]: Window }>({});
+	const storeSearchPopupRef = useRef<Window | null>(null);
+	const factorySearchPopupRef = useRef<Window | null>(null);
+	const productSearchPopupRef = useRef<Window | null>(null);
 
 	const [orderDetail, setOrderDetail] = useState<OrderResponseDetail | null>(
 		null
@@ -129,19 +132,16 @@ const OrderUpdatePage: React.FC = () => {
 
 	const convertToOrderRowData = (
 		detail: OrderResponseDetail,
-		grade: string,
+		storeGrade: string,
 		materials: { materialId: string; materialName: string }[],
 		colors: { colorId: string; colorName: string }[],
 		priorities: { priorityName: string; priorityDate: number }[],
-		assistantStonesParam: { assistantStoneId: number; assistantStoneName: string }[]
+		assistantStonesParam: {
+			assistantStoneId: number;
+			assistantStoneName: string;
+		}[]
 	): OrderRowData => {
 		const calculatedStoneData = calculateStoneDetails(detail.stoneInfos);
-
-		// materialId와 colorId 찾기
-		const foundMaterial = materials.find(
-			(m) => m.materialName === detail.materialName
-		);
-		const foundColor = colors.find((c) => c.colorName === detail.colorName);
 
 		const foundPriority = priorities.find(
 			(p) => p.priorityName === detail.priority
@@ -157,24 +157,31 @@ const OrderUpdatePage: React.FC = () => {
 		}
 
 		const foundAssistantStone = assistantStonesParam.find(
-            (a) => a.assistantStoneId.toString() === (detail.assistantStoneId?.toString() ?? "")
-        );
+			(a) =>
+				a.assistantStoneId.toString() ===
+				(detail.assistantStoneId?.toString() ?? "")
+		);
 
 		const baseRowData: Omit<OrderRowData, keyof typeof calculatedStoneData> = {
 			id: detail.flowCode,
 			storeId: detail.storeId,
 			storeName: detail.storeName,
-			grade: grade,
+			storeGrade: storeGrade,
+			storeHarry: detail.storeHarry,
 			productId: detail.productId,
 			productName: detail.productName,
-			classificationName: detail.classification,
-			materialId: foundMaterial?.materialId || "",
+			productFactoryName: detail.productFactoryName,
+			classificationId: detail.classificationId,
+			classificationName: detail.classificationName,
+			materialId: detail.materialId,
 			materialName: detail.materialName,
-			colorId: foundColor?.colorId || "",
+			colorId: detail.colorId,
 			colorName: detail.colorName,
-			setTypeName: detail.setType,
-			factoryId: detail.factoryId, // 서버에서 제공하는 factoryId 직접 사용
+			setTypeId: detail.setTypeId,
+			setTypeName: detail.setTypeName,
+			factoryId: detail.factoryId,
 			factoryName: detail.factoryName,
+			factoryHarry: detail.factoryHarry,
 			productSize: detail.productSize,
 			orderNote: detail.orderNote,
 			mainStoneNote: detail.mainStoneNote,
@@ -185,7 +192,10 @@ const OrderUpdatePage: React.FC = () => {
 			shippingAt: deliveryDate,
 			assistantStone: detail.assistantStone || false,
 			assistantStoneId: detail.assistantStoneId?.toString() ?? "",
-			assistantStoneName: foundAssistantStone?.assistantStoneName || detail.assistantStoneName || "",
+			assistantStoneName:
+				foundAssistantStone?.assistantStoneName ||
+				detail.assistantStoneName ||
+				"",
 			assistantStoneCreateAt: detail.assistantStoneCreateAt || "",
 
 			mainPrice: 0,
@@ -233,22 +243,145 @@ const OrderUpdatePage: React.FC = () => {
 
 	// 검색 모달 핸들러들
 	const handleStoreSearchOpen = (rowId: string) => {
-		setSelectedRowForStore(rowId);
-		setIsStoreSearchOpen(true);
+		// 기존 팝업이 있으면 닫기
+		if (storeSearchPopupRef.current && !storeSearchPopupRef.current.closed) {
+			storeSearchPopupRef.current.close();
+		}
+
+		const url = `/store-search?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
+		const NAME = `storeSearch_${rowId}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=600";
+
+		const popup = window.open(url, NAME, FEATURES);
+		if (popup) {
+			storeSearchPopupRef.current = popup;
+
+			// 팝업에서 거래처 선택 시 처리
+			const handleMessage = (event: MessageEvent) => {
+				if (
+					event.data.type === "STORE_SELECTED" &&
+					event.data.rowId === rowId
+				) {
+					const store = event.data.store as StoreSearchDto;
+					handleStoreSelectWithRowId(store, rowId);
+				}
+			};
+
+			window.addEventListener("message", handleMessage);
+
+			// 팝업이 닫힐 때 이벤트 리스너 제거
+			const checkClosed = setInterval(() => {
+				if (popup.closed) {
+					window.removeEventListener("message", handleMessage);
+					clearInterval(checkClosed);
+					storeSearchPopupRef.current = null;
+				}
+			}, 1000);
+		} else {
+			// 팝업 방식이 실패하면 기존 모달 방식 사용
+			setSelectedRowForStore(rowId);
+			setIsStoreSearchOpen(true);
+		}
 	};
 
 	const handleProductSearchOpen = (rowId: string) => {
-		setSelectedRowForProduct(rowId);
-		setIsProductSearchOpen(true);
+		// 기존 팝업이 있으면 닫기
+		if (
+			productSearchPopupRef.current &&
+			!productSearchPopupRef.current.closed
+		) {
+			productSearchPopupRef.current.close();
+		}
+
+		const url = `/product-search?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
+		const NAME = `productSearch_${rowId}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=600";
+
+		const popup = window.open(url, NAME, FEATURES);
+		if (popup) {
+			productSearchPopupRef.current = popup;
+
+			// 팝업에서 상품 선택 시 처리
+			const handleMessage = (event: MessageEvent) => {
+				if (
+					event.data.type === "PRODUCT_SELECTED" &&
+					event.data.rowId === rowId
+				) {
+					const product = event.data.product as ProductDto;
+					handleProductSelectWithRowId(product, rowId);
+				}
+			};
+
+			window.addEventListener("message", handleMessage);
+
+			// 팝업이 닫힐 때 이벤트 리스너 제거
+			const checkClosed = setInterval(() => {
+				if (popup.closed) {
+					window.removeEventListener("message", handleMessage);
+					clearInterval(checkClosed);
+					productSearchPopupRef.current = null;
+				}
+			}, 1000);
+		} else {
+			// 팝업 방식이 실패하면 기존 모달 방식 사용
+			setSelectedRowForProduct(rowId);
+			setIsProductSearchOpen(true);
+		}
 	};
 
 	const handleFactorySearchOpen = (rowId: string) => {
-		setSelectedRowForFactory(rowId);
-		setIsFactoryModalOpen(true);
+		// 기존 팝업이 있으면 닫기
+		if (
+			factorySearchPopupRef.current &&
+			!factorySearchPopupRef.current.closed
+		) {
+			factorySearchPopupRef.current.close();
+		}
+
+		const url = `/factory-search?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
+		const NAME = `factorySearch_${rowId}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=600";
+
+		const popup = window.open(url, NAME, FEATURES);
+		if (popup) {
+			factorySearchPopupRef.current = popup;
+
+			// 팝업에서 제조사 선택 시 처리
+			const handleMessage = (event: MessageEvent) => {
+				if (
+					event.data.type === "FACTORY_SELECTED" &&
+					event.data.rowId === rowId
+				) {
+					const factory = event.data.factory as FactorySearchDto;
+					handleFactorySelectWithRowId(factory, rowId);
+				}
+			};
+
+			window.addEventListener("message", handleMessage);
+
+			// 팝업이 닫힐 때 이벤트 리스너 제거
+			const checkClosed = setInterval(() => {
+				if (popup.closed) {
+					window.removeEventListener("message", handleMessage);
+					clearInterval(checkClosed);
+					factorySearchPopupRef.current = null;
+				}
+			}, 1000);
+		} else {
+			// 팝업 방식이 실패하면 기존 모달 방식 사용
+			setSelectedRowForFactory(rowId);
+			setIsFactoryModalOpen(true);
+		}
 	};
 
 	// 스톤 정보 관리 모달 열기
 	const openStoneInfoManager = (rowId: string) => {
+		// 기존 해당 rowId의 팝업이 있으면 닫기
+		const existingPopup = popupMapRef.current[rowId];
+		if (existingPopup && !existingPopup.closed) {
+			existingPopup.close();
+		}
+
 		const url = `/orders/stone-info?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
 		const NAME = `stoneInfo_${rowId}`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=400";
@@ -374,7 +507,18 @@ const OrderUpdatePage: React.FC = () => {
 		}
 	}, [orderDetail, materials, colors, priorities, storeGrade]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	// 검색 결과 선택 핸들러들
+	// 검색 결과 선택 핸들러들 (팝업용)
+	const handleStoreSelectWithRowId = (store: StoreSearchDto, rowId: string) => {
+		if (store.storeId === undefined || store.storeId === null) {
+			alert("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.");
+			return;
+		}
+
+		updateOrderRow(rowId, "storeId", store.storeId.toString());
+		updateOrderRow(rowId, "storeName", store.storeName || "");
+	};
+
+	// 검색 결과 선택 핸들러들 (모달용)
 	const handleStoreSelect = (store: StoreSearchDto) => {
 		if (selectedRowForStore) {
 			if (store.storeId === undefined || store.storeId === null) {
@@ -394,6 +538,30 @@ const OrderUpdatePage: React.FC = () => {
 		setIsStoreSearchOpen(false);
 		setSelectedRowForStore("");
 	}, []);
+
+	const handleProductSelectWithRowId = (product: ProductDto, rowId: string) => {
+		if (!product.productId) {
+			alert("상품 ID가 누락되었습니다. 다른 상품을 선택해주세요.");
+			return;
+		}
+
+		if (!product.factoryId) {
+			alert("제조사 ID가 누락되었습니다. 다른 상품을 선택해주세요.");
+			return;
+		}
+
+		const productIdValue = product.productId;
+		const factoryIdValue = product.factoryId;
+		updateOrderRow(rowId, "productId", productIdValue);
+		updateOrderRow(rowId, "productName", product.productName || "");
+		updateOrderRow(
+			rowId,
+			"productFactoryName",
+			product.productFactoryName || ""
+		);
+		updateOrderRow(rowId, "factoryId", factoryIdValue);
+		updateOrderRow(rowId, "factoryName", product.factoryName || "");
+	};
 
 	const handleProductSelect = (product: ProductDto) => {
 		if (selectedRowForProduct) {
@@ -431,6 +599,20 @@ const OrderUpdatePage: React.FC = () => {
 		setIsProductSearchOpen(false);
 		setSelectedRowForProduct("");
 	}, []);
+
+	const handleFactorySelectWithRowId = (
+		factory: FactorySearchDto,
+		rowId: string
+	) => {
+		if (factory.factoryId === undefined || factory.factoryId === null) {
+			alert("제조사 ID가 누락되었습니다. 다른 제조사를 선택해주세요.");
+			return;
+		}
+
+		const factoryIdValue = factory.factoryId.toString();
+		updateOrderRow(rowId, "factoryId", factoryIdValue);
+		updateOrderRow(rowId, "factoryName", factory.factoryName || "");
+	};
 
 	const handleFactorySelect = (factory: FactorySearchDto) => {
 		if (selectedRowForFactory) {
@@ -489,8 +671,10 @@ const OrderUpdatePage: React.FC = () => {
 				let colorsData: { colorId: string; colorName: string }[] = [];
 				let prioritiesData: { priorityName: string; priorityDate: number }[] =
 					[];
-				let assistantStonesData: { assistantStoneId: number; assistantStoneName: string }[] =
-					[];
+				let assistantStonesData: {
+					assistantStoneId: number;
+					assistantStoneName: string;
+				}[] = [];
 
 				if (materialRes.success) {
 					materialsData = (materialRes.data || []).map((m) => ({
@@ -704,15 +888,24 @@ const OrderUpdatePage: React.FC = () => {
 			/>
 
 			{/* 저장/취소 버튼 */}
-			<div className="detail-button-group">
+			<div className="form-actions">
 				<button
 					className="btn-cancel"
 					onClick={handleCancel}
 					disabled={loading}
 				>
-					취소
+					{orderDetail?.orderStatus === "재고" ? "닫기" : "취소"}
 				</button>
-				<button className="btn-submit" onClick={handleSave} disabled={loading}>
+				<button
+					className="btn-submit"
+					onClick={handleSave}
+					disabled={loading || orderDetail?.orderStatus === "재고"}
+					style={{
+						opacity: orderDetail?.orderStatus === "재고" ? 0.5 : 1,
+						cursor:
+							orderDetail?.orderStatus === "재고" ? "not-allowed" : "pointer",
+					}}
+				>
 					{loading ? "저장 중..." : stockMode ? "등록" : "수정"}
 				</button>
 			</div>

@@ -22,6 +22,10 @@ import OrderCreatePage from "./pages/order/OrderCreatePage";
 import OrderUpdatePage from "./pages/order/OrderUpdatePage";
 import StockRegisterPage from "./pages/stock/StockRegisterPage";
 import StockPage from "./pages/stock/StockPage";
+import StockCreatePage from "./pages/stock/StockCreatePage";
+import StockHistoryPage from "./pages/stock/StockHistoryPage";
+import StockReturnPage from "./pages/stock/StockReturnPage";
+import StockDeletePage from "./pages/stock/StockDeletePage";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
 import StoneSearchPage from "./pages/stone/StoneSearchPage";
 import StoneInfoPage from "./pages/order/StoneInfoPage";
@@ -38,39 +42,28 @@ import "./styles/index.css";
 import { tokenUtils } from "./utils/tokenUtils";
 
 function App() {
-	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [isAuthenticated, setIsAuthenticated] = useState(() => {
+		const token = tokenUtils.getToken();
+		return !!token;
+	});
 
 	const handleLogout = () => {
 		setIsAuthenticated(false);
 	};
 
 	useEffect(() => {
-		// 초기 토큰 확인
-		const token = tokenUtils.getToken();
-		if (token) {
-			setIsAuthenticated(true);
-		} else {
-			setIsAuthenticated(false);
-		}
-
-		// 토큰 변화 이벤트 리스너 등록
 		const handleTokenChange = () => {
 			const hasToken = tokenUtils.hasToken();
-			console.log("App: 토큰 변화 감지, hasToken:", hasToken);
 			setIsAuthenticated(hasToken);
 		};
 
-		// 토큰 만료 이벤트 리스너 등록
 		const handleTokenExpired = () => {
-			console.log("App: 토큰 만료 이벤트");
 			setIsAuthenticated(false);
 		};
 
-		// 이벤트 리스너 등록
 		window.addEventListener("tokenChange", handleTokenChange);
 		window.addEventListener("tokenExpired", handleTokenExpired);
 
-		// 컴포넌트 언마운트 시 이벤트 리스너 제거
 		return () => {
 			window.removeEventListener("tokenChange", handleTokenChange);
 			window.removeEventListener("tokenExpired", handleTokenExpired);
@@ -89,7 +82,6 @@ function App() {
 				<Routes>
 					{/* Layout 없이 단독 페이지 렌더링 */}
 					<Route path="/stone/create" element={<StoneCreatePage />} />
-
 					<Route
 						path="/orders/update/:mode/:flowCode"
 						element={<OrderUpdatePage />}
@@ -104,6 +96,14 @@ function App() {
 					<Route path="/factory-search" element={<FactorySearchPage />} />
 					<Route path="/store-search" element={<StoreSearchPage />} />
 					<Route path="/product-search" element={<ProductSearchPage />} />
+					<Route path="/stock/create" element={<StockRegisterPage />} />
+					<Route path="/stocks/create" element={<StockCreatePage />} />
+					<Route path="/stock/stone-info" element={<StoneInfoPage />} />
+					<Route
+						path="/stocks/update/:flowCode"
+						element={<StockRegisterPage />}
+					/>
+
 					{/* Layout 안에서 렌더링 */}
 					<Route
 						element={
@@ -126,10 +126,15 @@ function App() {
 						<Route path="/expact" element={<ExpactPage />} />
 						<Route path="/order-deleted" element={<OrderDeletedPage />} />
 						<Route path="/stocks" element={<StockPage />} />
+						<Route path="/stocks/history" element={<StockHistoryPage />} />
+						<Route path="/stocks/return" element={<StockReturnPage />} />
+						<Route path="/stocks/delete" element={<StockDeletePage />} />
 						<Route path="/login" element={<Navigate to="/" replace />} />
 						<Route path="/join" element={<Navigate to="/" replace />} />
-						<Route path="*" element={<Navigate to="/" replace />} />
 					</Route>
+
+					{/* catch-all 라우트는 가장 마지막에 */}
+					<Route path="*" element={<Navigate to="/" replace />} />
 				</Routes>
 			)}
 		</BrowserRouter>

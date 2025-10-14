@@ -34,7 +34,7 @@ const sidebarItems: SidebarItem[] = [
 		icon: "📦",
 		children: [
 			{ path: "/stocks", label: "재고 목록", icon: "📋" },
-			{ path: "/stocks/accumulated", label: "누적 재고", icon: "🗃️" },
+			{ path: "/stocks/history", label: "누적 재고", icon: "🗃️" },
 			{ path: "/stocks/return", label: "반납 재고", icon: "🔄" },
 			{ path: "/stocks/delete", label: "삭제 재고", icon: "🗑️" },
 		],
@@ -50,7 +50,7 @@ const sidebarItems: SidebarItem[] = [
 	},
 	{
 		path: "/rental",
-		label: "주얼리 상품 대여 관리",
+		label: "대여 관리",
 		icon: "💍",
 		children: [
 			{ path: "/rental/now", label: "대여 현황", icon: "📋" },

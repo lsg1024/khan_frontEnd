@@ -3,7 +3,8 @@ import type { ApiResponse } from "./config";
 import type {
 	StockRegisterRequest,
 	StockRegisterResponse,
-	StockSearchResponse
+	StockSearchResponse,
+	StockCreateRequest,
 } from "../../src/types/stock";
 
 export const stockApi = {
@@ -52,7 +53,6 @@ export const stockApi = {
 		sortOrder?: "ASC" | "DESC" | "",
 		page: number = 1
 	): Promise<ApiResponse<StockSearchResponse>> => {
-		
 		const params: Record<string, string> = { page: page.toString() };
 		if (start) params.start = start;
 		if (end) params.end = end;
@@ -71,13 +71,12 @@ export const stockApi = {
 	getFilterFactories: async (
 		start: string,
 		end: string,
-		order_status?: string,
+		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
 		if (start) params.start = start;
 		if (end) params.end = end;
 		if (order_status) params.order_status = order_status;
-
 
 		return apiRequest.get<string[]>("order/stocks/filters/factory", { params });
 	},
@@ -85,7 +84,7 @@ export const stockApi = {
 	getFilterStores: async (
 		start: string,
 		end: string,
-		order_status?: string,
+		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
 		if (start) params.start = start;
@@ -98,20 +97,22 @@ export const stockApi = {
 	getFilterSetTypes: async (
 		start: string,
 		end: string,
-		order_status?: string,
+		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
 		if (start) params.start = start;
 		if (end) params.end = end;
 		if (order_status) params.order_status = order_status;
 
-		return apiRequest.get<string[]>("order/stocks/filters/set-type", { params });
+		return apiRequest.get<string[]>("order/stocks/filters/set-type", {
+			params,
+		});
 	},
 
 	getFilterColors: async (
 		start: string,
 		end: string,
-		order_status?: string,
+		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
 		if (start) params.start = start;
@@ -119,5 +120,17 @@ export const stockApi = {
 		if (order_status) params.order_status = order_status;
 
 		return apiRequest.get<string[]>("order/stocks/filters/color", { params });
-	}
+	},
+
+	// 재고 직접 생성
+	createStock: async (
+		orderType: string,
+		stockData: StockCreateRequest
+	): Promise<ApiResponse<string>> => {
+		const params = { order_type: orderType };
+
+		return apiRequest.post<string>("order/stocks", stockData, {
+			params,
+		});
+	},
 };

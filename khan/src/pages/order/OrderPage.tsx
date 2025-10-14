@@ -322,6 +322,7 @@ export const OrderPage = () => {
 
 	// 대량 작업 핸들러
 	const handleSaveDeliveryDate = async () => {
+		console.log("click");
 		if (selectedOrders.length === 0) return;
 
 		const isoDateString = newDeliveryDate.toISOString();
@@ -380,7 +381,7 @@ export const OrderPage = () => {
 
 	const handleStockRegister = () => {
 		if (selectedOrders.length === 0) {
-			alert("재고등록할 주문을 먼저 선택해주세요.");
+			alert("등록할 주문을 먼저 선택해주세요.");
 			return;
 		}
 
@@ -403,8 +404,8 @@ export const OrderPage = () => {
 				const checkClosed = setInterval(() => {
 					if (newPopup.closed) {
 						stockRegisterPopups.current.delete(NAME);
-						loadOrders(searchFilters, currentPage);
 						clearInterval(checkClosed);
+						// 팝업 닫힘 시 자동 새로고침 제거 - 메시지 이벤트에서만 처리
 					}
 				}, 1000);
 			}
@@ -413,7 +414,7 @@ export const OrderPage = () => {
 
 	const handleSalesRegister = () => {
 		if (selectedOrders.length === 0) {
-			alert("매출 등록할 주문을 먼저 선택해주세요.");
+			alert("등록할 주문을 먼저 선택해주세요.");
 			return;
 		}
 
@@ -436,7 +437,6 @@ export const OrderPage = () => {
 				const checkClosed = setInterval(() => {
 					if (newPopup.closed) {
 						stockRegisterPopups.current.delete(NAME);
-						loadOrders(searchFilters, currentPage);
 						clearInterval(checkClosed);
 					}
 				}, 1000);
@@ -446,11 +446,11 @@ export const OrderPage = () => {
 
 	const handleBulkDelete = async () => {
 		if (selectedOrders.length === 0) {
-			alert("삭제할 주문을 먼저 선택해주세요.");
+			alert("삭제할 값을 먼저 선택해주세요.");
 			return;
 		}
 
-		const confirmMessage = `선택된 ${selectedOrders.length}개 주문을 삭제하시겠습니까?`;
+		const confirmMessage = `선택된 ${selectedOrders.length}개 값을 삭제하시겠습니까?`;
 
 		if (window.confirm(confirmMessage)) {
 			try {
@@ -464,7 +464,7 @@ export const OrderPage = () => {
 				await Promise.all(deletePromises);
 
 				alert(
-					`선택된 ${selectedOrders.length}개 주문이 성공적으로 삭제되었습니다.`
+					`선택된 ${selectedOrders.length}개 값이 성공적으로 삭제되었습니다.`
 				);
 
 				// 선택 초기화 및 목록 새로고침
@@ -538,13 +538,14 @@ export const OrderPage = () => {
 				}
 			}
 
-			// 재고등록 및 판매등록 완료 메시지 처리
+			// 재고등록 및 판매등록 완료 메시지 처리 (새로고침만)
 			if (
 				event.data &&
 				(event.data.type === "STOCK_REGISTERED" ||
 					event.data.type === "SALES_REGISTERED")
 			) {
-				// 주문 목록 새로고침
+				// 선택 해제 및 목록 새로고침만 처리 (alert 제거)
+				setSelectedOrders([]);
 				loadOrders(searchFilters, currentPage);
 			}
 		};

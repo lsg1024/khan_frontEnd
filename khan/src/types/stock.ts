@@ -40,6 +40,43 @@ export interface StockOrderRowData {
 
 	totalWeight: number;
 	storeHarry: string;
+	// 재고 상태 필드 추가
+	currentStatus?: string; // STOCK, SHIPPED 등
+}
+
+// 재고 생성 요청 데이터
+export interface StockCreateRequest {
+	storeId: string;
+	storeName: string;
+	storeGrade: string;
+	storeHarry: string;
+	factoryId: string;
+	factoryName: string;
+	productId: string;
+	productName: string;
+	productFactoryName: string;
+	productSize: string;
+	stockNote: string;
+	isProductWeightSale: boolean;
+	productPurchaseCost: number;
+	productAddLaborCost: number;
+	materialId: string;
+	materialName: string;
+	colorId: string;
+	colorName: string;
+	classificationId: string;
+	classificationName: string;
+	setTypeId: string;
+	setTypeName: string;
+	goldWeight: number;
+	stoneWeight: number;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
+	assistantStone: boolean;
+	assistantStoneId: string;
+	assistantStoneCreateAt: string;
+	stoneInfos: StoneInfo[];
+	stoneAddLaborCost: number;
 }
 
 export interface StockRegisterResponse {

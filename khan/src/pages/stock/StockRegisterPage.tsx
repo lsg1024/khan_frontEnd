@@ -431,11 +431,12 @@ const StockRegisterPage: React.FC = () => {
 
 			await Promise.all(savePromises);
 
+			// 자식 창에서 alert 표시 (주문 생성과 동일한 방식)
 			alert(
 				`총 ${orderRows.length}개의 주문이 성공적으로 ${actionText}되었습니다.`
 			);
 
-			// 메시지 전송 시 타입에 따라 구분
+			// 부모 창으로 메시지 전송 (새로고침용)
 			if (window.opener) {
 				const messageType = isStockRegister
 					? "STOCK_REGISTERED"
@@ -445,6 +446,8 @@ const StockRegisterPage: React.FC = () => {
 					window.location.origin
 				);
 			}
+
+			// alert 확인 후 창 닫기
 			window.close();
 		} catch (err) {
 			handleError(err, setError);

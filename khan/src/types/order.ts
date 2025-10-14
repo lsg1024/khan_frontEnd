@@ -7,14 +7,22 @@ export interface OrderResponseDetail {
 	flowCode: string;
 	storeId: string;
 	storeName: string;
+	storeGrade: string; // 서버에서 제공하는 storeGrade
+	storeHarry: string; // 서버에서 제공하는 storeHarry
 	factoryId: string; // 서버에서 제공하는 factoryId
 	factoryName: string;
+	factoryHarry: string; // 서버에서 제공하는 factoryHarry
 	productId: string;
 	productName: string;
-	classification: string;
+	productFactoryName: string;
+	classificationId: string;
+	classificationName: string;
+	materialId: string;
 	materialName: string;
+	colorId: string;
 	colorName: string;
-	setType: string;
+	setTypeId: string;
+	setTypeName: string;
 	productSize: string;
 	orderNote: string;
 	mainStoneNote: string;
@@ -82,16 +90,27 @@ export interface OrderDto {
 // 주문 생성 요청 데이터 (백엔드 JSON 구조와 정확히 일치)
 export interface OrderCreateRequest {
 	storeId: string;
+	storeName: string;
+	storeGrade: string;
+	storeHarry: string;
 	orderNote: string;
 	factoryId: string;
+	factoryName: string;
+	factoryHarry: string;
 	productId: string;
+	productName: string;
+	productFactoryName: string;
 	productSize: string;
 	isProductWeightSale: boolean;
 	productAddLaborCost: number;
-	materialId: string;
-	classificationName: string;
 	colorId: string;
+	colorName: string;
+	materialId: string;
+	materialName: string;
+	setTypeId: string;
 	setTypeName: string;
+	classificationId: string;
+	classificationName: string;
 	priorityName: string;
 	stoneWeight: number;
 	mainStoneNote: string;
@@ -135,17 +154,22 @@ export interface OrderRowData {
 	id: string;
 	storeId: string;
 	storeName: string;
-	grade: string;
+	storeHarry?: string;
+	storeGrade: string;
 	productId: string;
-	classificationName: string;
-	setTypeName: string;
 	productName: string;
+	productFactoryName: string;
+	classificationId: string;
+	classificationName: string;
+	setTypeId: string;
+	setTypeName: string;
 	materialId: string;
 	materialName: string;
 	colorId: string;
 	colorName: string;
 	factoryId: string;
 	factoryName: string;
+	factoryHarry?: string;
 	productSize: string;
 	stoneWeight: number;
 	productAddLaborCost: number;
@@ -165,9 +189,13 @@ export interface OrderRowData {
 	stoneWeightTotal: number | ""; // 알중량
 	createAt: string; // 생성일
 	shippingAt: string; // 출고일
+
 	// 보조석 관련 필드
 	assistantStoneId: string | "1"; // 기본값 설정
 	assistantStone: boolean; // 입고여부 (Y/N)
 	assistantStoneName: string; // 보조석 아이디 (없음, 랩, 천연, 모이사, 유색석)
 	assistantStoneCreateAt: string; // 입고날짜
+
+	// 재고 상태 필드 추가
+	currentStatus?: string; // ORDER, STOCK, SHIPPED 등
 }

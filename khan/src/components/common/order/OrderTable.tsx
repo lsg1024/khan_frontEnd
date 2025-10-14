@@ -213,366 +213,537 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 					</tr>
 				</thead>
 				<tbody>
-					{orderRows.map((row, index) => (
-						<tr key={row.id}>
-							<td>{index + 1}</td>
-							<td>
-								<button
-									className="btn-delete-row"
-									onClick={() => safeOnRowDelete(row.id)}
-									disabled={loading}
-								>
-									🗑️
-								</button>
-							</td>
-							<td>
-								<div className="search-field-container">
-									<input
-										type="text"
-										value={row.storeName}
-										readOnly
-										placeholder="거래처"
-										disabled={!safeIsRowInputEnabled(index)}
-										onClick={() => {
-											if (
-												mode === "create" &&
-												safeIsRowInputEnabled(index) &&
-												!row.storeName
-											) {
-												safeOnRequiredFieldClick(row.id, "store");
-											}
-										}}
-										onFocus={() => {
-											if (mode === "create" && safeIsRowInputEnabled(index)) {
-												safeOnRowFocus(row.id);
-											}
-										}}
-									/>
-									<span
-										className="search-icon"
-										onClick={() => {
-											if (safeIsRowInputEnabled(index)) {
-												safeOnStoreSearchOpen(row.id);
-											} else {
-												alert("이전 주문장을 완성해 주세요.");
-											}
-										}}
-										style={{
-											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-											cursor: !safeIsRowInputEnabled(index)
-												? "not-allowed"
-												: "pointer",
-										}}
-									>
-										🔍
-									</span>
-								</div>
-							</td>
-							<td>
-								<div className="search-field-container">
-									<input
-										type="text"
-										value={row.productName}
-										readOnly
-										placeholder="모델번호"
-										disabled={!safeIsRowInputEnabled(index)}
-										onClick={() => {
-											if (
-												mode === "create" &&
-												safeIsRowInputEnabled(index) &&
-												!row.productName
-											) {
-												safeOnRequiredFieldClick(row.id, "product");
-											}
-										}}
-										onFocus={() => {
-											if (mode === "create" && safeIsRowInputEnabled(index)) {
-												safeOnRowFocus(row.id);
-											}
-										}}
-									/>
-									<span
-										className="search-icon"
-										onClick={() => {
-											if (safeIsRowInputEnabled(index)) {
-												safeOnProductSearchOpen(row.id);
-											} else {
-												alert("이전 주문장을 완성해 주세요.");
-											}
-										}}
-										style={{
-											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-											cursor: !safeIsRowInputEnabled(index)
-												? "not-allowed"
-												: "pointer",
-										}}
-									>
-										🔍
-									</span>
-								</div>
-							</td>
-							<td>
-								<div className="search-field-container">
-									<input
-										type="text"
-										value={row.factoryName}
-										readOnly
-										placeholder="제조사"
-									/>
-									<span
-										className="search-icon"
-										onClick={() => {
-											if (safeIsRowInputEnabled(index)) {
-												safeOnFactorySearchOpen(row.id);
-											} else {
-												alert("이전 주문장을 완성해 주세요.");
-											}
-										}}
-										style={{
-											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-											cursor: !safeIsRowInputEnabled(index)
-												? "not-allowed"
-												: "pointer",
-										}}
-									>
-										🔍
-									</span>
-								</div>
-							</td>
-							<td>
-								<select
-									value={row.materialId}
-									onChange={(e) => {
-										if (!safeValidateSequence(row.id, "material")) return;
-										const selectedMaterial = materials.find(
-											(m) => m.materialId === e.target.value
-										);
-										onRowUpdate(row.id, "materialId", e.target.value);
-										onRowUpdate(
-											row.id,
-											"materialName",
-											selectedMaterial?.materialName || ""
-										);
-									}}
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onClick={() => {
-										if (
-											mode === "create" &&
-											safeIsRowInputEnabled(index) &&
-											!row.materialId
-										) {
-											safeOnRequiredFieldClick(row.id, "material");
-										}
-									}}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-										cursor: !safeIsRowInputEnabled(index)
-											? "not-allowed"
-											: "pointer",
-									}}
-								>
-									<option value="">선택</option>
-									{materials.map((material) => (
-										<option
-											key={material.materialId}
-											value={material.materialId}
-										>
-											{material.materialName}
-										</option>
-									))}
-								</select>
-							</td>
-							<td>
-								<select
-									value={row.colorId}
-									onChange={(e) => {
-										if (!safeValidateSequence(row.id, "color")) {
-											return;
-										}
-										const selectedColor = colors.find(
-											(c) => c.colorId === e.target.value
-										);
+					{orderRows.map((row, index) => {
+						// 재고 상태 확인 (STOCK = 재고, SHIPPED = 출고됨)
+						const isStockStatus = row.currentStatus === "STOCK";
+						console.log(
+							"Row Status:",
+							row.currentStatus,
+							"Is Stock Status:",
+							isStockStatus
+						);
 
-										onRowUpdate(row.id, "colorId", e.target.value);
-										onRowUpdate(
-											row.id,
-											"colorName",
-											selectedColor?.colorName || ""
-										);
-									}}
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onClick={() => {
-										if (
-											mode === "create" &&
-											safeIsRowInputEnabled(index) &&
-											!row.colorId
-										) {
-											safeOnRequiredFieldClick(row.id, "color");
-										}
-									}}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-										cursor: !safeIsRowInputEnabled(index)
-											? "not-allowed"
-											: "pointer",
-									}}
-								>
-									<option value="">선택</option>
-									{colors.map((color) => (
-										<option key={color.colorId} value={color.colorId}>
-											{color.colorName}
-										</option>
-									))}
-								</select>
-							</td>
-							{/* 보조석 필드들 */}
-							<td>
-								<select
-									value={row.assistantStoneId === "1" && !row.assistantStoneName ? "" : row.assistantStoneId}
-									onChange={(e) => {
-										if (!safeValidateSequence(row.id, "other")) {
-											return;
-										}
-										const selectedAssistantStone = assistantStones.find(
-											(a) => a.assistantStoneId === parseInt(e.target.value)
-										);
-										onRowUpdate(
-											row.id,
-											"assistantStoneId",
-											parseInt(e.target.value)
-										);
-										onRowUpdate(
-											row.id,
-											"assistantStoneName",
-											selectedAssistantStone?.assistantStoneName || ""
-										);
-									}}
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-										cursor: !safeIsRowInputEnabled(index)
-											? "not-allowed"
-											: "pointer",
-									}}
-								>
-									<option value="">선택</option>
-									{assistantStones.map((stone) => (
-										<option
-											key={stone.assistantStoneId}
-											value={stone.assistantStoneId}
+						// 재고 상태일 때 붉은 배경색 스타일
+						const rowStyle = isStockStatus
+							? { backgroundColor: "#ffebee" }
+							: {};
+
+						return (
+							<tr
+								key={row.id}
+								style={rowStyle}
+								className={isStockStatus ? "stock-status-row" : ""}
+							>
+								<td>{index + 1}</td>
+								<td>
+									<button
+										className="btn-delete-row"
+										onClick={() => safeOnRowDelete(row.id)}
+										disabled={loading || isStockStatus}
+									>
+										🗑️
+									</button>
+								</td>
+								<td>
+									<div className="search-field-container">
+										<input
+											type="text"
+											value={row.storeName}
+											readOnly
+											placeholder="거래처"
+											disabled={!safeIsRowInputEnabled(index) || isStockStatus}
+											onClick={() => {
+												if (
+													mode === "create" &&
+													safeIsRowInputEnabled(index) &&
+													!row.storeName &&
+													!isStockStatus
+												) {
+													safeOnRequiredFieldClick(row.id, "store");
+												}
+											}}
+											onFocus={() => {
+												if (
+													mode === "create" &&
+													safeIsRowInputEnabled(index) &&
+													!isStockStatus
+												) {
+													safeOnRowFocus(row.id);
+												}
+											}}
+										/>
+										<span
+											className="search-icon"
+											onClick={() => {
+												if (safeIsRowInputEnabled(index) && !isStockStatus) {
+													safeOnStoreSearchOpen(row.id);
+												} else if (isStockStatus) {
+													alert("재고 상태에서는 수정할 수 없습니다.");
+												} else {
+													alert("이전 주문장을 완성해 주세요.");
+												}
+											}}
+											style={{
+												opacity:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? 0.5
+														: 1,
+												cursor:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? "not-allowed"
+														: "pointer",
+											}}
 										>
-											{stone.assistantStoneName}
-										</option>
-									))}
-								</select>
-							</td>
-							<td>
-								<select
-									value={row.assistantStone ? "Y" : "N"}
-									onChange={(e) =>
-										safeOnAssistanceStoneArrivalChange(row.id, e.target.value)
-									}
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									className={`arrival-status ${
-										row.assistantStone === true ? "arrived" : ""
-									}`}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								>
-									<option value="N">N</option>
-									<option value="Y">Y</option>
-								</select>
-							</td>
-							<td>
-								<input
-									type="date"
-									value={row.assistantStoneCreateAt}
-									onChange={(e) =>
-										onRowUpdate(
-											row.id,
-											"assistantStoneCreateAt",
-											e.target.value
-										)
-									}
-									disabled={loading || row.assistantStone === false}
-									style={{
-										backgroundColor:
-											row.assistantStone === false ? "#f5f5f5" : "white",
-									}}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.mainPrice.toLocaleString()}
-									readOnly
-									disabled={loading}
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.additionalPrice.toLocaleString()}
-									onChange={(e) => {
-										const value = e.target.value.replace(/,/g, "");
-										onRowUpdate(row.id, "additionalPrice", value);
-									}}
-									placeholder="0"
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
+											🔍
+										</span>
+									</div>
+								</td>
+								<td>
+									<div className="search-field-container">
+										<input
+											type="text"
+											value={row.productName}
+											readOnly
+											placeholder="모델번호"
+											disabled={!safeIsRowInputEnabled(index) || isStockStatus}
+											onClick={() => {
+												if (
+													mode === "create" &&
+													safeIsRowInputEnabled(index) &&
+													!row.productName &&
+													!isStockStatus
+												) {
+													safeOnRequiredFieldClick(row.id, "product");
+												}
+											}}
+											onFocus={() => {
+												if (
+													mode === "create" &&
+													safeIsRowInputEnabled(index) &&
+													!isStockStatus
+												) {
+													safeOnRowFocus(row.id);
+												}
+											}}
+										/>
+										<span
+											className="search-icon"
+											onClick={() => {
+												if (safeIsRowInputEnabled(index) && !isStockStatus) {
+													safeOnProductSearchOpen(row.id);
+												} else if (isStockStatus) {
+													alert("재고 상태에서는 수정할 수 없습니다.");
+												} else {
+													alert("이전 주문장을 완성해 주세요.");
+												}
+											}}
+											style={{
+												opacity:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? 0.5
+														: 1,
+												cursor:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? "not-allowed"
+														: "pointer",
+											}}
+										>
+											🔍
+										</span>
+									</div>
+								</td>
+								<td>
+									<div className="search-field-container">
+										<input
+											type="text"
+											value={row.factoryName}
+											readOnly
+											placeholder="제조사"
+											disabled={isStockStatus}
+										/>
+										<span
+											className="search-icon"
+											onClick={() => {
+												if (safeIsRowInputEnabled(index) && !isStockStatus) {
+													safeOnFactorySearchOpen(row.id);
+												} else if (isStockStatus) {
+													alert("재고 상태에서는 수정할 수 없습니다.");
+												} else {
+													alert("이전 주문장을 완성해 주세요.");
+												}
+											}}
+											style={{
+												opacity:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? 0.5
+														: 1,
+												cursor:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? "not-allowed"
+														: "pointer",
+											}}
+										>
+											🔍
+										</span>
+									</div>
+								</td>
+								<td>
+									<select
+										value={row.materialId}
+										onChange={(e) => {
+											if (
+												!safeValidateSequence(row.id, "material") ||
+												isStockStatus
+											)
+												return;
+											const selectedMaterial = materials.find(
+												(m) => m.materialId === e.target.value
+											);
+											onRowUpdate(row.id, "materialId", e.target.value);
+											onRowUpdate(
+												row.id,
+												"materialName",
+												selectedMaterial?.materialName || ""
+											);
+										}}
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
 										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.mainStonePrice.toLocaleString()}
-									readOnly
-									disabled={loading}
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.assistanceStonePrice.toLocaleString()}
-									readOnly
-									disabled={loading}
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							<td>
-								<div className="search-field-container">
+										onClick={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!row.materialId &&
+												!isStockStatus
+											) {
+												safeOnRequiredFieldClick(row.id, "material");
+											}
+										}}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+											cursor:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? "not-allowed"
+													: "pointer",
+										}}
+									>
+										<option value="">선택</option>
+										{materials.map((material) => (
+											<option
+												key={material.materialId}
+												value={material.materialId}
+											>
+												{material.materialName}
+											</option>
+										))}
+									</select>
+								</td>
+								<td>
+									<select
+										value={row.colorId}
+										onChange={(e) => {
+											if (
+												!safeValidateSequence(row.id, "color") ||
+												isStockStatus
+											) {
+												return;
+											}
+											const selectedColor = colors.find(
+												(c) => c.colorId === e.target.value
+											);
+
+											onRowUpdate(row.id, "colorId", e.target.value);
+											onRowUpdate(
+												row.id,
+												"colorName",
+												selectedColor?.colorName || ""
+											);
+										}}
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										onClick={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!row.colorId &&
+												!isStockStatus
+											) {
+												safeOnRequiredFieldClick(row.id, "color");
+											}
+										}}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+											cursor:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? "not-allowed"
+													: "pointer",
+										}}
+									>
+										<option value="">선택</option>
+										{colors.map((color) => (
+											<option key={color.colorId} value={color.colorId}>
+												{color.colorName}
+											</option>
+										))}
+									</select>
+								</td>
+								{/* 보조석 필드들 */}
+								<td>
+									<select
+										value={
+											row.assistantStoneId === "1" && !row.assistantStoneName
+												? ""
+												: row.assistantStoneId
+										}
+										onChange={(e) => {
+											if (!safeValidateSequence(row.id, "other")) {
+												return;
+											}
+											const selectedAssistantStone = assistantStones.find(
+												(a) => a.assistantStoneId === parseInt(e.target.value)
+											);
+											onRowUpdate(
+												row.id,
+												"assistantStoneId",
+												parseInt(e.target.value)
+											);
+											onRowUpdate(
+												row.id,
+												"assistantStoneName",
+												selectedAssistantStone?.assistantStoneName || ""
+											);
+										}}
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+											cursor:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? "not-allowed"
+													: "pointer",
+										}}
+									>
+										<option value="">선택</option>
+										{assistantStones.map((stone) => (
+											<option
+												key={stone.assistantStoneId}
+												value={stone.assistantStoneId}
+											>
+												{stone.assistantStoneName}
+											</option>
+										))}
+									</select>
+								</td>
+								<td>
+									<select
+										value={row.assistantStone ? "Y" : "N"}
+										onChange={(e) => {
+											if (isStockStatus) return; // 재고 상태일 때 변경 방지
+											safeOnAssistanceStoneArrivalChange(
+												row.id,
+												e.target.value
+											);
+										}}
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										className={`arrival-status ${
+											row.assistantStone === true ? "arrived" : ""
+										}`}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+										}}
+									>
+										<option value="N">N</option>
+										<option value="Y">Y</option>
+									</select>
+								</td>
+								<td>
+									<input
+										type="date"
+										value={row.assistantStoneCreateAt}
+										onChange={(e) => {
+											if (isStockStatus) return; // 재고 상태일 때 변경 방지
+											onRowUpdate(
+												row.id,
+												"assistantStoneCreateAt",
+												e.target.value
+											);
+										}}
+										disabled={
+											loading || row.assistantStone === false || isStockStatus
+										}
+										style={{
+											backgroundColor:
+												row.assistantStone === false || isStockStatus
+													? "#f5f5f5"
+													: "white",
+										}}
+									/>
+								</td>
+								<td>
 									<input
 										type="text"
-										value={row.additionalStonePrice.toLocaleString()}
+										value={row.mainPrice.toLocaleString()}
+										readOnly
+										disabled={loading}
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.additionalPrice.toLocaleString()}
 										onChange={(e) => {
+											if (isStockStatus) return; // 재고 상태일 때 변경 방지
 											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(row.id, "additionalStonePrice", value);
+											onRowUpdate(row.id, "additionalPrice", value);
 										}}
+										placeholder="0"
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+										}}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.mainStonePrice.toLocaleString()}
+										readOnly
+										disabled={loading}
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.assistanceStonePrice.toLocaleString()}
+										readOnly
+										disabled={loading}
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								<td>
+									<div className="search-field-container">
+										<input
+											type="text"
+											value={row.additionalStonePrice.toLocaleString()}
+											onChange={(e) => {
+												const value = e.target.value.replace(/,/g, "");
+												onRowUpdate(row.id, "additionalStonePrice", value);
+											}}
+											placeholder="0"
+											disabled={loading || !safeIsRowInputEnabled(index)}
+											onFocus={() => {
+												if (mode === "create" && safeIsRowInputEnabled(index)) {
+													safeOnRowFocus(row.id);
+												}
+											}}
+											style={{
+												opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+											}}
+										/>
+										<span
+											className="search-icon"
+											onClick={() => {
+												if (safeIsRowInputEnabled(index)) {
+													safeOnStoneInfoOpen(row.id);
+												} else {
+													alert("이전 주문장을 완성해 주세요.");
+												}
+											}}
+											style={{
+												opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+												cursor: !safeIsRowInputEnabled(index)
+													? "not-allowed"
+													: "pointer",
+											}}
+										>
+											🔍
+										</span>
+									</div>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.mainStoneCount.toString()}
+										readOnly
+										disabled={loading}
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.assistanceStoneCount.toString()}
+										readOnly
+										disabled={loading}
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.stoneWeightTotal.toString()}
+										onChange={(e) =>
+											onRowUpdate(row.id, "stoneWeightTotal", e.target.value)
+										}
 										placeholder="0"
 										disabled={loading || !safeIsRowInputEnabled(index)}
 										onFocus={() => {
@@ -584,206 +755,208 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
 										}}
 									/>
-									<span
-										className="search-icon"
-										onClick={() => {
-											if (safeIsRowInputEnabled(index)) {
-												safeOnStoneInfoOpen(row.id);
-											} else {
-												alert("이전 주문장을 완성해 주세요.");
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.mainStoneNote}
+										onChange={(e) => {
+											if (isStockStatus) return; // 재고 상태일 때 변경 방지
+											onRowUpdate(row.id, "mainStoneNote", e.target.value);
+										}}
+										placeholder="메인 알 메모"
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+										}}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.assistanceStoneNote}
+										onChange={(e) => {
+											if (isStockStatus) return; // 재고 상태일 때 변경 방지
+											onRowUpdate(
+												row.id,
+												"assistanceStoneNote",
+												e.target.value
+											);
+										}}
+										placeholder="보조 알 메모"
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+										}}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.productSize}
+										onChange={(e) => {
+											if (isStockStatus) return; // 재고 상태일 때 변경 방지
+											onRowUpdate(row.id, "productSize", e.target.value);
+										}}
+										placeholder="사이즈"
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+										}}
+									/>
+								</td>
+								<td>
+									<select
+										value={row.priorityName}
+										onChange={(e) => {
+											if (
+												!safeValidateSequence(row.id, "other") ||
+												isStockStatus
+											) {
+												return;
+											}
+											const selectedPriority = priorities.find(
+												(p) => p.priorityName === e.target.value
+											);
+											onRowUpdate(row.id, "priorityName", e.target.value);
+
+											// priorityDate만큼 영업일 기준으로 출고일 설정
+											if (selectedPriority && selectedPriority.priorityDate) {
+												const currentDate = new Date();
+												const deliveryDate = addBusinessDays(
+													currentDate,
+													selectedPriority.priorityDate
+												);
+												const formattedDate = formatDateToString(deliveryDate);
+												onRowUpdate(row.id, "shippingAt", formattedDate);
+											}
+										}}
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+											cursor:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? "not-allowed"
+													: "pointer",
+										}}
+									>
+										<option value="">선택</option>
+										{priorities.map((priority) => (
+											<option
+												key={priority.priorityName}
+												value={priority.priorityName}
+											>
+												{priority.priorityName}
+											</option>
+										))}
+									</select>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.orderNote}
+										onChange={(e) =>
+											onRowUpdate(row.id, "orderNote", e.target.value)
+										}
+										placeholder="기타 메모"
+										disabled={loading || !safeIsRowInputEnabled(index)}
+										onFocus={() => {
+											if (mode === "create" && safeIsRowInputEnabled(index)) {
+												safeOnRowFocus(row.id);
 											}
 										}}
 										style={{
 											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-											cursor: !safeIsRowInputEnabled(index)
-												? "not-allowed"
-												: "pointer",
 										}}
-									>
-										🔍
-									</span>
-								</div>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.mainStoneCount.toString()}
-									readOnly
-									disabled={loading}
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.assistanceStoneCount.toString()}
-									readOnly
-									disabled={loading}
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.stoneWeightTotal.toString()}
-									onChange={(e) =>
-										onRowUpdate(row.id, "stoneWeightTotal", e.target.value)
-									}
-									placeholder="0"
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
+									/>
+								</td>
+								<td>
+									<input
+										type="date"
+										value={row.shippingAt}
+										onChange={(e) => {
+											if (isStockStatus) return; // 재고 상태일 때 변경 방지
+											onRowUpdate(row.id, "shippingAt", e.target.value);
+										}}
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
 										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.mainStoneNote}
-									onChange={(e) =>
-										onRowUpdate(row.id, "mainStoneNote", e.target.value)
-									}
-									placeholder="메인 알 메모"
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.assistanceStoneNote}
-									onChange={(e) =>
-										onRowUpdate(row.id, "assistanceStoneNote", e.target.value)
-									}
-									placeholder="보조 알 메모"
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								/>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.productSize}
-									onChange={(e) =>
-										onRowUpdate(row.id, "productSize", e.target.value)
-									}
-									placeholder="사이즈"
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								/>
-							</td>
-							<td>
-								<select
-									value={row.priorityName}
-									onChange={(e) => {
-										if (!safeValidateSequence(row.id, "other")) {
-											return;
-										}
-										const selectedPriority = priorities.find(
-											(p) => p.priorityName === e.target.value
-										);
-										onRowUpdate(row.id, "priorityName", e.target.value);
-
-										// priorityDate만큼 영업일 기준으로 출고일 설정
-										if (selectedPriority && selectedPriority.priorityDate) {
-											const currentDate = new Date();
-											const deliveryDate = addBusinessDays(
-												currentDate,
-												selectedPriority.priorityDate
-											);
-											const formattedDate = formatDateToString(deliveryDate);
-											onRowUpdate(row.id, "shippingAt", formattedDate);
-										}
-									}}
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-										cursor: !safeIsRowInputEnabled(index)
-											? "not-allowed"
-											: "pointer",
-									}}
-								>
-									<option value="">선택</option>
-									{priorities.map((priority) => (
-										<option
-											key={priority.priorityName}
-											value={priority.priorityName}
-										>
-											{priority.priorityName}
-										</option>
-									))}
-								</select>
-							</td>
-							<td>
-								<input
-									type="text"
-									value={row.orderNote}
-									onChange={(e) =>
-										onRowUpdate(row.id, "orderNote", e.target.value)
-									}
-									placeholder="기타 메모"
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								/>
-							</td>
-							<td>
-								<input
-									type="date"
-									value={row.shippingAt}
-									onChange={(e) =>
-										onRowUpdate(row.id, "shippingAt", e.target.value)
-									}
-									disabled={loading || !safeIsRowInputEnabled(index)}
-									onFocus={() => {
-										if (mode === "create" && safeIsRowInputEnabled(index)) {
-											safeOnRowFocus(row.id);
-										}
-									}}
-									style={{
-										opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-									}}
-								/>
-							</td>
-						</tr>
-					))}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+										}}
+									/>
+								</td>
+							</tr>
+						);
+					})}
 					{mode === "create" && (
 						<tr>
 							<td>{orderRows.length + 1}</td>

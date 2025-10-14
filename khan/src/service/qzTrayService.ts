@@ -127,8 +127,7 @@ const printRaw = async (
 
 	try {
 		const config = qz.configs.create(printerName, { encoding: "EUC-KR" });
-
-		console.log("printRaw: Raw 데이터 인쇄 시도", { printerName, data });
+		
 		const printData = [
 			{
 				type: "raw" as const,

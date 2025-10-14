@@ -67,7 +67,7 @@ const MainList = ({
 								type="checkbox"
 								checked={selected.includes(dto.flowCode)}
 								onChange={(e) => onSelect(dto.flowCode, e.target.checked)}
-								disabled={dto.orderStatus === "DELETED"}
+								disabled={dto.orderStatus === "DELETED" || dto.orderStatus === "STOCK"}
 							/>
 						</td>
 						<td>

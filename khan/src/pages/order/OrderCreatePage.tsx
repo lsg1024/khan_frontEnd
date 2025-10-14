@@ -18,13 +18,14 @@ import type {
 	PastOrderDto,
 } from "../../types/order";
 import type { Product, ProductDto } from "../../types/product";
-import type { ProductStoneDto } from "../../types/stone";
 import type { FactorySearchDto } from "../../types/factory";
 import type { StoreSearchDto } from "../../types/store";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import OrderTable from "../../components/common/order/OrderTable";
+import PastOrderHistory from "../../components/common/PastOrderHistory";
+import ProductInfoSection from "../../components/common/ProductInfoSection";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 import "../../styles/pages/OrderCreatePage.css";
 
@@ -107,14 +108,21 @@ const OrderCreatePage = () => {
 				? priorities[0]
 				: { priorityName: "일반", priorityDate: 7 };
 
+		const defaultAssistantStone =
+			assistantStones.length > 0 ? assistantStones[0] : null;
+
 		const newRow: OrderRowData = {
 			id: Date.now().toString(),
 			storeId: "",
 			storeName: "",
-			grade: "1",
+			storeHarry: "",
+			storeGrade: "1",
 			productId: "",
 			productName: "",
+			productFactoryName: "",
+			classificationId: "",
 			classificationName: "",
+			setTypeId: "",
 			setTypeName: "",
 			materialId: "",
 			materialName: "",
@@ -122,6 +130,7 @@ const OrderCreatePage = () => {
 			colorName: "",
 			factoryId: "",
 			factoryName: "",
+			factoryHarry: "",
 			productSize: "",
 			stoneWeight: 0,
 			productAddLaborCost: 0,
@@ -143,8 +152,9 @@ const OrderCreatePage = () => {
 			shippingAt: deliveryDate,
 			// 보조석 관련 필드
 			assistantStone: false,
-			assistantStoneId: "1",
-			assistantStoneName: "",
+			assistantStoneId:
+				defaultAssistantStone?.assistantStoneId.toString() || "1",
+			assistantStoneName: defaultAssistantStone?.assistantStoneName || "",
 			assistantStoneCreateAt: "",
 		};
 		setOrderRows([...orderRows, newRow]);
@@ -155,6 +165,8 @@ const OrderCreatePage = () => {
 		if (window.confirm("초기화하시겠습니까?")) {
 			// 기본 priority 날짜 계산 (서버에서 받아온 첫 번째 데이터 사용)
 			const defaultPriority = priorities[0];
+			const defaultAssistantStone =
+				assistantStones.length > 0 ? assistantStones[0] : null;
 
 			setOrderRows((prevRows) =>
 				prevRows.map((row) => {
@@ -163,6 +175,8 @@ const OrderCreatePage = () => {
 							...row,
 							storeId: "",
 							storeName: "",
+							storeHarry: "",
+							storeGrade: "1",
 							productId: "",
 							productName: "",
 							productImage: "",
@@ -173,6 +187,7 @@ const OrderCreatePage = () => {
 							setType: "",
 							factoryId: "",
 							factoryName: "",
+							factoryHarry: "",
 							productSize: "",
 							productWeight: "",
 							stoneWeight: 0,
@@ -193,9 +208,13 @@ const OrderCreatePage = () => {
 							stoneWeightTotal: "",
 							createAt: currentDate,
 							shippingAt: deliveryDate,
-							assistanceStoneType: "없음",
-							assistanceStoneArrival: "N",
-							assistanceStoneArrivalDate: "",
+							// 보조석 관련 필드들을 서버 데이터 기반으로 초기화
+							assistantStone: false,
+							assistantStoneId:
+								defaultAssistantStone?.assistantStoneId.toString() || "1",
+							assistantStoneName:
+								defaultAssistantStone?.assistantStoneName || "",
+							assistantStoneCreateAt: "",
 						};
 					}
 					return row;
@@ -314,7 +333,7 @@ const OrderCreatePage = () => {
 			const targetRow = orderRows.find((row) => row.id === rowId);
 			if (!targetRow) return;
 
-			const storeGrade = targetRow.grade || "1";
+			const storeGrade = targetRow.storeGrade || "1";
 			const policyGrade = `GRADE_${storeGrade}`;
 
 			const transformedStoneInfos = productDetail.productStoneDtos.map(
@@ -342,11 +361,20 @@ const OrderCreatePage = () => {
 			);
 
 			updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
-
+			updateOrderRow(
+				rowId,
+				"classificationId",
+				productDetail.classificationDto.classificationId || ""
+			);
 			updateOrderRow(
 				rowId,
 				"classificationName",
 				productDetail.classificationDto.classificationName || ""
+			);
+			updateOrderRow(
+				rowId,
+				"setTypeId",
+				productDetail.setTypeDto.setTypeId || ""
 			);
 			updateOrderRow(
 				rowId,
@@ -595,7 +623,12 @@ const OrderCreatePage = () => {
 
 			updateOrderRow(selectedRowForStore, "storeId", storeIdValue);
 			updateOrderRow(selectedRowForStore, "storeName", store.storeName || "");
-			updateOrderRow(selectedRowForStore, "grade", store.level || "1");
+			updateOrderRow(
+				selectedRowForStore,
+				"storeHarry",
+				store.goldHarryLoss || ""
+			);
+			updateOrderRow(selectedRowForStore, "storeGrade", store.level || "1");
 		}
 		setIsStoreSearchOpen(false);
 		setSelectedRowForStore("");
@@ -609,6 +642,7 @@ const OrderCreatePage = () => {
 
 	// 제조사 검색 모달 열기
 	const openFactorySearch = (rowId: string) => {
+		// 기존 팝업이 있으면 닫기
 		setSelectedRowForFactory(rowId);
 		setIsFactoryModalOpen(true);
 	};
@@ -642,8 +676,101 @@ const OrderCreatePage = () => {
 		if (!validateSequence(rowId, "product")) {
 			return;
 		}
+
 		setSelectedRowForProduct(rowId);
 		setIsProductSearchOpen(true);
+	};
+
+	// 상품 선택 처리
+	const handleProductSelect = (product: ProductDto) => {
+		if (selectedRowForProduct) {
+			const productIdValue = product.productId;
+			const factoryIdValue = product.factoryId;
+
+			updateOrderRow(selectedRowForProduct, "productId", productIdValue);
+			updateOrderRow(
+				selectedRowForProduct,
+				"productName",
+				product.productName || ""
+			);
+			updateOrderRow(
+				selectedRowForProduct,
+				"productFactoryName",
+				product.productFactoryName || ""
+			);
+			updateOrderRow(
+				selectedRowForProduct,
+				"classificationName",
+				currentProductDetail?.classificationDto.classificationName || ""
+			);
+			updateOrderRow(
+				selectedRowForProduct,
+				"setTypeId",
+				currentProductDetail?.setTypeDto.setTypeId || ""
+			);
+			updateOrderRow(
+				selectedRowForProduct,
+				"setTypeName",
+				currentProductDetail?.setTypeDto.setTypeName || ""
+			);
+			updateOrderRow(selectedRowForProduct, "factoryId", factoryIdValue);
+			updateOrderRow(
+				selectedRowForProduct,
+				"factoryName",
+				product.factoryName || ""
+			);
+			updateOrderRow(
+				selectedRowForProduct,
+				"mainPrice",
+				product.productLaborCost || 0
+			);
+
+			const mainStone = product.productStones.find((stone) => stone.mainStone);
+
+			const mainStonePrice = mainStone
+				? (mainStone.laborCost || 0) * (mainStone.stoneQuantity || 0)
+				: 0;
+			const mainStoneCount = mainStone?.stoneQuantity || 0;
+
+			updateOrderRow(selectedRowForProduct, "mainStonePrice", mainStonePrice);
+			updateOrderRow(selectedRowForProduct, "mainStoneCount", mainStoneCount);
+
+			const assistanceStone = product.productStones.find(
+				(stone) => !stone.mainStone
+			);
+
+			const assistanceStonePrice = assistanceStone
+				? (assistanceStone.laborCost || 0) *
+				  (assistanceStone.stoneQuantity || 0)
+				: 0;
+			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
+
+			updateOrderRow(
+				selectedRowForProduct,
+				"assistanceStonePrice",
+				assistanceStonePrice
+			);
+			updateOrderRow(
+				selectedRowForProduct,
+				"assistanceStoneCount",
+				assistanceStoneCount
+			);
+
+			updateOrderRow(
+				selectedRowForProduct,
+				"mainStoneCount",
+				product.productStones.find((stone) => stone.mainStone)?.stoneQuantity ||
+					0
+			);
+			updateOrderRow(
+				selectedRowForProduct,
+				"assistanceStoneCount",
+				product.productStones.find((stone) => !stone.mainStone)
+					?.stoneQuantity || 0
+			);
+		}
+		setIsProductSearchOpen(false);
+		setSelectedRowForProduct("");
 	};
 
 	// 스톤 정보 관리 모달 열기
@@ -724,88 +851,6 @@ const OrderCreatePage = () => {
 		}
 	};
 
-	// 상품 선택 처리
-	const handleProductSelect = (product: ProductDto) => {
-		if (selectedRowForProduct) {
-			const productIdValue = product.productId;
-			const factoryIdValue = product.factoryId;
-
-			updateOrderRow(selectedRowForProduct, "productId", productIdValue);
-			updateOrderRow(
-				selectedRowForProduct,
-				"productName",
-				product.productName || ""
-			);
-			updateOrderRow(
-				selectedRowForProduct,
-				"classificationName",
-				currentProductDetail?.classificationDto.classificationName || ""
-			);
-			updateOrderRow(
-				selectedRowForProduct,
-				"setTypeName",
-				currentProductDetail?.setTypeDto.setTypeName || ""
-			);
-			updateOrderRow(selectedRowForProduct, "factoryId", factoryIdValue);
-			updateOrderRow(
-				selectedRowForProduct,
-				"factoryName",
-				product.factoryName || ""
-			);
-			updateOrderRow(
-				selectedRowForProduct,
-				"mainPrice",
-				product.productLaborCost || 0
-			);
-
-			const mainStone = product.productStones.find((stone) => stone.mainStone);
-
-			const mainStonePrice = mainStone
-				? (mainStone.laborCost || 0) * (mainStone.stoneQuantity || 0)
-				: 0;
-			const mainStoneCount = mainStone?.stoneQuantity || 0;
-
-			updateOrderRow(selectedRowForProduct, "mainStonePrice", mainStonePrice);
-			updateOrderRow(selectedRowForProduct, "mainStoneCount", mainStoneCount);
-
-			const assistanceStone = product.productStones.find(
-				(stone) => !stone.mainStone
-			);
-
-			const assistanceStonePrice = assistanceStone
-				? (assistanceStone.laborCost || 0) *
-				  (assistanceStone.stoneQuantity || 0)
-				: 0;
-			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
-
-			updateOrderRow(
-				selectedRowForProduct,
-				"assistanceStonePrice",
-				assistanceStonePrice
-			);
-			updateOrderRow(
-				selectedRowForProduct,
-				"assistanceStoneCount",
-				assistanceStoneCount
-			);
-
-			updateOrderRow(
-				selectedRowForProduct,
-				"mainStoneCount",
-				product.productStones.find((stone) => stone.mainStone)?.stoneQuantity ||
-					0
-			);
-			updateOrderRow(
-				selectedRowForProduct,
-				"assistanceStoneCount",
-				product.productStones.find((stone) => !stone.mainStone)
-					?.stoneQuantity || 0
-			);
-		}
-		setIsProductSearchOpen(false);
-		setSelectedRowForProduct("");
-	};
-
 	// 상품 검색 팝업 닫기 핸들러
 	const handleProductSearchClose = useCallback(() => {
 		setIsProductSearchOpen(false);
@@ -868,6 +913,10 @@ const OrderCreatePage = () => {
 					);
 					const defaultDeliveryDate = formatDateToString(calculatedDate);
 
+					// 보조석 기본값 설정
+					const defaultAssistantStone =
+						assistantStones.length > 0 ? assistantStones[0] : null;
+
 					// 초기 10개 행 생성
 					const initialRowCount = 10; // 행 개수를 변수로 관리
 					const initialRows: OrderRowData[] = [];
@@ -876,10 +925,14 @@ const OrderCreatePage = () => {
 							id: `${Date.now()}-${i}`,
 							storeId: "",
 							storeName: "",
-							grade: "1",
+							storeHarry: "",
+							storeGrade: "1",
 							productId: "",
 							productName: "",
+							productFactoryName: "",
+							classificationId: "",
 							classificationName: "",
+							setTypeId: "",
 							setTypeName: "",
 							materialId: "",
 							materialName: "",
@@ -887,6 +940,7 @@ const OrderCreatePage = () => {
 							colorName: "",
 							factoryId: "",
 							factoryName: "",
+							factoryHarry: "",
 							productSize: "",
 							stoneWeight: 0,
 							productAddLaborCost: 0,
@@ -908,8 +962,10 @@ const OrderCreatePage = () => {
 							shippingAt: defaultDeliveryDate,
 							// 보조석 관련 필드
 							assistantStone: false,
-							assistantStoneId: "1",
-							assistantStoneName: "",
+							assistantStoneId:
+								defaultAssistantStone?.assistantStoneId.toString() || "1",
+							assistantStoneName:
+								defaultAssistantStone?.assistantStoneName || "",
 							assistantStoneCreateAt: "",
 						};
 						initialRows.push(newRow);
@@ -953,17 +1009,28 @@ const OrderCreatePage = () => {
 
 				const orderData: OrderCreateRequest = {
 					storeId: row.storeId,
+					storeName: row.storeName,
+					storeGrade: row.storeGrade,
+					storeHarry: row.storeHarry as string,
 					orderNote: row.orderNote,
 					factoryId: row.factoryId,
+					factoryName: row.factoryName,
+					factoryHarry: row.factoryHarry as string,
 					productId: row.productId,
+					productName: row.productName,
+					productFactoryName: row.productFactoryName,
 					productSize: row.productSize,
 					productAddLaborCost: row.productAddLaborCost,
 					isProductWeightSale: row.isProductWeightSale,
 					stoneWeight: row.stoneWeight,
 					materialId: row.materialId,
-					classificationName: row.classificationName,
-					setTypeName: row.setTypeName,
+					materialName: row.materialName,
 					colorId: row.colorId,
+					colorName: row.colorName,
+					classificationId: row.classificationId,
+					classificationName: row.classificationName,
+					setTypeId: row.setTypeId,
+					setTypeName: row.setTypeName,
 					priorityName: row.priorityName,
 					mainStoneNote: row.mainStoneNote,
 					assistanceStoneNote: row.assistanceStoneNote,
@@ -1035,276 +1102,17 @@ const OrderCreatePage = () => {
 			)}
 
 			{/* 상품 정보 섹션 */}
-			<div className="product-info-section">
-				<h2>선택된 상품 정보</h2>
-				{!currentProductDetail ? (
-					<div className="order-history-placeholder">
-						상품을 선택하면 상세 정보가 표시됩니다.
-					</div>
-				) : (
-					<div className="single-product-info">
-						<div className="product-info-card">
-							<div className="product-info-header">
-								<div className="product-image-container">
-									{currentProductDetail.productImageDtos &&
-									currentProductDetail.productImageDtos.length > 0 ? (
-										<img
-											src={
-												currentProductDetail.productImageDtos[0].imagePath
-													? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${currentProductDetail.productImageDtos[0].imagePath}`
-													: "/images/not_ready.png"
-											}
-											alt={currentProductDetail.productName}
-											className="product-image"
-										/>
-									) : (
-										<div className="no-image-placeholder">이미지 없음</div>
-									)}
-								</div>
-							</div>
-
-							<div className="basic-info-section">
-								<div className="info-grid">
-									{/* 상품명과 제조사를 같은 줄에 */}
-									<div className="info-row">
-										<div className="info-item quarter-width">
-											<span className="label">모델번호:</span>
-											<span className="value">
-												{currentProductDetail.productName}
-											</span>
-										</div>
-										<div className="info-item quarter-width">
-											<span className="label">제조사:</span>
-											<span className="value">
-												{currentProductDetail.factoryName || "-"}
-											</span>
-										</div>
-										<div className="info-item quarter-width">
-											<span className="label">분류:</span>
-											<span className="value">
-												{currentProductDetail.classificationDto
-													?.classificationName || "-"}
-											</span>
-										</div>
-										<div className="info-item quarter-width">
-											<span className="label">세트 타입:</span>
-											<span className="value">
-												{currentProductDetail.setTypeDto?.setTypeName || "-"}
-											</span>
-										</div>
-									</div>
-
-									{/* 무게, 재질, 구매/판매가격 */}
-									<div className="info-row">
-										<div className="info-item quarter-width">
-											<span className="label">무게:</span>
-											<span className="value">
-												{currentProductDetail.standardWeight || "-"}
-											</span>
-										</div>
-										<div className="info-item quarter-width">
-											<span className="label">재질:</span>
-											<span className="value">
-												{currentProductDetail.materialDto?.materialName || "-"}
-											</span>
-										</div>
-										<div className="info-item quarter-width">
-											<span className="label">구매가:</span>
-											<span className="value">
-												{currentProductDetail.productWorkGradePolicyGroupDto &&
-												currentProductDetail.productWorkGradePolicyGroupDto
-													.length > 0
-													? currentProductDetail.productWorkGradePolicyGroupDto[0].productPurchasePrice.toLocaleString() +
-													  "원"
-													: "-"}
-											</span>
-										</div>
-										<div className="info-item quarter-width">
-											<span className="label">판매가:</span>
-											<span className="value">
-												{currentProductDetail.productWorkGradePolicyGroupDto &&
-												currentProductDetail.productWorkGradePolicyGroupDto
-													.length > 0 &&
-												currentProductDetail.productWorkGradePolicyGroupDto[0]
-													.policyDtos &&
-												currentProductDetail.productWorkGradePolicyGroupDto[0]
-													.policyDtos.length > 0
-													? currentProductDetail.productWorkGradePolicyGroupDto[0].policyDtos[0].laborCost.toLocaleString() +
-													  "원"
-													: "-"}
-											</span>
-										</div>
-									</div>
-
-									{/* 스톤 정보 */}
-									{currentProductDetail.productStoneDtos &&
-										currentProductDetail.productStoneDtos.length > 0 && (
-											<div className="info-row-last">
-												<div className="info-item .half-width-special">
-													<span className="label">스톤 정보:</span>
-													<div className="stone-info-container">
-														{currentProductDetail.productStoneDtos.map(
-															(stone: ProductStoneDto, index: number) => (
-																<div key={index} className="stone-item">
-																	<strong>
-																		{stone.mainStone ? "메인" : "보조"}:
-																	</strong>
-																	{stone.stoneName} x {stone.stoneQuantity}개
-																	(구매: {stone.stonePurchase.toLocaleString()}
-																	원)
-																</div>
-															)
-														)}
-													</div>
-												</div>
-												{/* 메모 정보 */}
-												{currentProductDetail.productNote && (
-													<div className="info-item .half-width-special">
-														<span className="label">상품 메모:</span>
-														<div className="product-memo">
-															{currentProductDetail.productNote}
-														</div>
-													</div>
-												)}
-											</div>
-										)}
-								</div>
-							</div>
-						</div>
-					</div>
-				)}
-			</div>
+			<ProductInfoSection
+				currentProductDetail={currentProductDetail}
+				title="선택된 상품 정보"
+			/>
 
 			{/* 과거 거래내역 섹션 */}
-			<div className="order-history-section">
-				<h2>과거 거래내역</h2>
-				<div className="order-history-table-container">
-					<table className="order-history-table">
-						<thead>
-							<tr>
-								<th className="col-no">No</th>
-								<th className="col-date">거래일</th>
-								<th className="col-model">모델번호</th>
-								<th className="col-material">재질</th>
-								<th className="col-color">색상</th>
-								<th colSpan={2}>알 메모</th>
-								<th className="col-size">사이즈</th>
-								<th className="col-etc">기타</th>
-								<th className="col-gold-weight">금중량</th>
-								<th className="col-stone-weight">알중량</th>
-								<th colSpan={2}>상품 단가</th>
-								<th colSpan={3}>알 단가</th>
-								<th colSpan={2}>알 수량</th>
-								<th colSpan={3}>보조석</th>
-								<th className="col-total-fee">공임합</th>
-							</tr>
-							<tr>
-								<th className="col-no"></th>
-								<th className="col-date"></th>
-								<th className="col-model"></th>
-								<th className="col-material"></th>
-								<th className="col-color"></th>
-								<th className="col-stone-memo-main">메인</th>
-								<th className="col-stone-memo-sub">보조</th>
-								<th className="col-size"></th>
-								<th className="col-etc"></th>
-								<th className="col-gold-weight"></th>
-								<th className="col-stone-weight"></th>
-								<th className="col-price-base">기본</th>
-								<th className="col-price-add">추가</th>
-								<th className="col-stone-price-main">메인</th>
-								<th className="col-stone-price-sub">보조</th>
-								<th className="col-stone-price-add">추가</th>
-								<th className="col-stone-qty-main">메인</th>
-								<th className="col-stone-qty-sub">보조</th>
-								<th className="col-side-stone-type">유형</th>
-								<th className="col-side-stone-status">입고여부</th>
-								<th className="col-side-stone-date">입고날짜</th>
-								<th className="col-total-fee"></th>
-							</tr>
-						</thead>
-						<tbody>
-							{/* 최대 4개 행 표시 */}
-							{[...Array(4)].map((_, index) => {
-								const pastOrder = currentDisplayedPastOrders[index];
-								const totalFee = pastOrder
-									? pastOrder.productLaborCost +
-									  pastOrder.productAddLaborCost +
-									  pastOrder.mainStoneLaborCost * pastOrder.mainStoneQuantity +
-									  pastOrder.assistanceStoneLaborCost *
-											pastOrder.assistanceStoneQuantity +
-									  pastOrder.addStoneLaborCost
-									: 0;
-
-								return (
-									<tr key={index}>
-										<td>{index + 1}</td>
-										<td>
-											{pastOrder
-												? new Date(pastOrder.saleCreateAt)
-														.toLocaleDateString("ko-KR")
-														.slice(0, 11)
-												: ""}
-										</td>
-										<td>{pastOrder?.productName || ""}</td>
-										<td>{pastOrder?.productMaterial || ""}</td>
-										<td>{pastOrder?.productColor || ""}</td>
-										<td>{pastOrder?.stockMainStoneNote || ""}</td>
-										<td>{pastOrder?.stockAssistanceStoneNote || ""}</td>
-										<td>{pastOrder?.productSize || ""}</td>
-										<td>{pastOrder?.stockNote || ""}</td>
-										<td>{pastOrder ? pastOrder.goldWeight.toFixed(3) : ""}</td>
-										<td>{pastOrder ? pastOrder.stoneWeight.toFixed(3) : ""}</td>
-										<td>
-											{pastOrder
-												? pastOrder.productLaborCost.toLocaleString()
-												: ""}
-										</td>
-										<td>
-											{pastOrder
-												? pastOrder.productAddLaborCost.toLocaleString()
-												: ""}
-										</td>
-										<td>
-											{pastOrder
-												? pastOrder.mainStoneLaborCost.toLocaleString()
-												: ""}
-										</td>
-										<td>
-											{pastOrder
-												? pastOrder.assistanceStoneLaborCost.toLocaleString()
-												: ""}
-										</td>
-										<td>
-											{pastOrder
-												? pastOrder.addStoneLaborCost.toLocaleString()
-												: ""}
-										</td>
-										<td>{pastOrder?.mainStoneQuantity || ""}</td>
-										<td>{pastOrder?.assistanceStoneQuantity || ""}</td>
-										<td>
-											{pastOrder?.assistantStone
-												? pastOrder.assistantStoneName
-												: ""}
-										</td>
-										<td>
-											{pastOrder?.assistantStone ? "Y" : pastOrder ? "N" : ""}
-										</td>
-										<td>
-											{pastOrder?.assistantStoneCreateAt
-												? new Date(pastOrder.assistantStoneCreateAt)
-														.toLocaleDateString("ko-KR")
-														.slice(0, 11)
-												: ""}
-										</td>
-										<td>{pastOrder ? totalFee.toLocaleString() : ""}</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>
-				</div>
-			</div>
+			<PastOrderHistory
+				pastOrders={currentDisplayedPastOrders}
+				title="과거 거래내역"
+				maxRows={4}
+			/>
 
 			{/* 주문 테이블 */}
 			<OrderTable

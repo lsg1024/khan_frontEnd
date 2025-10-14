@@ -6,6 +6,7 @@ import type { StockResponse } from "../../types/stock";
 import StockSearch from "../../components/common/stock/StockSearch";
 import StockList from "../../components/common/stock/StockList";
 import Pagination from "../../components/common/Pagination";
+import StockBulkActionBar from "../../components/common/StockBulkActionBar";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
 import "../../styles/pages/StockPage.css";
@@ -21,9 +22,12 @@ export const StockPage = () => {
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
 	const [colors, setColors] = useState<string[]>([]);
-	const [orderStatus, setOrderStatus] = useState<string[]>([]);
+	const [orderStatus] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+
+	// 체크박스 선택 관련 상태 (다중 선택 허용)
+	const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
 
 	const stockCreationPopup = useRef<Window | null>(null);
 	const stockUpdatePopups = useRef<Map<string, Window>>(new Map());
@@ -57,9 +61,42 @@ export const StockPage = () => {
 
 	const prevEnd = () => searchFilters.end;
 
+	// 선택 관련 핸들러
+	const handleSelectStock = (flowCode: string, checked: boolean) => {
+		setSelectedStocks((prev) =>
+			checked ? [...prev, flowCode] : prev.filter((code) => code !== flowCode)
+		);
+	};
+
+	// No 클릭 시 수정 페이지 열기 (단일 선택)
+	const handleStockNoClick = (flowCode: string) => {
+		const url = `/stocks/update/stock?flowCodes=${flowCode}`;
+		const NAME = `stock_update_${flowCode}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
+		const existingPopup = stockUpdatePopups.current.get(flowCode);
+
+		if (existingPopup && !existingPopup.closed) {
+			existingPopup.focus();
+		} else {
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				stockUpdatePopups.current.set(flowCode, newPopup);
+
+				// 팝업 닫힘 감지
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						clearInterval(checkClosed);
+						stockUpdatePopups.current.delete(flowCode);
+					}
+				}, 1000);
+			}
+		}
+	};
+
 	// 검색 실행
 	const handleSearch = () => {
 		setCurrentPage(1);
+		setSelectedStocks([]); // 검색 시 선택 초기화
 		loadStocks(searchFilters, 1);
 		fetchDropdownData();
 	};
@@ -84,7 +121,7 @@ export const StockPage = () => {
 	};
 
 	const handleStockCreate = () => {
-		const url = "/stocks/create/stock";
+		const url = "/stocks/create";
 		const NAME = "stockCreatePopup";
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
 
@@ -92,45 +129,76 @@ export const StockPage = () => {
 			stockCreationPopup.current.focus();
 		} else {
 			const newPopup = window.open(url, NAME, FEATURES);
+
 			if (newPopup) {
 				stockCreationPopup.current = newPopup;
 
 				// 팝업 닫힘 감지를 위한 인터벌 설정 (참조 정리만 수행)
 				const checkClosed = setInterval(() => {
 					if (newPopup.closed) {
-						console.log("재고 생성 팝업이 닫혔습니다.");
 						// 참조만 정리하고 새로고침은 메시지 이벤트에서만 처리
 						clearInterval(checkClosed);
 						stockCreationPopup.current = null;
 					}
 				}, 1000);
+			} else {
+				alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
 			}
 		}
 	};
 
-	// 재고 상세 페이지로 이동
-	const handleStockClick = (flowCode: string) => {
-		const url = `/stocks/update/${flowCode}`;
-		const NAME = `stock_${flowCode}`;
+	// 벌크 액션 핸들러들
+	const handleSalesRegister = () => {
+		if (selectedStocks.length === 0) return;
+
+		const selectedFlowCodes = selectedStocks.join(",");
+		const url = `/stocks/register?action=sales&flowCodes=${selectedFlowCodes}`;
+		const NAME = `stockSalesRegister_${Date.now()}`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-		const existingPopup = stockUpdatePopups.current.get(flowCode);
 
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.focus();
-		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
-			if (newPopup) {
-				stockUpdatePopups.current.set(flowCode, newPopup);
+		const newPopup = window.open(url, NAME, FEATURES);
+		if (!newPopup) {
+			alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
+		}
+	};
 
-				// 팝업 닫힘 감지
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						console.log(`재고 상세 팝업 ${flowCode}이 닫혔습니다.`);
-						clearInterval(checkClosed);
-						stockUpdatePopups.current.delete(flowCode);
-					}
-				}, 1000);
-			}
+	const handleRentalRegister = () => {
+		if (selectedStocks.length === 0) return;
+
+		const selectedFlowCodes = selectedStocks.join(",");
+		const url = `/stocks/register?action=rental&flowCodes=${selectedFlowCodes}`;
+		const NAME = `stockRentalRegister_${Date.now()}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
+
+		const newPopup = window.open(url, NAME, FEATURES);
+		if (!newPopup) {
+			alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
+		}
+	};
+
+	const handleReturnRegister = () => {
+		if (selectedStocks.length === 0) return;
+
+		const selectedFlowCodes = selectedStocks.join(",");
+		const url = `/stocks/register?action=return&flowCodes=${selectedFlowCodes}`;
+		const NAME = `stockReturnRegister_${Date.now()}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
+
+		const newPopup = window.open(url, NAME, FEATURES);
+		if (!newPopup) {
+			alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
+		}
+	};
+
+	const handleBulkDelete = () => {
+		if (selectedStocks.length === 0) return;
+
+		if (
+			confirm(`선택된 ${selectedStocks.length}개의 재고를 삭제하시겠습니까?`)
+		) {
+			// TODO: API 호출로 삭제 처리
+			console.log("삭제할 재고:", selectedStocks);
+			alert("삭제 기능은 아직 구현되지 않았습니다.");
 		}
 	};
 
@@ -284,13 +352,18 @@ export const StockPage = () => {
 			if (event.origin !== window.location.origin) return;
 
 			if (event.data.type === "STOCK_CREATED") {
-				console.log("재고 생성 완료, 목록 새로고침");
 				loadStocks(searchFilters, currentPage);
+				setSelectedStocks([]); // 선택 초기화
 			}
 
 			if (event.data.type === "STOCK_UPDATED") {
-				console.log("재고 업데이트 완료, 목록 새로고침");
 				loadStocks(searchFilters, currentPage);
+				setSelectedStocks([]); // 선택 초기화
+			}
+
+			if (event.data.type === "STOCK_REGISTERED") {
+				loadStocks(searchFilters, currentPage);
+				setSelectedStocks([]); // 선택 초기화
 			}
 		};
 
@@ -338,7 +411,18 @@ export const StockPage = () => {
 						stocks={stocks}
 						currentPage={currentPage}
 						loading={loading}
-						onStockClick={handleStockClick}
+						selected={selectedStocks}
+						onSelect={handleSelectStock}
+						onNoClick={handleStockNoClick}
+					/>
+
+					{/* 벌크 액션 바 */}
+					<StockBulkActionBar
+						selectedCount={selectedStocks.length}
+						onSalesRegister={handleSalesRegister}
+						onRentalRegister={handleRentalRegister}
+						onReturnRegister={handleReturnRegister}
+						onDelete={handleBulkDelete}
 					/>
 
 					{/* 페이지네이션 */}

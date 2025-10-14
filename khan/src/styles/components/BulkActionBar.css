@@ -72,10 +72,33 @@
 	border-color: #007bff;
 }
 
-
 .bulk-action-btn.sales-register:hover:not(.disabled) {
 	background-color: #0056b3;
 	border-color: #004085;
+}
+
+/* 대여등록 버튼 - 주황색 */
+.bulk-action-btn.rental-register {
+	background-color: #fd7e14;
+	color: white;
+	border-color: #fd7e14;
+}
+
+.bulk-action-btn.rental-register:hover:not(.disabled) {
+	background-color: #e8590c;
+	border-color: #dc5200;
+}
+
+/* 반납등록 버튼 - 연붉은색 */
+.bulk-action-btn.return-register {
+	background-color: #e83e8c;
+	color: white;
+	border-color: #e83e8c;
+}
+
+.bulk-action-btn.return-register:hover:not(.disabled) {
+	background-color: #d91a72;
+	border-color: #c70c62;
 }
 
 /* 삭제 버튼 - 활성화될 때만 색상 표시 */
