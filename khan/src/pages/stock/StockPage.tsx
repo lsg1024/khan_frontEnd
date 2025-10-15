@@ -121,7 +121,7 @@ export const StockPage = () => {
 	};
 
 	const handleStockCreate = () => {
-		const url = "/stocks/create";
+		const url = "/stocks/create/normal"; // stock mode 파라미터 추가
 		const NAME = "stockCreatePopup";
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
 

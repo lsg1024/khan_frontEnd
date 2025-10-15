@@ -1,7 +1,7 @@
 import type { StoneInfo } from "./stone";
 import type { PageInfo } from "./page";
 
-export interface StockOrderRowData {
+export interface StockOrderRows {
 	createAt: string;
 	id: string;
 	storeId: string;
@@ -40,6 +40,11 @@ export interface StockOrderRowData {
 
 	totalWeight: number;
 	storeHarry: string;
+	// 분류 및 세트 타입 필드 추가
+	classificationId: string;
+	classificationName: string;
+	setTypeId: string;
+	setTypeName: string;
 	// 재고 상태 필드 추가
 	currentStatus?: string; // STOCK, SHIPPED 등
 }
@@ -74,6 +79,7 @@ export interface StockCreateRequest {
 	assistanceStoneNote: string;
 	assistantStone: boolean;
 	assistantStoneId: string;
+	assistantStoneName: string;
 	assistantStoneCreateAt: string;
 	stoneInfos: StoneInfo[];
 	stoneAddLaborCost: number;
@@ -107,6 +113,10 @@ export interface StockRegisterResponse {
 	assistantStoneCreateAt: string;
 	stoneInfos: StoneInfo[];
 	stoneAddLaborCost: number;
+	classificationId: string;
+	classificationName: string;
+	setTypeId: string;
+	setTypeName: string;
 }
 
 export interface StockRegisterRequest {

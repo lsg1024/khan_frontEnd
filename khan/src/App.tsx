@@ -97,7 +97,7 @@ function App() {
 					<Route path="/store-search" element={<StoreSearchPage />} />
 					<Route path="/product-search" element={<ProductSearchPage />} />
 					<Route path="/stock/create" element={<StockRegisterPage />} />
-					<Route path="/stocks/create" element={<StockCreatePage />} />
+					<Route path="/stocks/create/:mode" element={<StockCreatePage />} />
 					<Route path="/stock/stone-info" element={<StoneInfoPage />} />
 					<Route
 						path="/stocks/update/:flowCode"

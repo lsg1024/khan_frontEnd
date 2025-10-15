@@ -124,8 +124,12 @@
     width: 40px;
 }
 
+.stock-date {
+	width: 70px;
+}
+
 .money-cell {
-	width: 60px;
+	width: 50px;
 }
 
 .stone-count-cell {
@@ -134,4 +138,12 @@
 
 .stone-weight-cell {
 	width: 35px;
+}
+
+.stock-note-cell {
+	width: 50px;
+}
+
+.stock-size-cell {
+	width: 40px;
 }

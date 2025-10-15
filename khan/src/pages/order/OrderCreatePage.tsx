@@ -528,6 +528,8 @@ const OrderCreatePage = () => {
 			}
 		}
 	};
+
+	// 보조석 입고 여부 변경 핸들러
 	const handleAssistanceStoneArrivalChange = (id: string, value: string) => {
 		if (value === "Y") {
 			// Y로 변경 시 현재 날짜를 자동 설정

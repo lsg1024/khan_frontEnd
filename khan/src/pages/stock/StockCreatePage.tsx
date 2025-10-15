@@ -12,7 +12,7 @@ import type { PastOrderDto } from "../../types/order";
 import type { Product, ProductDto } from "../../types/product";
 import type { FactorySearchDto } from "../../types/factory";
 import type { StoreSearchDto } from "../../types/store";
-import type { StockOrderRowData, StockCreateRequest } from "../../types/stock";
+import type { StockOrderRows, StockCreateRequest } from "../../types/stock";
 import StockTable from "../../components/common/stock/StockTable";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
@@ -22,11 +22,23 @@ import ProductInfoSection from "../../components/common/ProductInfoSection";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 import "../../styles/pages/StockCreatePage.css";
 
+type UpdateMode = "normal" | "return" | "expact";
+
+const MODE_TO_STATUS = {
+	normal: "NORMAL",
+	return: "RETURN",
+	expact: "EXPACT",
+} as const satisfies Record<UpdateMode, "NORMAL" | "RETURN" | "EXPACT">;
+
 export const StockCreatePage = () => {
 	const { handleError } = useErrorHandler();
+	const { mode } = useParams<{
+		mode: UpdateMode;
+	}>();
 
 	// 재고 행 데이터
-	const [stockRows, setStockRows] = useState<StockOrderRowData[]>([]);
+	const [stockRows, setStockRows] = useState<StockOrderRows[]>([]);
+	const orderStatus = MODE_TO_STATUS[mode as UpdateMode]; // api 상태값으로 사용
 
 	// 검색 모달 상태
 	const [isStoreSearchOpen, setIsStoreSearchOpen] = useState(false);
@@ -106,7 +118,7 @@ export const StockCreatePage = () => {
 		const defaultAssistantStone =
 			assistantStones.length > 0 ? assistantStones[0] : null;
 
-		const newRow: StockOrderRowData = {
+		const newRow: StockOrderRows = {
 			id: Date.now().toString(),
 			createAt: currentDate,
 			storeId: "",
@@ -144,6 +156,10 @@ export const StockCreatePage = () => {
 			assistantStoneCreateAt: "",
 			totalWeight: 0,
 			storeHarry: "",
+			classificationId: "",
+			classificationName: "",
+			setTypeId: "",
+			setTypeName: "",
 		};
 		setStockRows([...stockRows, newRow]);
 	};
@@ -151,7 +167,7 @@ export const StockCreatePage = () => {
 	// 재고 행 데이터 업데이트
 	const updateStockRow = async (
 		id: string,
-		field: keyof StockOrderRowData,
+		field: keyof StockOrderRows,
 		value: unknown
 	) => {
 		setStockRows((prevRows) => {
@@ -207,6 +223,90 @@ export const StockCreatePage = () => {
 		} catch {
 			return null;
 		}
+	};
+
+	// 필수 선택 순서 체크 함수들
+	const checkStoreSelected = (rowId: string): boolean => {
+		const row = stockRows.find((r) => r.id === rowId);
+		return !!(row?.storeId && row?.storeName);
+	};
+
+	const checkProductSelected = (rowId: string): boolean => {
+		const row = stockRows.find((r) => r.id === rowId);
+		return !!(row?.productId && row?.productName);
+	};
+
+	const checkMaterialSelected = (rowId: string): boolean => {
+		const row = stockRows.find((r) => r.id === rowId);
+		return !!(row?.materialId && row?.materialName);
+	};
+
+	// 필수 선택 순서 체크 및 알림
+	const validateSequence = (
+		rowId: string,
+		currentStep: "product" | "material" | "other" | "color"
+	): boolean => {
+		if (currentStep === "product" && !checkStoreSelected(rowId)) {
+			alert("거래처를 먼저 선택해주세요.");
+			openStoreSearch(rowId);
+			return false;
+		}
+
+		if (currentStep === "material" && !checkStoreSelected(rowId)) {
+			alert("거래처를 먼저 선택해주세요.");
+			openStoreSearch(rowId);
+			return false;
+		}
+
+		if (currentStep === "material" && !checkProductSelected(rowId)) {
+			alert("모델번호를 먼저 선택해주세요.");
+			openProductSearch(rowId);
+			return false;
+		}
+
+		if (currentStep === "color" && !checkStoreSelected(rowId)) {
+			alert("거래처를 먼저 선택해주세요.");
+			openStoreSearch(rowId);
+			return false;
+		}
+
+		if (currentStep === "other" && !checkStoreSelected(rowId)) {
+			alert("거래처를 먼저 선택해주세요.");
+			openStoreSearch(rowId);
+			return false;
+		}
+
+		if (currentStep === "other" && !checkProductSelected(rowId)) {
+			alert("모델번호를 먼저 선택해주세요.");
+			openProductSearch(rowId);
+			return false;
+		}
+
+		if (currentStep === "other" && !checkMaterialSelected(rowId)) {
+			alert("재질을 먼저 선택해주세요.");
+			const materialSelect = document.querySelector(
+				`[data-row-id="${rowId}"][data-field="material"]`
+			) as HTMLSelectElement;
+			if (materialSelect) {
+				materialSelect.focus();
+			}
+			return false;
+		}
+		return true;
+	};
+
+	const isRowInputEnabled = (currentIndex: number): boolean => {
+		if (currentIndex === 0) return true; // 첫 번째 행은 항상 입력 가능
+
+		// 바로 직전 행의 필수값이 완성되어 있으면 입력 가능
+		const prevRow = stockRows[currentIndex - 1];
+		return !!(
+			prevRow &&
+			prevRow.storeId &&
+			prevRow.productId &&
+			prevRow.materialId &&
+			prevRow.colorId
+		);
 	};
 
 	// productId가 있을 때 상품 상세 정보 업데이트
@@ -363,7 +463,7 @@ export const StockCreatePage = () => {
 		setIsProductSearchOpen(true);
 	};
 
-	const handleProductSelect = (product: ProductDto) => {
+	const handleProductSelect = async (product: ProductDto) => {
 		if (selectedRowForProduct) {
 			const productIdValue = product.productId;
 			const factoryIdValue = product.factoryId;
@@ -385,6 +485,31 @@ export const StockCreatePage = () => {
 				"productLaborCost",
 				product.productLaborCost || 0
 			);
+
+			// 상품 상세 정보를 가져와서 classification과 setType 정보 설정
+			const productDetail = await fetchProductDetail(productIdValue);
+			if (productDetail) {
+				updateStockRow(
+					selectedRowForProduct,
+					"classificationId",
+					productDetail.classificationDto?.classificationId || ""
+				);
+				updateStockRow(
+					selectedRowForProduct,
+					"classificationName",
+					productDetail.classificationDto?.classificationName || ""
+				);
+				updateStockRow(
+					selectedRowForProduct,
+					"setTypeId",
+					productDetail.setTypeDto?.setTypeId || ""
+				);
+				updateStockRow(
+					selectedRowForProduct,
+					"setTypeName",
+					productDetail.setTypeDto?.setTypeName || ""
+				);
+			}
 
 			const mainStone = product.productStones.find((stone) => stone.mainStone);
 			const mainStonePrice = mainStone
@@ -509,6 +634,166 @@ export const StockCreatePage = () => {
 		}
 	};
 
+	const resetOrderRow = (id: string) => {
+		if (window.confirm("초기화하시겠습니까?")) {
+			const defaultAssistantStone =
+				assistantStones.length > 0 ? assistantStones[0] : null;
+
+			setStockRows((prevRows) =>
+				prevRows.map((row) => {
+					if (row.id === id) {
+						return {
+							...row,
+							createAt: currentDate,
+							storeId: "",
+							storeName: "",
+							grade: "1",
+							productId: "",
+							productName: "",
+							materialId: "",
+							materialName: "",
+							colorId: "1",
+							colorName: "",
+							factoryId: "",
+							factoryName: "",
+							productSize: "",
+							productPurchaseCost: 0,
+							goldWeight: "",
+							stoneWeight: "0",
+							isProductWeightSale: false,
+							mainStoneNote: "",
+							assistanceStoneNote: "",
+							orderNote: "",
+							stoneInfos: [],
+							productLaborCost: "",
+							productAddLaborCost: "",
+							mainStonePrice: "",
+							assistanceStonePrice: "",
+							mainStoneCount: "",
+							assistanceStoneCount: "",
+							additionalStonePrice: "",
+							stoneWeightTotal: "",
+							assistantStone: false,
+							assistantStoneId:
+								defaultAssistantStone?.assistantStoneId.toString() || "1",
+							assistantStoneName:
+								defaultAssistantStone?.assistantStoneName || "",
+							assistantStoneCreateAt: "",
+							totalWeight: 0,
+							storeHarry: "",
+							classificationId: "",
+							classificationName: "",
+							setTypeId: "",
+							setTypeName: "",
+						};
+					}
+					return row;
+				})
+			);
+		}
+	};
+
+	// 바로 직전 행의 필수값 가져오기
+	const getPreviousRowRequiredValues = (currentIndex: number) => {
+		if (currentIndex === 0) return null;
+
+		// 바로 직전 행만 체크
+		const prevRow = stockRows[currentIndex - 1];
+		if (prevRow && prevRow.storeId && prevRow.productId && prevRow.materialId) {
+			return {
+				storeId: prevRow.storeId,
+				storeName: prevRow.storeName,
+				productId: prevRow.productId,
+				productName: prevRow.productName,
+				materialId: prevRow.materialId,
+				materialName: prevRow.materialName,
+				factoryId: prevRow.factoryId,
+				factoryName: prevRow.factoryName,
+				productLaborCost: prevRow.productLaborCost,
+				mainStonePrice: prevRow.mainStonePrice,
+				assistanceStonePrice: prevRow.assistanceStonePrice,
+				mainStoneCount: prevRow.mainStoneCount,
+				assistanceStoneCount: prevRow.assistanceStoneCount,
+				classificationId: prevRow.classificationId,
+				classificationName: prevRow.classificationName,
+				setTypeId: prevRow.setTypeId,
+				setTypeName: prevRow.setTypeName,
+			};
+		}
+		return null;
+	};
+
+	// 필수값 자동 복사 핸들러
+	const handleRequiredFieldClick = (
+		currentRowId: string,
+		fieldType: "store" | "product" | "material" | "color"
+	) => {
+		const currentIndex = stockRows.findIndex((row) => row.id === currentRowId);
+		const currentRow = stockRows[currentIndex];
+
+		// 현재 행에 이미 값이 있으면 복사하지 않음
+		if (
+			(fieldType === "store" && currentRow.storeId) ||
+			(fieldType === "product" && currentRow.productId) ||
+			(fieldType === "material" && currentRow.materialId)
+		) {
+			return;
+		}
+
+		const prevValues = getPreviousRowRequiredValues(currentIndex);
+		if (prevValues) {
+			if (fieldType === "store") {
+				updateStockRow(currentRowId, "storeId", prevValues.storeId);
+				updateStockRow(currentRowId, "storeName", prevValues.storeName);
+			} else if (fieldType === "product") {
+				updateStockRow(currentRowId, "productId", prevValues.productId);
+				updateStockRow(currentRowId, "productName", prevValues.productName);
+				updateStockRow(currentRowId, "factoryId", prevValues.factoryId);
+				updateStockRow(currentRowId, "factoryName", prevValues.factoryName);
+				updateStockRow(
+					currentRowId,
+					"productLaborCost",
+					prevValues.productLaborCost
+				);
+				updateStockRow(
+					currentRowId,
+					"mainStonePrice",
+					prevValues.mainStonePrice
+				);
+				updateStockRow(
+					currentRowId,
+					"assistanceStonePrice",
+					prevValues.assistanceStonePrice
+				);
+				updateStockRow(
+					currentRowId,
+					"mainStoneCount",
+					prevValues.mainStoneCount
+				);
+				updateStockRow(
+					currentRowId,
+					"assistanceStoneCount",
+					prevValues.assistanceStoneCount
+				);
+				updateStockRow(
+					currentRowId,
+					"classificationId",
+					prevValues.classificationId
+				);
+				updateStockRow(
+					currentRowId,
+					"classificationName",
+					prevValues.classificationName
+				);
+				updateStockRow(currentRowId, "setTypeId", prevValues.setTypeId);
+				updateStockRow(currentRowId, "setTypeName", prevValues.setTypeName);
+			} else if (fieldType === "material") {
+				updateStockRow(currentRowId, "materialId", prevValues.materialId);
+				updateStockRow(currentRowId, "materialName", prevValues.materialName);
+			}
+		}
+	};
+
 	// 초기 데이터 로드
 	useEffect(() => {
 		const loadInitialData = async () => {
@@ -545,12 +830,12 @@ export const StockCreatePage = () => {
 
 				// 초기 5개 행 생성
 				const initialRowCount = 5;
-				const initialRows: StockOrderRowData[] = [];
+				const initialRows: StockOrderRows[] = [];
 				for (let i = 0; i < initialRowCount; i++) {
 					const defaultAssistantStone =
 						assistantStones.length > 0 ? assistantStones[0] : null;
 
-					const newRow: StockOrderRowData = {
+					const newRow: StockOrderRows = {
 						id: `${Date.now()}-${i}`,
 						createAt: currentDate,
 						storeId: "",
@@ -588,6 +873,10 @@ export const StockCreatePage = () => {
 						assistantStoneCreateAt: "",
 						totalWeight: 0,
 						storeHarry: "",
+						classificationId: "",
+						classificationName: "",
+						setTypeId: "",
+						setTypeName: "",
 					};
 					initialRows.push(newRow);
 				}
@@ -627,7 +916,7 @@ export const StockCreatePage = () => {
 					factoryName: row.factoryName,
 					productId: row.productId,
 					productName: row.productName,
-					productFactoryName: "", // StockOrderRowData에서 가져올 수 있으면 추가
+					productFactoryName: "",
 					productSize: row.productSize,
 					stockNote: row.orderNote,
 					isProductWeightSale: row.isProductWeightSale,
@@ -637,22 +926,23 @@ export const StockCreatePage = () => {
 					materialName: row.materialName,
 					colorId: row.colorId,
 					colorName: row.colorName,
-					classificationId: "", // 상품 정보에서 설정
-					classificationName: "",
-					setTypeId: "",
-					setTypeName: "",
+					classificationId: row.classificationId,
+					classificationName: row.classificationName,
+					setTypeId: row.setTypeId,
+					setTypeName: row.setTypeName,
 					goldWeight: parseFloat(row.goldWeight) || 0,
 					stoneWeight: parseFloat(row.stoneWeight) || 0,
 					mainStoneNote: row.mainStoneNote,
 					assistanceStoneNote: row.assistanceStoneNote,
 					assistantStone: row.assistantStone,
 					assistantStoneId: row.assistantStoneId,
+					assistantStoneName: row.assistantStoneName,
 					assistantStoneCreateAt: row.assistantStoneCreateAt,
 					stoneInfos: row.stoneInfos,
 					stoneAddLaborCost: 0,
 				};
 
-				return stockApi.createStock("STOCK", stockData);
+				return stockApi.createStock(stockData, orderStatus);
 			});
 
 			const responses = await Promise.all(promises);
@@ -660,7 +950,6 @@ export const StockCreatePage = () => {
 
 			alert(`${successCount}개의 재고가 성공적으로 등록되었습니다.`);
 
-			// 부모창에 메시지 전송 (필요한 경우)
 			if (window.opener) {
 				window.opener.postMessage(
 					{
@@ -726,19 +1015,24 @@ export const StockCreatePage = () => {
 
 			{/* 재고 주문 테이블 */}
 			<StockTable
-				orderRows={stockRows}
+				mode="create"
+				stockRows={stockRows}
 				loading={loading}
 				materials={materials}
 				colors={colors}
 				assistantStones={assistantStones}
+				onRowDelete={resetOrderRow}
 				onRowUpdate={updateStockRow}
-				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
-				onStoneInfoOpen={openStoneInfoManager}
-				onStoreSearch={openStoreSearch}
-				onFactorySearch={openFactorySearch}
-				onProductSearch={openProductSearch}
-				onAddRow={addStockRow}
 				onRowFocus={handleRowFocus}
+				onRequiredFieldClick={handleRequiredFieldClick}
+				onStoreSearchOpen={openStoreSearch}
+				onProductSearchOpen={openProductSearch}
+				onFactorySearchOpen={openFactorySearch}
+				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
+				onAddStockRow={addStockRow}
+				onStoneInfoOpen={openStoneInfoManager}
+				validateSequence={validateSequence}
+				isRowInputEnabled={isRowInputEnabled}
 			/>
 
 			{/* 하단 버튼 */}

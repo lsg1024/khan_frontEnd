@@ -9,7 +9,7 @@ import { storeApi } from "../../../libs/api/store";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { getLocalDate } from "../../utils/dateUtils";
 import type {
-	StockOrderRowData,
+	StockOrderRows,
 	StockRegisterRequest,
 	StockRegisterResponse,
 } from "../../types/stock";
@@ -31,7 +31,7 @@ const convertToStockOrderRowData = (
 	materials: { materialId: string; materialName: string }[],
 	colors: { colorId: string; colorName: string }[],
 	assistantStones: { assistantStoneId: string; assistantStoneName: string }[]
-): StockOrderRowData => {
+): StockOrderRows => {
 	const calculatedStoneData = calculateStoneDetails(response.stoneInfos);
 
 	const foundMaterial = materials.find(
@@ -42,7 +42,7 @@ const convertToStockOrderRowData = (
 		(a) => a.assistantStoneName === response.assistantStoneName
 	);
 
-	const stockRow: StockOrderRowData = {
+	const stockRow: StockOrderRows = {
 		createAt: response.createAt,
 		id: response.flowCode,
 		storeId: response.storeId,
@@ -82,6 +82,10 @@ const convertToStockOrderRowData = (
 			Number(response.goldWeight) + Number(response.stoneWeight)
 		).toFixed(3) as unknown as number,
 		storeHarry: response.storeHarry,
+		classificationId: response.classificationId,
+		classificationName: response.classificationName,
+		setTypeId: response.setTypeId,
+		setTypeName: response.setTypeName,
 	};
 
 	return { ...stockRow, ...calculatedStoneData };
@@ -92,7 +96,7 @@ const StockRegisterPage: React.FC = () => {
 	const { handleError } = useErrorHandler();
 
 	// 1. 상태: 단일 객체/값에서 배열 또는 Map 형태로 변경
-	const [orderRows, setOrderRows] = useState<StockOrderRowData[]>([]);
+	const [stockRows, setOrderRows] = useState<StockOrderRows[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 
@@ -117,6 +121,22 @@ const StockRegisterPage: React.FC = () => {
 		useState<string>("");
 
 	const currentDate = getLocalDate();
+
+	// 검색 컴포넌트 핸들러들
+	const openStoreSearch = (rowId: string) => {
+		setSelectedRowForStore(rowId);
+		setIsStoreSearchOpen(true);
+	};
+
+	const openProductSearch = (rowId: string) => {
+		setSelectedRowForProduct(rowId);
+		setIsProductSearchOpen(true);
+	};
+
+	const openFactorySearch = (rowId: string) => {
+		setSelectedRowForFactory(rowId);
+		setIsFactoryModalOpen(true);
+	};
 
 	// 검색 결과 선택 핸들러들
 	const handleStoreSelect = async (store: StoreSearchDto) => {
@@ -227,7 +247,7 @@ const StockRegisterPage: React.FC = () => {
 					event.data.type === "REQUEST_STONE_INFO" &&
 					event.data.rowId === rowId
 				) {
-					const row = orderRows.find((r) => r.id === rowId);
+					const row = stockRows.find((r) => r.id === rowId);
 					popup.postMessage(
 						{
 							type: "STONE_INFO_DATA",
@@ -362,7 +382,7 @@ const StockRegisterPage: React.FC = () => {
 
 	const onRowUpdate = (
 		id: string,
-		field: keyof StockOrderRowData,
+		field: keyof StockOrderRows,
 		value: unknown
 	) => {
 		setOrderRows((prevRows) =>
@@ -371,7 +391,7 @@ const StockRegisterPage: React.FC = () => {
 	};
 
 	const handleSave = async () => {
-		if (orderRows.length === 0) {
+		if (stockRows.length === 0) {
 			alert("저장할 정보가 없습니다.");
 			return;
 		}
@@ -384,7 +404,7 @@ const StockRegisterPage: React.FC = () => {
 
 		if (
 			!window.confirm(
-				`총 ${orderRows.length}개의 주문을 일괄 ${actionText}하시겠습니까?`
+				`총 ${stockRows.length}개의 주문을 일괄 ${actionText}하시겠습니까?`
 			)
 		) {
 			return;
@@ -392,7 +412,7 @@ const StockRegisterPage: React.FC = () => {
 
 		setLoading(true);
 		try {
-			const savePromises = orderRows.map((row) => {
+			const savePromises = stockRows.map((row) => {
 				const stockDto: StockRegisterRequest = {
 					createAt: row.createAt,
 					flowCode: row.id,
@@ -433,7 +453,7 @@ const StockRegisterPage: React.FC = () => {
 
 			// 자식 창에서 alert 표시 (주문 생성과 동일한 방식)
 			alert(
-				`총 ${orderRows.length}개의 주문이 성공적으로 ${actionText}되었습니다.`
+				`총 ${stockRows.length}개의 주문이 성공적으로 ${actionText}되었습니다.`
 			);
 
 			// 부모 창으로 메시지 전송 (새로고침용)
@@ -488,11 +508,12 @@ const StockRegisterPage: React.FC = () => {
 		<div className="order-update-page">
 			<div className="page-header">
 				<h3>{pageTitle}</h3>
-				<p>총 {orderRows.length}개의 주문을 등록합니다.</p>
+				<p>총 {stockRows.length}개의 주문을 등록합니다.</p>
 			</div>
 			<div className="bulk-order-item">
 				<StockTable
-					orderRows={orderRows}
+					mode="update"
+					stockRows={stockRows}
 					loading={loading}
 					materials={materials}
 					colors={colors}
@@ -500,6 +521,9 @@ const StockRegisterPage: React.FC = () => {
 					onRowUpdate={onRowUpdate}
 					onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
 					onStoneInfoOpen={openStoneInfoManager}
+					onStoreSearchOpen={openStoreSearch}
+					onProductSearchOpen={openProductSearch}
+					onFactorySearchOpen={openFactorySearch}
 				/>
 			</div>
 
@@ -513,7 +537,7 @@ const StockRegisterPage: React.FC = () => {
 					취소
 				</button>
 				<button className="btn-submit" onClick={handleSave} disabled={loading}>
-					{loading ? "저장 중..." : `전체 ${orderRows.length}개 ${buttonText}`}
+					{loading ? "저장 중..." : `전체 ${stockRows.length}개 ${buttonText}`}
 				</button>
 			</div>
 

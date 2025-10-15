@@ -390,7 +390,7 @@ export const OrderPage = () => {
 
 		const url = `/orders/register-stock?ids=${ids}&type=${stock}`;
 		const NAME = `stockRegisterBulk`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=200";
 
 		const existingPopup = stockRegisterPopups.current.get(NAME);
 

@@ -124,11 +124,11 @@ export const stockApi = {
 
 	// 재고 직접 생성
 	createStock: async (
-		orderType: string,
-		stockData: StockCreateRequest
+		stockData: StockCreateRequest,
+		orderType: string
 	): Promise<ApiResponse<string>> => {
 		const params = { order_type: orderType };
-
+		console.log("params:", params);
 		return apiRequest.post<string>("order/stocks", stockData, {
 			params,
 		});
