@@ -2,7 +2,7 @@ import React from "react";
 import type { StockOrderRowData } from "../../../types/stock";
 import "../../../styles/pages/StockRegisterPage.css";
 
-interface StockTableProps {
+interface BaseStockTableProps {
 	orderRows: StockOrderRowData[];
 	loading: boolean;
 	materials: { materialId: string; materialName: string }[];
@@ -20,10 +20,61 @@ interface StockTableProps {
 	onProductSearch?: (rowId: string) => void;
 	onAddRow?: () => void;
 	onRowFocus?: (rowId: string) => void;
+	isRowInputEnabled?: (currentIndex: number) => boolean;
 }
+
+interface CreateModeProps extends BaseStockTableProps {
+	mode: "create";
+	// Create 모드에서 필수
+	onRowDelete: (id: string) => void;
+	onAddOrderRow: () => void;
+	onRowFocus: (rowId: string) => Promise<void>;
+	onRequiredFieldClick: (
+		currentRowId: string,
+		fieldType: "store" | "product" | "material" | "color"
+	) => void;
+	onAssistanceStoneArrivalChange: (id: string, value: string) => void;
+	validateSequence: (
+		rowId: string,
+		currentStep: "product" | "material" | "color" | "other"
+	) => boolean;
+	isRowInputEnabled: (currentIndex: number) => boolean;
+
+	// Create 모드에서 선택적
+	onStoreSearchOpen?: (rowId: string) => void;
+	onProductSearchOpen?: (rowId: string) => void;
+	onFactorySearchOpen?: (rowId: string) => void;
+}
+
+// Update 모드 전용 Props
+interface UpdateModeProps extends BaseStockTableProps {
+	mode: "update";
+	// Update 모드에서 필수
+	onStoreSearchOpen: (rowId: string) => void;
+	onProductSearchOpen: (rowId: string) => void;
+	onFactorySearchOpen: (rowId: string) => void;
+
+	// Update 모드에서 선택적
+	onRowDelete?: (id: string) => void;
+	onAddOrderRow?: () => void;
+	onRowFocus?: (rowId: string) => Promise<void>;
+	onRequiredFieldClick?: (
+		currentRowId: string,
+		fieldType: "store" | "product" | "material" | "color"
+	) => void;
+	onAssistanceStoneArrivalChange?: (id: string, value: string) => void;
+	validateSequence?: (
+		rowId: string,
+		currentStep: "product" | "material" | "color" | "other"
+	) => boolean;
+	isRowInputEnabled?: (currentIndex: number) => boolean;
+}
+
+type StockTableProps = CreateModeProps | UpdateModeProps;
 
 const StockTable: React.FC<StockTableProps> = (props) => {
 	const {
+		mode = "create",
 		orderRows,
 		loading,
 		materials,
@@ -41,27 +92,32 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 		}
 	};
 
+	const safeOnRowDelete = (id: string) => {
+		if ("onRowDelete" in props && props.onRowDelete) {
+			props.onRowDelete(id);
+		}
+	};
+
 	const safeOnStoneInfoOpen = (rowId: string) => {
 		if (props.onStoneInfoOpen) {
 			props.onStoneInfoOpen(rowId);
 		}
 	};
 
-	const safeOnStoreSearch = (rowId: string) => {
-		if (props.onStoreSearch) {
-			props.onStoreSearch(rowId);
+	const safeOnStoreSearchOpen = (rowId: string) => {
+		if ("onStoreSearchOpen" in props && props.onStoreSearchOpen) {
+			props.onStoreSearchOpen(rowId);
+		}
+	};
+	const safeOnProductSearchOpen = (rowId: string) => {
+		if ("onProductSearchOpen" in props && props.onProductSearchOpen) {
+			props.onProductSearchOpen(rowId);
 		}
 	};
 
-	const safeOnFactorySearch = (rowId: string) => {
-		if (props.onFactorySearch) {
-			props.onFactorySearch(rowId);
-		}
-	};
-
-	const safeOnProductSearch = (rowId: string) => {
-		if (props.onProductSearch) {
-			props.onProductSearch(rowId);
+	const safeOnFactorySearchOpen = (rowId: string) => {
+		if ("onFactorySearchOpen" in props && props.onFactorySearchOpen) {
+			props.onFactorySearchOpen(rowId);
 		}
 	};
 
@@ -71,59 +127,63 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 		}
 	};
 
+	const safeIsRowInputEnabled = (currentIndex: number): boolean => {
+		if ("isRowInputEnabled" in props && props.isRowInputEnabled) {
+			return props.isRowInputEnabled(currentIndex);
+		}
+		return true; // update 모드에서는 기본적으로 true
+	};
+
+	const safeOnRequiredFieldClick = (
+		currentRowId: string,
+		fieldType: "store" | "product" | "material" | "color"
+	) => {
+		if ("onRequiredFieldClick" in props && props.onRequiredFieldClick) {
+			props.onRequiredFieldClick(currentRowId, fieldType);
+		}
+	};
+
 	return (
 		<div className="stock-table-container">
 			<table className="stock-update-table">
 				<thead>
 					{/* 기본 정보 */}
 					<tr>
-						<th className="none">No</th>
-						<th className="none">
+						<th>No</th>
+						<th>삭제</th>
+						<th>
 							<span className="required-field-basic">*</span>거래처
 						</th>
-						<th className="none">
+						<th>
 							<span className="required-field-basic">*</span>모델번호
 						</th>
-						<th className="none">제조사</th>
-						<th className="none">
+						<th>제조사</th>
+						<th>
 							<span className="required-field-basic">*</span>재질
 						</th>
-						<th className="none">
+						<th>
 							<span className="required-field-basic">*</span>색상
 						</th>
-						<th className="none" colSpan={3}>
-							보조석
-						</th>
-						<th className="none" colSpan={2}>
-							상품 단가
-						</th>
-						<th className="none" colSpan={3}>
-							알 단가
-						</th>
-						<th className="none" colSpan={2}>
-							알 개수
-						</th>
-						<th className="none">알중량</th>
-						<th className="none" colSpan={2}>
-							알 메모사항
-						</th>
-						<th className="none">사이즈</th>
-						<th className="none">기타</th>
+						<th colSpan={3}>보조석</th>
+						<th colSpan={2}>상품 단가</th>
+						<th colSpan={3}>알 단가</th>
+						<th colSpan={2}>알 개수</th>
+						<th>알중량</th>
+						<th colSpan={2}>알 메모사항</th>
+						<th>사이즈</th>
+						<th>기타</th>
 
 						{/* 총중량 (3 컬럼) */}
-						<th className="none" colSpan={3}>
-							총중량
-						</th>
+						<th colSpan={3}>총중량</th>
 
 						{/* 매입헤리 */}
-						<th className="none">매입헤리</th>
+						<th>매입헤리</th>
 
 						{/* 매입단가 (2 컬럼) */}
-						<th className="none" colSpan={2}>
-							매입단가
-						</th>
+						<th colSpan={2}>매입단가</th>
 					</tr>
 					<tr>
+						<th></th>
 						<th></th>
 						<th></th>
 						<th></th>
@@ -179,37 +239,162 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								style={rowStyle}
 								className={isStockStatus ? "stock-status-row" : ""}
 							>
-								<td className="read-only-cell">{index + 1}</td>
-								{/* 거래처 */}
-								<td>
+								<td className="no-cell">{index + 1}</td>
+								<td className="no-cell">
 									<button
-										type="button"
-										onClick={(e) => {
-											e.stopPropagation();
-											safeOnStoreSearch(row.id);
-										}}
-										className="search-btn"
+										className="btn-delete-row"
+										onClick={() => safeOnRowDelete(row.id)}
 										disabled={loading || isStockStatus}
 									>
-										{row.storeName || "거래처 선택"}
+										🗑️
 									</button>
+								</td>
+								{/* 거래처 */}
+								<td className="search-type-cell">
+									<div className="search-field-container">
+										<input
+											type="text"
+											value={row.storeName}
+											readOnly
+											placeholder="거래처"
+											disabled={!safeIsRowInputEnabled(index) || isStockStatus}
+											onClick={() => {
+												if (
+													mode === "create" &&
+													safeIsRowInputEnabled(index) &&
+													!row.storeName &&
+													!isStockStatus
+												) {
+													safeOnRequiredFieldClick(row.id, "store");
+												}
+											}}
+											onFocus={() => {
+												if (
+													mode === "create" &&
+													safeIsRowInputEnabled(index) &&
+													!isStockStatus
+												) {
+													safeOnRowFocus(row.id);
+												}
+											}}
+										/>
+										<span
+											className="search-icon"
+											onClick={() => {
+												if (safeIsRowInputEnabled(index) && !isStockStatus) {
+													safeOnStoreSearchOpen(row.id);
+												} else if (isStockStatus) {
+													alert("재고 상태에서는 수정할 수 없습니다.");
+												} else {
+													alert("이전 주문장을 완성해 주세요.");
+												}
+											}}
+											style={{
+												opacity:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? 0.5
+														: 1,
+												cursor:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? "not-allowed"
+														: "pointer",
+											}}
+										>
+											🔍
+										</span>
+									</div>
 								</td>
 								{/* 상품 */}
-								<td>
-									<button
-										type="button"
-										onClick={(e) => {
-											e.stopPropagation();
-											safeOnProductSearch(row.id);
-										}}
-										className="search-btn"
-										disabled={loading || isStockStatus}
-									>
-										{row.productName || "상품 선택"}
-									</button>
+								<td className="search-type-cell">
+									<div className="search-field-container">
+										<input
+											type="text"
+											value={row.productName}
+											readOnly
+											placeholder="모델번호"
+											disabled={!safeIsRowInputEnabled(index) || isStockStatus}
+											onClick={() => {
+												if (
+													mode === "create" &&
+													safeIsRowInputEnabled(index) &&
+													!row.productName &&
+													!isStockStatus
+												) {
+													safeOnRequiredFieldClick(row.id, "product");
+												}
+											}}
+											onFocus={() => {
+												if (
+													mode === "create" &&
+													safeIsRowInputEnabled(index) &&
+													!isStockStatus
+												) {
+													safeOnRowFocus(row.id);
+												}
+											}}
+										/>
+										<span
+											className="search-icon"
+											onClick={() => {
+												if (safeIsRowInputEnabled(index) && !isStockStatus) {
+													safeOnProductSearchOpen(row.id);
+												} else if (isStockStatus) {
+													alert("재고 상태에서는 수정할 수 없습니다.");
+												} else {
+													alert("이전 주문장을 완성해 주세요.");
+												}
+											}}
+											style={{
+												opacity:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? 0.5
+														: 1,
+												cursor:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? "not-allowed"
+														: "pointer",
+											}}
+										>
+											🔍
+										</span>
+									</div>
 								</td>
-								<td className="read-only-cell">{row.factoryName}</td>
-								<td>
+								<td className="search-type-cell">
+									<div className="search-field-container">
+										<input
+											type="text"
+											value={row.factoryName}
+											readOnly
+											placeholder="제조사"
+											disabled={isStockStatus}
+										/>
+										<span
+											className="search-icon"
+											onClick={() => {
+												if (safeIsRowInputEnabled(index) && !isStockStatus) {
+													safeOnFactorySearchOpen(row.id);
+												} else if (isStockStatus) {
+													alert("재고 상태에서는 수정할 수 없습니다.");
+												} else {
+													alert("이전 주문장을 완성해 주세요.");
+												}
+											}}
+											style={{
+												opacity:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? 0.5
+														: 1,
+												cursor:
+													!safeIsRowInputEnabled(index) || isStockStatus
+														? "not-allowed"
+														: "pointer",
+											}}
+										>
+											🔍
+										</span>
+									</div>
+								</td>
+								<td className="drop-down-cell">
 									<select
 										value={row.materialId}
 										onChange={(e) => {
@@ -237,7 +422,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										))}
 									</select>
 								</td>
-								<td>
+								<td className="drop-down-cell">
 									<select
 										value={row.colorId}
 										onChange={(e) => {
@@ -263,7 +448,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 									</select>
 								</td>
 								{/* 보조석 */}
-								<td>
+								<td className="drop-down-cell2">
 									<select
 										value={row.assistantStoneId}
 										onChange={(e) => {
@@ -291,7 +476,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										))}
 									</select>
 								</td>
-								<td>
+								<td className="drop-down-cell-small">
 									<select
 										value={row.assistantStone ? "Y" : "N"}
 										onChange={(e) => {
@@ -331,7 +516,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								<td>
+								<td className="money-cell">
 									<input
 										type="text"
 										value={row.productLaborCost.toLocaleString()}
@@ -340,7 +525,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
-								<td>
+								<td className="money-cell">
 									<input
 										type="text"
 										value={row.productAddLaborCost.toLocaleString()}
@@ -351,7 +536,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										placeholder="0"
 									/>
 								</td>
-								<td>
+								<td className="money-cell">
 									<input
 										type="text"
 										value={row.mainStonePrice.toLocaleString()}
@@ -363,7 +548,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
-								<td>
+								<td className="money-cell">
 									<div className="search-field-container">
 										<input
 											type="text"
@@ -383,7 +568,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										</span>
 									</div>
 								</td>
-								<td>
+								<td className="money-cell">
 									<input
 										type="text"
 										value={row.additionalStonePrice.toLocaleString()}
@@ -395,7 +580,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										disabled={loading}
 									/>
 								</td>
-								<td>
+								<td className="stone-count-cell">
 									<input
 										type="text"
 										value={row.mainStoneCount.toLocaleString()}
@@ -404,7 +589,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
-								<td>
+								<td className="stone-count-cell">
 									<input
 										type="text"
 										value={row.assistanceStoneCount.toLocaleString()}
@@ -413,7 +598,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
-								<td>
+								<td className="stone-weight-cell">
 									<input
 										type="text"
 										value={row.stoneWeightTotal.toLocaleString()}

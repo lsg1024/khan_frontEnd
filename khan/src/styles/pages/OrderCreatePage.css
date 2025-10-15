@@ -5,7 +5,7 @@
 	background-color: var(--background-color);
 	min-height: 100vh;
 	margin: 0 auto;
-	background: white;
+	background: #f2f2f2;
 }
 
 /* 재고 상태 행 스타일 */
@@ -731,7 +731,7 @@
 
 .order-create-table th:nth-child(23),
 .order-create-table td:nth-child(23) {
-	max-width: 80px; /* 메모 */
+	width: 80px; /* 메모 */
 }
 
 .order-create-table th:nth-child(24),

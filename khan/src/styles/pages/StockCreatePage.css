@@ -1,9 +1,11 @@
 /* StockCreatePage 스타일 */
 
 .stock-create-page {
-	padding: 20px;
-	max-width: 1600px;
+	padding: 10px;
+	background-color: var(--background-color);
+	min-height: 100vh;
 	margin: 0 auto;
+	background: #f2f2f2;
 }
 
 .error-message {
@@ -27,8 +29,8 @@
 	display: flex;
 	justify-content: center;
 	gap: 12px;
-	margin-top: 24px;
-	padding: 20px 0;
+	margin-top: 10px;
+	padding: 10px 0;
 	border-top: 1px solid #e5e7eb;
 }
 

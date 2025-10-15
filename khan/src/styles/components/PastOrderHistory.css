@@ -12,22 +12,45 @@
 }
 
 .order-history-table-container {
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	overflow-x: auto;
-	border: 1px solid #dee2e6;
-	border-radius: 6px;
+	max-height: 400px;
+	overflow-y: auto;
+	padding: 5px;
+	margin-bottom: 8px;
 }
 
 .order-history-table {
-	width: 100%;
+	table-layout: fixed;
 	border-collapse: collapse;
+	font-size: 12px;
+	min-width: 1350px;
+	width: 100%;
+}
+
+.order-history-table thead {
+	background-color: #f8f9fa;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+.order-history-table td {
+	text-align: center;
+	border: 1px solid #ddd;
 	font-size: 11px;
-	min-width: 1400px;
+	white-space: nowrap;
+	min-height: 30px;
+	color: #000000;
+	overflow-x: auto;
+	white-space: nowrap;
 }
 
 .order-history-table th,
 .order-history-table td {
 	border: 1px solid #dee2e6;
-	padding: 6px 4px;
 	text-align: center;
 	white-space: nowrap;
 }
@@ -46,82 +69,6 @@
 	background-color: #e3f2fd;
 }
 
-/* 반응형 디자인 */
-@media (max-width: 1200px) {
-	.order-history-table {
-		font-size: 10px;
-	}
-
-	.order-history-table th,
-	.order-history-table td {
-		padding: 4px 2px;
-	}
-}
-
-@media (max-width: 768px) {
-	.order-history-section {
-		margin: 10px 0;
-	}
-
-	.order-history-section h2 {
-		font-size: 16px;
-	}
-}
-
-.order-history-placeholder {
-	text-align: center;
-	color: #6c757d;
-	font-style: italic;
-	padding: 40px;
-	background-color: #f8f9fa;
-	border-radius: 4px;
-}
-
-.order-history-table-container {
-	background: white;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	overflow-x: auto;
-	max-height: 400px;
-	overflow-y: auto;
-	padding: 5px;
-}
-
-.order-history-table {
-	table-layout: fixed;
-	border-collapse: collapse;
-	font-size: 12px;
-	min-width: 1350px;
-	width: 100%;
-}
-
-.order-history-table thead {
-	background-color: #f8f9fa;
-	position: sticky;
-	top: 0;
-	z-index: 10;
-}
-
-.order-history-table th {
-	text-align: center;
-	border: 1px solid #ddd;
-	font-weight: 600;
-	color: #333;
-	font-size: 11px;
-	white-space: nowrap;
-	background-color: #f8f9fa;
-}
-
-.order-history-table td {
-	text-align: center;
-	border: 1px solid #ddd;
-	font-size: 11px;
-	white-space: nowrap;
-	min-height: 30px;
-	color: #000000;
-	overflow-x: auto;
-	white-space: nowrap;
-}
 
 .order-history-table tbody tr td:empty {
 	background-color: #fafafa;
@@ -217,4 +164,26 @@
 }
 .order-history-table .col-total-fee {
 	width: 80px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+	.order-history-table {
+		font-size: 10px;
+	}
+
+	.order-history-table th,
+	.order-history-table td {
+		padding: 4px 2px;
+	}
+}
+
+@media (max-width: 768px) {
+	.order-history-section {
+		margin: 10px 0;
+	}
+
+	.order-history-section h2 {
+		font-size: 16px;
+	}
 }
