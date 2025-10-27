@@ -390,7 +390,7 @@ export const OrderPage = () => {
 
 		const url = `/orders/register-stock?ids=${ids}&type=${stock}`;
 		const NAME = `stockRegisterBulk`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=200";
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=350";
 
 		const existingPopup = stockRegisterPopups.current.get(NAME);
 
@@ -423,7 +423,7 @@ export const OrderPage = () => {
 
 		const url = `/orders/register-stock?ids=${ids}&type=${sale}`;
 		const NAME = `stockRegisterBulk`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=300";
 
 		const existingPopup = stockRegisterPopups.current.get(NAME);
 

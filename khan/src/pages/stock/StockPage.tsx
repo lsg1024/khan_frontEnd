@@ -70,9 +70,9 @@ export const StockPage = () => {
 
 	// No 클릭 시 수정 페이지 열기 (단일 선택)
 	const handleStockNoClick = (flowCode: string) => {
-		const url = `/stocks/update/stock?flowCodes=${flowCode}`;
+		const url = `/stocks/update/${flowCode}`;
 		const NAME = `stock_update_${flowCode}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=350";
 		const existingPopup = stockUpdatePopups.current.get(flowCode);
 
 		if (existingPopup && !existingPopup.closed) {
@@ -357,6 +357,11 @@ export const StockPage = () => {
 			}
 
 			if (event.data.type === "STOCK_UPDATED") {
+				loadStocks(searchFilters, currentPage);
+				setSelectedStocks([]); // 선택 초기화
+			}
+
+			if (event.data.type === "STOCK_UPDATE_SUCCESS") {
 				loadStocks(searchFilters, currentPage);
 				setSelectedStocks([]); // 선택 초기화
 			}

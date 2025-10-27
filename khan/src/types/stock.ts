@@ -30,15 +30,15 @@ export interface StockOrderRows {
 	assistanceStonePrice: number | ""; // 보조 판매단가
 	mainStoneCount: number | ""; // 메인 개당알수
 	assistanceStoneCount: number | ""; // 보조 개당알수
-	additionalStonePrice: number | ""; // 추가 스톤 판매단가
-	stoneWeightTotal: number | ""; // 알중량
+	stoneAddLaborCost: number | ""; // 추가 스톤 판매단가
+	stoneWeightTotal: number; // 알중량 합계 (UI 표시용)
 	// 보조석 관련 필드
 	assistantStoneId: string;
 	assistantStone: boolean; // 입고여부 (Y/N)
 	assistantStoneName: string; // 보조석 아이디 (없음, 랩, 천연, 모이사, 유색석)
 	assistantStoneCreateAt: string; // 입고날짜
 
-	totalWeight: number;
+	totalWeight: number; // 총중량
 	storeHarry: string;
 	// 분류 및 세트 타입 필드 추가
 	classificationId: string;
@@ -86,8 +86,8 @@ export interface StockCreateRequest {
 }
 
 export interface StockRegisterResponse {
-	createAt: string;
 	flowCode: string;
+	createAt: string;
 	storeId: string;
 	storeName: string;
 	factoryId: string;
@@ -176,4 +176,53 @@ export interface StockResponse {
 	stoneWeight: string;
 	productPurchaseCost: number;
 	stonePurchaseCost: number;
+}
+
+export interface StockResponseDetail {
+	flowCode: string;
+	createAt: string;
+	originalProductStatus: string;
+	classificationName: string;
+	productName: string;
+	storeName: string;
+	factoryName: string;
+	materialName: string;
+	colorName: string;
+	setTypeName: string;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
+	productSize: string;
+	stockNote: string;
+	productLaborCost: number;
+	productAddLaborCost: number;
+	goldWeight: string;
+	stoneWeight: string;
+	productPurchaseCost: number;
+	storeHarry: string;
+	assistantStoneId: string;
+	assistantStone: boolean;
+	assistantStoneName: string;
+	assistantStoneCreateAt: string;
+	stoneInfos: StoneInfo[];
+	stoneAddLaborCost: number; // 추가 스톤 판매단가
+}
+
+export interface StockUpdateRequest {
+	productSize: string;
+	isProductWeightSale: boolean;
+	stockNote: string;
+	productPurchaseCost: number;
+	productLaborCost: number;
+	productAddLaborCost: number;
+	goldWeight: string;
+	stoneWeight: string;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
+	assistantStoneId: string;
+	assistantStone: boolean;
+	assistantStoneName: string;
+	assistantStoneCreateAt: string;
+	stoneInfos: StoneInfo[];
+	stoneAddLaborCost: number;
+	totalStonePurchaseCost: number;
 }

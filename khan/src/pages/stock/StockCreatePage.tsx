@@ -4,6 +4,7 @@ import { orderApi } from "../../../libs/api/order";
 import { stockApi } from "../../../libs/api/stock";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
+import { goldHarryApi } from "../../../libs/api/goldHarry";
 import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { productApi } from "../../../libs/api/product";
 import { useErrorHandler } from "../../utils/errorHandler";
@@ -59,6 +60,9 @@ export const StockCreatePage = () => {
 	>([]);
 	const [assistantStones, setAssistantStones] = useState<
 		{ assistantStoneId: string; assistantStoneName: string }[]
+	>([]);
+	const [goldHarries, setGoldHarries] = useState<
+		{ goldHarryId: string; goldHarry: string }[]
 	>([]);
 
 	// 상품 상세 정보 관련 state
@@ -147,8 +151,8 @@ export const StockCreatePage = () => {
 			assistanceStonePrice: "",
 			mainStoneCount: "",
 			assistanceStoneCount: "",
-			additionalStonePrice: "",
-			stoneWeightTotal: "",
+			stoneAddLaborCost: "",
+			stoneWeightTotal: 0,
 			assistantStoneId:
 				defaultAssistantStone?.assistantStoneId.toString() || "1",
 			assistantStone: false,
@@ -485,6 +489,11 @@ export const StockCreatePage = () => {
 				"productLaborCost",
 				product.productLaborCost || 0
 			);
+			updateStockRow(
+				selectedRowForProduct,
+				"productPurchaseCost",
+				product.productPurchaseCost || 0
+			);
 
 			// 상품 상세 정보를 가져와서 classification과 setType 정보 설정
 			const productDetail = await fetchProductDetail(productIdValue);
@@ -602,11 +611,6 @@ export const StockCreatePage = () => {
 					);
 					updateStockRow(
 						rowId,
-						"additionalStonePrice",
-						calculatedStoneData.additionalStonePrice
-					);
-					updateStockRow(
-						rowId,
 						"mainStoneCount",
 						calculatedStoneData.mainStoneCount
 					);
@@ -618,7 +622,7 @@ export const StockCreatePage = () => {
 					updateStockRow(
 						rowId,
 						"stoneWeightTotal",
-						calculatedStoneData.stoneWeightTotal
+						calculatedStoneData.stoneWeight
 					);
 				}
 			};
@@ -672,7 +676,7 @@ export const StockCreatePage = () => {
 							mainStoneCount: "",
 							assistanceStoneCount: "",
 							additionalStonePrice: "",
-							stoneWeightTotal: "",
+							stoneWeightTotal: 0,
 							assistantStone: false,
 							assistantStoneId:
 								defaultAssistantStone?.assistantStoneId.toString() || "1",
@@ -800,11 +804,13 @@ export const StockCreatePage = () => {
 			try {
 				setLoading(true);
 
-				const [materialRes, colorRes, assistantStoneRes] = await Promise.all([
-					materialApi.getMaterials(),
-					colorApi.getColors(),
-					assistantStoneApi.getAssistantStones(),
-				]);
+				const [materialRes, colorRes, assistantStoneRes, goldHarryRes] =
+					await Promise.all([
+						materialApi.getMaterials(),
+						colorApi.getColors(),
+						assistantStoneApi.getAssistantStones(),
+						goldHarryApi.getGoldHarry(),
+					]);
 
 				if (materialRes.success) {
 					const materials = (materialRes.data || []).map((m) => ({
@@ -826,6 +832,13 @@ export const StockCreatePage = () => {
 						assistantStoneName: a.assistantStoneName,
 					}));
 					setAssistantStones(assistantStones);
+				}
+				if (goldHarryRes.success) {
+					const goldHarries = (goldHarryRes.data || []).map((g) => ({
+						goldHarryId: g.goldHarryId?.toString() || "",
+						goldHarry: g.goldHarry,
+					}));
+					setGoldHarries(goldHarries);
 				}
 
 				// 초기 5개 행 생성
@@ -864,8 +877,8 @@ export const StockCreatePage = () => {
 						assistanceStonePrice: "",
 						mainStoneCount: "",
 						assistanceStoneCount: "",
-						additionalStonePrice: "",
-						stoneWeightTotal: "",
+						stoneAddLaborCost: "",
+						stoneWeightTotal: 0,
 						assistantStoneId:
 							defaultAssistantStone?.assistantStoneId.toString() || "1",
 						assistantStone: false,
@@ -1021,6 +1034,7 @@ export const StockCreatePage = () => {
 				materials={materials}
 				colors={colors}
 				assistantStones={assistantStones}
+				goldHarries={goldHarries}
 				onRowDelete={resetOrderRow}
 				onRowUpdate={updateStockRow}
 				onRowFocus={handleRowFocus}

@@ -113,7 +113,7 @@
 }
 
 .drop-down-cell {
-    width: 50px;
+    width: 60px;
 }
 
 .drop-down-cell2 {
@@ -131,6 +131,11 @@
 .money-cell {
 	width: 50px;
 }
+
+.money-cell-large {
+	width: 70px;
+}
+
 
 .stone-count-cell {
 	width: 30px;

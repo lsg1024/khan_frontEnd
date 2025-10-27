@@ -5,6 +5,7 @@ import { saleApi } from "../../../libs/api/sale";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
 import { assistantStoneApi } from "../../../libs/api/assistantStone";
+import { goldHarryApi } from "../../../libs/api/goldHarry";
 import { storeApi } from "../../../libs/api/store";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { getLocalDate } from "../../utils/dateUtils";
@@ -19,7 +20,6 @@ import ProductSearch from "../../components/common/product/ProductSearch";
 import type { FactorySearchDto } from "../../types/factory";
 import type { StoreSearchDto } from "../../types/store";
 import type { ProductDto } from "../../types/product";
-import "../../styles/pages/OrderCreatePage.css";
 import StockTable from "../../components/common/stock/StockTable";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 
@@ -71,8 +71,9 @@ const convertToStockOrderRowData = (
 		assistanceStonePrice: calculatedStoneData.assistanceStonePrice,
 		mainStoneCount: calculatedStoneData.mainStoneCount,
 		assistanceStoneCount: calculatedStoneData.assistanceStoneCount,
-		additionalStonePrice: calculatedStoneData.additionalStonePrice,
-		stoneWeightTotal: calculatedStoneData.stoneWeightTotal,
+		// 서버에서 받은 stoneAddLaborCost 값 사용 (undefined이면 0)
+		stoneAddLaborCost: response.stoneAddLaborCost || 0,
+		stoneWeightTotal: calculatedStoneData.stoneWeight, // 계산된 알중량 합계
 		// 보조석 관련 필드
 		assistantStone: response.assistantStone || false,
 		assistantStoneId: foundAssistantStone?.assistantStoneId || "",
@@ -88,7 +89,7 @@ const convertToStockOrderRowData = (
 		setTypeName: response.setTypeName,
 	};
 
-	return { ...stockRow, ...calculatedStoneData };
+	return stockRow;
 };
 
 const StockRegisterPage: React.FC = () => {
@@ -109,6 +110,9 @@ const StockRegisterPage: React.FC = () => {
 	>([]);
 	const [assistantStones, setAssistantStones] = useState<
 		{ assistantStoneId: string; assistantStoneName: string }[]
+	>([]);
+	const [goldHarries, setGoldHarries] = useState<
+		{ goldHarryId: string; goldHarry: string }[]
 	>([]);
 
 	const [isStoreSearchOpen, setIsStoreSearchOpen] = useState(false);
@@ -199,6 +203,17 @@ const StockRegisterPage: React.FC = () => {
 				"factoryName",
 				product.factoryName || ""
 			);
+
+			onRowUpdate(
+				selectedRowForProduct,
+				"productPurchaseCost",
+				product.productPurchaseCost || 0
+			);
+			onRowUpdate(
+				selectedRowForProduct,
+				"productLaborCost",
+				product.productLaborCost || 0
+			);
 		}
 		setIsProductSearchOpen(false);
 		setSelectedRowForProduct("");
@@ -278,8 +293,8 @@ const StockRegisterPage: React.FC = () => {
 					);
 					onRowUpdate(
 						rowId,
-						"additionalStonePrice",
-						calculatedStoneData.additionalStonePrice
+						"stoneAddLaborCost",
+						calculatedStoneData.stoneAddLaborCost
 					);
 					onRowUpdate(
 						rowId,
@@ -291,11 +306,28 @@ const StockRegisterPage: React.FC = () => {
 						"assistanceStoneCount",
 						calculatedStoneData.assistanceStoneCount
 					);
+
+					// stoneWeightTotal 업데이트 (UI 표시용)
 					onRowUpdate(
 						rowId,
 						"stoneWeightTotal",
-						calculatedStoneData.stoneWeightTotal
+						calculatedStoneData.stoneWeight
 					);
+
+					// stoneWeight와 goldWeight 자동 계산
+					const row = stockRows.find((r) => r.id === rowId);
+					if (row) {
+						const totalWeight = Number(row.totalWeight || 0);
+						const newStoneWeightTotal = calculatedStoneData.stoneWeight;
+
+						// goldWeight = 총중량 - 알중량
+						const calculatedGoldWeight = totalWeight - newStoneWeightTotal;
+
+						// goldWeight 업데이트 (총중량 - 알중량)
+						onRowUpdate(rowId, "goldWeight", calculatedGoldWeight.toFixed(3));
+						// stoneWeight 업데이트 (알중량 기준)
+						onRowUpdate(rowId, "stoneWeight", newStoneWeightTotal.toFixed(3));
+					}
 				}
 			};
 			window.addEventListener("message", handleMessage);
@@ -321,13 +353,19 @@ const StockRegisterPage: React.FC = () => {
 
 		const loadAllData = async () => {
 			try {
-				const [materialRes, colorRes, assistantStoneRes, stockOrdersRes] =
-					await Promise.all([
-						materialApi.getMaterials(),
-						colorApi.getColors(),
-						assistantStoneApi.getAssistantStones(),
-						stockApi.getStockDetail(ids),
-					]);
+				const [
+					materialRes,
+					colorRes,
+					assistantStoneRes,
+					goldHarryRes,
+					stockOrdersRes,
+				] = await Promise.all([
+					materialApi.getMaterials(),
+					colorApi.getColors(),
+					assistantStoneApi.getAssistantStones(),
+					goldHarryApi.getGoldHarry(),
+					stockApi.getStockDetail(ids),
+				]);
 
 				const loadedMaterials = materialRes.success
 					? (materialRes.data || []).map((m) => ({
@@ -347,9 +385,17 @@ const StockRegisterPage: React.FC = () => {
 							assistantStoneName: a.assistantStoneName,
 					  }))
 					: [];
+				const loadedGoldHarries = goldHarryRes.success
+					? (goldHarryRes.data || []).map((h) => ({
+							goldHarryId: h.goldHarryId?.toString() || "",
+							goldHarry: h.goldHarry, // goldHarryName이 아니라 goldHarry
+					  }))
+					: [];
+
 				setMaterials(loadedMaterials);
 				setColors(loadedColors);
 				setAssistantStones(loadedAssistantStones);
+				setGoldHarries(loadedGoldHarries);
 				if (stockOrdersRes.success && stockOrdersRes.data) {
 					const stockResponses = stockOrdersRes.data;
 
@@ -368,6 +414,10 @@ const StockRegisterPage: React.FC = () => {
 							loadedAssistantStones
 						)
 					);
+
+					console.log("변환된 stockRows:", allRows);
+					console.log("첫 번째 row의 storeHarry:", allRows[0]?.storeHarry);
+
 					setOrderRows(allRows);
 				}
 			} catch (err) {
@@ -437,7 +487,7 @@ const StockRegisterPage: React.FC = () => {
 					assistantStoneName: row.assistantStoneName || "",
 					assistantStoneCreateAt: row.assistantStoneCreateAt || "",
 					stoneInfos: row.stoneInfos || [],
-					stoneAddLaborCost: row.productAddLaborCost || 0,
+					stoneAddLaborCost: row.stoneAddLaborCost || 0,
 				};
 
 				// type에 따라 다른 API 호출
@@ -518,6 +568,7 @@ const StockRegisterPage: React.FC = () => {
 					materials={materials}
 					colors={colors}
 					assistantStones={assistantStones}
+					goldHarries={goldHarries}
 					onRowUpdate={onRowUpdate}
 					onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
 					onStoneInfoOpen={openStoneInfoManager}

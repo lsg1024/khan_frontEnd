@@ -671,33 +671,13 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 									/>
 								</td>
 								<td>
-									<input
-										type="text"
-										value={row.assistanceStonePrice.toLocaleString()}
-										readOnly
-										disabled={loading}
-										style={{ backgroundColor: "#f5f5f5" }}
-									/>
-								</td>
-								<td>
 									<div className="search-field-container">
 										<input
 											type="text"
-											value={row.additionalStonePrice.toLocaleString()}
-											onChange={(e) => {
-												const value = e.target.value.replace(/,/g, "");
-												onRowUpdate(row.id, "additionalStonePrice", value);
-											}}
-											placeholder="0"
-											disabled={loading || !safeIsRowInputEnabled(index)}
-											onFocus={() => {
-												if (mode === "create" && safeIsRowInputEnabled(index)) {
-													safeOnRowFocus(row.id);
-												}
-											}}
-											style={{
-												opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-											}}
+											value={row.assistanceStonePrice.toLocaleString()}
+											readOnly
+											disabled={loading}
+											style={{ backgroundColor: "#f5f5f5" }}
 										/>
 										<span
 											className="search-icon"
@@ -718,6 +698,26 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											🔍
 										</span>
 									</div>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.stoneAddLaborCost.toLocaleString()}
+										onChange={(e) => {
+											const value = e.target.value.replace(/,/g, "");
+											onRowUpdate(row.id, "stoneAddLaborCost", value);
+										}}
+										placeholder="0"
+										disabled={loading || !safeIsRowInputEnabled(index)}
+										onFocus={() => {
+											if (mode === "create" && safeIsRowInputEnabled(index)) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+										}}
+									/>
 								</td>
 								<td>
 									<input

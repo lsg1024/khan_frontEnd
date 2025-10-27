@@ -34,6 +34,7 @@ export interface OrderResponseDetail {
 	assistantStoneName: string | null;
 	assistantStoneCreateAt: string | null;
 	stoneInfos: StoneInfo[];
+	stoneAddLaborCost?: number; // 추가 스톤 판매단가
 }
 
 export interface OrderRequestDetail {
@@ -121,6 +122,7 @@ export interface OrderCreateRequest {
 	createAt: string;
 	shippingAt: string;
 	stoneInfos: StoneInfo[];
+	stoneAddLaborCost: number;
 }
 
 // 과거 주문 내역
@@ -185,7 +187,7 @@ export interface OrderRowData {
 	assistanceStonePrice: number | ""; // 보조 판매단가
 	mainStoneCount: number | ""; // 메인 개당알수
 	assistanceStoneCount: number | ""; // 보조 개당알수
-	additionalStonePrice: number | ""; // 추가 스톤 판매단가
+	stoneAddLaborCost: number | ""; // 추가 스톤 판매단가
 	stoneWeightTotal: number | ""; // 알중량
 	createAt: string; // 생성일
 	shippingAt: string; // 출고일

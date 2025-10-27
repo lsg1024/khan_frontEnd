@@ -43,7 +43,7 @@ const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
 	const details = {
 		mainStonePrice: 0,
 		assistanceStonePrice: 0,
-		additionalStonePrice: 0,
+		stoneAddLaborCost: 0,
 		mainStoneCount: 0,
 		assistanceStoneCount: 0,
 		stoneWeightTotal: 0,
@@ -133,8 +133,7 @@ const OrderUpdatePage: React.FC = () => {
 	const convertToOrderRowData = (
 		detail: OrderResponseDetail,
 		storeGrade: string,
-		materials: { materialId: string; materialName: string }[],
-		colors: { colorId: string; colorName: string }[],
+
 		priorities: { priorityName: string; priorityDate: number }[],
 		assistantStonesParam: {
 			assistantStoneId: number;
@@ -208,6 +207,11 @@ const OrderUpdatePage: React.FC = () => {
 		return {
 			...baseRowData,
 			...calculatedStoneData,
+			// 서버에서 받은 stoneAddLaborCost 값이 있으면 사용, 없으면 계산된 값 사용
+			stoneAddLaborCost:
+				detail.stoneAddLaborCost !== undefined
+					? detail.stoneAddLaborCost
+					: calculatedStoneData.stoneAddLaborCost,
 		};
 	};
 
@@ -461,8 +465,8 @@ const OrderUpdatePage: React.FC = () => {
 					);
 					updateOrderRow(
 						rowId,
-						"additionalStonePrice",
-						calculated.additionalStonePrice
+						"stoneAddLaborCost",
+						calculated.stoneAddLaborCost
 					);
 					updateOrderRow(rowId, "mainStoneCount", calculated.mainStoneCount);
 					updateOrderRow(
@@ -498,14 +502,13 @@ const OrderUpdatePage: React.FC = () => {
 			const rowData = convertToOrderRowData(
 				orderDetail,
 				storeGrade,
-				materials,
-				colors,
+
 				priorities,
 				assistantStones
 			);
 			setOrderRows([rowData]);
 		}
-	}, [orderDetail, materials, colors, priorities, storeGrade]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [orderDetail, priorities, storeGrade]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 검색 결과 선택 핸들러들 (팝업용)
 	const handleStoreSelectWithRowId = (store: StoreSearchDto, rowId: string) => {
@@ -724,8 +727,6 @@ const OrderUpdatePage: React.FC = () => {
 					const rowData = convertToOrderRowData(
 						detail,
 						grade,
-						materialsData,
-						colorsData,
 						prioritiesData,
 						assistantStonesData
 					);

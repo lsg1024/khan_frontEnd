@@ -8,6 +8,7 @@ interface BaseStockTableProps {
 	materials: { materialId: string; materialName: string }[];
 	colors: { colorId: string; colorName: string }[];
 	assistantStones: { assistantStoneId: string; assistantStoneName: string }[];
+	goldHarries: { goldHarryId: string; goldHarry: string }[];
 	onRowUpdate: (
 		id: string,
 		field: keyof StockOrderRows,
@@ -63,7 +64,15 @@ interface UpdateModeProps extends BaseStockTableProps {
 	isRowInputEnabled?: (currentIndex: number) => boolean;
 }
 
-type StockTableProps = CreateModeProps | UpdateModeProps;
+interface DetailModeProps extends BaseStockTableProps {
+	mode: "detail";
+	// Detail 모드에서 선택적
+	onRowFocus?: (rowId: string) => Promise<void>;
+	onAssistanceStoneArrivalChange?: (id: string, value: string) => void;
+	isRowInputEnabled?: (currentIndex: number) => boolean;
+}
+
+type StockTableProps = CreateModeProps | UpdateModeProps | DetailModeProps;
 
 const StockTable: React.FC<StockTableProps> = (props) => {
 	const {
@@ -73,6 +82,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 		materials,
 		colors,
 		assistantStones,
+		goldHarries,
 		onRowUpdate,
 	} = props;
 
@@ -208,16 +218,32 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 				</thead>
 				<tbody>
 					{orderRows.map((row, index) => {
-						// 각 행에 대해 스톤 매입가 합계 계산
+						// 각 행에 대해 스톤 매입가 합계 계산 (includeStone이 true인 경우만, 개수를 곱함)
 						const totalStonePurchaseCost = row.stoneInfos.reduce(
-							(acc, stone) => acc + Number(stone.purchaseCost || 0),
+							(acc, stone) => {
+								if (stone.includeStone) {
+									return (
+										acc +
+										Number(stone.purchaseCost || 0) *
+											Number(stone.quantity || 0)
+									);
+								}
+								return acc;
+							},
 							0
 						);
 						const goldWeight =
-							Number(row.totalWeight || 0) - Number(row.stoneWeightTotal || 0);
+							Number(row.totalWeight || 0) - Number(row.stoneWeight || 0);
 
 						// 재고 상태 확인 (STOCK = 재고, SHIPPED = 출고됨)
-						const isShippedStatus = row.currentStatus === "SHIPPED";
+						// Note: when in update mode, do not apply shipped-state restrictions
+						const isShippedStatus =
+							mode !== "update" &&
+							mode !== "detail" &&
+							row.currentStatus === "SHIPPED";
+
+						// detail 모드에서는 특정 필드 수정 불가
+						const isDetailMode = mode === "detail";
 
 						// 재고 상태일 때 붉은 배경색 스타일
 						const rowStyle = isShippedStatus
@@ -236,7 +262,11 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 									<button
 										className="btn-delete-row"
 										onClick={() => safeOnRowDelete(row.id)}
-										disabled={loading || isShippedStatus}
+										disabled={loading || isShippedStatus || isDetailMode}
+										style={{
+											opacity: isDetailMode ? 0.3 : 1,
+											cursor: isDetailMode ? "not-allowed" : "pointer",
+										}}
 									>
 										🗑️
 									</button>
@@ -250,7 +280,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											readOnly
 											placeholder="거래처"
 											disabled={
-												!safeIsRowInputEnabled(index) || isShippedStatus
+												!safeIsRowInputEnabled(index) ||
+												isShippedStatus ||
+												isDetailMode
 											}
 											onClick={() => {
 												if (
@@ -272,30 +304,35 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												}
 											}}
 										/>
-										<span
-											className="search-icon"
-											onClick={() => {
-												if (safeIsRowInputEnabled(index) && !isShippedStatus) {
-													safeOnStoreSearchOpen(row.id);
-												} else if (isShippedStatus) {
-													alert("재고 상태에서는 수정할 수 없습니다.");
-												} else {
-													alert("이전 주문장을 완성해 주세요.");
-												}
-											}}
-											style={{
-												opacity:
-													!safeIsRowInputEnabled(index) || isShippedStatus
-														? 0.5
-														: 1,
-												cursor:
-													!safeIsRowInputEnabled(index) || isShippedStatus
-														? "not-allowed"
-														: "pointer",
-											}}
-										>
-											🔍
-										</span>
+										{!isDetailMode && (
+											<span
+												className="search-icon"
+												onClick={() => {
+													if (
+														safeIsRowInputEnabled(index) &&
+														!isShippedStatus
+													) {
+														safeOnStoreSearchOpen(row.id);
+													} else if (isShippedStatus) {
+														alert("재고 상태에서는 수정할 수 없습니다.");
+													} else {
+														alert("이전 주문장을 완성해 주세요.");
+													}
+												}}
+												style={{
+													opacity:
+														!safeIsRowInputEnabled(index) || isShippedStatus
+															? 0.5
+															: 1,
+													cursor:
+														!safeIsRowInputEnabled(index) || isShippedStatus
+															? "not-allowed"
+															: "pointer",
+												}}
+											>
+												🔍
+											</span>
+										)}
 									</div>
 								</td>
 								{/* 상품 */}
@@ -307,7 +344,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											readOnly
 											placeholder="모델번호"
 											disabled={
-												!safeIsRowInputEnabled(index) || isShippedStatus
+												!safeIsRowInputEnabled(index) ||
+												isShippedStatus ||
+												isDetailMode
 											}
 											onClick={() => {
 												if (
@@ -329,30 +368,35 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												}
 											}}
 										/>
-										<span
-											className="search-icon"
-											onClick={() => {
-												if (safeIsRowInputEnabled(index) && !isShippedStatus) {
-													safeOnProductSearchOpen(row.id);
-												} else if (isShippedStatus) {
-													alert("재고 상태에서는 수정할 수 없습니다.");
-												} else {
-													alert("이전 주문장을 완성해 주세요.");
-												}
-											}}
-											style={{
-												opacity:
-													!safeIsRowInputEnabled(index) || isShippedStatus
-														? 0.5
-														: 1,
-												cursor:
-													!safeIsRowInputEnabled(index) || isShippedStatus
-														? "not-allowed"
-														: "pointer",
-											}}
-										>
-											🔍
-										</span>
+										{!isDetailMode && (
+											<span
+												className="search-icon"
+												onClick={() => {
+													if (
+														safeIsRowInputEnabled(index) &&
+														!isShippedStatus
+													) {
+														safeOnProductSearchOpen(row.id);
+													} else if (isShippedStatus) {
+														alert("재고 상태에서는 수정할 수 없습니다.");
+													} else {
+														alert("이전 주문장을 완성해 주세요.");
+													}
+												}}
+												style={{
+													opacity:
+														!safeIsRowInputEnabled(index) || isShippedStatus
+															? 0.5
+															: 1,
+													cursor:
+														!safeIsRowInputEnabled(index) || isShippedStatus
+															? "not-allowed"
+															: "pointer",
+												}}
+											>
+												🔍
+											</span>
+										)}
 									</div>
 								</td>
 								<td className="search-type-cell">
@@ -362,39 +406,44 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											value={row.factoryName}
 											readOnly
 											placeholder="제조사"
-											disabled={isShippedStatus}
+											disabled={isShippedStatus || isDetailMode}
 										/>
-										<span
-											className="search-icon"
-											onClick={() => {
-												if (safeIsRowInputEnabled(index) && !isShippedStatus) {
-													safeOnFactorySearchOpen(row.id);
-												} else if (isShippedStatus) {
-													alert("재고 상태에서는 수정할 수 없습니다.");
-												} else {
-													alert("이전 주문장을 완성해 주세요.");
-												}
-											}}
-											style={{
-												opacity:
-													!safeIsRowInputEnabled(index) || isShippedStatus
-														? 0.5
-														: 1,
-												cursor:
-													!safeIsRowInputEnabled(index) || isShippedStatus
-														? "not-allowed"
-														: "pointer",
-											}}
-										>
-											🔍
-										</span>
+										{!isDetailMode && (
+											<span
+												className="search-icon"
+												onClick={() => {
+													if (
+														safeIsRowInputEnabled(index) &&
+														!isShippedStatus
+													) {
+														safeOnFactorySearchOpen(row.id);
+													} else if (isShippedStatus) {
+														alert("재고 상태에서는 수정할 수 없습니다.");
+													} else {
+														alert("이전 주문장을 완성해 주세요.");
+													}
+												}}
+												style={{
+													opacity:
+														!safeIsRowInputEnabled(index) || isShippedStatus
+															? 0.5
+															: 1,
+													cursor:
+														!safeIsRowInputEnabled(index) || isShippedStatus
+															? "not-allowed"
+															: "pointer",
+												}}
+											>
+												🔍
+											</span>
+										)}
 									</div>
 								</td>
 								<td className="drop-down-cell">
 									<select
 										value={row.materialId}
 										onChange={(e) => {
-											if (isShippedStatus) return; // 재고 상태일 때 변경 방지
+											if (isShippedStatus || isDetailMode) return; // 재고 상태 또는 상세보기 모드일 때 변경 방지
 											const selectedMaterial = materials.find(
 												(m) => m.materialId === e.target.value
 											);
@@ -405,7 +454,11 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												selectedMaterial?.materialName || ""
 											);
 										}}
-										disabled={isShippedStatus}
+										disabled={isShippedStatus || isDetailMode}
+										style={{
+											opacity: isDetailMode ? 0.6 : 1,
+											cursor: isDetailMode ? "not-allowed" : "pointer",
+										}}
 									>
 										<option value="">선택</option>
 										{materials.map((material) => (
@@ -422,7 +475,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 									<select
 										value={row.colorId}
 										onChange={(e) => {
-											if (isShippedStatus) return; // 재고 상태일 때 변경 방지
+											if (isShippedStatus || isDetailMode) return; // 재고 상태 또는 상세보기 모드일 때 변경 방지
 											const selectedColor = colors.find(
 												(c) => c.colorId === e.target.value
 											);
@@ -433,7 +486,11 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												selectedColor?.colorName || ""
 											);
 										}}
-										disabled={isShippedStatus}
+										disabled={isShippedStatus || isDetailMode}
+										style={{
+											opacity: isDetailMode ? 0.6 : 1,
+											cursor: isDetailMode ? "not-allowed" : "pointer",
+										}}
 									>
 										<option value="">선택</option>
 										{colors.map((color) => (
@@ -548,7 +605,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
-								<td className="money-cell">
+								<td className="money-cell-large">
 									<div className="search-field-container">
 										<input
 											type="text"
@@ -571,10 +628,10 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.additionalStonePrice.toLocaleString()}
+										value={row.stoneAddLaborCost.toLocaleString()}
 										onChange={(e) => {
 											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(row.id, "additionalStonePrice", value);
+											onRowUpdate(row.id, "stoneAddLaborCost", value);
 										}}
 										placeholder="0"
 										disabled={loading}
@@ -601,9 +658,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="stone-weight-cell">
 									<input
 										type="text"
-										value={row.stoneWeightTotal.toLocaleString()}
+										value={row.stoneWeight.toLocaleString()}
 										onChange={(e) => {
-											onRowUpdate(row.id, "stoneWeightTotal", e.target.value);
+											onRowUpdate(row.id, "stoneWeight", e.target.value);
 										}}
 										placeholder="0"
 										disabled={loading}
@@ -658,55 +715,84 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="stone-weight-cell">
 									<input
 										type="number"
-										value={row.totalWeight}
-										onChange={(e) =>
-											onRowUpdate(row.id, "totalWeight", e.target.value)
-										}
+										value={row.totalWeight > 0 ? row.totalWeight : ""}
+										onChange={(e) => {
+											const newTotalWeight = parseFloat(e.target.value) || 0;
+											const stoneWeightTotal = Number(row.stoneWeight || 0);
+
+											// goldWeight = 총중량 - 알중량
+											const calculatedGoldWeight =
+												newTotalWeight - stoneWeightTotal;
+
+											// totalWeight 업데이트
+											onRowUpdate(row.id, "totalWeight", newTotalWeight);
+											// goldWeight 업데이트 (총중량 - 알중량)
+											onRowUpdate(
+												row.id,
+												"goldWeight",
+												calculatedGoldWeight.toFixed(3)
+											);
+											// stoneWeight 업데이트 (알중량 기준)
+											onRowUpdate(
+												row.id,
+												"stoneWeight",
+												stoneWeightTotal.toFixed(3)
+											);
+										}}
 										disabled={loading}
 										placeholder="0.000"
 										className="text-right"
 									/>
 								</td>
-
 								{/* 총중량(금) - 자동 계산 */}
-								<td className="read-only-cell text-right stone-weight-cell">
-									{goldWeight > 0 ? goldWeight.toFixed(2) : "0.00"}
-								</td>
-
-								{/* 총중량(알) - 자동 계산 */}
-								<td className="read-only-cell text-right stone-weight-cell">
-									{Number(row.stoneWeightTotal).toFixed(2)}
-								</td>
-								{/* 매입헤리 - 입력 가능 */}
-								<td className="drop-down-cell-small">
+								<td>
 									<input
+										className="read-only-cell text-right stone-weight-cell"
 										type="text"
-										value={row.storeHarry}
-										onChange={(e) =>
-											onRowUpdate(row.id, "storeHarry", e.target.value)
-										}
+										value={goldWeight > 0 ? goldWeight.toFixed(3) : "0.000"}
+										readOnly
 										disabled={loading}
-										className="text-right"
-										placeholder={row.storeHarry ? "" : "헤리"}
 									/>
 								</td>
-
-								{/* 매입단가(기본) - 입력 가능 */}
-								<td className="money-cell">
+								{/* 총중량(알) - 자동 계산 */}
+								<td>
 									<input
-										type="number"
-										value={row.productPurchaseCost || ""}
-										onChange={(e) =>
-											onRowUpdate(
-												row.id,
-												"productPurchaseCost",
-												parseInt(e.target.value, 10) || 0
-											)
-										}
+										className="read-only-cell text-right stone-weight-cell"
+										type="text"
+										value={Number(row.stoneWeight).toFixed(3)}
+										readOnly
 										disabled={loading}
-										className="text-right"
-										placeholder={row.productPurchaseCost ? "" : "0"}
 									/>
+								</td>
+								{/* 매입헤리 - 드롭다운 */}
+								<td className="drop-down-cell">
+									<select
+										value={row.storeHarry}
+										onChange={(e) => {
+											onRowUpdate(row.id, "storeHarry", e.target.value);
+										}}
+										disabled={loading || isShippedStatus || isDetailMode}
+										style={{
+											opacity: isShippedStatus || isDetailMode ? 0.6 : 1,
+											cursor:
+												isShippedStatus || isDetailMode
+													? "not-allowed"
+													: "pointer",
+										}}
+									>
+										<option value="">헤리</option>
+										{goldHarries.map((harry) => (
+											<option key={harry.goldHarryId} value={harry.goldHarry}>
+												{harry.goldHarry}
+											</option>
+										))}
+									</select>
+								</td>
+								{/* 매입단가(기본) - 읽기 전용 */}
+								<td className="read-only-cell text-right money-cell">
+									{row.productPurchaseCost
+										? row.productPurchaseCost.toLocaleString()
+										: "0"}
 								</td>
 								{/* 매입단가 (2 컬럼) */}
 								<td className="read-only-cell text-right money-cell">

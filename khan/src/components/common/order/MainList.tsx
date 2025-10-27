@@ -67,7 +67,9 @@ const MainList = ({
 								type="checkbox"
 								checked={selected.includes(dto.flowCode)}
 								onChange={(e) => onSelect(dto.flowCode, e.target.checked)}
-								disabled={dto.orderStatus === "DELETED" || dto.orderStatus === "STOCK"}
+								disabled={
+									dto.orderStatus === "DELETED" || dto.orderStatus === "재고"
+								}
 							/>
 						</td>
 						<td>
@@ -147,7 +149,7 @@ const MainList = ({
 								className="status-dropdown-order"
 								value={dto.productStatus}
 								onChange={(e) => onStatusChange(dto.flowCode, e.target.value)}
-								disabled={loading}
+								disabled={loading || dto.orderStatus === "재고"}
 							>
 								<option value="접수">접수</option>
 								<option value="대기">대기</option>
@@ -157,7 +159,7 @@ const MainList = ({
 							<button
 								className="factory-name-btn"
 								onClick={() => onFactoryClick(dto.flowCode)}
-								disabled={loading}
+								disabled={loading || dto.orderStatus === "재고"}
 							>
 								<ul>{dto.factoryName}</ul>
 							</button>

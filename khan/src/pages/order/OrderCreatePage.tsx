@@ -144,7 +144,7 @@ const OrderCreatePage = () => {
 			additionalPrice: "", // 추가 판매단가
 			mainStonePrice: "", // 스톤 중심 판매단가
 			assistanceStonePrice: "", // 보조 중심 판매단가
-			additionalStonePrice: "", // 추가 스톤 판매단가
+			stoneAddLaborCost: "", // 추가 스톤 판매단가
 			mainStoneCount: "",
 			assistanceStoneCount: "",
 			stoneWeightTotal: "",
@@ -202,7 +202,7 @@ const OrderCreatePage = () => {
 							additionalPrice: "",
 							mainStonePrice: "",
 							assistanceStonePrice: "",
-							additionalStonePrice: "",
+							stoneAddLaborCost: "",
 							mainStoneCount: "",
 							assistanceStoneCount: "",
 							stoneWeightTotal: "",
@@ -451,7 +451,7 @@ const OrderCreatePage = () => {
 				factoryName: prevRow.factoryName,
 				mainPrice: prevRow.mainPrice,
 				mainStonePrice: prevRow.mainStonePrice,
-				assistanceStonePrice: prevRow.assistanceStonePrice,
+				stoneAddLaborCost: prevRow.stoneAddLaborCost,
 				mainStoneCount: prevRow.mainStoneCount,
 				assistanceStoneCount: prevRow.assistanceStoneCount,
 			};
@@ -509,8 +509,8 @@ const OrderCreatePage = () => {
 				);
 				updateOrderRow(
 					currentRowId,
-					"assistanceStonePrice",
-					prevValues.assistanceStonePrice
+					"stoneAddLaborCost",
+					prevValues.stoneAddLaborCost
 				);
 				updateOrderRow(
 					currentRowId,
@@ -815,13 +815,8 @@ const OrderCreatePage = () => {
 					);
 					updateOrderRow(
 						rowId,
-						"assistanceStonePrice",
-						calculatedStoneData.assistanceStonePrice
-					);
-					updateOrderRow(
-						rowId,
-						"additionalStonePrice",
-						calculatedStoneData.additionalStonePrice
+						"stoneAddLaborCost",
+						calculatedStoneData.stoneAddLaborCost
 					);
 					updateOrderRow(
 						rowId,
@@ -836,7 +831,7 @@ const OrderCreatePage = () => {
 					updateOrderRow(
 						rowId,
 						"stoneWeightTotal",
-						calculatedStoneData.stoneWeightTotal
+						calculatedStoneData.stoneWeight
 					);
 				}
 			};
@@ -958,7 +953,7 @@ const OrderCreatePage = () => {
 							assistanceStonePrice: "",
 							mainStoneCount: "",
 							assistanceStoneCount: "",
-							additionalStonePrice: "", // 추가 스톤 판매단가
+							stoneAddLaborCost: "", // 추가 스톤 판매단가
 							stoneWeightTotal: "",
 							createAt: currentDate,
 							shippingAt: defaultDeliveryDate,
@@ -1022,7 +1017,7 @@ const OrderCreatePage = () => {
 					productName: row.productName,
 					productFactoryName: row.productFactoryName,
 					productSize: row.productSize,
-					productAddLaborCost: row.productAddLaborCost,
+					productAddLaborCost: row.productAddLaborCost || 0,
 					isProductWeightSale: row.isProductWeightSale,
 					stoneWeight: row.stoneWeight,
 					materialId: row.materialId,
@@ -1042,6 +1037,7 @@ const OrderCreatePage = () => {
 					createAt: currentDate,
 					shippingAt: shippingAtFormatted,
 					stoneInfos: row.stoneInfos,
+					stoneAddLaborCost: Number(row.stoneAddLaborCost) || 0,
 				};
 
 				return orderApi.createOrder(orderStatus, orderData);

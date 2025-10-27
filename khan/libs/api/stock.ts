@@ -5,6 +5,8 @@ import type {
 	StockRegisterResponse,
 	StockSearchResponse,
 	StockCreateRequest,
+	StockResponseDetail,
+	StockUpdateRequest
 } from "../../src/types/stock";
 
 export const stockApi = {
@@ -38,6 +40,25 @@ export const stockApi = {
 				params,
 			}
 		);
+	},
+
+	getStock: async (
+		flowCode: string
+	): Promise<ApiResponse<StockResponseDetail>> => {
+		const params = { id: flowCode };
+
+		return apiRequest.get<StockResponseDetail>("order/stock", { params });
+	},
+
+	updateStock: async (
+		flowCode: string,
+		stockData: StockUpdateRequest
+	): Promise<ApiResponse<string>> => {
+		const params: Record<string, string> = {};
+		params.id = flowCode;
+		params.order_type = "update";
+
+		return apiRequest.patch<string>("order/stock", stockData, { params });
 	},
 
 	getStocks: async (
