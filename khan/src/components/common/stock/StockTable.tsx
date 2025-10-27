@@ -1,6 +1,6 @@
 import React from "react";
 import type { StockOrderRows } from "../../../types/stock";
-import "../../../styles/pages/StockRegisterPage.css";
+import "../../../styles/pages/stock/StockRegisterPage.css";
 
 interface BaseStockTableProps {
 	stockRows: StockOrderRows[];
@@ -19,6 +19,8 @@ interface BaseStockTableProps {
 
 interface CreateModeProps extends BaseStockTableProps {
 	mode: "create";
+	materials: { materialId: string; materialName: string }[];
+	colors: { colorId: string; colorName: string }[];
 	// Create 모드에서 필수
 	onRowDelete: (id: string) => void;
 	onAddStockRow: () => void;
@@ -72,7 +74,19 @@ interface DetailModeProps extends BaseStockTableProps {
 	isRowInputEnabled?: (currentIndex: number) => boolean;
 }
 
-type StockTableProps = CreateModeProps | UpdateModeProps | DetailModeProps;
+interface ReadonlyModeProps extends BaseStockTableProps {
+	mode: "readonly";
+	// Readonly 모드에서 선택적
+	onRowFocus?: (rowId: string) => Promise<void>;
+	onAssistanceStoneArrivalChange?: (id: string, value: string) => void;
+	isRowInputEnabled?: (currentIndex: number) => boolean;
+}
+
+type StockTableProps =
+	| CreateModeProps
+	| UpdateModeProps
+	| DetailModeProps
+	| ReadonlyModeProps;
 
 const StockTable: React.FC<StockTableProps> = (props) => {
 	const {
@@ -236,14 +250,15 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 							Number(row.totalWeight || 0) - Number(row.stoneWeight || 0);
 
 						// 재고 상태 확인 (STOCK = 재고, SHIPPED = 출고됨)
-						// Note: when in update mode, do not apply shipped-state restrictions
 						const isShippedStatus =
 							mode !== "update" &&
 							mode !== "detail" &&
 							row.currentStatus === "SHIPPED";
 
-						// detail 모드에서는 특정 필드 수정 불가
-						const isDetailMode = mode === "detail";
+						// readonly 모드에서만 완전히 수정 불가
+						const isReadOnlyMode = mode === "readonly";
+						// update 모드에서는 수정 가능
+						const isDetailMode = mode === "detail";			
 
 						// 재고 상태일 때 붉은 배경색 스타일
 						const rowStyle = isShippedStatus
@@ -262,10 +277,10 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 									<button
 										className="btn-delete-row"
 										onClick={() => safeOnRowDelete(row.id)}
-										disabled={loading || isShippedStatus || isDetailMode}
+										disabled={loading || isShippedStatus || isReadOnlyMode || isDetailMode}
 										style={{
-											opacity: isDetailMode ? 0.3 : 1,
-											cursor: isDetailMode ? "not-allowed" : "pointer",
+											opacity: isReadOnlyMode || isDetailMode ? 0.3 : 1,
+											cursor: isReadOnlyMode || isDetailMode ? "not-allowed" : "pointer",
 										}}
 									>
 										🗑️
@@ -282,8 +297,12 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											disabled={
 												!safeIsRowInputEnabled(index) ||
 												isShippedStatus ||
+												isReadOnlyMode ||
 												isDetailMode
 											}
+											style={{
+												backgroundColor: isReadOnlyMode || isDetailMode ? "#f5f5f5" : "white",
+											}}
 											onClick={() => {
 												if (
 													mode === "create" &&
@@ -304,7 +323,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												}
 											}}
 										/>
-										{!isDetailMode && (
+										{!isReadOnlyMode || !isDetailMode && (
 											<span
 												className="search-icon"
 												onClick={() => {
@@ -346,8 +365,12 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											disabled={
 												!safeIsRowInputEnabled(index) ||
 												isShippedStatus ||
+												isReadOnlyMode ||
 												isDetailMode
 											}
+											style={{
+												backgroundColor: isReadOnlyMode || isDetailMode ? "#f5f5f5" : "white",
+											}}
 											onClick={() => {
 												if (
 													mode === "create" &&
@@ -368,7 +391,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												}
 											}}
 										/>
-										{!isDetailMode && (
+										{!isReadOnlyMode || !isDetailMode && (
 											<span
 												className="search-icon"
 												onClick={() => {
@@ -406,9 +429,12 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											value={row.factoryName}
 											readOnly
 											placeholder="제조사"
-											disabled={isShippedStatus || isDetailMode}
+											disabled={isShippedStatus || isReadOnlyMode || isDetailMode}
+											style={{
+												backgroundColor: isReadOnlyMode || isDetailMode ? "#f5f5f5" : "white",
+											}}
 										/>
-										{!isDetailMode && (
+										{!isReadOnlyMode || !isDetailMode && (
 											<span
 												className="search-icon"
 												onClick={() => {
@@ -443,7 +469,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 									<select
 										value={row.materialId}
 										onChange={(e) => {
-											if (isShippedStatus || isDetailMode) return; // 재고 상태 또는 상세보기 모드일 때 변경 방지
+											if (isShippedStatus || isReadOnlyMode || isDetailMode) return; // 재고 상태 또는 상세보기 모드일 때 변경 방지
 											const selectedMaterial = materials.find(
 												(m) => m.materialId === e.target.value
 											);
@@ -454,10 +480,10 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												selectedMaterial?.materialName || ""
 											);
 										}}
-										disabled={isShippedStatus || isDetailMode}
+										disabled={isShippedStatus || isReadOnlyMode || isDetailMode}
 										style={{
-											opacity: isDetailMode ? 0.6 : 1,
-											cursor: isDetailMode ? "not-allowed" : "pointer",
+											opacity: isReadOnlyMode || isDetailMode ? 0.6 : 1,
+											cursor: isReadOnlyMode || isDetailMode ? "not-allowed" : "pointer",
 										}}
 									>
 										<option value="">선택</option>
@@ -475,7 +501,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 									<select
 										value={row.colorId}
 										onChange={(e) => {
-											if (isShippedStatus || isDetailMode) return; // 재고 상태 또는 상세보기 모드일 때 변경 방지
+											if (isShippedStatus || isReadOnlyMode || isDetailMode) return; // 재고 상태 또는 상세보기 모드일 때 변경 방지
 											const selectedColor = colors.find(
 												(c) => c.colorId === e.target.value
 											);
@@ -486,10 +512,10 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												selectedColor?.colorName || ""
 											);
 										}}
-										disabled={isShippedStatus || isDetailMode}
+										disabled={isShippedStatus || isReadOnlyMode || isDetailMode}
 										style={{
-											opacity: isDetailMode ? 0.6 : 1,
-											cursor: isDetailMode ? "not-allowed" : "pointer",
+											opacity: isReadOnlyMode || isDetailMode ? 0.6 : 1,
+											cursor: isReadOnlyMode || isDetailMode ? "not-allowed" : "pointer",
 										}}
 									>
 										<option value="">선택</option>
@@ -509,7 +535,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												: row.assistantStoneId
 										}
 										onChange={(e) => {
-											if (isShippedStatus) return; // 재고 상태일 때 변경 방지
+											if (isShippedStatus || mode === "readonly") return; // 재고 상태 또는 readonly 모드일 때 변경 방지
 											const selectedStone = assistantStones.find(
 												(s) => s.assistantStoneId === e.target.value
 											);
@@ -520,7 +546,11 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												selectedStone?.assistantStoneName || ""
 											);
 										}}
-										disabled={isShippedStatus}
+										disabled={isShippedStatus || mode === "readonly"}
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									>
 										<option value="">선택</option>
 										{assistantStones.map((stone) => (
@@ -537,13 +567,17 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 									<select
 										value={row.assistantStone ? "Y" : "N"}
 										onChange={(e) => {
-											if (isShippedStatus) return; // 재고 상태일 때 변경 방지
+											if (isShippedStatus || mode === "readonly") return; // 재고 상태 또는 readonly 모드일 때 변경 방지
 											safeOnAssistanceStoneArrivalChange(
 												row.id,
 												e.target.value
 											);
 										}}
-										disabled={isShippedStatus}
+										disabled={isShippedStatus || mode === "readonly"}
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									>
 										<option value="N">N</option>
 										<option value="Y">Y</option>
@@ -554,7 +588,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										type="date"
 										value={row.assistantStoneCreateAt}
 										onChange={(e) => {
-											if (isShippedStatus) return; // 재고 상태일 때 변경 방지
+											if (isShippedStatus || mode === "readonly") return; // 재고 상태 또는 readonly 모드일 때 변경 방지
 											onRowUpdate(
 												row.id,
 												"assistantStoneCreateAt",
@@ -562,12 +596,15 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											);
 										}}
 										disabled={
-											loading || row.assistantStone === false || isShippedStatus
+											loading ||
+											row.assistantStone === false ||
+											isShippedStatus ||
+											mode === "readonly"
 										}
 										readOnly
 										style={{
 											backgroundColor:
-												row.assistantStone === false || isShippedStatus
+												row.assistantStone === false || mode === "readonly"
 													? "#f5f5f5"
 													: "white",
 										}}
@@ -591,6 +628,11 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											onRowUpdate(row.id, "productAddLaborCost", value);
 										}}
 										placeholder="0"
+										disabled={loading || mode === "readonly"}
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								<td className="money-cell">
@@ -601,7 +643,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											const value = e.target.value.replace(/,/g, "");
 											onRowUpdate(row.id, "mainStonePrice", value);
 										}}
-										disabled={loading}
+										disabled={loading || isDetailMode || isReadOnlyMode}
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
@@ -614,15 +656,21 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												const value = e.target.value.replace(/,/g, "");
 												onRowUpdate(row.id, "assistanceStonePrice", value);
 											}}
-											disabled={loading}
+											disabled={loading || isDetailMode || isReadOnlyMode}
 											style={{ backgroundColor: "#f5f5f5" }}
 										/>
-										<span
-											className="search-icon"
-											onClick={() => safeOnStoneInfoOpen?.(row.id)}
-										>
-											🔍
-										</span>
+										{!isReadOnlyMode && (
+											<span
+												className="search-icon"
+												onClick={() => safeOnStoneInfoOpen?.(row.id)}
+												style={{
+													cursor: isReadOnlyMode ? "not-allowed" : "pointer",
+													opacity: isReadOnlyMode ? 0.5 : 1,
+												}}
+											>
+												🔍
+											</span>
+										)}
 									</div>
 								</td>
 								<td className="money-cell">
@@ -634,7 +682,11 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											onRowUpdate(row.id, "stoneAddLaborCost", value);
 										}}
 										placeholder="0"
-										disabled={loading}
+										disabled={loading || mode === "readonly"}
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								<td className="stone-count-cell">
@@ -663,7 +715,11 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											onRowUpdate(row.id, "stoneWeight", e.target.value);
 										}}
 										placeholder="0"
-										disabled={loading}
+										disabled={loading || mode === "readonly"}
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								<td className="stock-note-cell">
@@ -673,8 +729,12 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "mainStoneNote", e.target.value)
 										}
-										disabled={loading}
+										disabled={loading || mode === "readonly"}
 										placeholder="메인"
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								<td className="stock-note-cell">
@@ -684,8 +744,12 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "assistanceStoneNote", e.target.value)
 										}
-										disabled={loading}
+										disabled={loading || mode === "readonly"}
 										placeholder="보조"
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								<td className="stock-size-cell">
@@ -695,8 +759,12 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "productSize", e.target.value)
 										}
-										disabled={loading}
+										disabled={loading || mode === "readonly"}
 										placeholder={row.productSize ? "" : "사이즈"}
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								{/* 기타메모 */}
@@ -707,8 +775,12 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "orderNote", e.target.value)
 										}
-										disabled={loading}
+										disabled={loading || mode === "readonly"}
 										placeholder={row.orderNote ? "" : "기타"}
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								{/* 총중량 (3 컬럼) */}
@@ -739,9 +811,13 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												stoneWeightTotal.toFixed(3)
 											);
 										}}
-										disabled={loading}
+										disabled={loading || mode === "readonly"}
 										placeholder="0.000"
 										className="text-right"
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								{/* 총중량(금) - 자동 계산 */}
@@ -751,7 +827,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										type="text"
 										value={goldWeight > 0 ? goldWeight.toFixed(3) : "0.000"}
 										readOnly
-										disabled={loading}
+										disabled={loading || mode === "readonly"}
 									/>
 								</td>
 								{/* 총중량(알) - 자동 계산 */}
@@ -761,7 +837,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										type="text"
 										value={Number(row.stoneWeight).toFixed(3)}
 										readOnly
-										disabled={loading}
+										disabled={loading || mode === "readonly"}
 									/>
 								</td>
 								{/* 매입헤리 - 드롭다운 */}
@@ -771,11 +847,13 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										onChange={(e) => {
 											onRowUpdate(row.id, "storeHarry", e.target.value);
 										}}
-										disabled={loading || isShippedStatus || isDetailMode}
+										disabled={loading || isShippedStatus || mode === "readonly"}
 										style={{
-											opacity: isShippedStatus || isDetailMode ? 0.6 : 1,
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+											opacity: isShippedStatus || mode === "readonly" ? 0.6 : 1,
 											cursor:
-												isShippedStatus || isDetailMode
+												isShippedStatus || mode === "readonly"
 													? "not-allowed"
 													: "pointer",
 										}}
@@ -788,13 +866,13 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										))}
 									</select>
 								</td>
-								{/* 매입단가(기본) - 읽기 전용 */}
+								{/* 매입단가(기본) */}
 								<td className="read-only-cell text-right money-cell">
 									{row.productPurchaseCost
 										? row.productPurchaseCost.toLocaleString()
 										: "0"}
 								</td>
-								{/* 매입단가 (2 컬럼) */}
+								{/* 매입단가 */}
 								<td className="read-only-cell text-right money-cell">
 									{totalStonePurchaseCost.toLocaleString()}
 								</td>

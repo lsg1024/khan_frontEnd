@@ -4,7 +4,7 @@ import { stoneApi } from "../../../libs/api/stone";
 import type { StoneSearchDto } from "../../types/stone";
 import { useErrorHandler } from "../../utils/errorHandler";
 import Pagination from "../../components/common/Pagination";
-import "../../styles/pages/StoneSearchPage.css";
+import "../../styles/pages/stone/StoneSearchPage.css";
 
 const StoneSearchPage: React.FC = () => {
 	const [searchParams] = useSearchParams();

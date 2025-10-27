@@ -8,7 +8,7 @@ import type {
 	StoneCreateRequest,
 	StoneWorkGradePolicyCreateDto,
 } from "../../../src//types/stone";
-import "../../styles/pages/StoneCreatePage.css";
+import "../../styles/pages/stone/StoneCreatePage.css";
 
 export interface StoneCreateFormRow {
 	stoneTypeId: string;

@@ -21,7 +21,7 @@ import ProductSearch from "../../components/common/product/ProductSearch";
 import PastOrderHistory from "../../components/common/PastOrderHistory";
 import ProductInfoSection from "../../components/common/ProductInfoSection";
 import { calculateStoneDetails } from "../../utils/calculateStone";
-import "../../styles/pages/StockCreatePage.css";
+import "../../styles/pages/stock/StockCreatePage.css";
 
 type UpdateMode = "normal" | "return" | "expact";
 
@@ -125,6 +125,7 @@ export const StockCreatePage = () => {
 		const newRow: StockOrderRows = {
 			id: Date.now().toString(),
 			createAt: currentDate,
+			shippingAt: currentDate,
 			storeId: "",
 			storeName: "",
 			grade: "1",
@@ -851,6 +852,7 @@ export const StockCreatePage = () => {
 					const newRow: StockOrderRows = {
 						id: `${Date.now()}-${i}`,
 						createAt: currentDate,
+						shippingAt: currentDate,
 						storeId: "",
 						storeName: "",
 						grade: "1",

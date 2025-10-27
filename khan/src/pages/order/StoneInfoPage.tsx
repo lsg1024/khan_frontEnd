@@ -4,7 +4,7 @@ import { stoneApi } from "../../../libs/api/stone";
 import type { StoneInfo } from "../../types/stone";
 import type { StoneSearchDto } from "../../types/stone";
 import StoneSearch from "../../components/common/stone/StoneSearch";
-import "../../styles/pages/StoneInfoPage.css";
+import "../../styles/pages/stone/StoneInfoPage.css";
 
 const StoneInfoPage: React.FC = () => {
 	const [searchParams] = useSearchParams();

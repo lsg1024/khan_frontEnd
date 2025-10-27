@@ -44,6 +44,7 @@ const convertToStockOrderRowData = (
 
 	const stockRow: StockOrderRows = {
 		createAt: response.createAt,
+		shippingAt: response.shippingAt,
 		id: response.flowCode,
 		storeId: response.storeId,
 		storeName: response.storeName,

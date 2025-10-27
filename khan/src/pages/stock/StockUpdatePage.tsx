@@ -138,6 +138,7 @@ const StockUpdatePage: React.FC = () => {
 					const stockRowData: StockOrderRows = {
 						id: detail.flowCode,
 						createAt: formatToLocalDate(detail.createAt),
+						shippingAt: formatToLocalDate(detail.shippingAt),
 						storeId: "",
 						storeName: detail.storeName,
 						grade: "",

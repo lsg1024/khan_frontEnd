@@ -7,12 +7,11 @@ import { factoryApi } from "../../../libs/api/factory";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { getGoldTransferWeight } from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";
-import "../../styles/pages/CataLogPage.css";
-
 import type { ProductDto } from "../../types/product";
 import type { SetTypeDto } from "../../types/setType";
 import type { ClassificationDto } from "../../types/classification";
 import type { FactorySearchDto } from "../../types/factory";
+import "../../styles/pages/product/CataLogPage.css";
 
 function CataLogPage() {
 	const [products, setProducts] = useState<ProductDto[]>([]);

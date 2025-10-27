@@ -8,6 +8,7 @@ interface StockListProps {
 	selected: string[];
 	onSelect: (flowCode: string, checked: boolean) => void;
 	onNoClick?: (flowCode: string) => void;
+	showShippingAt?: boolean; // 변경일 표시 여부
 }
 
 export const StockList = ({
@@ -17,6 +18,7 @@ export const StockList = ({
 	selected,
 	onSelect,
 	onNoClick,
+	showShippingAt = false,
 }: StockListProps) => {
 	const PAGE_SIZE = 20;
 
@@ -43,7 +45,7 @@ export const StockList = ({
 					<th>선택</th>
 					<th>No</th>
 					<th>시리얼</th>
-					<th>상태</th>
+					<th>주문</th>
 					<th>등록일</th>
 					<th className="stock-table-twin">사이즈/비고</th>
 					<th>재질</th>
@@ -60,8 +62,8 @@ export const StockList = ({
 					<th></th>
 					<th></th>
 					<th></th>
-					<th></th>
-					<th></th>
+					<th>상태</th>
+					<th>{showShippingAt ? "변경일" : ""}</th>
 					<th></th>
 					<th></th>
 					<th></th>
@@ -130,21 +132,51 @@ export const StockList = ({
 								</button>
 							</td>
 							<td className="serial-cell">{stock.flowCode}</td>
-							<td className="order-cell">{stock.originStatus}</td>
+							<td className="order-cell">
+								<div className="info-row-order">
+									<span>{stock.originStatus}</span>
+								</div>
+								<div className="info-row-order">
+									<span style={{ color: "red" }}>
+										{stock.currentStatus || "-"}
+									</span>
+								</div>
+							</td>
 							<td className="date-cell">
-								{stock.createAt
-									? (() => {
-											const date = new Date(stock.createAt);
-											const year = date.getFullYear();
-											// getMonth()는 0부터 시작하므로 1을 더해줍니다.
-											const month = String(date.getMonth() + 1).padStart(
-												2,
-												"0"
-											);
-											const day = String(date.getDate()).padStart(2, "0");
-											return `${year}-${month}-${day}`;
-									  })()
-									: "-"}
+								<div className="info-row-order">
+									<span>
+										{stock.createAt
+											? (() => {
+													const date = new Date(stock.createAt);
+													const year = date.getFullYear();
+													const month = String(date.getMonth() + 1).padStart(
+														2,
+														"0"
+													);
+													const day = String(date.getDate()).padStart(2, "0");
+													return `${year}-${month}-${day}`;
+											  })()
+											: "-"}
+									</span>
+								</div>
+								{showShippingAt && (
+									<div className="info-row-order">
+										<span style={{ color: "red" }}>
+											{stock.shippingAt
+												? (() => {
+														const date = new Date(stock.shippingAt);
+														const year = date.getFullYear();
+														const month = String(date.getMonth() + 1).padStart(
+															2,
+															"0"
+														);
+														const day = String(date.getDate()).padStart(2, "0");
+														return `${year}-${month}-${day}`;
+												  })()
+												: "-"}
+										</span>
+									</div>
+								)}
 							</td>
 							<td className="size-note-content">
 								<div className="info-row-order">
@@ -155,7 +187,17 @@ export const StockList = ({
 								</div>
 							</td>
 
-							<td className="material-cell">{stock.materialName || "-"}</td>
+							<td
+								className={`material-cell ${
+									stock.materialName === "18K"
+										? "material-name-18k"
+										: stock.materialName === "24K"
+										? "material-name-24k"
+										: ""
+								}`}
+							>
+								{stock.materialName || "-"}
+							</td>
 							<td className="color-cell">{stock.colorName || "-"}</td>
 
 							<td className="stone-note-content">

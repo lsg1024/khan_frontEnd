@@ -3,6 +3,7 @@ import type { PageInfo } from "./page";
 
 export interface StockOrderRows {
 	createAt: string;
+	shippingAt: string;
 	id: string;
 	storeId: string;
 	storeName: string;
@@ -88,6 +89,7 @@ export interface StockCreateRequest {
 export interface StockRegisterResponse {
 	flowCode: string;
 	createAt: string;
+	shippingAt: string;
 	storeId: string;
 	storeName: string;
 	factoryId: string;
@@ -153,6 +155,7 @@ export interface StockSearchResponse {
 export interface StockResponse {
 	flowCode: string;
 	createAt: string;
+	shippingAt: string;
 	originStatus: string;
 	currentStatus: string;
 	storeName: string;
@@ -181,6 +184,7 @@ export interface StockResponse {
 export interface StockResponseDetail {
 	flowCode: string;
 	createAt: string;
+	shippingAt: string;
 	originalProductStatus: string;
 	classificationName: string;
 	productName: string;

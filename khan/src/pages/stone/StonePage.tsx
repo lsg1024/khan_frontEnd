@@ -6,7 +6,7 @@ import type { PageInfo } from "../../types/page";
 import StoneListTable from "../../components/common/stone/StoneListTable";
 import Pagination from "../../components/common/Pagination";
 import { useErrorHandler } from "../../utils/errorHandler";
-import "../../styles/pages/StonePage.css";
+import "../../styles/pages/stone/StonePage.css";
 
 const convertToProductStone = (stone: StoneSearchDto): ProductStoneDto => {
 	return {

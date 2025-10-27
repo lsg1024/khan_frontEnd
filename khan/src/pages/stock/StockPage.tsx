@@ -9,7 +9,7 @@ import Pagination from "../../components/common/Pagination";
 import StockBulkActionBar from "../../components/common/StockBulkActionBar";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
-import "../../styles/pages/StockPage.css";
+import "../../styles/pages/stock/StockPage.css";
 
 export const StockPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -381,8 +381,6 @@ export const StockPage = () => {
 
 	return (
 		<>
-			{/* 주문, 수리, 대여, 반품 */}
-			{/* 상세 페이지는 order의 update page 공유 */}
 			<div className="order-page">
 				{/* 에러 메시지 */}
 				{error && (
