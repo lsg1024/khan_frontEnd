@@ -51,6 +51,7 @@ const convertToStockOrderRowData = (
 		grade: grade,
 		productId: response.productId,
 		productName: response.productName,
+		productFactoryName: response.productFactoryName,
 		productPurchaseCost: response.productPurchaseCost || 0,
 		materialId: foundMaterial?.materialId || "",
 		materialName: response.materialName,
@@ -197,6 +198,11 @@ const StockRegisterPage: React.FC = () => {
 				selectedRowForProduct,
 				"productName",
 				product.productName || ""
+			);
+			onRowUpdate(
+				selectedRowForProduct,
+				"productFactoryName",
+				product.productFactoryName || ""
 			);
 			onRowUpdate(selectedRowForProduct, "factoryId", factoryIdValue);
 			onRowUpdate(
@@ -496,7 +502,7 @@ const StockRegisterPage: React.FC = () => {
 					return stockApi.updateStockRegister(row.id, apiStatus, stockDto);
 				} else {
 					// 판매 등록은 saleApi 사용
-					return saleApi.updateSaleRegister(row.id, apiStatus, stockDto);
+					return saleApi.updateOrderToSale(row.id, apiStatus, stockDto);
 				}
 			});
 

@@ -10,6 +10,7 @@ export interface StockOrderRows {
 	grade: string;
 	productId: string;
 	productName: string;
+	productFactoryName: string;
 	materialId: string;
 	materialName: string;
 	colorId: string;
@@ -25,13 +26,13 @@ export interface StockOrderRows {
 	assistanceStoneNote: string;
 	orderNote: string;
 	stoneInfos: StoneInfo[];
-	productLaborCost: number | ""; // 기본 판매단가
-	productAddLaborCost: number | ""; // 추가 판매단가
-	mainStonePrice: number | ""; // 중심 판매단가
-	assistanceStonePrice: number | ""; // 보조 판매단가
-	mainStoneCount: number | ""; // 메인 개당알수
-	assistanceStoneCount: number | ""; // 보조 개당알수
-	stoneAddLaborCost: number | ""; // 추가 스톤 판매단가
+	productLaborCost: number; // 기본 판매단가
+	productAddLaborCost: number; // 추가 판매단가
+	mainStonePrice: number; // 중심 판매단가
+	assistanceStonePrice: number; // 보조 판매단가
+	mainStoneCount: number; // 메인 개당알수
+	assistanceStoneCount: number; // 보조 개당알수
+	stoneAddLaborCost: number; // 추가 스톤 판매단가
 	stoneWeightTotal: number; // 알중량 합계 (UI 표시용)
 	// 보조석 관련 필드
 	assistantStoneId: string;
@@ -48,6 +49,8 @@ export interface StockOrderRows {
 	setTypeName: string;
 	// 재고 상태 필드 추가
 	currentStatus?: string; // STOCK, SHIPPED 등
+	// 판매 관련 필드
+	saleNote?: string; // 판매 비고
 }
 
 // 재고 생성 요청 데이터
@@ -65,6 +68,7 @@ export interface StockCreateRequest {
 	stockNote: string;
 	isProductWeightSale: boolean;
 	productPurchaseCost: number;
+	productLaborCost: number; // 기본 판매단가
 	productAddLaborCost: number;
 	materialId: string;
 	materialName: string;
@@ -96,6 +100,7 @@ export interface StockRegisterResponse {
 	factoryName: string;
 	productId: string;
 	productName: string;
+	productFactoryName: string;
 	productSize: string;
 	isProductWeightSale: boolean;
 	storeHarry: string;
@@ -147,6 +152,24 @@ export interface StockRegisterRequest {
 	stoneAddLaborCost: number;
 }
 
+export interface StockSaleRequest {
+	productSize: string;
+	isProductWeightSale: boolean;
+	addProductLaborCost: number;
+	stoneAddLaborCost: number;
+	productPurchaseCost: number;
+	stonePurchaseCost: number;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
+	stockNote: string;
+	assistantStone: boolean;
+	assistantStoneId: string;
+	assistantStoneCreateAt: string;
+	goldWeight: string;
+	stoneWeight: string;
+	stoneInfos: StoneInfo[];
+}
+
 export interface StockSearchResponse {
 	content: StockResponse[];
 	page: PageInfo;
@@ -188,6 +211,7 @@ export interface StockResponseDetail {
 	originalProductStatus: string;
 	classificationName: string;
 	productName: string;
+	productFactoryName: string;
 	storeName: string;
 	factoryName: string;
 	materialName: string;
@@ -229,4 +253,17 @@ export interface StockUpdateRequest {
 	stoneInfos: StoneInfo[];
 	stoneAddLaborCost: number;
 	totalStonePurchaseCost: number;
+}
+
+export interface StockRentalRequest {
+	productSize: string;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
+	stockNote: string;
+	isProductWeightSale: boolean;
+	goldWeight: string;
+	stoneWeight: string;
+	productAddLaborCost: number;
+	stoneAddLaborCost: number;
+	stoneInfos: StoneInfo[];
 }

@@ -1,31 +1,29 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { stockApi } from "../../../libs/api/stock";
+import { saleApi } from "../../../libs/api/sale";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
 import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { goldHarryApi } from "../../../libs/api/goldHarry";
-import { useErrorHandler } from "../../utils/errorHandler";
 import { formatToLocalDate, getLocalDate } from "../../utils/dateUtils";
 import { calculateStoneDetails } from "../../utils/calculateStone";
-import type {
-	StockResponseDetail,
-	StockOrderRows,
-	StockUpdateRequest,
-} from "../../types/stock";
+import type { StockResponseDetail, StockOrderRows } from "../../types/stock";
 import StockTable from "../../components/common/stock/StockTable";
 import "../../styles/pages/stock/StockUpdatePage.css";
 
-const StockUpdatePage: React.FC = () => {
+type ActionType = "sale" | "rental" | "return";
+
+const StockCommonActionPage: React.FC = () => {
 	const { flowCode } = useParams<{ flowCode: string }>();
-	const { handleError } = useErrorHandler();
+	const [searchParams] = useSearchParams();
+	const action = (searchParams.get("action") as ActionType) || "sale";
 
 	const [stockDetail, setStockDetail] = useState<StockResponseDetail | null>(
 		null
 	);
 	const [stockRows, setStockRows] = useState<StockOrderRows[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
 	const [flowCodes, setFlowCodes] = useState<string[]>([]);
 
 	// 드롭다운 데이터
@@ -41,6 +39,20 @@ const StockUpdatePage: React.FC = () => {
 	const [goldHarries, setGoldHarries] = useState<
 		{ goldHarryId: string; goldHarry: string }[]
 	>([]);
+
+	// 액션 타입에 따른 타이틀
+	const getTitle = () => {
+		switch (action) {
+			case "sale":
+				return "판매 등록";
+			case "rental":
+				return "대여 등록";
+			case "return":
+				return "반납 등록";
+			default:
+				return "재고 등록";
+		}
+	};
 
 	// 재고 행 업데이트
 	const handleRowUpdate = (
@@ -138,8 +150,9 @@ const StockUpdatePage: React.FC = () => {
 	useEffect(() => {
 		const loadStockData = async () => {
 			if (!flowCode) {
-				setError("재고 코드가 없습니다.");
+				alert("재고 코드가 없습니다.");
 				setLoading(false);
+				handleClose();
 				return;
 			}
 
@@ -179,13 +192,15 @@ const StockUpdatePage: React.FC = () => {
 					setColors(colorsData);
 				}
 
+				let assistantStonesData: {
+					assistantStoneId: string;
+					assistantStoneName: string;
+				}[] = [];
 				if (assistantStoneRes.success) {
-					const assistantStonesData = (assistantStoneRes.data || []).map(
-						(a) => ({
-							assistantStoneId: a.assistantStoneId.toString(),
-							assistantStoneName: a.assistantStoneName,
-						})
-					);
+					assistantStonesData = (assistantStoneRes.data || []).map((a) => ({
+						assistantStoneId: a.assistantStoneId.toString(),
+						assistantStoneName: a.assistantStoneName,
+					}));
 					setAssistantStones(assistantStonesData);
 				}
 
@@ -228,6 +243,16 @@ const StockUpdatePage: React.FC = () => {
 							(c) => c.colorName === detail.colorName
 						);
 
+						// assistantStoneName이 비어있으면 ID로 찾기
+						let assistantStoneName = detail.assistantStoneName || "";
+						if (!assistantStoneName && detail.assistantStoneId) {
+							const foundAssistantStone = assistantStonesData.find(
+								(a) => a.assistantStoneId === detail.assistantStoneId
+							);
+							assistantStoneName =
+								foundAssistantStone?.assistantStoneName || "";
+						}
+
 						// StockResponseDetail을 StockOrderRows 형태로 변환
 						const stockRowData: StockOrderRows = {
 							id: detail.flowCode,
@@ -263,7 +288,7 @@ const StockUpdatePage: React.FC = () => {
 							stoneAddLaborCost: detail.stoneAddLaborCost,
 							assistantStoneId: detail.assistantStoneId || "1",
 							assistantStone: detail.assistantStone || false,
-							assistantStoneName: detail.assistantStoneName || "",
+							assistantStoneName: assistantStoneName,
 							assistantStoneCreateAt: detail.assistantStoneCreateAt || "",
 							totalWeight:
 								parseFloat(detail.goldWeight) + parseFloat(detail.stoneWeight),
@@ -274,6 +299,7 @@ const StockUpdatePage: React.FC = () => {
 							setTypeId: "",
 							setTypeName: detail.setTypeName,
 							currentStatus: "SHIPPED",
+							saleNote: "",
 						};
 
 						allStockRows.push(stockRowData);
@@ -282,7 +308,8 @@ const StockUpdatePage: React.FC = () => {
 
 				setStockRows(allStockRows);
 			} catch (err) {
-				handleError(err, setError);
+				alert("재고 정보를 불러오는 중 오류가 발생했습니다.");
+				console.error(err);
 			} finally {
 				setLoading(false);
 			}
@@ -309,49 +336,107 @@ const StockUpdatePage: React.FC = () => {
 		try {
 			setLoading(true);
 
-			// 모든 재고 행에 대해 업데이트 요청 생성
-			const updatePromises = stockRows.map((currentRow) => {
-				const updateData: StockUpdateRequest = {
-					productSize: currentRow.productSize,
-					isProductWeightSale: currentRow.isProductWeightSale,
-					stockNote: currentRow.orderNote,
-					productPurchaseCost: Number(currentRow.productPurchaseCost) || 0,
-					productLaborCost: Number(currentRow.productLaborCost) || 0,
-					productAddLaborCost: Number(currentRow.productAddLaborCost) || 0,
-					stoneWeight: currentRow.stoneWeight,
-					goldWeight: currentRow.goldWeight,
-					mainStoneNote: currentRow.mainStoneNote,
-					assistanceStoneNote: currentRow.assistanceStoneNote,
-					assistantStone: currentRow.assistantStone,
-					assistantStoneId: currentRow.assistantStoneId,
-					assistantStoneName: currentRow.assistantStoneName,
-					assistantStoneCreateAt: currentRow.assistantStoneCreateAt,
-					stoneInfos: currentRow.stoneInfos,
-					stoneAddLaborCost: Number(currentRow.stoneAddLaborCost) || 0,
-					totalStonePurchaseCost:
-						Number(currentRow.mainStonePrice) +
-						Number(currentRow.assistanceStonePrice),
-				};
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			let promises: Promise<any>[] = [];
+			let successMessage = "";
+			let actionType = "";
 
-				return stockApi.updateStock(currentRow.id, updateData);
-			});
+			if (action === "sale") {
+				// 판매 등록
+				promises = stockRows.map((currentRow) => {
+					const calculatedStoneData = calculateStoneDetails(
+						currentRow.stoneInfos || []
+					);
 
-			// 모든 업데이트 요청을 병렬로 실행
-			const responses = await Promise.all(updatePromises);
+					// assistantStoneName이 비어있으면 ID로 찾기
+					let assistantStoneName = currentRow.assistantStoneName;
+					if (!assistantStoneName && currentRow.assistantStoneId) {
+						const foundStone = assistantStones.find(
+							(s) => s.assistantStoneId === currentRow.assistantStoneId
+						);
+						assistantStoneName = foundStone?.assistantStoneName || "";
+					}
+
+					const saleData = {
+						productSize: currentRow.productSize,
+						isProductWeightSale: currentRow.isProductWeightSale,
+						addProductLaborCost: Number(currentRow.productAddLaborCost) || 0,
+						stoneAddLaborCost: Number(currentRow.stoneAddLaborCost) || 0,
+						productPurchaseCost: Number(currentRow.productPurchaseCost) || 0,
+						stonePurchaseCost:
+							calculatedStoneData.mainStonePrice +
+							calculatedStoneData.assistanceStonePrice,
+						mainStoneNote: currentRow.mainStoneNote || "",
+						assistanceStoneNote: currentRow.assistanceStoneNote || "",
+						stockNote: currentRow.saleNote || currentRow.orderNote || "",
+						assistantStone: currentRow.assistantStone,
+						assistantStoneId: currentRow.assistantStoneId || "1",
+						assistantStoneName: assistantStoneName,
+						assistantStoneCreateAt: currentRow.assistantStoneCreateAt || "",
+						goldWeight: currentRow.goldWeight || "0",
+						stoneWeight: currentRow.stoneWeight || "0",
+						stoneInfos: currentRow.stoneInfos || [],
+					};
+
+					return saleApi.updateStockToSale(currentRow.id, saleData);
+				});
+				successMessage = "판매 등록";
+				actionType = "판매 등록";
+			} else if (action === "rental") {
+				// 대여 등록
+				promises = stockRows.map((currentRow) => {
+					// assistantStoneName이 비어있으면 ID로 찾기
+					let assistantStoneName = currentRow.assistantStoneName;
+					if (!assistantStoneName && currentRow.assistantStoneId) {
+						const foundStone = assistantStones.find(
+							(s) => s.assistantStoneId === currentRow.assistantStoneId
+						);
+						assistantStoneName = foundStone?.assistantStoneName || "";
+					}
+
+					const rentalData = {
+						productSize: currentRow.productSize,
+						mainStoneNote: currentRow.mainStoneNote || "",
+						assistanceStoneNote: currentRow.assistanceStoneNote || "",
+						stockNote: currentRow.saleNote || currentRow.orderNote || "",
+						isProductWeightSale: currentRow.isProductWeightSale,
+						goldWeight: currentRow.goldWeight || "0",
+						stoneWeight: currentRow.stoneWeight || "0",
+						productAddLaborCost: Number(currentRow.productAddLaborCost) || 0,
+						stoneAddLaborCost: Number(currentRow.stoneAddLaborCost) || 0,
+						stoneInfos: currentRow.stoneInfos || [],
+					};
+
+					return stockApi.updateStockToRental(currentRow.id, rentalData);
+				});
+				successMessage = "대여 등록";
+				actionType = "대여 등록";
+			} else if (action === "return") {
+				// 반납 등록
+				promises = stockRows.map((currentRow) => {
+					return stockApi.updateRentalToReturn(currentRow.id, "RETURN");
+				});
+				successMessage = "반납 등록";
+				actionType = "반납 등록";
+			}
+
+			// 모든 등록 요청을 병렬로 실행
+			const responses = await Promise.all(promises);
 
 			// 성공/실패 개수 확인
 			const successCount = responses.filter((res) => res.success).length;
 			const failCount = responses.length - successCount;
 
 			if (failCount === 0) {
-				alert(`${successCount}개의 재고 정보가 성공적으로 업데이트되었습니다.`);
+				alert(
+					`${successCount}개의 재고가 성공적으로 ${successMessage}되었습니다.`
+				);
 			} else {
 				alert(
-					`${successCount}개 성공, ${failCount}개 실패\n일부 재고 정보 업데이트에 실패했습니다.`
+					`${successCount}개 성공, ${failCount}개 실패\n일부 재고 ${actionType}에 실패했습니다.`
 				);
 			}
 
-			// 부모 창(StockPage)에 새로고침 메시지 전송
 			if (window.opener) {
 				window.opener.postMessage(
 					{
@@ -364,8 +449,8 @@ const StockUpdatePage: React.FC = () => {
 
 			handleClose();
 		} catch (err) {
-			handleError(err, setError);
-			alert("재고 정보 업데이트 중 오류가 발생했습니다.");
+			console.error(err);
+			alert(`${getTitle()} 중 오류가 발생했습니다.`);
 		} finally {
 			setLoading(false);
 		}
@@ -376,18 +461,6 @@ const StockUpdatePage: React.FC = () => {
 			<div className="loading-container">
 				<div className="spinner"></div>
 				<p>재고 정보를 불러오는 중...</p>
-			</div>
-		);
-	}
-
-	if (error) {
-		return (
-			<div className="error-container">
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-				<button onClick={handleClose}>닫기</button>
 			</div>
 		);
 	}
@@ -405,7 +478,7 @@ const StockUpdatePage: React.FC = () => {
 		<div className="stock-update-page">
 			<div className="page-header">
 				<h2>
-					재고 상세 정보 {flowCodes.length > 1 ? `(${flowCodes.length}개)` : ""}
+					{getTitle()} {flowCodes.length > 1 ? `(${flowCodes.length}개)` : ""}
 				</h2>
 				{flowCodes.length === 1 && (
 					<div className="detail-grid-stock">
@@ -427,7 +500,7 @@ const StockUpdatePage: React.FC = () => {
 
 			{/* StockTable 사용 */}
 			<StockTable
-				mode="detail"
+				mode="sales"
 				stockRows={stockRows}
 				loading={loading}
 				materials={materials}
@@ -435,8 +508,8 @@ const StockUpdatePage: React.FC = () => {
 				assistantStones={assistantStones}
 				goldHarries={goldHarries}
 				onRowUpdate={handleRowUpdate}
-				onStoneInfoOpen={openStoneInfoManager}
 				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
+				onStoneInfoOpen={openStoneInfoManager}
 			/>
 
 			{/* 저장/취소 버튼 */}
@@ -445,11 +518,11 @@ const StockUpdatePage: React.FC = () => {
 					닫기
 				</button>
 				<button className="btn-submit" onClick={handleSave}>
-					저장
+					{"등록"}
 				</button>
 			</div>
 		</div>
 	);
 };
 
-export default StockUpdatePage;
+export default StockCommonActionPage;

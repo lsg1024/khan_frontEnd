@@ -85,8 +85,6 @@ export const OrderPage = () => {
 				// 팝업 닫힘 감지를 위한 인터벌 설정 (참조 정리만 수행)
 				const checkClosed = setInterval(() => {
 					if (newPopup.closed) {
-						console.log("주문 생성 팝업이 닫혔습니다.");
-						// 참조만 정리하고 새로고침은 메시지 이벤트에서만 처리
 						clearInterval(checkClosed);
 						orderCreationPopup.current = null;
 					}
@@ -538,13 +536,11 @@ export const OrderPage = () => {
 				}
 			}
 
-			// 재고등록 및 판매등록 완료 메시지 처리 (새로고침만)
 			if (
 				event.data &&
 				(event.data.type === "STOCK_REGISTERED" ||
 					event.data.type === "SALES_REGISTERED")
 			) {
-				// 선택 해제 및 목록 새로고침만 처리 (alert 제거)
 				setSelectedOrders([]);
 				loadOrders(searchFilters, currentPage);
 			}

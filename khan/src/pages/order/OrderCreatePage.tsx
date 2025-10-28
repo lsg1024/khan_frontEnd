@@ -133,21 +133,20 @@ const OrderCreatePage = () => {
 			factoryHarry: "",
 			productSize: "",
 			stoneWeight: 0,
-			productAddLaborCost: 0,
 			isProductWeightSale: false,
 			priorityName: defaultPriority.priorityName,
 			mainStoneNote: "",
 			assistanceStoneNote: "",
 			orderNote: "",
 			stoneInfos: [],
-			mainPrice: "", // 기본 판매단가
-			additionalPrice: "", // 추가 판매단가
-			mainStonePrice: "", // 스톤 중심 판매단가
-			assistanceStonePrice: "", // 보조 중심 판매단가
-			stoneAddLaborCost: "", // 추가 스톤 판매단가
-			mainStoneCount: "",
-			assistanceStoneCount: "",
-			stoneWeightTotal: "",
+			productLaborCost: 0, // 기본 판매단가
+			productAddLaborCost: 0, // 추가 판매단가
+			mainStonePrice: 0, // 스톤 중심 판매단가
+			assistanceStonePrice: 0, // 보조 중심 판매단가
+			stoneAddLaborCost: 0, // 추가 스톤 판매단가
+			mainStoneCount: 0,
+			assistanceStoneCount: 0,
+			stoneWeightTotal: 0,
 			createAt: currentDate,
 			shippingAt: deliveryDate,
 			// 보조석 관련 필드
@@ -449,7 +448,8 @@ const OrderCreatePage = () => {
 				materialName: prevRow.materialName,
 				factoryId: prevRow.factoryId,
 				factoryName: prevRow.factoryName,
-				mainPrice: prevRow.mainPrice,
+				productLaborCost: prevRow.productLaborCost,
+				productAddLaborCost: prevRow.productAddLaborCost,
 				mainStonePrice: prevRow.mainStonePrice,
 				stoneAddLaborCost: prevRow.stoneAddLaborCost,
 				mainStoneCount: prevRow.mainStoneCount,
@@ -501,7 +501,8 @@ const OrderCreatePage = () => {
 				updateOrderRow(currentRowId, "productName", prevValues.productName);
 				updateOrderRow(currentRowId, "factoryId", prevValues.factoryId);
 				updateOrderRow(currentRowId, "factoryName", prevValues.factoryName);
-				updateOrderRow(currentRowId, "mainPrice", prevValues.mainPrice);
+				updateOrderRow(currentRowId, "productLaborCost", prevValues.productLaborCost);
+				updateOrderRow(currentRowId, "productAddLaborCost", prevValues.productAddLaborCost);
 				updateOrderRow(
 					currentRowId,
 					"mainStonePrice",
@@ -723,7 +724,7 @@ const OrderCreatePage = () => {
 			);
 			updateOrderRow(
 				selectedRowForProduct,
-				"mainPrice",
+				"productLaborCost",
 				product.productLaborCost || 0
 			);
 
@@ -940,21 +941,20 @@ const OrderCreatePage = () => {
 							factoryHarry: "",
 							productSize: "",
 							stoneWeight: 0,
-							productAddLaborCost: 0,
 							isProductWeightSale: false,
 							priorityName: priorities[0]?.priorityName || "일반",
 							mainStoneNote: "",
 							assistanceStoneNote: "",
 							orderNote: "",
 							stoneInfos: [],
-							mainPrice: "", // 중심단가
-							additionalPrice: "", // 추가단가
-							mainStonePrice: "",
-							assistanceStonePrice: "",
-							mainStoneCount: "",
-							assistanceStoneCount: "",
-							stoneAddLaborCost: "", // 추가 스톤 판매단가
-							stoneWeightTotal: "",
+							productLaborCost: 0, // 중심단가
+							productAddLaborCost: 0, // 추가단가
+							mainStonePrice: 0,
+							assistanceStonePrice: 0,
+							mainStoneCount: 0,
+							assistanceStoneCount: 0,
+							stoneAddLaborCost: 0, // 추가 스톤 판매단가
+							stoneWeightTotal: 0,
 							createAt: currentDate,
 							shippingAt: defaultDeliveryDate,
 							// 보조석 관련 필드

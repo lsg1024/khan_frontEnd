@@ -35,6 +35,8 @@ export interface OrderResponseDetail {
 	assistantStoneCreateAt: string | null;
 	stoneInfos: StoneInfo[];
 	stoneAddLaborCost?: number; // 추가 스톤 판매단가
+	productLaborCost: number; // 기본 판매단가
+	productAddLaborCost: number; // 추가 판매단가
 }
 
 export interface OrderRequestDetail {
@@ -44,6 +46,7 @@ export interface OrderRequestDetail {
 	productId: string;
 	productSize: string;
 	isProductWeightSale: boolean;
+	productLaborCost: number;
 	productAddLaborCost: number;
 	materialId: string;
 	colorId: string;
@@ -174,15 +177,14 @@ export interface OrderRowData {
 	factoryHarry?: string;
 	productSize: string;
 	stoneWeight: number;
-	productAddLaborCost: number;
 	isProductWeightSale: boolean;
 	priorityName: string;
 	mainStoneNote: string;
 	assistanceStoneNote: string;
 	orderNote: string;
 	stoneInfos: StoneInfo[];
-	mainPrice: number | ""; // 기본 판매단가
-	additionalPrice: number | ""; // 추가 판매단가
+	productLaborCost: number; // 기본 판매단가
+	productAddLaborCost: number; // 추가 판매단가
 	mainStonePrice: number | ""; // 중심 판매단가
 	assistanceStonePrice: number | ""; // 보조 판매단가
 	mainStoneCount: number | ""; // 메인 개당알수

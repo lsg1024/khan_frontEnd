@@ -154,6 +154,17 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 			props.onStoneInfoOpen(rowId);
 		}
 	};
+
+	const handleIntegerChange = (
+		id: string,
+		field: keyof OrderRowData,
+		value: string
+	) => {
+		const numericString = value.replace(/[^0-9]/g, "");
+		const numericValue = numericString === "" ? 0 : parseInt(numericString, 10);
+		onRowUpdate(id, field, numericValue);
+	};
+
 	return (
 		<div className="order-table-container">
 			<table className="order-create-table">
@@ -625,7 +636,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								<td>
 									<input
 										type="text"
-										value={row.mainPrice.toLocaleString()}
+										value={row.productLaborCost.toLocaleString()}
 										readOnly
 										disabled={loading}
 										style={{ backgroundColor: "#f5f5f5" }}
@@ -634,11 +645,14 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								<td>
 									<input
 										type="text"
-										value={row.additionalPrice.toLocaleString()}
+										value={row.productAddLaborCost.toLocaleString()}
 										onChange={(e) => {
 											if (isStockStatus) return; // 재고 상태일 때 변경 방지
-											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(row.id, "additionalPrice", value);
+											handleIntegerChange(
+												row.id,
+												"productAddLaborCost",
+												e.target.value
+											);
 										}}
 										placeholder="0"
 										disabled={
@@ -703,9 +717,13 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 									<input
 										type="text"
 										value={row.stoneAddLaborCost.toLocaleString()}
-										onChange={(e) => {
-											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(row.id, "stoneAddLaborCost", value);
+										onChange={(e) => {		
+											if (isStockStatus) return;									
+											handleIntegerChange(
+												row.id,
+												"stoneAddLaborCost",
+												e.target.value
+											);
 										}}
 										placeholder="0"
 										disabled={loading || !safeIsRowInputEnabled(index)}

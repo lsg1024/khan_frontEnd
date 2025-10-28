@@ -146,6 +146,13 @@ export const FixPage = () => {
 			const newPopup = window.open(url, NAME, FEATURES);
 			if (newPopup) {
 				orderCreationPopup.current = newPopup;
+
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						clearInterval(checkClosed);
+						orderCreationPopup.current = null;
+					}
+				}, 1000);
 			}
 		}
 	};
@@ -408,10 +415,8 @@ export const FixPage = () => {
 
 		const handleOrderCreated = (event: MessageEvent) => {
 			if (event.data && event.data.type === "ORDER_CREATED") {
-				// 주문 목록 새로고침
 				loadFixes(searchFilters, 1);
 				setCurrentPage(1);
-				alert("수리 주문이 성공적으로 생성되었습니다.");
 			}
 
 			// 재고등록 및 판매등록 완료 메시지 처리 (새로고침만)
@@ -420,7 +425,6 @@ export const FixPage = () => {
 				(event.data.type === "STOCK_REGISTERED" ||
 					event.data.type === "SALES_REGISTERED")
 			) {
-				// 선택 해제 및 목록 새로고침만 처리 (alert 제거)
 				setSelectedFix([]);
 				loadFixes(searchFilters, currentPage);
 			}

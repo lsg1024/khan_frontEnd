@@ -117,58 +117,6 @@ export const StockCreatePage = () => {
 		}
 	};
 
-	// 새 재고 행 추가
-	const addStockRow = () => {
-		const defaultAssistantStone =
-			assistantStones.length > 0 ? assistantStones[0] : null;
-
-		const newRow: StockOrderRows = {
-			id: Date.now().toString(),
-			createAt: currentDate,
-			shippingAt: currentDate,
-			storeId: "",
-			storeName: "",
-			grade: "1",
-			productId: "",
-			productName: "",
-			materialId: "",
-			materialName: "",
-			colorId: "",
-			colorName: "",
-			factoryId: "",
-			factoryName: "",
-			productSize: "",
-			productPurchaseCost: 0,
-			goldWeight: "",
-			stoneWeight: "",
-			isProductWeightSale: false,
-			mainStoneNote: "",
-			assistanceStoneNote: "",
-			orderNote: "",
-			stoneInfos: [],
-			productLaborCost: "",
-			productAddLaborCost: "",
-			mainStonePrice: "",
-			assistanceStonePrice: "",
-			mainStoneCount: "",
-			assistanceStoneCount: "",
-			stoneAddLaborCost: "",
-			stoneWeightTotal: 0,
-			assistantStoneId:
-				defaultAssistantStone?.assistantStoneId.toString() || "1",
-			assistantStone: false,
-			assistantStoneName: defaultAssistantStone?.assistantStoneName || "",
-			assistantStoneCreateAt: "",
-			totalWeight: 0,
-			storeHarry: "",
-			classificationId: "",
-			classificationName: "",
-			setTypeId: "",
-			setTypeName: "",
-		};
-		setStockRows([...stockRows, newRow]);
-	};
-
 	// 재고 행 데이터 업데이트
 	const updateStockRow = async (
 		id: string,
@@ -479,6 +427,11 @@ export const StockCreatePage = () => {
 				"productName",
 				product.productName || ""
 			);
+			updateStockRow(
+				selectedRowForProduct,
+				"productFactoryName",
+				product.productFactoryName || ""
+			);
 			updateStockRow(selectedRowForProduct, "factoryId", factoryIdValue);
 			updateStockRow(
 				selectedRowForProduct,
@@ -574,7 +527,7 @@ export const StockCreatePage = () => {
 	const openStoneInfoManager = (rowId: string) => {
 		const url = `/stock/stone-info?rowId=${rowId}&origin=${window.location.origin}`;
 		const NAME = `stoneInfo_${rowId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=800";
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=500";
 
 		const popup = window.open(url, NAME, FEATURES);
 		if (popup) {
@@ -641,8 +594,11 @@ export const StockCreatePage = () => {
 
 	const resetOrderRow = (id: string) => {
 		if (window.confirm("초기화하시겠습니까?")) {
+			// assistantStoneId가 "1"인 보조석 찾기
 			const defaultAssistantStone =
-				assistantStones.length > 0 ? assistantStones[0] : null;
+				assistantStones.find((a) => a.assistantStoneId === "1") ||
+				assistantStones[0] ||
+				null;
 
 			setStockRows((prevRows) =>
 				prevRows.map((row) => {
@@ -670,17 +626,16 @@ export const StockCreatePage = () => {
 							assistanceStoneNote: "",
 							orderNote: "",
 							stoneInfos: [],
-							productLaborCost: "",
-							productAddLaborCost: "",
-							mainStonePrice: "",
-							assistanceStonePrice: "",
-							mainStoneCount: "",
-							assistanceStoneCount: "",
-							additionalStonePrice: "",
+							productLaborCost: 0,
+							productAddLaborCost: 0,
+							mainStonePrice: 0,
+							assistanceStonePrice: 0,
+							mainStoneCount: 0,
+							assistanceStoneCount: 0,
+							additionalStonePrice: 0,
 							stoneWeightTotal: 0,
 							assistantStone: false,
-							assistantStoneId:
-								defaultAssistantStone?.assistantStoneId.toString() || "1",
+							assistantStoneId: defaultAssistantStone?.assistantStoneId || "1",
 							assistantStoneName:
 								defaultAssistantStone?.assistantStoneName || "",
 							assistantStoneCreateAt: "",
@@ -813,42 +768,55 @@ export const StockCreatePage = () => {
 						goldHarryApi.getGoldHarry(),
 					]);
 
+				let loadedMaterials: { materialId: string; materialName: string }[] =
+					[];
+				let loadedColors: { colorId: string; colorName: string }[] = [];
+				let loadedAssistantStones: {
+					assistantStoneId: string;
+					assistantStoneName: string;
+				}[] = [];
+				let loadedGoldHarries: { goldHarryId: string; goldHarry: string }[] =
+					[];
+
 				if (materialRes.success) {
-					const materials = (materialRes.data || []).map((m) => ({
+					loadedMaterials = (materialRes.data || []).map((m) => ({
 						materialId: m.materialId?.toString() || "",
 						materialName: m.materialName,
 					}));
-					setMaterials(materials);
+					setMaterials(loadedMaterials);
 				}
 				if (colorRes.success) {
-					const colors = (colorRes.data || []).map((c) => ({
+					loadedColors = (colorRes.data || []).map((c) => ({
 						colorId: c.colorId?.toString() || "",
 						colorName: c.colorName,
 					}));
-					setColors(colors);
+					setColors(loadedColors);
 				}
 				if (assistantStoneRes.success) {
-					const assistantStones = (assistantStoneRes.data || []).map((a) => ({
+					loadedAssistantStones = (assistantStoneRes.data || []).map((a) => ({
 						assistantStoneId: a.assistantStoneId.toString(),
 						assistantStoneName: a.assistantStoneName,
 					}));
-					setAssistantStones(assistantStones);
+					setAssistantStones(loadedAssistantStones);
 				}
 				if (goldHarryRes.success) {
-					const goldHarries = (goldHarryRes.data || []).map((g) => ({
+					loadedGoldHarries = (goldHarryRes.data || []).map((g) => ({
 						goldHarryId: g.goldHarryId?.toString() || "",
 						goldHarry: g.goldHarry,
 					}));
-					setGoldHarries(goldHarries);
+					setGoldHarries(loadedGoldHarries);
 				}
+
+				// assistantStoneId가 "1"인 보조석 찾기
+				const defaultAssistantStone =
+					loadedAssistantStones.find((a) => a.assistantStoneId === "1") ||
+					loadedAssistantStones[0] ||
+					null;
 
 				// 초기 5개 행 생성
 				const initialRowCount = 5;
 				const initialRows: StockOrderRows[] = [];
 				for (let i = 0; i < initialRowCount; i++) {
-					const defaultAssistantStone =
-						assistantStones.length > 0 ? assistantStones[0] : null;
-
 					const newRow: StockOrderRows = {
 						id: `${Date.now()}-${i}`,
 						createAt: currentDate,
@@ -858,6 +826,7 @@ export const StockCreatePage = () => {
 						grade: "1",
 						productId: "",
 						productName: "",
+						productFactoryName: "",
 						materialId: "",
 						materialName: "",
 						colorId: "",
@@ -873,16 +842,15 @@ export const StockCreatePage = () => {
 						assistanceStoneNote: "",
 						orderNote: "",
 						stoneInfos: [],
-						productLaborCost: "",
-						productAddLaborCost: "",
-						mainStonePrice: "",
-						assistanceStonePrice: "",
-						mainStoneCount: "",
-						assistanceStoneCount: "",
-						stoneAddLaborCost: "",
+						productLaborCost: 0,
+						productAddLaborCost: 0,
+						mainStonePrice: 0,
+						assistanceStonePrice: 0,
+						mainStoneCount: 0,
+						assistanceStoneCount: 0,
+						stoneAddLaborCost: 0,
 						stoneWeightTotal: 0,
-						assistantStoneId:
-							defaultAssistantStone?.assistantStoneId.toString() || "1",
+						assistantStoneId: defaultAssistantStone?.assistantStoneId || "1",
 						assistantStone: false,
 						assistantStoneName: defaultAssistantStone?.assistantStoneName || "",
 						assistantStoneCreateAt: "",
@@ -922,6 +890,15 @@ export const StockCreatePage = () => {
 			setLoading(true);
 
 			const promises = validRows.map((row) => {
+				// assistantStoneName이 비어있으면 assistantStoneId로 이름 찾기
+				let assistantStoneName = row.assistantStoneName;
+				if (!assistantStoneName && row.assistantStoneId) {
+					const foundStone = assistantStones.find(
+						(s) => s.assistantStoneId === row.assistantStoneId
+					);
+					assistantStoneName = foundStone?.assistantStoneName || "";
+				}
+
 				const stockData: StockCreateRequest = {
 					storeId: row.storeId,
 					storeName: row.storeName,
@@ -931,11 +908,12 @@ export const StockCreatePage = () => {
 					factoryName: row.factoryName,
 					productId: row.productId,
 					productName: row.productName,
-					productFactoryName: "",
+					productFactoryName: row.productFactoryName,
 					productSize: row.productSize,
 					stockNote: row.orderNote,
 					isProductWeightSale: row.isProductWeightSale,
 					productPurchaseCost: row.productPurchaseCost,
+					productLaborCost: row.productLaborCost || 0,
 					productAddLaborCost: row.productAddLaborCost as number,
 					materialId: row.materialId,
 					materialName: row.materialName,
@@ -951,7 +929,7 @@ export const StockCreatePage = () => {
 					assistanceStoneNote: row.assistanceStoneNote,
 					assistantStone: row.assistantStone,
 					assistantStoneId: row.assistantStoneId,
-					assistantStoneName: row.assistantStoneName,
+					assistantStoneName: assistantStoneName,
 					assistantStoneCreateAt: row.assistantStoneCreateAt,
 					stoneInfos: row.stoneInfos,
 					stoneAddLaborCost: 0,
@@ -1045,7 +1023,7 @@ export const StockCreatePage = () => {
 				onProductSearchOpen={openProductSearch}
 				onFactorySearchOpen={openFactorySearch}
 				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
-				onAddStockRow={addStockRow}
+				onAddStockRow={() => {}}
 				onStoneInfoOpen={openStoneInfoManager}
 				validateSequence={validateSequence}
 				isRowInputEnabled={isRowInputEnabled}

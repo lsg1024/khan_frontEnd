@@ -1,6 +1,5 @@
 /* StockList 스타일 */
 .stock-list {
-	margin: 20px 0;
 	overflow-x: auto;
 	background-color: white;
 	border-radius: 8px;
@@ -57,7 +56,6 @@
 	text-align: center;
 	border-right: 1px solid #f1f3f4;
 	vertical-align: middle;
-	border-bottom: 1px solid #dee2e6;
 }
 
 /* 마지막 셀에는 오른쪽 테두리 제거 */
@@ -156,7 +154,7 @@
 }
 
 .material-name-24k {
-	color: #c8d32f;
+	color: rgb(249, 191, 0);
 }
 
 .stone-note-cell {
@@ -171,22 +169,6 @@
 	flex-direction: column;
 	gap: 2px;
 	align-items: center;
-}
-
-.stone-note-content .main-note {
-	font-size: 11px;
-	color: #333;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.stone-note-content .assistance-note {
-	font-size: 11px;
-	color: #666;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
 }
 
 .main-quantity-cell,
@@ -259,6 +241,27 @@
 	background-color: #fce4ec !important; /* 반품 - 연한 붉은색 */
 }
 
+/* originStatus + currentStatus 조합별 행 배경색상 */
+.stock-row-general-stock {
+	background-color: #e9ecef !important; /* 일반 + 재고 = 회색 */
+}
+
+.stock-row-general-rental {
+	background-color: #ffe0b2 !important; /* 일반 + 대여 = 주황색 */
+}
+
+.stock-row-order-stock {
+	background-color: #d4edda !important; /* 주문 + 재고 = 초록색 */
+}
+
+.stock-row-order-rental {
+	background-color: #ffe0b2 !important; /* 주문 + 대여 = 주황색 */
+}
+
+.stock-row-repair-stock {
+	background-color: #fff3cd !important; /* 수리 + 재고 = 노란색 */
+}
+
 /* No 클릭 버튼 스타일 */
 .stock-no-btn {
 	background: none;
@@ -277,7 +280,6 @@
 	background-color: #28a745;
 	text-decoration: none;
 	color: white;
-
 }
 
 /* 로딩 및 빈 데이터 메시지 */
@@ -290,7 +292,7 @@
 }
 
 .loading-message {
-	color: #007bff;
+	color: #000000;
 }
 
 /* 반응형 디자인 */

@@ -113,6 +113,18 @@
 	border-color: #bd2130;
 }
 
+/* 복구 버튼 - 활성화될 때만 색상 표시 */
+.bulk-action-btn.rollback {
+	background-color: #dc3545;
+	color: white;
+	border-color: #dc3545;
+}
+
+.bulk-action-btn.rollback:hover:not(.disabled) {
+	background-color: #c82333;
+	border-color: #bd2130;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
 	.bulk-action-bar {

@@ -109,6 +109,7 @@ const StockDetailPage: React.FC = () => {
 						grade: "1",
 						productId: response.productId,
 						productName: response.productName,
+						productFactoryName: response.productFactoryName,
 						productPurchaseCost: response.productPurchaseCost || 0,
 						materialId: foundMaterial?.materialId || "",
 						materialName: response.materialName,

@@ -25,7 +25,7 @@ export const StockList = ({
 	if (loading) {
 		return (
 			<div className="stock-list">
-				<div className="loading-message">재고 목록을 불러오는 중...</div>
+				<div className="loading-message">목록을 불러오는 중...</div>
 			</div>
 		);
 	}
@@ -33,7 +33,7 @@ export const StockList = ({
 	if (stocks.length === 0) {
 		return (
 			<div className="stock-list">
-				<div className="no-data-message">재고 데이터가 없습니다.</div>
+				<div className="no-data-message">데이터가 없습니다.</div>
 			</div>
 		);
 	}
@@ -87,28 +87,39 @@ export const StockList = ({
 				{stocks.map((stock, index) => {
 					const rowNumber = (currentPage - 1) * PAGE_SIZE + index + 1;
 
-					// 상태별 CSS 클래스 결정
-					const getRowClass = (status: string) => {
-						switch (status) {
-							case "주문":
-								return "stock-row-order";
-							case "일반":
-								return "stock-row-general";
-							case "대여":
-								return "stock-row-rental";
-							case "수리":
-								return "stock-row-repair";
-							case "반품":
-								return "stock-row-return";
-							default:
-								return "stock-row";
+					// originStatus와 currentStatus 조합으로 CSS 클래스 결정
+					const getRowClass = (originStatus: string, currentStatus: string) => {
+						const origin = originStatus || "";
+						const current = currentStatus || "";
+
+						// 일반 + 재고 = 회색
+						if (origin === "일반" && current === "재고") {
+							return "stock-row-general-stock";
 						}
+						// 일반 + 대여 = 주황색
+						if (origin === "일반" && current === "대여") {
+							return "stock-row-general-rental";
+						}
+						// 주문 + 재고 = 초록색
+						if (origin === "주문" && current === "재고") {
+							return "stock-row-order-stock";
+						}
+						// 주문 + 대여 = 주황색
+						if (origin === "주문" && current === "대여") {
+							return "stock-row-order-rental";
+						}
+						// 수리 + 재고 = 노란색
+						if (origin === "수리" && current === "재고") {
+							return "stock-row-repair-stock";
+						}
+
+						return "stock-row";
 					};
 
 					return (
 						<tr
 							key={stock.flowCode}
-							className={getRowClass(stock.originStatus)}
+							className={getRowClass(stock.originStatus, stock.currentStatus)}
 						>
 							<td className="no-cell">
 								<input
@@ -116,6 +127,40 @@ export const StockList = ({
 									checked={selected.includes(stock.flowCode)}
 									onChange={(e) => {
 										e.stopPropagation();
+
+										// 선택하려는 항목의 현재 상태
+										const currentStatus = stock.currentStatus || "";
+										const isRental = currentStatus === "대여";
+
+										// 이미 선택된 항목들의 상태 확인
+										const selectedStocks = stocks.filter((s) =>
+											selected.includes(s.flowCode)
+										);
+										const hasRentalSelected = selectedStocks.some(
+											(s) => (s.currentStatus || "") === "대여"
+										);
+										const hasNonRentalSelected = selectedStocks.some(
+											(s) => (s.currentStatus || "") !== "대여"
+										);
+
+										// 체크를 시도할 때
+										if (e.target.checked) {
+											// 대여 항목을 선택하려는데 이미 비대여 항목이 선택되어 있으면 막기
+											if (isRental && hasNonRentalSelected) {
+												alert(
+													"대여 상태는 다른 상태와 함께 선택할 수 없습니다."
+												);
+												return;
+											}
+											// 비대여 항목을 선택하려는데 이미 대여 항목이 선택되어 있으면 막기
+											if (!isRental && hasRentalSelected) {
+												alert(
+													"대여 상태는 다른 상태와 함께 선택할 수 없습니다."
+												);
+												return;
+											}
+										}
+
 										onSelect(stock.flowCode, e.target.checked);
 									}}
 								/>

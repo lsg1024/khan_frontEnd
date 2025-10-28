@@ -197,11 +197,10 @@ const OrderUpdatePage: React.FC = () => {
 				"",
 			assistantStoneCreateAt: detail.assistantStoneCreateAt || "",
 
-			mainPrice: 0,
-			additionalPrice: 0,
 			stoneWeight: 0,
-			productAddLaborCost: 0,
 			isProductWeightSale: false,
+			productLaborCost: detail.productLaborCost || 0,
+			productAddLaborCost: detail.productAddLaborCost || 0,
 		};
 
 		return {
@@ -770,6 +769,7 @@ const OrderUpdatePage: React.FC = () => {
 				productId: currentRow.productId,
 				productSize: currentRow.productSize,
 				isProductWeightSale: currentRow.isProductWeightSale,
+				productLaborCost: currentRow.productLaborCost,
 				productAddLaborCost: currentRow.productAddLaborCost,
 				materialId: currentRow.materialId,
 				colorId: currentRow.colorId,

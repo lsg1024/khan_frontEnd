@@ -28,6 +28,7 @@ import StockDetailPage from "./pages/stock/StockDetailPage";
 import StockHistoryPage from "./pages/stock/StockHistoryPage";
 import StockReturnPage from "./pages/stock/StockReturnPage";
 import StockDeletePage from "./pages/stock/StockDeletePage";
+import StockCommonActionPage from "./pages/stock/StockCommonActionPage";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
 import StoneSearchPage from "./pages/stone/StoneSearchPage";
 import StoneInfoPage from "./pages/order/StoneInfoPage";
@@ -108,6 +109,10 @@ function App() {
 					<Route
 						path="/stocks/detail/:flowCode"
 						element={<StockDetailPage />}
+					/>
+					<Route
+						path="/stocks/action/:flowCode"
+						element={<StockCommonActionPage />}
 					/>
 
 					{/* Layout 안에서 렌더링 */}

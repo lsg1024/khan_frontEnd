@@ -35,7 +35,7 @@ export const StockHistoryPage = () => {
 		search: "",
 		start: "2025-01-01",
 		end: getLocalDate(),
-		order_status: "",
+		order_status: "ALL",
 		factory: "",
 		store: "",
 		setType: "",
@@ -105,7 +105,7 @@ export const StockHistoryPage = () => {
 			search: "",
 			start: "2025-01-01",
 			end: getLocalDate(),
-			order_status: "",
+			order_status: "ALL",
 			factory: "",
 			store: "",
 			setType: "",
@@ -174,7 +174,7 @@ export const StockHistoryPage = () => {
 					filters.start,
 					filters.end,
 					filters.search,
-					filters.order_status, // 빈 문자열로 전달하여 모든 상태 포함
+					filters.order_status,
 					filters.factory,
 					filters.store,
 					filters.setType,
@@ -269,7 +269,6 @@ export const StockHistoryPage = () => {
 			if (event.origin !== window.location.origin) return;
 
 			if (event.data.type === "STOCK_DETAIL_CLOSED") {
-				// 팝업 닫힘 시 필요한 경우 데이터 새로고침
 				loadStocks(searchFilters, currentPage);
 			}
 		};

@@ -6,7 +6,8 @@ import type {
 	StockSearchResponse,
 	StockCreateRequest,
 	StockResponseDetail,
-	StockUpdateRequest
+	StockUpdateRequest,
+	StockRentalRequest,
 } from "../../src/types/stock";
 
 export const stockApi = {
@@ -149,8 +150,68 @@ export const stockApi = {
 		orderType: string
 	): Promise<ApiResponse<string>> => {
 		const params = { order_type: orderType };
-		console.log("params:", params);
 		return apiRequest.post<string>("order/stocks", stockData, {
+			params,
+		});
+	},
+
+	// 재고 -> 대여
+	updateStockToRental: async (
+		flowCode: string,
+		stockDto: StockRentalRequest
+	): Promise<ApiResponse<string>> => {
+		const params = { id: flowCode };
+		return apiRequest.patch<string>("order/stocks/rental", stockDto, {
+			params,
+		});
+	},
+
+	// 대여 -> 반납
+	updateRentalToReturn: async (
+		flowCode: string,
+		orderType: string
+	): Promise<ApiResponse<string>> => {
+		const params = {
+			id: flowCode,
+			order_type: orderType,
+		};
+		return apiRequest.patch<string>("order/stocks/rental/return", null, {
+			params,
+		});
+	},
+
+	// 반납 -> 재고
+	updateReturnToStock: async (
+		flowCode: string,
+		orderType: string
+	): Promise<ApiResponse<string>> => {
+		const params = {
+			id: flowCode,
+			order_type: orderType,
+		};
+		return apiRequest.patch<string>("order/stocks/rollback", null, {
+			params,
+		});
+	},
+
+	// 재고 -> 삭제
+	deleteStock: async (flowCode: string): Promise<ApiResponse<string>> => {
+		const params = { id: flowCode };
+		return apiRequest.delete<string>("order/stocks/delete", {
+			params,
+		});
+	},
+
+	// 삭제 -> 재고
+	updateDeleteToStock: async (
+		flowCodes: string[],
+		orderType: string
+	): Promise<ApiResponse<string>> => {
+		const params = {
+			ids: flowCodes.join(","),
+			order_type: orderType,
+		};
+		return apiRequest.patch<string>("order/stocks/delete/stock", null, {
 			params,
 		});
 	},

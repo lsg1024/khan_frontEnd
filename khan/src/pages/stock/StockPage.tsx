@@ -31,6 +31,7 @@ export const StockPage = () => {
 
 	const stockCreationPopup = useRef<Window | null>(null);
 	const stockUpdatePopups = useRef<Map<string, Window>>(new Map());
+	const stockSalesPopup = useRef<Window | null>(null);
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
@@ -152,12 +153,28 @@ export const StockPage = () => {
 		if (selectedStocks.length === 0) return;
 
 		const selectedFlowCodes = selectedStocks.join(",");
-		const url = `/stocks/register?action=sales&flowCodes=${selectedFlowCodes}`;
-		const NAME = `stockSalesRegister_${Date.now()}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
+		const url = `/stocks/action/${selectedFlowCodes}?action=sale`;
+		const NAME = `stockSalesRegister`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=300";
+
+		// 이미 열린 판매 팝업이 있으면 포커스만
+		if (stockSalesPopup.current && !stockSalesPopup.current.closed) {
+			stockSalesPopup.current.focus();
+			return;
+		}
 
 		const newPopup = window.open(url, NAME, FEATURES);
-		if (!newPopup) {
+		if (newPopup) {
+			stockSalesPopup.current = newPopup;
+
+			// 팝업 닫힘 감지
+			const checkClosed = setInterval(() => {
+				if (newPopup.closed) {
+					clearInterval(checkClosed);
+					stockSalesPopup.current = null;
+				}
+			}, 1000);
+		} else {
 			alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
 		}
 	};
@@ -166,9 +183,9 @@ export const StockPage = () => {
 		if (selectedStocks.length === 0) return;
 
 		const selectedFlowCodes = selectedStocks.join(",");
-		const url = `/stocks/register?action=rental&flowCodes=${selectedFlowCodes}`;
-		const NAME = `stockRentalRegister_${Date.now()}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
+		const url = `/stocks/action/${selectedFlowCodes}?action=rental`;
+		const NAME = `stockRentalRegister`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=300";
 
 		const newPopup = window.open(url, NAME, FEATURES);
 		if (!newPopup) {
@@ -176,29 +193,89 @@ export const StockPage = () => {
 		}
 	};
 
-	const handleReturnRegister = () => {
-		if (selectedStocks.length === 0) return;
-
-		const selectedFlowCodes = selectedStocks.join(",");
-		const url = `/stocks/register?action=return&flowCodes=${selectedFlowCodes}`;
-		const NAME = `stockReturnRegister_${Date.now()}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-
-		const newPopup = window.open(url, NAME, FEATURES);
-		if (!newPopup) {
-			alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
-		}
-	};
-
-	const handleBulkDelete = () => {
+	const handleReturnRegister = async () => {
 		if (selectedStocks.length === 0) return;
 
 		if (
-			confirm(`선택된 ${selectedStocks.length}개의 재고를 삭제하시겠습니까?`)
+			!confirm(
+				`선택된 ${selectedStocks.length}개의 재고를 반납 처리하시겠습니까?`
+			)
 		) {
-			// TODO: API 호출로 삭제 처리
-			console.log("삭제할 재고:", selectedStocks);
-			alert("삭제 기능은 아직 구현되지 않았습니다.");
+			return;
+		}
+
+		try {
+			setLoading(true);
+
+			// 모든 재고를 병렬로 반납 처리
+			const returnPromises = selectedStocks.map((flowCode) =>
+				stockApi.updateRentalToReturn(flowCode, "RETURN")
+			);
+
+			const responses = await Promise.all(returnPromises);
+
+			// 성공/실패 개수 확인
+			const successCount = responses.filter((res) => res.success).length;
+			const failCount = responses.length - successCount;
+
+			if (failCount === 0) {
+				alert(`${successCount}개의 재고가 성공적으로 반납 처리되었습니다.`);
+			} else {
+				alert(
+					`${successCount}개 성공, ${failCount}개 실패\n일부 재고 반납에 실패했습니다.`
+				);
+			}
+
+			// 목록 새로고침 및 선택 초기화
+			await loadStocks(searchFilters, currentPage);
+			setSelectedStocks([]);
+		} catch (err) {
+			handleError(err, setError);
+			alert("재고 반납 중 오류가 발생했습니다.");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleBulkDelete = async () => {
+		if (selectedStocks.length === 0) return;
+
+		if (
+			!confirm(`선택된 ${selectedStocks.length}개의 재고를 삭제하시겠습니까?`)
+		) {
+			return;
+		}
+
+		try {
+			setLoading(true);
+
+			// 모든 재고를 병렬로 삭제
+			const deletePromises = selectedStocks.map((flowCode) =>
+				stockApi.deleteStock(flowCode)
+			);
+
+			const responses = await Promise.all(deletePromises);
+
+			// 성공/실패 개수 확인
+			const successCount = responses.filter((res) => res.success).length;
+			const failCount = responses.length - successCount;
+
+			if (failCount === 0) {
+				alert(`${successCount}개의 재고가 성공적으로 삭제되었습니다.`);
+			} else {
+				alert(
+					`${successCount}개 성공, ${failCount}개 실패\n일부 재고 삭제에 실패했습니다.`
+				);
+			}
+
+			// 목록 새로고침 및 선택 초기화
+			await loadStocks(searchFilters, currentPage);
+			setSelectedStocks([]);
+		} catch (err) {
+			handleError(err, setError);
+			alert("재고 삭제 중 오류가 발생했습니다.");
+		} finally {
+			setLoading(false);
 		}
 	};
 
