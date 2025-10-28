@@ -663,6 +663,8 @@ export const StockCreatePage = () => {
 			return {
 				storeId: prevRow.storeId,
 				storeName: prevRow.storeName,
+				storeHarry: prevRow.storeHarry,
+				grade: prevRow.grade,
 				productId: prevRow.productId,
 				productName: prevRow.productName,
 				materialId: prevRow.materialId,
@@ -705,6 +707,8 @@ export const StockCreatePage = () => {
 			if (fieldType === "store") {
 				updateStockRow(currentRowId, "storeId", prevValues.storeId);
 				updateStockRow(currentRowId, "storeName", prevValues.storeName);
+				updateStockRow(currentRowId, "storeHarry", prevValues.storeHarry);
+				updateStockRow(currentRowId, "grade", prevValues.grade);
 			} else if (fieldType === "product") {
 				updateStockRow(currentRowId, "productId", prevValues.productId);
 				updateStockRow(currentRowId, "productName", prevValues.productName);
