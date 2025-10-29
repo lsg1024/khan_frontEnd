@@ -51,7 +51,7 @@ const StockDetailPage: React.FC = () => {
 					colorApi.getColors(),
 					assistantStoneApi.getAssistantStones(),
 					goldHarryApi.getGoldHarry(),
-					stockApi.getStockDetail([flowCode]),
+					stockApi.getStock(flowCode),
 				]);
 
 				const loadedMaterials = materialRes.success
@@ -84,8 +84,8 @@ const StockDetailPage: React.FC = () => {
 				setAssistantStones(loadedAssistantStones);
 				setGoldHarries(loadedGoldHarries);
 
-				if (stockRes.success && stockRes.data && stockRes.data.length > 0) {
-					const response = stockRes.data[0];
+				if (stockRes.success && stockRes.data) {
+					const response = stockRes.data;
 					const calculatedStoneData = calculateStoneDetails(
 						response.stoneInfos
 					);
@@ -104,10 +104,10 @@ const StockDetailPage: React.FC = () => {
 						createAt: response.createAt,
 						shippingAt: response.shippingAt,
 						id: response.flowCode,
-						storeId: response.storeId,
+						storeId: "", // API 응답에 없음
 						storeName: response.storeName,
 						grade: "1",
-						productId: response.productId,
+						productId: "", // API 응답에 없음
 						productName: response.productName,
 						productFactoryName: response.productFactoryName,
 						productPurchaseCost: response.productPurchaseCost || 0,
@@ -115,7 +115,7 @@ const StockDetailPage: React.FC = () => {
 						materialName: response.materialName,
 						colorId: foundColor?.colorId || "",
 						colorName: response.colorName,
-						factoryId: response.factoryId,
+						factoryId: "", // API 응답에 없음
 						factoryName: response.factoryName,
 						productSize: response.productSize,
 						goldWeight: response.goldWeight,
@@ -123,7 +123,7 @@ const StockDetailPage: React.FC = () => {
 						isProductWeightSale: false,
 						mainStoneNote: response.mainStoneNote,
 						assistanceStoneNote: response.assistanceStoneNote,
-						orderNote: response.orderNote,
+						orderNote: response.stockNote, // stockNote를 orderNote로 매핑
 						stoneInfos: response.stoneInfos || [],
 						productLaborCost: response.productLaborCost || 0,
 						productAddLaborCost: response.productAddLaborCost || 0,
@@ -134,16 +134,19 @@ const StockDetailPage: React.FC = () => {
 						stoneAddLaborCost: response.stoneAddLaborCost || 0,
 						stoneWeightTotal: calculatedStoneData.stoneWeight,
 						assistantStone: response.assistantStone || false,
-						assistantStoneId: foundAssistantStone?.assistantStoneId || "",
+						assistantStoneId:
+							response.assistantStoneId ||
+							foundAssistantStone?.assistantStoneId ||
+							"",
 						assistantStoneName: response.assistantStoneName || "",
 						assistantStoneCreateAt: response.assistantStoneCreateAt || "",
 						totalWeight: (
 							Number(response.goldWeight) + Number(response.stoneWeight)
 						).toFixed(3) as unknown as number,
 						storeHarry: response.storeHarry,
-						classificationId: response.classificationId,
+						classificationId: "", // API 응답에 없음
 						classificationName: response.classificationName,
-						setTypeId: response.setTypeId,
+						setTypeId: "", // API 응답에 없음
 						setTypeName: response.setTypeName,
 					};
 

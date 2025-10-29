@@ -90,6 +90,32 @@ export const stockApi = {
 		return apiRequest.get<StockSearchResponse>("order/stocks", { params });
 	},
 
+	getPastRentalHistory: async (
+		start: string,
+		end: string,
+		search?: string,
+		factory?: string,
+		store?: string,
+		setType?: string,
+		color?: string,
+		sortField?: string,
+		sortOrder?: "ASC" | "DESC" | "",
+		page: number = 1
+	): Promise<ApiResponse<StockSearchResponse>> => {
+		const params: Record<string, string> = { page: page.toString() };
+		if (start) params.start = start;
+		if (end) params.end = end;
+		if (search) params.search = search;
+		if (factory) params.factory = factory;
+		if (store) params.store = store;
+		if (setType) params.setType = setType;
+		if (color) params.color = color;
+		if (sortField) params.sortField = sortField;
+		if (sortOrder) params.sortOrder = sortOrder;
+		
+		return apiRequest.get<StockSearchResponse>("order/stocks/rental/history", { params });
+	},
+
 	getFilterFactories: async (
 		start: string,
 		end: string,
