@@ -25,7 +25,6 @@ export const StockHistoryPage = () => {
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
 
-	// 체크박스 선택 관련 상태 (히스토리는 선택 불가하지만 인터페이스 호환을 위해 유지)
 	const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
 
 	const stockUpdatePopups = useRef<Map<string, Window>>(new Map());

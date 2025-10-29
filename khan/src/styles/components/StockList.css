@@ -91,8 +91,8 @@
 }
 
 .date-cell {
-	width: 60px;
-	min-width: 60px;
+	width: 80px;
+	min-width: 70px;
 }
 
 .size-note-cell {
@@ -105,7 +105,9 @@
 	flex-direction: column;
 	gap: 2px;
 	align-items: center;
+	justify-content: center;
 	min-width: 50px;
+	height: 100%;
 	text-align: center !important;
 }
 

@@ -9,6 +9,7 @@ interface StockListProps {
 	onSelect: (flowCode: string, checked: boolean) => void;
 	onNoClick?: (flowCode: string) => void;
 	showShippingAt?: boolean; // 변경일 표시 여부
+	disableRentalCheckbox?: boolean; // 대여 상태 체크박스 비활성화 여부
 }
 
 export const StockList = ({
@@ -19,6 +20,7 @@ export const StockList = ({
 	onSelect,
 	onNoClick,
 	showShippingAt = false,
+	disableRentalCheckbox = true, // 기본값: 대여 상태 체크박스 비활성화
 }: StockListProps) => {
 	const PAGE_SIZE = 20;
 
@@ -125,42 +127,11 @@ export const StockList = ({
 								<input
 									type="checkbox"
 									checked={selected.includes(stock.flowCode)}
+									disabled={
+										disableRentalCheckbox && stock.currentStatus === "대여"
+									} // prop에 따라 대여 상태 체크박스 비활성화
 									onChange={(e) => {
 										e.stopPropagation();
-
-										// 선택하려는 항목의 현재 상태
-										const currentStatus = stock.currentStatus || "";
-										const isRental = currentStatus === "대여";
-
-										// 이미 선택된 항목들의 상태 확인
-										const selectedStocks = stocks.filter((s) =>
-											selected.includes(s.flowCode)
-										);
-										const hasRentalSelected = selectedStocks.some(
-											(s) => (s.currentStatus || "") === "대여"
-										);
-										const hasNonRentalSelected = selectedStocks.some(
-											(s) => (s.currentStatus || "") !== "대여"
-										);
-
-										// 체크를 시도할 때
-										if (e.target.checked) {
-											// 대여 항목을 선택하려는데 이미 비대여 항목이 선택되어 있으면 막기
-											if (isRental && hasNonRentalSelected) {
-												alert(
-													"대여 상태는 다른 상태와 함께 선택할 수 없습니다."
-												);
-												return;
-											}
-											// 비대여 항목을 선택하려는데 이미 대여 항목이 선택되어 있으면 막기
-											if (!isRental && hasRentalSelected) {
-												alert(
-													"대여 상태는 다른 상태와 함께 선택할 수 없습니다."
-												);
-												return;
-											}
-										}
-
 										onSelect(stock.flowCode, e.target.checked);
 									}}
 								/>

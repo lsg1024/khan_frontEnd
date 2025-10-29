@@ -11,7 +11,7 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
 import "../../styles/pages/stock/StockPage.css";
 
-export const StockPage = () => {
+export const RentalDashBoardPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
@@ -29,16 +29,14 @@ export const StockPage = () => {
 	// 체크박스 선택 관련 상태 (다중 선택 허용)
 	const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
 
-	const stockCreationPopup = useRef<Window | null>(null);
 	const stockUpdatePopups = useRef<Map<string, Window>>(new Map());
-	const stockSalesPopup = useRef<Window | null>(null);
 
-	// 검색 관련 상태
+	// 검색 관련 상태 (대여 상태로 고정)
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
 		search: "",
-		start: getLocalDate(),
+		start: "2025-01-01",
 		end: getLocalDate(),
-		order_status: "",
+		order_status: "RENTAL", // 대여 상태로 고정
 		factory: "",
 		store: "",
 		setType: "",
@@ -52,6 +50,9 @@ export const StockPage = () => {
 		field: K,
 		value: SearchFilters[K]
 	) => {
+		// order_status는 RENTAL로 고정하므로 변경 불가
+		if (field === "order_status") return;
+
 		setSearchFilters((prev) => ({ ...prev, [field]: value }));
 
 		// start 선택 시 end 자동 보정 (문자열 날짜 비교)
@@ -106,9 +107,9 @@ export const StockPage = () => {
 	const handleReset = () => {
 		const resetFilters: SearchFilters = {
 			search: "",
-			start: getLocalDate(),
+			start: "2025-01-01",
 			end: getLocalDate(),
-			order_status: "",
+			order_status: "RENTAL", // 대여 상태 유지
 			factory: "",
 			store: "",
 			setType: "",
@@ -121,83 +122,14 @@ export const StockPage = () => {
 		loadStocks(resetFilters, 1);
 	};
 
-	const handleStockCreate = () => {
-		const url = "/stocks/create/normal"; // stock mode 파라미터 추가
-		const NAME = "stockCreatePopup";
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-
-		if (stockCreationPopup.current && !stockCreationPopup.current.closed) {
-			stockCreationPopup.current.focus();
-		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
-
-			if (newPopup) {
-				stockCreationPopup.current = newPopup;
-
-				// 팝업 닫힘 감지를 위한 인터벌 설정 (참조 정리만 수행)
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						// 참조만 정리하고 새로고침은 메시지 이벤트에서만 처리
-						clearInterval(checkClosed);
-						stockCreationPopup.current = null;
-					}
-				}, 1000);
-			} else {
-				alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
-			}
-		}
-	};
-
-	// 벌크 액션 핸들러들
-	const handleSalesRegister = () => {
-		if (selectedStocks.length === 0) return;
-
-		const selectedFlowCodes = selectedStocks.join(",");
-		const url = `/stocks/action/${selectedFlowCodes}?action=sale`;
-		const NAME = `stockSalesRegister`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=300";
-
-		// 이미 열린 판매 팝업이 있으면 포커스만
-		if (stockSalesPopup.current && !stockSalesPopup.current.closed) {
-			stockSalesPopup.current.focus();
-			return;
-		}
-
-		const newPopup = window.open(url, NAME, FEATURES);
-		if (newPopup) {
-			stockSalesPopup.current = newPopup;
-
-			// 팝업 닫힘 감지
-			const checkClosed = setInterval(() => {
-				if (newPopup.closed) {
-					clearInterval(checkClosed);
-					stockSalesPopup.current = null;
-				}
-			}, 1000);
-		} else {
-			alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
-		}
-	};
-
-	const handleRentalRegister = () => {
-		if (selectedStocks.length === 0) return;
-
-		const selectedFlowCodes = selectedStocks.join(",");
-		const url = `/stocks/action/${selectedFlowCodes}?action=rental`;
-		const NAME = `stockRentalRegister`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=300";
-
-		const newPopup = window.open(url, NAME, FEATURES);
-		if (!newPopup) {
-			alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
-		}
-	};
-
-	const handleBulkDelete = async () => {
+	// 반납 처리 핸들러
+	const handleReturnRegister = async () => {
 		if (selectedStocks.length === 0) return;
 
 		if (
-			!confirm(`선택된 ${selectedStocks.length}개의 재고를 삭제하시겠습니까?`)
+			!confirm(
+				`선택된 ${selectedStocks.length}개의 재고를 반납 처리하시겠습니까?`
+			)
 		) {
 			return;
 		}
@@ -205,22 +137,22 @@ export const StockPage = () => {
 		try {
 			setLoading(true);
 
-			// 모든 재고를 병렬로 삭제
-			const deletePromises = selectedStocks.map((flowCode) =>
-				stockApi.deleteStock(flowCode)
+			// 모든 재고를 병렬로 반납 처리
+			const returnPromises = selectedStocks.map((flowCode) =>
+				stockApi.updateRentalToReturn(flowCode, "RETURN")
 			);
 
-			const responses = await Promise.all(deletePromises);
+			const responses = await Promise.all(returnPromises);
 
 			// 성공/실패 개수 확인
 			const successCount = responses.filter((res) => res.success).length;
 			const failCount = responses.length - successCount;
 
 			if (failCount === 0) {
-				alert(`${successCount}개의 재고가 성공적으로 삭제되었습니다.`);
+				alert(`${successCount}개의 재고가 성공적으로 반납 처리되었습니다.`);
 			} else {
 				alert(
-					`${successCount}개 성공, ${failCount}개 실패\n일부 재고 삭제에 실패했습니다.`
+					`${successCount}개 성공, ${failCount}개 실패\n일부 재고 반납에 실패했습니다.`
 				);
 			}
 
@@ -229,7 +161,7 @@ export const StockPage = () => {
 			setSelectedStocks([]);
 		} catch (err) {
 			handleError(err, setError);
-			alert("재고 삭제 중 오류가 발생했습니다.");
+			alert("재고 반납 중 오류가 발생했습니다.");
 		} finally {
 			setLoading(false);
 		}
@@ -242,7 +174,7 @@ export const StockPage = () => {
 			const response = await orderApi.downloadOrdersExcel(
 				searchFilters.start,
 				searchFilters.end,
-				"ORDER",
+				"RENTAL", // 대여 상태로 고정
 				searchFilters.search,
 				searchFilters.factory,
 				searchFilters.store,
@@ -255,7 +187,7 @@ export const StockPage = () => {
 			});
 
 			const contentDisposition = response.headers["content-disposition"];
-			let fileName = "주문장.xlsx"; // 기본 파일명
+			let fileName = "대여_재고.xlsx"; // 기본 파일명
 			if (contentDisposition) {
 				const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
 				if (fileNameMatch && fileNameMatch.length === 2) {
@@ -279,7 +211,7 @@ export const StockPage = () => {
 		}
 	};
 
-	// 재고 데이터 로드 함수
+	// 재고 데이터 로드 함수 (RENTAL 상태만 필터링)
 	const loadStocks = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
 			setLoading(true);
@@ -290,7 +222,7 @@ export const StockPage = () => {
 					filters.start,
 					filters.end,
 					filters.search,
-					filters.order_status,
+					"RENTAL", // 대여 상태로 고정
 					filters.factory,
 					filters.store,
 					filters.setType,
@@ -324,14 +256,14 @@ export const StockPage = () => {
 		[] // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
-	// 드롭다운 데이터 로드
+	// 드롭다운 데이터 로드 (RENTAL 상태 기준)
 	const fetchDropdownData = useCallback(async () => {
 		setDropdownLoading(true);
 		try {
 			const factoryResponse = await stockApi.getFilterFactories(
 				searchFilters.start,
 				searchFilters.end,
-				searchFilters.order_status || ""
+				"RENTAL" // 대여 상태로 고정
 			);
 			if (factoryResponse.success && factoryResponse.data) {
 				setFactories(factoryResponse.data);
@@ -340,7 +272,7 @@ export const StockPage = () => {
 			const storeResponse = await stockApi.getFilterStores(
 				searchFilters.start,
 				searchFilters.end,
-				searchFilters.order_status || ""
+				"RENTAL" // 대여 상태로 고정
 			);
 			if (storeResponse.success && storeResponse.data) {
 				setStores(storeResponse.data);
@@ -349,7 +281,7 @@ export const StockPage = () => {
 			const setTypeResponse = await stockApi.getFilterSetTypes(
 				searchFilters.start,
 				searchFilters.end,
-				searchFilters.order_status || ""
+				"RENTAL" // 대여 상태로 고정
 			);
 			if (setTypeResponse.success && setTypeResponse.data) {
 				setSetTypes(setTypeResponse.data);
@@ -358,7 +290,7 @@ export const StockPage = () => {
 			const colorResponse = await stockApi.getFilterColors(
 				searchFilters.start,
 				searchFilters.end,
-				searchFilters.order_status || ""
+				"RENTAL" // 대여 상태로 고정
 			);
 			if (colorResponse.success && colorResponse.data) {
 				setColors(colorResponse.data);
@@ -368,14 +300,9 @@ export const StockPage = () => {
 		} finally {
 			setDropdownLoading(false);
 		}
-	}, [
-		searchFilters.start,
-		searchFilters.end,
-		searchFilters.order_status,
-		handleError,
-	]);
+	}, [searchFilters.start, searchFilters.end, handleError]);
 
-	// 컬포넌트 마운트 시 초기 데이터 로드
+	// 컴포넌트 마운트 시 초기 데이터 로드
 	useEffect(() => {
 		loadStocks(searchFilters, 1);
 		fetchDropdownData();
@@ -384,22 +311,12 @@ export const StockPage = () => {
 		const handleMessage = (event: MessageEvent) => {
 			if (event.origin !== window.location.origin) return;
 
-			if (event.data.type === "STOCK_CREATED") {
-				loadStocks(searchFilters, currentPage);
-				setSelectedStocks([]); // 선택 초기화
-			}
-
 			if (event.data.type === "STOCK_UPDATED") {
 				loadStocks(searchFilters, currentPage);
 				setSelectedStocks([]); // 선택 초기화
 			}
 
 			if (event.data.type === "STOCK_UPDATE_SUCCESS") {
-				loadStocks(searchFilters, currentPage);
-				setSelectedStocks([]); // 선택 초기화
-			}
-
-			if (event.data.type === "STOCK_REGISTERED") {
 				loadStocks(searchFilters, currentPage);
 				setSelectedStocks([]); // 선택 초기화
 			}
@@ -429,7 +346,6 @@ export const StockPage = () => {
 					onFilterChange={handleFilterChange}
 					onSearch={handleSearch}
 					onReset={handleReset}
-					onCreate={handleStockCreate}
 					onExcel={handleExcelDownload}
 					order_status={orderStatus}
 					factories={factories}
@@ -450,14 +366,15 @@ export const StockPage = () => {
 						selected={selectedStocks}
 						onSelect={handleSelectStock}
 						onNoClick={handleStockNoClick}
+						disableRentalCheckbox={false} // 대여 상태 체크박스 활성화
 					/>
-					{/* 벌크 액션 바 */}
+
+					{/* 벌크 액션 바 (반납만 가능) */}
 					<StockBulkActionBar
 						selectedCount={selectedStocks.length}
-						onSalesRegister={handleSalesRegister}
-						onRentalRegister={handleRentalRegister}
-						onDelete={handleBulkDelete}
-					/>{" "}
+						onReturnRegister={handleReturnRegister}
+					/>
+
 					{/* 페이지네이션 */}
 					<Pagination
 						currentPage={currentPage}
@@ -475,4 +392,4 @@ export const StockPage = () => {
 	);
 };
 
-export default StockPage;
+export default RentalDashBoardPage;

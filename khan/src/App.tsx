@@ -26,6 +26,8 @@ import StockCreatePage from "./pages/stock/StockCreatePage";
 import StockUpdatePage from "./pages/stock/StockUpdatePage";
 import StockDetailPage from "./pages/stock/StockDetailPage";
 import StockHistoryPage from "./pages/stock/StockHistoryPage";
+import RentalDashBoardPage from "./pages/stock/RentalDashBoardPage";
+import TotalRentalListPage from "./pages/stock/TotalRentalListPage";
 import StockReturnPage from "./pages/stock/StockReturnPage";
 import StockDeletePage from "./pages/stock/StockDeletePage";
 import StockCommonActionPage from "./pages/stock/StockCommonActionPage";
@@ -35,6 +37,8 @@ import StoneInfoPage from "./pages/order/StoneInfoPage";
 import FactorySearchPage from "./pages/search/FactorySearchPage";
 import StoreSearchPage from "./pages/search/StoreSearchPage";
 import ProductSearchPage from "./pages/search/ProductSearchPage";
+import AccountReceivablePage from "./pages/sale/AccountsReceivablePage";
+import SalePage from "./pages/sale/SalePage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 
@@ -140,6 +144,10 @@ function App() {
 						<Route path="/stocks/history" element={<StockHistoryPage />} />
 						<Route path="/stocks/return" element={<StockReturnPage />} />
 						<Route path="/stocks/delete" element={<StockDeletePage />} />
+						<Route path="/sales" element={<SalePage />} />
+						<Route path="/sales/accounts-receivable" element={<AccountReceivablePage />} />
+						<Route path="/rentals/now" element={<RentalDashBoardPage />} />
+						<Route path="/rentals/records" element={<TotalRentalListPage />} />
 						<Route path="/login" element={<Navigate to="/" replace />} />
 						<Route path="/join" element={<Navigate to="/" replace />} />
 					</Route>
