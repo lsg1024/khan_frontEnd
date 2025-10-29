@@ -47,6 +47,7 @@ export const StockList = ({
 					<th>선택</th>
 					<th>No</th>
 					<th>시리얼</th>
+					<th>거래처</th>
 					<th>주문</th>
 					<th>등록일</th>
 					<th className="stock-table-twin">사이즈/비고</th>
@@ -61,6 +62,7 @@ export const StockList = ({
 					<th colSpan={2}>매입가</th>
 				</tr>
 				<tr>
+					<th></th>
 					<th></th>
 					<th></th>
 					<th></th>
@@ -147,7 +149,12 @@ export const StockList = ({
 									{rowNumber}
 								</button>
 							</td>
-							<td className="serial-cell">{stock.flowCode}</td>
+							<td className="serial-cell" title={stock.flowCode}>
+								{stock.flowCode}
+							</td>
+							<td className="serial-cell" title={stock.storeName}>
+								{stock.storeName}
+							</td>
 							<td className="order-cell">
 								<div className="info-row-order">
 									<span>{stock.originStatus}</span>
@@ -194,7 +201,12 @@ export const StockList = ({
 									</div>
 								)}
 							</td>
-							<td className="size-note-content">
+							<td
+								className="size-note-content"
+								title={`사이즈: ${stock.productSize || "-"}\n비고: ${
+									stock.stockNote || "-"
+								}`}
+							>
 								<div className="info-row-order">
 									<span>{stock.productSize || "-"}</span>
 								</div>
@@ -211,40 +223,81 @@ export const StockList = ({
 										? "material-name-24k"
 										: ""
 								}`}
+								title={stock.materialName || "-"}
 							>
 								{stock.materialName || "-"}
 							</td>
-							<td className="color-cell">{stock.colorName || "-"}</td>
+							<td className="color-cell" title={stock.colorName || "-"}>
+								{stock.colorName || "-"}
+							</td>
 
-							<td className="stone-note-content">
+							<td
+								className="stone-note-content"
+								title={`메인: ${stock.mainStoneNote || "-"}\n보조: ${
+									stock.assistanceStoneNote || "-"
+								}`}
+							>
 								<div className="main-note">{stock.mainStoneNote || "-"}</div>
 								<div className="assistance-note">
 									{stock.assistanceStoneNote || "-"}
 								</div>
 							</td>
 
-							<td className="main-quantity-cell">
+							<td
+								className="main-quantity-cell"
+								title={stock.mainStoneQuantity?.toString() || "-"}
+							>
 								{stock.mainStoneQuantity || "-"}
 							</td>
-							<td className="assistance-quantity-cell">
+							<td
+								className="assistance-quantity-cell"
+								title={stock.assistanceStoneQuantity?.toString() || "-"}
+							>
 								{stock.assistanceStoneQuantity || "-"}
 							</td>
-							<td className="gold-weight-cell">{stock.goldWeight || "-"}</td>
-							<td className="stone-weight-cell">{stock.stoneWeight || "-"}</td>
-							<td className="product-labor-cost-cell">
+							<td className="gold-weight-cell" title={stock.goldWeight || "-"}>
+								{stock.goldWeight || "-"}
+							</td>
+							<td
+								className="stone-weight-cell"
+								title={stock.stoneWeight || "-"}
+							>
+								{stock.stoneWeight || "-"}
+							</td>
+							<td
+								className="product-labor-cost-cell"
+								title={
+									stock.productLaborCost
+										? stock.productLaborCost.toLocaleString()
+										: "-"
+								}
+							>
 								{stock.productLaborCost
 									? stock.productLaborCost.toLocaleString()
 									: "-"}
 							</td>
-							<td className="add-labor-cost-cell">
+							<td
+								className="add-labor-cost-cell"
+								title={
+									stock.productAddLaborCost
+										? stock.productAddLaborCost.toLocaleString()
+										: "-"
+								}
+							>
 								{stock.productAddLaborCost
 									? stock.productAddLaborCost.toLocaleString()
 									: "-"}
 							</td>
-							<td className="assistant-stone-name-cell">
+							<td
+								className="assistant-stone-name-cell"
+								title={stock.assistantStoneName || "-"}
+							>
 								{stock.assistantStoneName || "-"}
 							</td>
-							<td className="assistant-stone-cell">
+							<td
+								className="assistant-stone-cell"
+								title={stock.assistantStone ? "입고 완료" : "미입고"}
+							>
 								<span
 									className={`status ${
 										stock.assistantStone ? "active" : "inactive"
@@ -253,27 +306,62 @@ export const StockList = ({
 									{stock.assistantStone ? "Y" : "N"}
 								</span>
 							</td>
-							<td className="main-stone-labor-cost-cell">
+							<td
+								className="main-stone-labor-cost-cell"
+								title={
+									stock.mainStoneLaborCost
+										? stock.mainStoneLaborCost.toLocaleString()
+										: "-"
+								}
+							>
 								{stock.mainStoneLaborCost
 									? stock.mainStoneLaborCost.toLocaleString()
 									: "-"}
 							</td>
-							<td className="assistance-stone-labor-cost-cell">
+							<td
+								className="assistance-stone-labor-cost-cell"
+								title={
+									stock.assistanceStoneLaborCost
+										? stock.assistanceStoneLaborCost.toLocaleString()
+										: "-"
+								}
+							>
 								{stock.assistanceStoneLaborCost
 									? stock.assistanceStoneLaborCost.toLocaleString()
 									: "-"}
 							</td>
-							<td className="stone-add-labor-cost-cell">
+							<td
+								className="stone-add-labor-cost-cell"
+								title={
+									stock.stoneAddLaborCost
+										? stock.stoneAddLaborCost.toLocaleString()
+										: "-"
+								}
+							>
 								{stock.stoneAddLaborCost
 									? stock.stoneAddLaborCost.toLocaleString()
 									: "-"}
 							</td>
-							<td className="product-purchase-cost-cell">
+							<td
+								className="product-purchase-cost-cell"
+								title={
+									stock.productPurchaseCost
+										? stock.productPurchaseCost.toLocaleString()
+										: "-"
+								}
+							>
 								{stock.productPurchaseCost
 									? stock.productPurchaseCost.toLocaleString()
 									: "-"}
 							</td>
-							<td className="stone-purchase-cost-cell">
+							<td
+								className="stone-purchase-cost-cell"
+								title={
+									stock.stonePurchaseCost
+										? stock.stonePurchaseCost.toLocaleString()
+										: "-"
+								}
+							>
 								{stock.stonePurchaseCost
 									? stock.stonePurchaseCost.toLocaleString()
 									: "-"}
