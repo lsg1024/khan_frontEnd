@@ -36,7 +36,7 @@ export const StockPage = () => {
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
 		search: "",
-		start: getLocalDate(),
+		start: "2025-01-01",
 		end: getLocalDate(),
 		order_status: "",
 		factory: "",
@@ -106,7 +106,7 @@ export const StockPage = () => {
 	const handleReset = () => {
 		const resetFilters: SearchFilters = {
 			search: "",
-			start: getLocalDate(),
+			start: "2025-01-01",
 			end: getLocalDate(),
 			order_status: "",
 			factory: "",
