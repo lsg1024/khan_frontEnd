@@ -145,7 +145,7 @@ function App() {
 						<Route path="/stocks/return" element={<StockReturnPage />} />
 						<Route path="/stocks/delete" element={<StockDeletePage />} />
 						<Route path="/sales" element={<SalePage />} />
-						<Route path="/sales/accounts-receivable" element={<AccountReceivablePage />} />
+						<Route path="/sales/receipts" element={<AccountReceivablePage />} />
 						<Route path="/rentals/now" element={<RentalDashBoardPage />} />
 						<Route path="/rentals/records" element={<TotalRentalListPage />} />
 						<Route path="/login" element={<Navigate to="/" replace />} />

@@ -41,6 +41,7 @@
 
 /* 주문 목록 */
 .order-list {
+	min-width: 1200px;
 	background-color: white;
 	border-radius: 8px;
 	overflow: hidden;

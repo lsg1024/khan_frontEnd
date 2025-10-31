@@ -43,7 +43,7 @@ const sidebarItems: SidebarItem[] = [
 		label: "판매 관리",
 		icon: "💰",
 		children: [
-			{ path: "/sales/records", label: "판매 목록"},
+			{ path: "/sales", label: "판매 목록"},
 			{ path: "/sales/receipts", label: "미수 금액"},
 		],
 	},
