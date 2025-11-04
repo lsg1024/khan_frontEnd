@@ -1,0 +1,86 @@
+.gold-history-container {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 16px;
+	flex: 1;
+	color: black;
+}
+
+.gold-history-header {
+	margin-bottom: 12px;
+}
+
+.gold-history-header h3 {
+	font-size: 16px;
+	font-weight: 600;
+	color: #333;
+	margin: 0;
+}
+
+/* 테이블 구조 */
+.gold-history-table {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid #ddd;
+}
+
+.gold-history-table-header {
+	display: grid;
+	grid-template-columns: 120px 1fr 1fr;
+	background-color: #f0f0f0;
+	border-bottom: 1px solid #ddd;
+}
+
+.gold-history-header-cell {
+	text-align: center;
+	font-size: 13px;
+	font-weight: 600;
+	border-right: 1px solid #ddd;
+}
+
+.gold-history-header-cell:last-child {
+	border-right: none;
+}
+
+.gold-history-table-row {
+	display: grid;
+	grid-template-columns: 120px 1fr 1fr;
+	border-bottom: 1px solid #ddd;
+}
+
+.gold-history-table-row:last-child {
+	border-bottom: none;
+}
+
+.gold-history-label-cell {
+	text-align: center;
+	font-size: 10px;
+	font-weight: 600;
+	background-color: #f9f9f9;
+	border-right: 1px solid #ddd;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.gold-history-value-cell {
+	border-right: 1px solid #ddd;
+}
+
+.gold-history-value-cell:last-child {
+	border-right: none;
+}
+
+.gold-history-value-cell input {
+	color: black;
+	width: 100%;
+	border: none;
+	font-size: 10px;
+	text-align: right;
+	background: transparent;
+}
+
+.gold-history-value-cell input:disabled {
+	cursor: not-allowed;
+}

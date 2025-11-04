@@ -1,0 +1,271 @@
+/* SaleList 스타일 */
+.sale-list {
+	background-color: white;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	max-width: 1200px;
+	min-width: 1000px;
+	margin: 0 auto;
+	width: 100%;
+}
+
+.sale-table {
+	width: 100%;
+	font-size: 10px;
+	background-color: white;
+	color: black;
+	border-collapse: collapse;
+}
+
+/* 행끼리 구분선 추가 */
+.sale-table tbody tr {
+	background-color: white;
+}
+
+.sale-table tbody tr:last-child {
+	border-bottom: none;
+}
+
+.sale-table tbody tr:hover {
+	background-color: white;
+}
+
+/* 헤더 마지막 셀에는 오른쪽 테두리 제거 */
+.sale-table th:last-child {
+	border-right: none;
+}
+
+.sale-table td {
+	text-align: center;
+	border-bottom: 1px solid white;
+	border-right: 1px solid white;
+	background: #f1f1f1;
+	vertical-align: middle;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	position: relative;
+	white-space: pre-wrap;
+}
+.sale-table th {
+    padding: 2px 6px;
+    text-align: center;
+    font-weight: 600;
+    color: black;
+    border-bottom: 1px solid #dee2e6;
+    border-right: 1px solid #f1f3f4;
+    white-space: nowrap;
+    background-color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* 셀 호버 시 툴팁 표시 */
+.sale-table td[title]:hover::after {
+	content: attr(title);
+	position: absolute;
+	left: 50%;
+	bottom: 100%;
+	transform: translateX(-50%);
+	background-color: rgba(0, 0, 0, 0.9);
+	color: white;
+	padding: 6px 10px;
+	border-radius: 4px;
+	white-space: normal;
+	max-width: 300px;
+	width: max-content;
+	z-index: 1000;
+	font-size: 11px;
+	line-height: 1.4;
+	margin-bottom: 5px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	word-break: break-word;
+	pointer-events: none;
+}
+
+/* 툴팁 화살표 */
+.sale-table td[title]:hover::before {
+	content: "";
+	position: absolute;
+	left: 50%;
+	bottom: 100%;
+	transform: translateX(-50%);
+	border: 5px solid transparent;
+	border-top-color: rgba(0, 0, 0, 0.9);
+	z-index: 1000;
+	pointer-events: none;
+}
+
+/* 마지막 셀에는 오른쪽 테두리 제거 */
+.sale-table td:last-child {
+	border-right: none;
+}
+
+/* 행 hover 효과 */
+.sale-row {
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.sale-row:hover {
+	background-color: white;
+}
+
+.sale-type-cell {
+	width: 50px;
+	min-width: 50px;
+}
+
+.store-cell {
+	width: 80px;
+	min-width: 80px;
+}
+
+.sale-code-cell {
+	width: 50px;
+	min-width: 50px;
+	max-width: 50px !important;
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.flow-code-cell {
+	width: 50px;
+	min-width: 50px;
+	max-width: 50px !important;
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* 거래번호, 시리얼 링크 스타일 */
+.sale-code-link,
+.flow-code-link {
+	color: #007bff;
+	text-decoration: none;
+	cursor: pointer;
+	display: block;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sale-code-link:hover,
+.flow-code-link:hover {
+	text-decoration: underline;
+	color: #0056b3;
+}
+
+.product-cell {
+	width: 100px;
+	min-width: 100px;
+}
+
+.material-name-18k {
+	color: #d32f2f;
+}
+
+.material-name-24k {
+	color: rgb(249, 191, 0);
+}
+
+.note-cell {
+	width: 80px;
+	min-width: 80px;
+}
+
+.assistant-stone-cell {
+	width: 20px;
+	min-width: 20px;
+}
+
+.assistant-stone-cell .status {
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-weight: bold;
+	width: 40px;
+	min-width: 40px;
+}
+
+.assistant-stone-cell .status.active {
+	color: #007bff;
+}
+
+.assistant-stone-cell .status.inactive {
+	color: #d32f2f;
+}
+
+.assistant-stone-name-cell {
+	width: 60px;
+	min-width: 60px;
+}
+
+.total-weight-cell,
+.gold-weight-cell {
+	width: 40px;
+	min-width: 40px;
+}
+
+.total-product-labor-cost-cell,
+.main-stone-labor-cost-cell,
+.assistance-stone-labor-cost-cell,
+.stone-add-labor-cost-cell {
+	width: 50px;
+	min-width: 50px;
+}
+
+.main-stone-quantity-cell,
+.assistance-stone-quantity-cell {
+	width: 30px;
+	min-width: 30px;
+}
+
+/* No 클릭 버튼 스타일 */
+.sale-no-btn {
+	background: none;
+	border: none;
+	color: #28a745; /* 초록색 */
+	cursor: pointer;
+	text-decoration: underline;
+	font-weight: bold;
+	padding: 2px 4px;
+	border-radius: 3px;
+	transition: background-color 0.2s;
+	text-decoration-line: none;
+}
+
+.sale-no-btn:hover {
+	background-color: #28a745;
+	text-decoration: none;
+	color: white;
+}
+
+/* 로딩 및 빈 데이터 메시지 */
+.loading-message,
+.no-data-message {
+	text-align: center;
+	padding: 60px 20px;
+	color: var(--text-secondary);
+	font-size: 16px;
+}
+
+.loading-message {
+	color: var(--text-color);
+}
+
+@media (max-width: 768px) {
+	.sale-table {
+		font-size: 12px;
+		min-width: 1400px;
+	}
+
+	.sale-table th,
+	.sale-table td {
+		padding: 6px;
+	}
+}

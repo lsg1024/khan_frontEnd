@@ -1,0 +1,92 @@
+.sale-option-container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 16px;
+}
+
+.sale-option-row {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.sale-option-field-search {
+	flex: 1;
+	min-width: 140px;
+	max-width: 180px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.sale-option-field-search-container {
+	display: flex;
+	flex-direction: row;
+	gap: 4px;
+}
+
+.sale-option-field {
+	flex: 1;
+	min-width: 80px;
+	max-width: 110px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.sale-option-field-search label,
+.sale-option-field label {
+	font-size: 10px;
+	font-weight: 600;
+	color: #333;
+}
+
+.sale-option-field-search label.required-field::before,
+.sale-option-field label.required-field::before {
+	content: "* ";
+	color: #e74c3c;
+}
+
+.sale-option-field-search input,
+.sale-option-field-search select,
+.sale-option-field input,
+.sale-option-field select {
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 11px;
+}
+
+.sale-option-field-search input:disabled,
+.sale-option-field-search select:disabled,
+.sale-option-field input:disabled,
+.sale-option-field select:disabled {
+	background-color: #f5f5f5;
+	cursor: not-allowed;
+}
+
+.sale-option-field input[readonly] {
+	background-color: white;
+	cursor: pointer;
+}
+
+.btn-search {
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background: white;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.btn-search:hover:not(:disabled) {
+	background: #f8f9fa;
+}
+
+.btn-search:disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+}

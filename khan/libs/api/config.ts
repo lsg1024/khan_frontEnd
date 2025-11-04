@@ -79,7 +79,6 @@ api.interceptors.response.use(
 	},
 	async (err) => {
 		// 401 에러 시 재발급 요청 실패 시 로그아웃 처리
-		console.log("API 응답 에러 인터셉터:", err);
 		const originalRequest = err.config;
 		if (err.response?.status === 401 && !originalRequest._retry) {
 			if (isRefreshing) {
@@ -129,17 +128,12 @@ api.interceptors.response.use(
 					tokenUtils.setToken(newToken);
 				}
 
-				// 재발급 성공 시
-				console.log("토큰 재발급 성공");
-
 				processQueue(null);
 
 				originalRequest.headers["Authorization"] =
 					"Bearer " + tokenUtils.getToken();
 				return api(originalRequest);
 			} catch (refreshError) {
-				console.error("토큰 재발급 실패:", refreshError);
-
 				processQueue(refreshError as Error);
 
 				// 로그아웃 처리

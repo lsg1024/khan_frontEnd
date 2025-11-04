@@ -9,7 +9,7 @@ interface BaseOrderTableProps {
 	materials: { materialId: string; materialName: string }[];
 	colors: { colorId: string; colorName: string }[];
 	priorities: { priorityName: string; priorityDate: number }[];
-	assistantStones: { assistantStoneId: number; assistantStoneName: string }[];
+	assistantStones: { assistantStoneId: string; assistantStoneName: string }[];
 	onRowUpdate: (id: string, field: keyof OrderRowData, value: unknown) => void;
 	onStoneInfoOpen?: (rowId: string) => void; // 스톤 정보 관리 함수 추가
 }
@@ -536,12 +536,12 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 												return;
 											}
 											const selectedAssistantStone = assistantStones.find(
-												(a) => a.assistantStoneId === parseInt(e.target.value)
+												(a) => a.assistantStoneId === e.target.value
 											);
 											onRowUpdate(
 												row.id,
 												"assistantStoneId",
-												parseInt(e.target.value)
+												e.target.value
 											);
 											onRowUpdate(
 												row.id,

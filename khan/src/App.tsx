@@ -39,6 +39,7 @@ import StoreSearchPage from "./pages/search/StoreSearchPage";
 import ProductSearchPage from "./pages/search/ProductSearchPage";
 import AccountReceivablePage from "./pages/sale/AccountsReceivablePage";
 import SalePage from "./pages/sale/SalePage";
+import SaleCreatePage from "./pages/sale/SaleCreatePage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 
@@ -118,6 +119,7 @@ function App() {
 						path="/stocks/action/:flowCode"
 						element={<StockCommonActionPage />}
 					/>
+					<Route path="/sales/create" element={<SaleCreatePage />} />
 
 					{/* Layout 안에서 렌더링 */}
 					<Route

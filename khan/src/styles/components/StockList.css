@@ -124,6 +124,10 @@
 	min-width: 30px;
 }
 
+.type-cell {
+	width: 50px;
+}
+
 .serial-cell {
 	width: 60px;
 	min-width: 60px;

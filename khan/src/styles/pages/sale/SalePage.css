@@ -1,0 +1,45 @@
+/* SalePage 스타일 */
+.sale-page {
+	width: 100%;
+	min-height: 100vh;
+	padding: 20px;
+	background-color: var(--background-color);
+	color: var(--text-color);
+}
+
+/* 에러 메시지 */
+.sale-page .error-message {
+	background-color: var(--error-background);
+	border-left: 4px solid var(--error-border);
+	padding: 16px;
+	margin-bottom: 20px;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	max-width: 1200px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.sale-page .error-message span {
+	font-size: 24px;
+}
+
+.sale-page .error-message p {
+	margin: 0;
+	color: var(--error-text);
+	font-weight: 500;
+}
+
+/* 판매 목록 영역 */
+.sale-page .sale-list {
+	margin-top: 20px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+	.sale-page {
+		padding: 10px;
+	}
+}
