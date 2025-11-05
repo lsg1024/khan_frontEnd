@@ -417,11 +417,9 @@ export const OrderPage = () => {
 		}
 
 		const ids = selectedOrders.join(",");
-		const sale = "SALES";
-
-		const url = `/orders/register-stock?ids=${ids}&type=${sale}`;
-		const NAME = `stockRegisterBulk`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=300";
+		const url = `/sales/create?source=order&ids=${ids}`;
+		const NAME = `saleCreatePopup`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
 
 		const existingPopup = stockRegisterPopups.current.get(NAME);
 

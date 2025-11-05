@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getLocalDate } from "../../utils/dateUtils";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type {
@@ -15,10 +16,12 @@ import StoreSearch from "../../components/common/store/StoreSearch";
 import PastOrderHistory from "../../components/common/PastOrderHistory";
 import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { orderApi } from "../../../libs/api/order";
+import { stockApi } from "../../../libs/api/stock";
 import { materialApi } from "../../../libs/api/material";
 import "../../styles/pages/sale/SaleCreatePage.css";
 
 export const SaleCreatePage = () => {
+	const [searchParams] = useSearchParams();
 	const { handleError } = useErrorHandler();
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string>("");
@@ -261,6 +264,15 @@ export const SaleCreatePage = () => {
 			});
 
 			alert("판매 등록이 완료되었습니다.");
+
+			// 부모 창으로 판매 등록 완료 메시지 전송
+			if (window.opener) {
+				window.opener.postMessage(
+					{ type: "SALES_REGISTERED", success: true },
+					window.location.origin
+				);
+			}
+
 			window.close();
 		} catch (err) {
 			console.error("판매 등록 실패:", err);
@@ -373,6 +385,124 @@ export const SaleCreatePage = () => {
 
 		loadAssistantStones();
 	}, []);
+
+	// URL 파라미터에서 source와 ids를 가져와서 데이터 로드
+	useEffect(() => {
+		const source = searchParams.get("source"); // "order" 또는 "stock"
+		const ids = searchParams.get("ids"); // 쉼표로 구분된 ID 문자열
+
+		if (source && ids) {
+			loadSaleData(source, ids);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [searchParams]);
+
+	// 주문 또는 재고 데이터를 로드하여 판매 테이블에 채우기
+	const loadSaleData = async (source: string, ids: string) => {
+		try {
+			setLoading(true);
+			const idArray = ids.split(",");
+
+			if (source === "order") {
+				// 주문에서 판매 등록
+				const promises = idArray.map((id) => orderApi.getOrder(id));
+				const responses = await Promise.all(promises);
+
+				const newRows: SaleCreateRow[] = responses
+					.filter((res) => res.success && res.data)
+					.map((res, index) => {
+						const order = res.data!;
+						return {
+							id: String(index + 1),
+							status: "판매",
+							flowCode: order.flowCode || "",
+							storeId: order.storeId?.toString() || "",
+							productId: order.productId?.toString() || "",
+							productName: order.productName || "",
+							materialId: order.materialId?.toString() || "",
+							materialName: order.materialName || "",
+							colorName: order.colorName || "",
+							hasStone: false, // OrderResponseDetail에는 hasStone이 없음
+							assistantStoneId: order.assistantStoneId?.toString() || "",
+							assistantStoneName: order.assistantStoneName || "",
+							hasAssistantStone: order.assistantStone || false,
+							assistantStoneArrivalDate: order.assistantStoneCreateAt || "",
+							mainStoneNote: order.mainStoneNote || "",
+							assistantStoneNote: order.assistanceStoneNote || "",
+							productSize: order.productSize || "",
+							note: order.orderNote || "",
+							quantity: 1, // OrderResponseDetail에는 quantity가 없음
+							unitPrice: 0,
+							productPrice: 0,
+							additionalProductPrice: 0,
+							assistantStonePrice: 0,
+							additionalStonePrice: 0,
+							stoneWeightPerUnit: 0,
+							totalWeight: 0,
+							stoneWeight: 0,
+							goldWeight: 0,
+							pureGoldWeight: 0,
+							pricePerGram: 0,
+							stoneCountPerUnit: 0,
+							mainStoneCount: 0,
+							assistantStoneCount: 0,
+						};
+					});
+
+				setSaleRows(newRows);
+			} else if (source === "stock") {
+				// 재고에서 판매 등록 - getStockDetail은 배열을 받아서 배열을 반환
+				const response = await stockApi.getStockDetail(idArray);
+
+				if (response.success && response.data) {
+					const newRows: SaleCreateRow[] = response.data.map(
+						(stock, index) => ({
+							id: String(index + 1),
+							status: "판매",
+							flowCode: stock.flowCode || "",
+							storeId: stock.storeId?.toString() || "",
+							productId: stock.productId?.toString() || "",
+							productName: stock.productName || "",
+							materialId: "", // StockRegisterResponse에는 materialId가 없음
+							materialName: stock.materialName || "",
+							colorName: stock.colorName || "",
+							hasStone: false, // StockRegisterResponse에는 hasStone이 없음
+							assistantStoneId: stock.assistantStoneId?.toString() || "",
+							assistantStoneName: stock.assistantStoneName || "",
+							hasAssistantStone: stock.assistantStone || false,
+							assistantStoneArrivalDate: stock.assistantStoneCreateAt || "",
+							mainStoneNote: stock.mainStoneNote || "",
+							assistantStoneNote: stock.assistanceStoneNote || "",
+							productSize: stock.productSize || "",
+							note: stock.orderNote || "",
+							quantity: 1,
+							unitPrice: 0,
+							productPrice: 0,
+							additionalProductPrice: 0,
+							assistantStonePrice: 0,
+							additionalStonePrice: 0,
+							stoneWeightPerUnit: 0,
+							totalWeight: 0, // StockRegisterResponse에는 totalWeight가 없음
+							stoneWeight: parseFloat(stock.stoneWeight) || 0,
+							goldWeight: parseFloat(stock.goldWeight) || 0,
+							pureGoldWeight: 0,
+							pricePerGram: 0,
+							stoneCountPerUnit: 0,
+							mainStoneCount: 0,
+							assistantStoneCount: 0,
+						})
+					);
+
+					setSaleRows(newRows);
+				}
+			}
+		} catch (err) {
+			handleError(err, setError);
+			alert("데이터 로드에 실패했습니다.");
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	// 판매 행 변경 시 금 거래 내역 자동 계산
 	useEffect(() => {

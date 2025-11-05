@@ -153,9 +153,9 @@ export const StockPage = () => {
 		if (selectedStocks.length === 0) return;
 
 		const selectedFlowCodes = selectedStocks.join(",");
-		const url = `/stocks/action/${selectedFlowCodes}?action=sale`;
-		const NAME = `stockSalesRegister`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=300";
+		const url = `/sales/create?source=stock&ids=${selectedFlowCodes}`;
+		const NAME = `saleCreatePopup`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
 
 		// 이미 열린 판매 팝업이 있으면 포커스만
 		if (stockSalesPopup.current && !stockSalesPopup.current.closed) {
@@ -403,10 +403,14 @@ export const StockPage = () => {
 				loadStocks(searchFilters, currentPage);
 				setSelectedStocks([]); // 선택 초기화
 			}
+
+			if (event.data.type === "SALES_REGISTERED") {
+				loadStocks(searchFilters, currentPage);
+				setSelectedStocks([]); // 선택 초기화
+			}
 		};
 
 		window.addEventListener("message", handleMessage);
-
 		return () => {
 			window.removeEventListener("message", handleMessage);
 		};
