@@ -206,14 +206,6 @@
 	color: #dc3545;
 }
 
-/* 페이지네이션 */
-.pagination-footer {
-	flex-shrink: 0;
-	border-top: 1px solid #e9ecef;
-	background-color: #fff;
-	padding: 0.75rem 1.5rem;
-}
-
 /* 반응형 */
 @media (max-width: 768px) {
 	.factory-search-page {
@@ -267,32 +259,6 @@
 	padding: 2rem;
 	color: #666;
 	font-style: italic;
-}
-
-/* 페이지네이션 공통 */
-.pagination-footer {
-	flex-shrink: 0;
-	border-top: 1px solid #e9ecef;
-	background-color: #fff;
-	padding: 0.75rem 1.5rem;
-}
-
-.pagination-info {
-	text-align: center;
-	margin-bottom: 0.5rem;
-}
-
-.pagination-info .page-info {
-	font-size: 0.875rem;
-	color: #666;
-	margin: 0;
-}
-
-.pagination-controls {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	gap: 1rem;
 }
 
 .page-btn {

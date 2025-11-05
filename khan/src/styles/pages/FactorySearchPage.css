@@ -92,14 +92,6 @@
 	color: #dc3545;
 }
 
-/* 페이지네이션 */
-.pagination-footer {
-	flex-shrink: 0;
-	border-top: 1px solid #e9ecef;
-	background-color: #fff;
-	padding: 0.75rem 1.5rem;
-}
-
 /* 반응형 */
 @media (max-width: 768px) {
 	.factory-search-page {

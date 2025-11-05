@@ -1,19 +1,27 @@
 /* ===== 페이지네이션 공통 스타일 ===== */
+.pagination-container {
+	display: flex;
+	justify-content: center;
+	margin-top: 30px;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .pagination {
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	gap: var(--spacing-sm);
 	margin-top: var(--spacing-xl);
-	padding: var(--spacing-lg);
+	padding: 0.75rem 1.5rem;
 	border-top: 1px solid var(--primary-color);
-	background-color: var(--bg-secondary);
 }
 
-.pagination-footer- {
+.pagination-footer {
 	flex-shrink: 0;
-	border-top: 1px solid var(--primary-color);
-	background-color: var(--bg-secondary);
+	border-top: 1px solid #efefef;
+	background-color: white;
 	padding: 0.75rem 1.5rem;
 }
 
@@ -28,7 +36,7 @@
 	margin: 0;
 }
 
-.pagination-controls- {
+.pagination-controls {
 	display: flex;
 	justify-content: center;
 	align-items: center;

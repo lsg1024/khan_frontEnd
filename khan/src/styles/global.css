@@ -188,22 +188,3 @@ img {
 	margin: 0;
 	font-size: var(--font-size-base);
 }
-
-/* 페이지네이션 컨테이너 */
-.pagination-container {
-	display: flex;
-	justify-content: center;
-	margin-top: 30px;
-	padding: 20px;
-	background: white;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.pagination-footer {
-	border-top: 1px solid #e9ecef;
-	background-color: #fff;
-	padding: 0.75rem 1.5rem;
-	border-radius: 5px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
