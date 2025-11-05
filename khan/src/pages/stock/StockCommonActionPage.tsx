@@ -19,9 +19,7 @@ const StockCommonActionPage: React.FC = () => {
 	const [searchParams] = useSearchParams();
 	const action = (searchParams.get("action") as ActionType) || "sale";
 
-	const [stockDetail, setStockDetail] = useState<ResponseDetail | null>(
-		null
-	);
+	const [stockDetail, setStockDetail] = useState<ResponseDetail | null>(null);
 	const [stockRows, setStockRows] = useState<StockOrderRows[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [flowCodes, setFlowCodes] = useState<string[]>([]);

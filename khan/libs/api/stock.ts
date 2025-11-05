@@ -6,7 +6,7 @@ import type {
 	StockCreateRequest,
 	StockUpdateRequest,
 	StockRentalRequest,
-	ResponseDetail
+	ResponseDetail,
 } from "../../src/types/stock";
 
 export const stockApi = {
@@ -15,10 +15,9 @@ export const stockApi = {
 		ids: string[]
 	): Promise<ApiResponse<ResponseDetail[]>> => {
 		const params = { ids: ids.join(",") };
-		return apiRequest.get<ResponseDetail[]>(
-			"order/orders/stock-register",
-			{ params }
-		);
+		return apiRequest.get<ResponseDetail[]>("order/orders/stock-register", {
+			params,
+		});
 	},
 
 	// 주문 -> 재고 등록
@@ -110,8 +109,10 @@ export const stockApi = {
 		if (color) params.color = color;
 		if (sortField) params.sortField = sortField;
 		if (sortOrder) params.sortOrder = sortOrder;
-		
-		return apiRequest.get<StockSearchResponse>("order/stocks/rental/history", { params });
+
+		return apiRequest.get<StockSearchResponse>("order/stocks/rental/history", {
+			params,
+		});
 	},
 
 	getFilterFactories: async (

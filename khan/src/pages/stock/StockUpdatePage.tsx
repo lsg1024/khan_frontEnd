@@ -20,9 +20,7 @@ const StockUpdatePage: React.FC = () => {
 	const { flowCode } = useParams<{ flowCode: string }>();
 	const { handleError } = useErrorHandler();
 
-	const [stockDetail, setStockDetail] = useState<ResponseDetail | null>(
-		null
-	);
+	const [stockDetail, setStockDetail] = useState<ResponseDetail | null>(null);
 	const [stockRows, setStockRows] = useState<StockOrderRows[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
