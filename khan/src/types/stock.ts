@@ -267,3 +267,37 @@ export interface StockRentalRequest {
 	stoneAddLaborCost: number;
 	stoneInfos: StoneInfo[];
 }
+
+export interface ResponseDetail {
+	createAt: string;
+	flowCode: string;
+	originalProductStatus: string;
+	storeId: string;
+	storeName: string;
+	storeGrade: string;
+	storeHarry: string;
+	factoryId: string;
+	factoryName: string;
+	productId: string;
+	productName: string;
+	productSize: string;
+	colorId: string;
+	colorName: string;
+	materialId: string;
+	materialName: string;
+	note: string;
+	isProductWeightSale: boolean;
+	productPurchaseCost: number;
+	productLaborCost: number;
+	productAddLaborCost: number;
+	goldWeight: string;
+	stoneWeight: string;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
+	assistantStone: boolean;
+	assistantStoneId: string;
+	assistantStoneName: string;
+	assistantStoneCreateAt: string;
+	stoneInfos: StoneInfo[];
+	stoneAddLaborCost: number;
+}

@@ -1,6 +1,6 @@
 import React from "react";
 import type { StockOrderRows } from "../../../types/stock";
-import "../../../styles/pages/stock/StockRegisterPage.css";
+import "../../../styles/components/stock/StockTable.css"
 
 interface BaseStockTableProps {
 	stockRows: StockOrderRows[];

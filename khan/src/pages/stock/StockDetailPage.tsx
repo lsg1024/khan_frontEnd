@@ -51,7 +51,7 @@ const StockDetailPage: React.FC = () => {
 					colorApi.getColors(),
 					assistantStoneApi.getAssistantStones(),
 					goldHarryApi.getGoldHarry(),
-					stockApi.getStock(flowCode),
+					stockApi.getStock([flowCode]),
 				]);
 
 				const loadedMaterials = materialRes.success
@@ -84,8 +84,8 @@ const StockDetailPage: React.FC = () => {
 				setAssistantStones(loadedAssistantStones);
 				setGoldHarries(loadedGoldHarries);
 
-				if (stockRes.success && stockRes.data) {
-					const response = stockRes.data;
+				if (stockRes.success && stockRes.data && stockRes.data.length > 0) {
+					const response = stockRes.data[0]; // 배열의 첫 번째 요소 가져오기
 					const calculatedStoneData = calculateStoneDetails(
 						response.stoneInfos
 					);
@@ -102,14 +102,14 @@ const StockDetailPage: React.FC = () => {
 
 					const stockData: StockOrderRows = {
 						createAt: response.createAt,
-						shippingAt: response.shippingAt,
+						shippingAt: "",
 						id: response.flowCode,
 						storeId: "", // API 응답에 없음
 						storeName: response.storeName,
 						grade: "1",
 						productId: "", // API 응답에 없음
 						productName: response.productName,
-						productFactoryName: response.productFactoryName,
+						productFactoryName: "",
 						productPurchaseCost: response.productPurchaseCost || 0,
 						materialId: foundMaterial?.materialId || "",
 						materialName: response.materialName,
@@ -123,7 +123,7 @@ const StockDetailPage: React.FC = () => {
 						isProductWeightSale: false,
 						mainStoneNote: response.mainStoneNote,
 						assistanceStoneNote: response.assistanceStoneNote,
-						orderNote: response.stockNote, // stockNote를 orderNote로 매핑
+						orderNote: response.note,
 						stoneInfos: response.stoneInfos || [],
 						productLaborCost: response.productLaborCost || 0,
 						productAddLaborCost: response.productAddLaborCost || 0,
@@ -145,9 +145,9 @@ const StockDetailPage: React.FC = () => {
 						).toFixed(3) as unknown as number,
 						storeHarry: response.storeHarry,
 						classificationId: "", // API 응답에 없음
-						classificationName: response.classificationName,
+						classificationName: "",
 						setTypeId: "", // API 응답에 없음
-						setTypeName: response.setTypeName,
+						setTypeName: "",
 					};
 
 					setStockRow(stockData);

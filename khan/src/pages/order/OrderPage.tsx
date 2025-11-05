@@ -416,6 +416,26 @@ export const OrderPage = () => {
 			return;
 		}
 
+		// 선택된 주문들의 판매처가 모두 같은지 확인
+		const selectedOrdersData = orders.filter((order) =>
+			selectedOrders.includes(order.flowCode)
+		);
+
+		// 첫 번째 주문의 판매처
+		const firstStoreName = selectedOrdersData[0]?.storeName;
+
+		// 모든 선택된 주문의 판매처가 같은지 확인
+		const hasDifferentStore = selectedOrdersData.some(
+			(order) => order.storeName !== firstStoreName
+		);
+
+		if (hasDifferentStore) {
+			alert(
+				`판매등록은 같은 판매처만 선택 가능합니다.\n선택된 주문 중 다른 판매처가 포함되어 있습니다.`
+			);
+			return;
+		}
+
 		const ids = selectedOrders.join(",");
 		const url = `/sales/create?source=order&ids=${ids}`;
 		const NAME = `saleCreatePopup`;

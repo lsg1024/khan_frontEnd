@@ -57,6 +57,7 @@ export interface SaleCreateRow {
 	productName: string; // 모델번호
 	materialId: string; // 재질 ID
 	materialName: string; // 재질
+	colorId: string; // 색상 ID
 	colorName: string; // 색상
 	hasStone: boolean; // 스톤 여부
 	assistantStoneId: string; // 보조석 ID
@@ -64,7 +65,7 @@ export interface SaleCreateRow {
 	hasAssistantStone: boolean; // 보조석 여부
 	assistantStoneArrivalDate: string; // 보조석 입고날짜
 	mainStoneNote: string; // 메인 스톤 비고
-	assistantStoneNote: string; // 보조 스톤 비고
+	assistanceStoneNote: string; // 보조 스톤 비고
 	productSize: string; // 사이즈
 	note: string; // 비고
 	quantity: number; // 수량

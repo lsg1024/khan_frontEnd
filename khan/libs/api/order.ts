@@ -203,12 +203,11 @@ export const orderApi = {
 		});
 	},
 
-		// 주문 삭제
+	// 주문 삭제
 	deleteOrder: async (flowCode: string): Promise<ApiResponse<string>> => {
 		const params = { id: flowCode };
 		return apiRequest.delete<string>("order/orders/delete", { params });
 	},
-
 
 	// 엑셀 다운로드
 	downloadOrdersExcel: async (

@@ -2,21 +2,20 @@ import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
 import type {
 	StockRegisterRequest,
-	StockRegisterResponse,
 	StockSearchResponse,
 	StockCreateRequest,
-	StockResponseDetail,
 	StockUpdateRequest,
 	StockRentalRequest,
+	ResponseDetail
 } from "../../src/types/stock";
 
 export const stockApi = {
 	// 등록 전 조회
 	getStockDetail: async (
 		ids: string[]
-	): Promise<ApiResponse<StockRegisterResponse[]>> => {
+	): Promise<ApiResponse<ResponseDetail[]>> => {
 		const params = { ids: ids.join(",") };
-		return apiRequest.get<StockRegisterResponse[]>(
+		return apiRequest.get<ResponseDetail[]>(
 			"order/orders/stock-register",
 			{ params }
 		);
@@ -44,11 +43,10 @@ export const stockApi = {
 	},
 
 	getStock: async (
-		flowCode: string
-	): Promise<ApiResponse<StockResponseDetail>> => {
-		const params = { id: flowCode };
-
-		return apiRequest.get<StockResponseDetail>("order/stock", { params });
+		flowCodes: string[]
+	): Promise<ApiResponse<ResponseDetail[]>> => {
+		const params = { ids: flowCodes.join(",") };
+		return apiRequest.get<ResponseDetail[]>("order/stock", { params });
 	},
 
 	updateStock: async (

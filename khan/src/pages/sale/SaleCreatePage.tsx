@@ -56,6 +56,10 @@ export const SaleCreatePage = () => {
 		appliedHarry: "",
 	});
 
+	// 거래처가 API로부터 로드되었는지 여부
+	const [isStoreLoadedFromApi, setIsStoreLoadedFromApi] =
+		useState<boolean>(false);
+
 	// 금 거래 내역 상태
 	const [goldHistory, setGoldHistory] = useState<GoldHistoryData>({
 		pureGold: 0,
@@ -80,6 +84,7 @@ export const SaleCreatePage = () => {
 			productName: "",
 			materialId: "",
 			materialName: "",
+			colorId: "",
 			colorName: "",
 			hasStone: false,
 			assistantStoneId: "",
@@ -87,7 +92,7 @@ export const SaleCreatePage = () => {
 			hasAssistantStone: false,
 			assistantStoneArrivalDate: "",
 			mainStoneNote: "",
-			assistantStoneNote: "",
+			assistanceStoneNote: "",
 			productSize: "",
 			note: "",
 			quantity: 1,
@@ -140,7 +145,6 @@ export const SaleCreatePage = () => {
 
 	// 시리얼(재고) 검색 모달 열기
 	const handleFlowCodeSearch = (rowId: string) => {
-		// TODO: 재고 검색 모달 구현
 		console.log("시리얼 검색 모달 열기", rowId);
 	};
 
@@ -404,57 +408,28 @@ export const SaleCreatePage = () => {
 			const idArray = ids.split(",");
 
 			if (source === "order") {
-				// 주문에서 판매 등록
-				const promises = idArray.map((id) => orderApi.getOrder(id));
-				const responses = await Promise.all(promises);
-
-				const newRows: SaleCreateRow[] = responses
-					.filter((res) => res.success && res.data)
-					.map((res, index) => {
-						const order = res.data!;
-						return {
-							id: String(index + 1),
-							status: "판매",
-							flowCode: order.flowCode || "",
-							storeId: order.storeId?.toString() || "",
-							productId: order.productId?.toString() || "",
-							productName: order.productName || "",
-							materialId: order.materialId?.toString() || "",
-							materialName: order.materialName || "",
-							colorName: order.colorName || "",
-							hasStone: false, // OrderResponseDetail에는 hasStone이 없음
-							assistantStoneId: order.assistantStoneId?.toString() || "",
-							assistantStoneName: order.assistantStoneName || "",
-							hasAssistantStone: order.assistantStone || false,
-							assistantStoneArrivalDate: order.assistantStoneCreateAt || "",
-							mainStoneNote: order.mainStoneNote || "",
-							assistantStoneNote: order.assistanceStoneNote || "",
-							productSize: order.productSize || "",
-							note: order.orderNote || "",
-							quantity: 1, // OrderResponseDetail에는 quantity가 없음
-							unitPrice: 0,
-							productPrice: 0,
-							additionalProductPrice: 0,
-							assistantStonePrice: 0,
-							additionalStonePrice: 0,
-							stoneWeightPerUnit: 0,
-							totalWeight: 0,
-							stoneWeight: 0,
-							goldWeight: 0,
-							pureGoldWeight: 0,
-							pricePerGram: 0,
-							stoneCountPerUnit: 0,
-							mainStoneCount: 0,
-							assistantStoneCount: 0,
-						};
-					});
-
-				setSaleRows(newRows);
-			} else if (source === "stock") {
-				// 재고에서 판매 등록 - getStockDetail은 배열을 받아서 배열을 반환
 				const response = await stockApi.getStockDetail(idArray);
 
 				if (response.success && response.data) {
+					// 첫 번째 데이터에서 거래처 정보 추출 (모두 같은 거래처여야 함)
+					const firstItem = response.data[0];
+					if (
+						firstItem &&
+						firstItem.storeId &&
+						firstItem.storeName &&
+						firstItem.storeGrade &&
+						firstItem.storeHarry
+					) {
+						setSaleOptions((prev) => ({
+							...prev,
+							customerId: String(firstItem.storeId),
+							customerName: firstItem.storeName,
+							grade: firstItem.storeGrade,
+							appliedHarry: firstItem.storeHarry,
+						}));
+						setIsStoreLoadedFromApi(true);
+					}
+
 					const newRows: SaleCreateRow[] = response.data.map(
 						(stock, index) => ({
 							id: String(index + 1),
@@ -463,26 +438,99 @@ export const SaleCreatePage = () => {
 							storeId: stock.storeId?.toString() || "",
 							productId: stock.productId?.toString() || "",
 							productName: stock.productName || "",
-							materialId: "", // StockRegisterResponse에는 materialId가 없음
+							materialId: stock.materialId?.toString() || "",
 							materialName: stock.materialName || "",
+							colorId: stock.colorId?.toString() || "",
 							colorName: stock.colorName || "",
-							hasStone: false, // StockRegisterResponse에는 hasStone이 없음
+							hasStone: false,
 							assistantStoneId: stock.assistantStoneId?.toString() || "",
 							assistantStoneName: stock.assistantStoneName || "",
 							hasAssistantStone: stock.assistantStone || false,
-							assistantStoneArrivalDate: stock.assistantStoneCreateAt || "",
+							assistantStoneArrivalDate:
+								stock.assistantStoneCreateAt &&
+								stock.assistantStoneCreateAt !== "null"
+									? stock.assistantStoneCreateAt
+									: "",
 							mainStoneNote: stock.mainStoneNote || "",
-							assistantStoneNote: stock.assistanceStoneNote || "",
+							assistanceStoneNote: stock.assistanceStoneNote || "",
 							productSize: stock.productSize || "",
-							note: stock.orderNote || "",
+							note: stock.note || "",
 							quantity: 1,
 							unitPrice: 0,
 							productPrice: 0,
 							additionalProductPrice: 0,
 							assistantStonePrice: 0,
 							additionalStonePrice: 0,
-							stoneWeightPerUnit: 0,
-							totalWeight: 0, // StockRegisterResponse에는 totalWeight가 없음
+							stoneWeightPerUnit: parseFloat(stock.stoneWeight) || 0,
+							totalWeight: 0,
+							stoneWeight: parseFloat(stock.stoneWeight) || 0,
+							goldWeight: parseFloat(stock.goldWeight) || 0,
+							pureGoldWeight: 0,
+							pricePerGram: 0,
+							stoneCountPerUnit: 0,
+							mainStoneCount: 0,
+							assistantStoneCount: 0,
+						})
+					);
+
+					setSaleRows(newRows);
+				}
+			} else if (source === "stock") {
+				const response = await stockApi.getStock(idArray);
+
+				if (response.success && response.data) {
+					// 첫 번째 데이터에서 거래처 정보 추출 (모두 같은 거래처여야 함)
+					const firstItem = response.data[0];
+					if (
+						firstItem &&
+						firstItem.storeId &&
+						firstItem.storeName &&
+						firstItem.storeGrade &&
+						firstItem.storeHarry
+					) {
+						setSaleOptions((prev) => ({
+							...prev,
+							customerId: String(firstItem.storeId),
+							customerName: firstItem.storeName,
+							grade: firstItem.storeGrade,
+							appliedHarry: firstItem.storeHarry,
+						}));
+						setIsStoreLoadedFromApi(true);
+					}
+
+					const newRows: SaleCreateRow[] = response.data.map(
+						(stock, index) => ({
+							id: String(index + 1),
+							status: "판매",
+							flowCode: stock.flowCode || "",
+							storeId: stock.storeId?.toString() || "",
+							productId: stock.productId?.toString() || "",
+							productName: stock.productName || "",
+							materialId: stock.materialId?.toString() || "",
+							materialName: stock.materialName || "",
+							colorId: stock.colorId?.toString() || "",
+							colorName: stock.colorName || "",
+							hasStone: false,
+							assistantStoneId: stock.assistantStoneId?.toString() || "",
+							assistantStoneName: stock.assistantStoneName || "",
+							hasAssistantStone: stock.assistantStone || false,
+							assistantStoneArrivalDate:
+								stock.assistantStoneCreateAt &&
+								stock.assistantStoneCreateAt !== "null"
+									? stock.assistantStoneCreateAt
+									: "",
+							mainStoneNote: stock.mainStoneNote || "",
+							assistanceStoneNote: stock.assistanceStoneNote || "",
+							productSize: stock.productSize || "",
+							note: stock.note || "",
+							quantity: 1,
+							unitPrice: 0,
+							productPrice: 0,
+							additionalProductPrice: 0,
+							assistantStonePrice: 0,
+							additionalStonePrice: 0,
+							stoneWeightPerUnit: parseFloat(stock.stoneWeight) || 0,
+							totalWeight: 0,
 							stoneWeight: parseFloat(stock.stoneWeight) || 0,
 							goldWeight: parseFloat(stock.goldWeight) || 0,
 							pureGoldWeight: 0,
@@ -586,6 +634,7 @@ export const SaleCreatePage = () => {
 						onCustomerSearchOpen={handleCustomerSearchOpen}
 						disabled={loading}
 						hasWGStatus={hasWGStatus}
+						isStoreLoadedFromApi={isStoreLoadedFromApi}
 					/>
 
 					{/* 금 거래 내역 */}

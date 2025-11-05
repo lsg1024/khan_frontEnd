@@ -205,7 +205,10 @@ const SaleTable: React.FC<SaleTableProps> = ({
 											selectedMaterial?.materialName || ""
 										);
 									}}
-									disabled={loading || disabled}
+									disabled={loading || disabled || !!row.materialId}
+									style={{
+										backgroundColor: row.materialId ? "#f5f5f5" : "white",
+									}}
 								>
 									<option value="">선택</option>
 									{materials.map((material) => (
@@ -336,9 +339,9 @@ const SaleTable: React.FC<SaleTableProps> = ({
 							<td className="stock-note-cell">
 								<input
 									type="text"
-									value={row.assistantStoneNote || ""}
+									value={row.assistanceStoneNote || ""}
 									onChange={(e) =>
-										onRowUpdate(row.id, "assistantStoneNote", e.target.value)
+										onRowUpdate(row.id, "assistanceStoneNote", e.target.value)
 									}
 									disabled={loading || disabled || !canEditForSaleOnly(row)}
 									placeholder="보조"

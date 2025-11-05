@@ -8,7 +8,7 @@ import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { goldHarryApi } from "../../../libs/api/goldHarry";
 import { formatToLocalDate, getLocalDate } from "../../utils/dateUtils";
 import { calculateStoneDetails } from "../../utils/calculateStone";
-import type { StockResponseDetail, StockOrderRows } from "../../types/stock";
+import type { ResponseDetail, StockOrderRows } from "../../types/stock";
 import StockTable from "../../components/common/stock/StockTable";
 import "../../styles/pages/stock/StockUpdatePage.css";
 
@@ -19,7 +19,7 @@ const StockCommonActionPage: React.FC = () => {
 	const [searchParams] = useSearchParams();
 	const action = (searchParams.get("action") as ActionType) || "sale";
 
-	const [stockDetail, setStockDetail] = useState<StockResponseDetail | null>(
+	const [stockDetail, setStockDetail] = useState<ResponseDetail | null>(
 		null
 	);
 	const [stockRows, setStockRows] = useState<StockOrderRows[]>([]);
@@ -214,7 +214,7 @@ const StockCommonActionPage: React.FC = () => {
 
 				// 복수의 재고 데이터를 병렬로 로드
 				const stockResponses = await Promise.all(
-					codes.map((code) => stockApi.getStock(code))
+					codes.map((code) => stockApi.getStock([code]))
 				);
 
 				// 모든 재고 데이터를 StockOrderRows 형태로 변환
@@ -222,8 +222,8 @@ const StockCommonActionPage: React.FC = () => {
 
 				for (let i = 0; i < stockResponses.length; i++) {
 					const stockRes = stockResponses[i];
-					if (stockRes.success && stockRes.data) {
-						const detail = stockRes.data;
+					if (stockRes.success && stockRes.data && stockRes.data.length > 0) {
+						const detail = stockRes.data[0]; // 배열의 첫 번째 요소 가져오기
 
 						// 첫 번째 재고만 setStockDetail에 저장 (기존 로직 유지)
 						if (i === 0) {
@@ -257,13 +257,13 @@ const StockCommonActionPage: React.FC = () => {
 						const stockRowData: StockOrderRows = {
 							id: detail.flowCode,
 							createAt: formatToLocalDate(detail.createAt),
-							shippingAt: formatToLocalDate(detail.shippingAt),
+							shippingAt: "",
 							storeId: "",
 							storeName: detail.storeName,
 							grade: "",
 							productId: "",
 							productName: detail.productName,
-							productFactoryName: detail.productFactoryName,
+							productFactoryName: "",
 							materialId: foundMaterial?.materialId || "",
 							materialName: detail.materialName,
 							colorId: foundColor?.colorId || "",
@@ -277,7 +277,7 @@ const StockCommonActionPage: React.FC = () => {
 							isProductWeightSale: false,
 							mainStoneNote: detail.mainStoneNote,
 							assistanceStoneNote: detail.assistanceStoneNote,
-							orderNote: detail.stockNote,
+							orderNote: detail.note,
 							stoneInfos: detail.stoneInfos || [],
 							productLaborCost: detail.productLaborCost,
 							productAddLaborCost: detail.productAddLaborCost,
@@ -295,9 +295,9 @@ const StockCommonActionPage: React.FC = () => {
 							stoneWeightTotal: calculatedStoneData.stoneWeight,
 							storeHarry: detail.storeHarry || "",
 							classificationId: "",
-							classificationName: detail.classificationName,
+							classificationName: "",
 							setTypeId: "",
-							setTypeName: detail.setTypeName,
+							setTypeName: "",
 							currentStatus: "SHIPPED",
 							saleNote: "",
 						};

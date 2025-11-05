@@ -80,3 +80,54 @@
 .required-field {
 	color: #e74c3c;
 }
+.no-cell {
+    width: 20px; /* 행 번호 */
+}
+
+.search-type-cell{
+    width: 80px;
+}
+
+.drop-down-cell-small {
+    width: 40px;
+}
+
+.drop-down-cell {
+    width: 60px;
+}
+
+.drop-down-cell3 {
+    width: 50px;
+}
+
+.drop-down-cell2 {
+    width: 70px;
+}
+
+.stock-date {
+	width: 70px;
+}
+
+.money-cell {
+	width: 50px;
+}
+
+.money-cell-large {
+	width: 70px;
+}
+
+.stone-count-cell {
+	width: 30px;
+}
+
+.stone-weight-cell {
+	width: 35px;
+}
+
+.stock-note-cell {
+	width: 50px;
+}
+
+.stock-size-cell {
+	width: 45px;
+}

@@ -10,6 +10,7 @@ interface SaleOptionProps {
 	onCustomerSearchOpen: () => void;
 	disabled?: boolean;
 	hasWGStatus: boolean;
+	isStoreLoadedFromApi?: boolean;
 }
 
 const SaleOption: React.FC<SaleOptionProps> = ({
@@ -18,6 +19,7 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 	onCustomerSearchOpen,
 	disabled = false,
 	hasWGStatus,
+	isStoreLoadedFromApi = false,
 }) => {
 	return (
 		<div className="sale-option-container">
@@ -94,13 +96,17 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 							readOnly
 							placeholder="거래처 검색"
 							disabled={disabled}
-							onClick={onCustomerSearchOpen}
+							onClick={isStoreLoadedFromApi ? undefined : onCustomerSearchOpen}
 							style={{ backgroundColor: "#f5f5f5", color: "#000" }}
 						/>
 						<button
 							className="btn-search"
 							onClick={onCustomerSearchOpen}
-							disabled={disabled}
+							disabled={disabled || isStoreLoadedFromApi}
+							style={{
+								opacity: isStoreLoadedFromApi ? 0.5 : 1,
+								cursor: isStoreLoadedFromApi ? "not-allowed" : "pointer",
+							}}
 						>
 							🔍
 						</button>
