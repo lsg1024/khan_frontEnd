@@ -291,7 +291,11 @@ export const StockCreatePage = () => {
 	};
 
 	// productId가 있을 때 상품 상세 정보 업데이트
-	const updateProductDetail = async (productId?: string, rowId?: string) => {
+	const updateProductDetail = async (
+		productId?: string,
+		rowId?: string,
+		overrideGrade?: string
+	) => {
 		if (!productId) {
 			setCurrentProductDetail(null);
 			return;
@@ -304,7 +308,8 @@ export const StockCreatePage = () => {
 			const targetRow = stockRows.find((row) => row.id === rowId);
 			if (!targetRow) return;
 
-			const storeGrade = targetRow.grade || "1";
+			// overrideGrade가 있으면 사용, 없으면 현재 row의 grade 사용
+			const storeGrade = overrideGrade || targetRow.grade || "1";
 			const policyGrade = `GRADE_${storeGrade}`;
 
 			const transformedStoneInfos = productDetail.productStoneDtos.map(
@@ -331,7 +336,47 @@ export const StockCreatePage = () => {
 				}
 			);
 
+			// stoneInfos 업데이트
 			updateStockRow(rowId, "stoneInfos", transformedStoneInfos);
+
+			// stoneInfos로부터 알 가격과 개수 계산 (등급별 단가 반영)
+			const calculatedStoneData = calculateStoneDetails(transformedStoneInfos);
+
+			updateStockRow(
+				rowId,
+				"mainStonePrice",
+				calculatedStoneData.mainStonePrice
+			);
+			updateStockRow(
+				rowId,
+				"mainStoneCount",
+				calculatedStoneData.mainStoneCount
+			);
+			updateStockRow(
+				rowId,
+				"assistanceStonePrice",
+				calculatedStoneData.assistanceStonePrice
+			);
+			updateStockRow(
+				rowId,
+				"assistanceStoneCount",
+				calculatedStoneData.assistanceStoneCount
+			);
+			updateStockRow(
+				rowId,
+				"stoneAddLaborCost",
+				calculatedStoneData.stoneAddLaborCost
+			);
+			updateStockRow(
+				rowId,
+				"stoneWeightTotal",
+				calculatedStoneData.stoneWeight
+			);
+			updateStockRow(
+				rowId,
+				"stoneWeight",
+				calculatedStoneData.stoneWeight.toString()
+			);
 		}
 	};
 
@@ -389,22 +434,23 @@ export const StockCreatePage = () => {
 		storeModal.openModal(rowId);
 	};
 
-	const handleStoreSelect = (store: StoreSearchDto) => {
+	const handleStoreSelect = async (store: StoreSearchDto) => {
 		if (storeModal.selectedRowId) {
 			const storeIdValue = store.storeId?.toString();
+			const rowId = storeModal.selectedRowId;
+			const newGrade = store.level || "1";
 
-			updateStockRow(storeModal.selectedRowId, "storeId", storeIdValue);
-			updateStockRow(
-				storeModal.selectedRowId,
-				"storeName",
-				store.storeName || ""
-			);
-			updateStockRow(
-				storeModal.selectedRowId,
-				"storeHarry",
-				store.goldHarryLoss || ""
-			);
-			updateStockRow(storeModal.selectedRowId, "grade", store.level || "1");
+			updateStockRow(rowId, "storeId", storeIdValue);
+			updateStockRow(rowId, "storeName", store.storeName || "");
+			updateStockRow(rowId, "storeHarry", store.goldHarryLoss || "");
+			updateStockRow(rowId, "grade", newGrade);
+
+			// 거래처 변경 시 이미 선택된 상품이 있으면 새로운 등급으로 알 단가 재계산
+			const currentRow = stockRows.find((r) => r.id === rowId);
+			if (currentRow?.productId) {
+				// 새로운 등급을 직접 전달하여 상품 상세 정보 재계산
+				await updateProductDetail(currentRow.productId, rowId, newGrade);
+			}
 		}
 		storeModal.handleSelect();
 	};

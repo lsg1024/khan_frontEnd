@@ -173,3 +173,8 @@
 	font-weight: var(--font-weight-bold);
 	font-size: 10px;
 }
+
+.pagination-footer-product {
+	border-top: 1px solid #efefef;
+	background-color: white !important;
+}

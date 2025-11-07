@@ -2,6 +2,7 @@ import React from "react";
 import type { StockOrderRows } from "../../../types/stock";
 import "../../../styles/components/stock/StockTable.css"
 
+
 interface BaseStockTableProps {
 	stockRows: StockOrderRows[];
 	loading: boolean;

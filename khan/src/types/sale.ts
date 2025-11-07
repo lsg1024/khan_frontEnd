@@ -1,4 +1,5 @@
 import type { PageInfo } from "./page";
+import type { StoneInfo } from "./stone";
 
 export interface SaleSearchResponse {
 	content: SaleRow[];
@@ -68,21 +69,20 @@ export interface SaleCreateRow {
 	assistanceStoneNote: string; // 보조 스톤 비고
 	productSize: string; // 사이즈
 	note: string; // 비고
-	quantity: number; // 수량
-	unitPrice: number; // 알 단가 - 중심
 	productPrice: number; // 상품 단가 - 기본
 	additionalProductPrice: number; // 상품 단가 - 추가
-	assistantStonePrice: number; // 알 단가 - 보조
-	additionalStonePrice: number; // 알 단가 - 추가
-	stoneWeightPerUnit: number; // 개당알중량
+	mainStonePrice: number; // 알 단가 메인
+	assistanceStonePrice: number; // 알 단가 - 보조
+	stoneAddLaborCost: number; // 알 단가 - 추가
+	stoneWeightTotal: number; // 개당알중량
 	totalWeight: number; // 총 중량(g)
 	stoneWeight: number; // 알중량
 	goldWeight: number; // 금중량
 	pureGoldWeight: number; // 순금중량
 	pricePerGram: number; // 단가
-	stoneCountPerUnit: number; // 개당 알수 - 메인
 	mainStoneCount: number; // 메인 알수
-	assistantStoneCount: number; // 보조 알수
+	assistanceStoneCount: number; // 보조 알수
+	stoneInfos: StoneInfo[];
 }
 
 export interface SaleOptionData {
@@ -90,8 +90,6 @@ export interface SaleOptionData {
 	storeId: string;
 	tradeDate: string; // 거래일
 	marketPrice: number; // 시세
-	customerName: string; // 거래처
-	customerId: string;
 	saleCode: string; // 거래번호
 	tradeType: "중량" | "시세"; // 거래 형태
 	grade: string; // 공금 등급

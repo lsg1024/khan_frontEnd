@@ -39,6 +39,7 @@ const StoneInfoPage: React.FC = () => {
 	const getDefaultGradeByStoreGrade = useCallback(
 		(storeGrade: string): string => {
 			// store grade에 따른 기본 등급 매핑
+			console.log("getDefaultGradeByStoreGrade " + storeGrade)
 			const storeGradeMap: { [key: string]: string } = {
 				"1": "GRADE_1",
 				"2": "GRADE_2",
@@ -97,6 +98,7 @@ const StoneInfoPage: React.FC = () => {
 			if (event.data.type === "STONE_INFO_DATA") {
 				setStoneInfos(event.data.stoneInfos || []);
 			} else if (event.data.type === "STORE_GRADE_DATA") {
+				console.log("Received STORE_GRADE_DATA: " + event.data.storeGrade);
 				setStoreGrade(event.data.storeGrade || "");
 			} else if (event.data.type === "STONE_SELECTED") {
 				// 팝업에서 스톤 선택 시 - 직접 처리

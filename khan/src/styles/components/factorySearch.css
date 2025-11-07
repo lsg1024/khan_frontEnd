@@ -41,6 +41,11 @@
 	color: #333;
 }
 
+.pagination-footer-factory {
+	border-top: 1px solid #efefef;
+	background-color: white !important;
+}
+
 .close-btn {
 	background: none;
 	border: none;
@@ -115,13 +120,6 @@
 	flex-direction: column;
 	overflow: hidden;
 	min-height: 0;
-}
-
-.results-content {
-	flex: 1;
-	overflow-y: auto;
-	padding: 1rem 1.5rem;
-	min-height: 500px; /* 최소 높이 보장 */
 }
 
 /* ===== 상태 표시 ===== */

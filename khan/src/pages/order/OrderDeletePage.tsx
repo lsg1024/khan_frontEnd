@@ -216,7 +216,7 @@ export const OrderDeletedPage = () => {
 
 	return (
 		<>
-			<div className="order-page">
+			<div className="page">
 				{/* 에러 메시지 */}
 				{error && (
 					<div className="error-message">
@@ -241,7 +241,7 @@ export const OrderDeletedPage = () => {
 				/>
 
 				{/* 삭제 목록 */}
-				<div className="order-list">
+				<div className="list">
 					<MainList
 						dtos={deleteds}
 						selected={selectedDeleted}

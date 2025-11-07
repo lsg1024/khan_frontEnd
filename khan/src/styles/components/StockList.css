@@ -6,7 +6,7 @@
 	overflow: hidden;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	max-width: 1200px;
-	min-width: 1100px;
+	min-width: 1200px;
 	margin: 0 auto;
 	width: 100%;
 }
@@ -20,10 +20,6 @@
 }
 
 /* 행끼리 구분선 추가 */
-.stock-table tbody tr {
-	border-bottom: 2px solid white;
-}
-
 .stock-table tbody tr:last-child {
 	border-bottom: none;
 }
@@ -38,13 +34,26 @@
 	font-weight: 600;
 	color: #000;
 	border-bottom: 1px solid #dee2e6;
-	border-right: 1px solid #f1f3f4;
+	border-right: 1px solid #dee2e6;
 	white-space: nowrap;
 	background-color: white;
 	position: sticky;
 	top: 0;
 	z-index: 10;
 }
+
+.stock-table td {
+	text-align: center;
+	border-right: 1px solid #dee2e6;
+	border-bottom: 1px solid #dee2e6;
+	vertical-align: middle;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 150px;
+	position: relative;
+}
+
 
 /* 헤더 마지막 셀에는 오른쪽 테두리 제거 */
 .stock-table th:last-child {
@@ -53,18 +62,6 @@
 
 .stock-table-twin {
 	width: 50px;
-}
-
-.stock-table td {
-	padding: 2px 4px;
-	text-align: center;
-	border-right: 1px solid #f1f3f4;
-	vertical-align: middle;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	max-width: 150px;
-	position: relative;
 }
 
 /* 셀 호버 시 툴팁 표시 */
@@ -119,11 +116,6 @@
 }
 
 /* 개별 셀 스타일 */
-.no-cell {
-	width: 30px;
-	min-width: 30px;
-}
-
 .type-cell {
 	width: 50px;
 }
@@ -137,11 +129,6 @@
 .order-cell {
 	width: 30px;
 	min-width: 30px;
-}
-
-.date-cell {
-	width: 80px;
-	min-width: 70px;
 }
 
 .size-note-cell {

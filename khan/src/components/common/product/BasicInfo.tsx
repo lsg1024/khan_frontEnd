@@ -189,8 +189,14 @@ const BasicInfo: React.FC<ProductInfo> = ({
 	}, [editable, loadMaterials, loadClassifications, loadSetTypes]);
 
 	return (
-		<div className="basic-info-section">
-			{showTitle && <h2>기본 정보</h2>}
+		<div className="top-section">
+			<div className="image-section">
+				<div className="no-image">
+					<img src="/images/not_ready.png" alt="이미지 없음" />
+				</div>
+			</div>
+			<div className="basic-info-section">
+				{showTitle && <h2>기본 정보</h2>}
 			<div className="info-grid">
 				{/* 상품명과 공장명을 같은 줄에 */}
 				<div className="info-row">
@@ -381,6 +387,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 					onSelectFactory={handleFactorySelect}
 				/>
 			)}
+			</div>
 		</div>
 	);
 };

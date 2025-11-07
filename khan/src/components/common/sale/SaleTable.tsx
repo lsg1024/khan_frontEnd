@@ -13,22 +13,24 @@ interface SaleTableProps {
 	onRowFocus?: (rowId: string) => void;
 	onStoneSearch?: (rowId: string) => void;
 	onAssistanceStoneArrivalChange: (id: string, value: string) => void;
+	onStoneInfoOpen?: (rowId: string) => void;
 	disabled?: boolean;
 }
 
-const SaleTable: React.FC<SaleTableProps> = ({
-	rows,
-	loading,
-	assistantStones,
-	materials,
-	onRowUpdate,
-	onRowDelete,
-	onFlowCodeSearch,
-	onRowFocus,
-	onAssistanceStoneArrivalChange,
-	disabled = false,
-}) => {
-	// 구분에 따른 편집 가능 여부 확인 헬퍼 함수
+const SaleTable: React.FC<SaleTableProps> = (props) => {
+	const {
+		rows,
+		loading,
+		assistantStones,
+		materials,
+		onRowUpdate,
+		onRowDelete,
+		onFlowCodeSearch,
+		onRowFocus,
+		onAssistanceStoneArrivalChange,
+		disabled = false,
+	} = props;
+
 	const canEditSerial = (row: SaleCreateRow): boolean => {
 		// 구분이 판매이고 시리얼에 값이 있는 경우 변경 불가능
 		if (isSaleStatus(row.status) && row.flowCode) {
@@ -40,6 +42,12 @@ const SaleTable: React.FC<SaleTableProps> = ({
 	// 구분이 "판매"인 경우에만 편집 가능
 	const canEditForSaleOnly = (row: SaleCreateRow): boolean => {
 		return isSaleStatus(row.status);
+	};
+
+	const safeOnStoneInfoOpen = (rowId: string) => {
+		if (props.onStoneInfoOpen) {
+			props.onStoneInfoOpen(rowId);
+		}
 	};
 
 	return (
@@ -100,439 +108,465 @@ const SaleTable: React.FC<SaleTableProps> = ({
 					</tr>
 				</thead>
 				<tbody>
-					{rows.map((row, index) => (
-						<tr key={row.id} onFocus={() => onRowFocus?.(row.id)}>
-							{/* No */}
-							<td className="no-cell">{index + 1}</td>
-							{/* 삭제 */}
-							<td className="no-cell">
-								<button
-									className="btn-delete-row"
-									onClick={() => onRowDelete(row.id)}
-									disabled={loading || disabled}
-								>
-									🗑️
-								</button>
-							</td>
-							{/* 구분 */}
-							<td className="type-cell">
-								<select
-									value={row.status}
-									onChange={(e) =>
-										onRowUpdate(
-											row.id,
-											"status",
-											e.target.value as SaleCreateRow["status"]
-										)
-									}
-									disabled={loading || disabled}
-								>
-									<option value="판매">판매</option>
-									<option value="결제">결제</option>
-									<option value="DC">DC</option>
-									<option value="WG">WG</option>
-									<option value="결통">결통</option>
-									<option value="반품">반품</option>
-								</select>
-							</td>{" "}
-							{/* 시리얼 */}
-							<td className="search-type-cell">
-								<div className="search-field-container">
-									<input
-										type="text"
-										value={row.flowCode}
-										readOnly
-										placeholder="시리얼 검색"
-										disabled={loading || disabled || !canEditSerial(row)}
-										onClick={() => {
-											if (canEditSerial(row)) {
-												onFlowCodeSearch(row.id);
-											}
-										}}
-										style={{
-											backgroundColor: !canEditSerial(row)
-												? "#f5f5f5"
-												: "white",
-											cursor:
-												loading || disabled || !canEditSerial(row)
-													? "not-allowed"
-													: "pointer",
-										}}
-									/>
-									<span
-										className="search-icon"
-										onClick={() => {
-											if (canEditSerial(row)) {
-												onFlowCodeSearch(row.id);
-											}
-										}}
-										style={{
-											cursor:
-												loading || disabled || !canEditSerial(row)
-													? "not-allowed"
-													: "pointer",
-											opacity:
-												loading || disabled || !canEditSerial(row) ? 0.5 : 1,
-										}}
+					{rows.map((row, index) => {
+						// 금중량 계산 (총중량 - 알중량)
+						const goldWeight =
+							Number(row.totalWeight || 0) - Number(row.stoneWeightTotal || 0);
+
+						// 순금중량은 row.pureGoldWeight 사용
+						const pureGoldWeight = row.pureGoldWeight || 0;
+
+						return (
+							<tr key={row.id} onFocus={() => onRowFocus?.(row.id)}>
+								{/* No */}
+								<td className="no-cell">{index + 1}</td>
+								{/* 삭제 */}
+								<td className="no-cell">
+									<button
+										className="btn-delete-row"
+										onClick={() => onRowDelete(row.id)}
+										disabled={loading || disabled}
 									>
-										🔍
-									</span>
-								</div>
-							</td>
-							{/* 모델번호 */}
-							<td className="search-type-cell">
-								<input
-									type="text"
-									value={row.productName}
-									readOnly
-									disabled
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							{/* 재질 */}
-							<td className="drop-down-cell3">
-								<select
-									value={row.materialId}
-									onChange={(e) => {
-										if (disabled) return;
-										const selectedMaterial = materials.find(
-											(m) => m.materialId === e.target.value
-										);
-										onRowUpdate(row.id, "materialId", e.target.value);
-										onRowUpdate(
-											row.id,
-											"materialName",
-											selectedMaterial?.materialName || ""
-										);
-									}}
-									disabled={loading || disabled || !!row.materialId}
-									style={{
-										backgroundColor: row.materialId ? "#f5f5f5" : "white",
-									}}
-								>
-									<option value="">선택</option>
-									{materials.map((material) => (
-										<option
-											key={material.materialId}
-											value={material.materialId}
+										🗑️
+									</button>
+								</td>
+								{/* 구분 */}
+								<td className="type-cell">
+									<select
+										value={row.status}
+										onChange={(e) =>
+											onRowUpdate(
+												row.id,
+												"status",
+												e.target.value as SaleCreateRow["status"]
+											)
+										}
+										disabled={loading || disabled}
+									>
+										<option value="판매">판매</option>
+										<option value="결제">결제</option>
+										<option value="DC">DC</option>
+										<option value="WG">WG</option>
+										<option value="결통">결통</option>
+										<option value="반품">반품</option>
+									</select>
+								</td>{" "}
+								{/* 시리얼 */}
+								<td className="search-type-cell">
+									<div className="search-field-container">
+										<input
+											type="text"
+											value={row.flowCode}
+											readOnly
+											placeholder="시리얼 검색"
+											disabled={loading || disabled || !canEditSerial(row)}
+											onClick={() => {
+												if (canEditSerial(row)) {
+													onFlowCodeSearch(row.id);
+												}
+											}}
+											style={{
+												backgroundColor: !canEditSerial(row)
+													? "#f5f5f5"
+													: "white",
+												cursor:
+													loading || disabled || !canEditSerial(row)
+														? "not-allowed"
+														: "pointer",
+											}}
+										/>
+										<span
+											className="search-icon"
+											onClick={() => {
+												if (canEditSerial(row)) {
+													onFlowCodeSearch(row.id);
+												}
+											}}
+											style={{
+												cursor:
+													loading || disabled || !canEditSerial(row)
+														? "not-allowed"
+														: "pointer",
+												opacity:
+													loading || disabled || !canEditSerial(row) ? 0.5 : 1,
+											}}
 										>
-											{material.materialName}
-										</option>
-									))}
-								</select>
-							</td>{" "}
-							{/* 색상 */}
-							<td className="drop-down-cell-small">
-								<input
-									type="text"
-									value={row.colorName}
-									readOnly
-									disabled
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							{/* 보조석 - 유형 */}
-							<td className="drop-down-cell2">
-								<select
-									value={
-										row.assistantStoneId === "1" && !row.assistantStoneName
-											? ""
-											: row.assistantStoneId
-									}
-									onChange={(e) => {
-										if (disabled) return;
-										const selectedStone = assistantStones.find(
-											(s) => s.assistantStoneId === e.target.value
-										);
-										onRowUpdate(row.id, "assistantStoneId", e.target.value);
-										onRowUpdate(
-											row.id,
-											"assistantStoneName",
-											selectedStone?.assistantStoneName || ""
-										);
-									}}
-									disabled={loading || disabled || !canEditForSaleOnly(row)}
-									style={{
-										backgroundColor: !canEditForSaleOnly(row)
-											? "#f5f5f5"
-											: "white",
-									}}
-								>
-									<option value="">선택</option>
-									{assistantStones.map((stone) => (
-										<option
-											key={stone.assistantStoneId}
-											value={stone.assistantStoneId}
-										>
-											{stone.assistantStoneName}
-										</option>
-									))}
-								</select>
-							</td>
-							{/* 보조석 - 입고여부 */}
-							<td className="drop-down-cell-small">
-								<select
-									value={row.hasAssistantStone ? "Y" : "N"}
-									onChange={(e) => {
-										if (disabled) return;
-										onAssistanceStoneArrivalChange(row.id, e.target.value);
-									}}
-									disabled={loading || disabled || !canEditForSaleOnly(row)}
-									style={{
-										backgroundColor: !canEditForSaleOnly(row)
-											? "#f5f5f5"
-											: "white",
-									}}
-								>
-									<option value="N">N</option>
-									<option value="Y">Y</option>
-								</select>
-							</td>
-							{/* 보조석 - 입고날짜 */}
-							<td className="stock-date">
-								<input
-									type="date"
-									value={row.assistantStoneArrivalDate || ""}
-									onChange={(e) => {
-										if (disabled) return;
-										onRowUpdate(
-											row.id,
-											"assistantStoneArrivalDate",
-											e.target.value
-										);
-									}}
-									disabled={
-										loading ||
-										row.hasAssistantStone === false ||
-										disabled ||
-										!canEditForSaleOnly(row)
-									}
-									readOnly
-									style={{
-										backgroundColor:
-											row.hasAssistantStone === false ||
-											disabled ||
-											!canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
-									}}
-								/>
-							</td>{" "}
-							{/* 스톤 비고 - 메인 */}
-							<td className="stock-note-cell">
-								<input
-									type="text"
-									value={row.mainStoneNote || ""}
-									onChange={(e) =>
-										onRowUpdate(row.id, "mainStoneNote", e.target.value)
-									}
-									disabled={loading || disabled || !canEditForSaleOnly(row)}
-									placeholder="메인"
-									style={{
-										backgroundColor: !canEditForSaleOnly(row)
-											? "#f5f5f5"
-											: "white",
-									}}
-								/>
-							</td>
-							{/* 스톤 비고 - 보조 */}
-							<td className="stock-note-cell">
-								<input
-									type="text"
-									value={row.assistanceStoneNote || ""}
-									onChange={(e) =>
-										onRowUpdate(row.id, "assistanceStoneNote", e.target.value)
-									}
-									disabled={loading || disabled || !canEditForSaleOnly(row)}
-									placeholder="보조"
-									style={{
-										backgroundColor: !canEditForSaleOnly(row)
-											? "#f5f5f5"
-											: "white",
-									}}
-								/>
-							</td>
-							{/* 사이즈 */}
-							<td className="stock-size-cell">
-								<input
-									type="text"
-									value={row.productSize}
-									onChange={(e) =>
-										onRowUpdate(row.id, "productSize", e.target.value)
-									}
-									disabled={loading || disabled || !canEditForSaleOnly(row)}
-									placeholder="사이즈"
-									style={{
-										backgroundColor: !canEditForSaleOnly(row)
-											? "#f5f5f5"
-											: "white",
-									}}
-								/>
-							</td>
-							{/* 비고 */}
-							<td className="stock-note-cell">
-								<input
-									type="text"
-									value={row.note}
-									onChange={(e) => onRowUpdate(row.id, "note", e.target.value)}
-									disabled={loading || disabled}
-									placeholder="비고"
-								/>
-							</td>
-							{/* 알중량 */}
-							<td className="stone-weight-cell">
-								<input
-									type="text"
-									value={row.stoneWeightPerUnit}
-									onChange={(e) =>
-										onRowUpdate(row.id, "stoneWeightPerUnit", e.target.value)
-									}
-									disabled={loading || disabled || !canEditForSaleOnly(row)}
-									placeholder="0.000"
-									style={{
-										backgroundColor: !canEditForSaleOnly(row)
-											? "#f5f5f5"
-											: "white",
-									}}
-								/>
-							</td>
-							{/* 총 중량 - 총 중량 */}
-							<td className="stone-weight-cell">
-								<input
-									type="number"
-									value={row.totalWeight > 0 ? row.totalWeight : ""}
-									onChange={(e) => {
-										const newTotalWeight = parseFloat(e.target.value) || 0;
-										onRowUpdate(row.id, "totalWeight", newTotalWeight);
-									}}
-									disabled={loading || disabled}
-									placeholder="0.000"
-								/>
-							</td>
-							{/* 총 중량 - 알중량 */}
-							<td className="stone-weight-cell">
-								<input
-									type="text"
-									value={row.stoneWeightPerUnit?.toFixed(3) || "0.000"}
-									readOnly
-									disabled
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							{/* 총 중량 - 금중량 */}
-							<td className="stone-weight-cell">
-								<input
-									type="text"
-									value="0.000"
-									readOnly
-									disabled
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							{/* 총 중량 - 순금중량 */}
-							<td className="stone-weight-cell">
-								<input
-									type="text"
-									value="0.000"
-									readOnly
-									disabled
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							{/* 상품 단가 - 기본 */}
-							<td className="money-cell">
-								<input
-									type="text"
-									value={row.productPrice?.toLocaleString() || "0"}
-									readOnly
-									disabled
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							{/* 상품 단가 - 추가 */}
-							<td className="money-cell">
-								<input
-									type="text"
-									value={row.additionalProductPrice?.toLocaleString() || "0"}
-									onChange={(e) => {
-										const value = e.target.value.replace(/,/g, "");
-										onRowUpdate(
-											row.id,
-											"additionalProductPrice",
-											Number(value)
-										);
-									}}
-									disabled={loading || disabled || !canEditForSaleOnly(row)}
-									placeholder="0"
-									style={{
-										backgroundColor: !canEditForSaleOnly(row)
-											? "#f5f5f5"
-											: "white",
-									}}
-								/>
-							</td>
-							{/* 알 단가 - 중심 */}
-							<td className="money-cell">
-								<input
-									type="text"
-									value={row.unitPrice?.toLocaleString() || "0"}
-									readOnly
-									disabled
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							{/* 알 단가 - 보조 */}
-							<td className="money-cell">
-								<div className="search-field-container">
+											🔍
+										</span>
+									</div>
+								</td>
+								{/* 모델번호 */}
+								<td className="search-type-cell">
 									<input
 										type="text"
-										value={row.assistantStonePrice?.toLocaleString() || "0"}
+										value={row.productName}
 										readOnly
 										disabled
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
-								</div>
-							</td>
-							{/* 알 단가 - 추가 */}
-							<td className="money-cell">
-								<input
-									type="text"
-									value={row.additionalStonePrice?.toLocaleString() || "0"}
-									onChange={(e) => {
-										const value = e.target.value.replace(/,/g, "");
-										onRowUpdate(row.id, "additionalStonePrice", Number(value));
-									}}
-									disabled={loading || disabled || !canEditForSaleOnly(row)}
-									placeholder="0"
-									style={{
-										backgroundColor: !canEditForSaleOnly(row)
-											? "#f5f5f5"
-											: "white",
-									}}
-								/>
-							</td>
-							{/* 개당 알수 - 메인 */}
-							<td className="stone-count-cell">
-								<input
-									type="text"
-									value={row.stoneCountPerUnit?.toLocaleString() || "0"}
-									readOnly
-									disabled
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-							{/* 개당 알수 - 보조 */}
-							<td className="stone-count-cell">
-								<input
-									type="text"
-									value="0"
-									readOnly
-									disabled
-									style={{ backgroundColor: "#f5f5f5" }}
-								/>
-							</td>
-						</tr>
-					))}
+								</td>
+								{/* 재질 */}
+								<td className="drop-down-cell3">
+									<select
+										value={row.materialId}
+										onChange={(e) => {
+											if (disabled) return;
+											const selectedMaterial = materials.find(
+												(m) => m.materialId === e.target.value
+											);
+											onRowUpdate(row.id, "materialId", e.target.value);
+											onRowUpdate(
+												row.id,
+												"materialName",
+												selectedMaterial?.materialName || ""
+											);
+										}}
+										disabled={loading || disabled || !!row.materialId}
+										style={{
+											backgroundColor: row.materialId ? "#f5f5f5" : "white",
+										}}
+									>
+										<option value="">선택</option>
+										{materials.map((material) => (
+											<option
+												key={material.materialId}
+												value={material.materialId}
+											>
+												{material.materialName}
+											</option>
+										))}
+									</select>
+								</td>{" "}
+								{/* 색상 */}
+								<td className="drop-down-cell-small">
+									<input
+										type="text"
+										value={row.colorName}
+										readOnly
+										disabled
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								{/* 보조석 - 유형 */}
+								<td className="drop-down-cell2">
+									<select
+										value={
+											row.assistantStoneId === "1" && !row.assistantStoneName
+												? ""
+												: row.assistantStoneId
+										}
+										onChange={(e) => {
+											if (disabled) return;
+											const selectedStone = assistantStones.find(
+												(s) => s.assistantStoneId === e.target.value
+											);
+											onRowUpdate(row.id, "assistantStoneId", e.target.value);
+											onRowUpdate(
+												row.id,
+												"assistantStoneName",
+												selectedStone?.assistantStoneName || ""
+											);
+										}}
+										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										style={{
+											backgroundColor: !canEditForSaleOnly(row)
+												? "#f5f5f5"
+												: "white",
+										}}
+									>
+										<option value="">선택</option>
+										{assistantStones.map((stone) => (
+											<option
+												key={stone.assistantStoneId}
+												value={stone.assistantStoneId}
+											>
+												{stone.assistantStoneName}
+											</option>
+										))}
+									</select>
+								</td>
+								{/* 보조석 - 입고여부 */}
+								<td className="drop-down-cell-small">
+									<select
+										value={row.hasAssistantStone ? "Y" : "N"}
+										onChange={(e) => {
+											if (disabled) return;
+											onAssistanceStoneArrivalChange(row.id, e.target.value);
+										}}
+										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										style={{
+											backgroundColor: !canEditForSaleOnly(row)
+												? "#f5f5f5"
+												: "white",
+										}}
+									>
+										<option value="N">N</option>
+										<option value="Y">Y</option>
+									</select>
+								</td>
+								{/* 보조석 - 입고날짜 */}
+								<td className="date-cell">
+									<input
+										type="date"
+										value={row.assistantStoneArrivalDate || ""}
+										onChange={(e) => {
+											if (disabled) return;
+											onRowUpdate(
+												row.id,
+												"assistantStoneArrivalDate",
+												e.target.value
+											);
+										}}
+										disabled={
+											loading ||
+											row.hasAssistantStone === false ||
+											disabled ||
+											!canEditForSaleOnly(row)
+										}
+										readOnly
+										style={{
+											backgroundColor:
+												row.hasAssistantStone === false ||
+												disabled ||
+												!canEditForSaleOnly(row)
+													? "#f5f5f5"
+													: "white",
+										}}
+									/>
+								</td>{" "}
+								{/* 스톤 비고 - 메인 */}
+								<td className="stock-note-cell">
+									<input
+										type="text"
+										value={row.mainStoneNote || ""}
+										onChange={(e) =>
+											onRowUpdate(row.id, "mainStoneNote", e.target.value)
+										}
+										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										placeholder="메인"
+										style={{
+											backgroundColor: !canEditForSaleOnly(row)
+												? "#f5f5f5"
+												: "white",
+										}}
+									/>
+								</td>
+								{/* 스톤 비고 - 보조 */}
+								<td className="stock-note-cell">
+									<input
+										type="text"
+										value={row.assistanceStoneNote || ""}
+										onChange={(e) =>
+											onRowUpdate(row.id, "assistanceStoneNote", e.target.value)
+										}
+										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										placeholder="보조"
+										style={{
+											backgroundColor: !canEditForSaleOnly(row)
+												? "#f5f5f5"
+												: "white",
+										}}
+									/>
+								</td>
+								{/* 사이즈 */}
+								<td className="stock-size-cell">
+									<input
+										type="text"
+										value={row.productSize}
+										onChange={(e) =>
+											onRowUpdate(row.id, "productSize", e.target.value)
+										}
+										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										placeholder="사이즈"
+										style={{
+											backgroundColor: !canEditForSaleOnly(row)
+												? "#f5f5f5"
+												: "white",
+										}}
+									/>
+								</td>
+								{/* 비고 */}
+								<td className="stock-note-cell-large">
+									<input
+										type="text"
+										value={row.note}
+										onChange={(e) =>
+											onRowUpdate(row.id, "note", e.target.value)
+										}
+										disabled={loading || disabled}
+										placeholder="비고"
+									/>
+								</td>
+								{/* 알중량 */}
+								<td className="stone-weight-cell">
+									<input
+										type="text"
+										value={row.stoneWeightTotal?.toFixed(3) || "0.000"}
+										onChange={(e) =>
+											onRowUpdate(row.id, "stoneWeightTotal", e.target.value)
+										}
+										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										placeholder="0.000"
+										style={{
+											backgroundColor: !canEditForSaleOnly(row)
+												? "#f5f5f5"
+												: "white",
+										}}
+									/>
+								</td>
+								{/* 총 중량 - 총 중량 */}
+								<td className="stone-weight-cell">
+									<input
+										type="number"
+										value={row.totalWeight > 0 ? row.totalWeight : ""}
+										onChange={(e) => {
+											const newTotalWeight = parseFloat(e.target.value) || 0;
+											onRowUpdate(row.id, "totalWeight", newTotalWeight);
+										}}
+										disabled={loading || disabled}
+										placeholder="0.000"
+									/>
+								</td>
+								{/* 총 중량 - 알중량 */}
+								<td className="stone-weight-cell">
+									<input
+										type="text"
+										value={Number(row.stoneWeightTotal || 0).toFixed(3)}
+										readOnly
+										disabled
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								{/* 총 중량 - 금중량 */}
+								<td className="stone-weight-cell">
+									<input
+										type="text"
+										value={goldWeight > 0 ? goldWeight.toFixed(3) : "0.000"}
+										readOnly
+										disabled
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								{/* 총 중량 - 순금중량 */}
+								<td className="stone-weight-cell">
+									<input
+										type="text"
+										value={
+											pureGoldWeight > 0 ? pureGoldWeight.toFixed(3) : "0.000"
+										}
+										readOnly
+										disabled
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								{/* 상품 단가 - 기본 */}
+								<td className="money-cell">
+									<input
+										type="text"
+										value={row.productPrice?.toLocaleString() || "0"}
+										readOnly
+										disabled
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								{/* 상품 단가 - 추가 */}
+								<td className="money-cell">
+									<input
+										type="text"
+										value={row.additionalProductPrice?.toLocaleString() || "0"}
+										onChange={(e) => {
+											const value = e.target.value.replace(/,/g, "");
+											onRowUpdate(
+												row.id,
+												"additionalProductPrice",
+												Number(value)
+											);
+										}}
+										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										placeholder="0"
+										style={{
+											backgroundColor: !canEditForSaleOnly(row)
+												? "#f5f5f5"
+												: "white",
+										}}
+									/>
+								</td>
+								{/* 알 단가 - 중심 */}
+								<td className="money-cell">
+									<input
+										type="text"
+										value={row.mainStonePrice?.toLocaleString() || "0"}
+										readOnly
+										disabled
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								{/* 알 단가 - 보조 */}
+								<td className="money-cell-large">
+									<div className="search-field-container">
+										<input
+											type="text"
+											value={row.assistanceStonePrice.toLocaleString()}
+											onChange={(e) => {
+												const value = e.target.value.replace(/,/g, "");
+												onRowUpdate(row.id, "assistanceStonePrice", value);
+											}}
+											disabled={loading}
+											style={{ backgroundColor: "#f5f5f5" }}
+										/>
+										<span
+											className="search-icon"
+											onClick={() => safeOnStoneInfoOpen?.(row.id)}
+										>
+											🔍
+										</span>
+									</div>
+								</td>
+								{/* 알 단가 - 추가 */}
+								<td className="money-cell">
+									<input
+										type="text"
+										value={row.assistanceStonePrice?.toLocaleString() || "0"}
+										onChange={(e) => {
+											const value = e.target.value.replace(/,/g, "");
+											onRowUpdate(
+												row.id,
+												"assistanceStonePrice",
+												Number(value)
+											);
+										}}
+										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										placeholder="0"
+										style={{
+											backgroundColor: !canEditForSaleOnly(row)
+												? "#f5f5f5"
+												: "white",
+										}}
+									/>
+								</td>
+								{/* 개당 알수 - 메인 */}
+								<td className="stone-count-cell">
+									<input
+										type="text"
+										value={row.mainStoneCount?.toLocaleString() || "0"}
+										readOnly
+										disabled
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+								{/* 개당 알수 - 보조 */}
+								<td className="stone-count-cell">
+									<input
+										type="text"
+										value={row.assistanceStoneCount?.toLocaleString() || "0"}
+										readOnly
+										disabled
+										style={{ backgroundColor: "#f5f5f5" }}
+									/>
+								</td>
+							</tr>
+						);
+					})}
 				</tbody>
 			</table>
 		</div>

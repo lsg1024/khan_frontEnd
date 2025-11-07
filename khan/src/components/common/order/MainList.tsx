@@ -31,7 +31,7 @@ const MainList = ({
 	}
 
 	return (
-		<table className="order-table">
+		<table className="table">
 			<thead>
 				<tr>
 					<th>선택</th>

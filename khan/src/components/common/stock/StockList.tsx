@@ -26,7 +26,7 @@ export const StockList = ({
 
 	if (loading) {
 		return (
-			<div className="stock-list">
+			<div className="list">
 				<div className="loading-message">목록을 불러오는 중...</div>
 			</div>
 		);
@@ -34,7 +34,7 @@ export const StockList = ({
 
 	if (stocks.length === 0) {
 		return (
-			<div className="stock-list">
+			<div className="list">
 				<div className="no-data-message">데이터가 없습니다.</div>
 			</div>
 		);

@@ -57,6 +57,26 @@
 	cursor: not-allowed;
 }
 
+.sale-table input[type="date"] {
+	-moz-appearance: textfield;
+	appearance: textfield;
+	text-align: center;
+}
+
+.sale-table input[type="date"]::-webkit-calendar-picker-indicator {
+	width: 100%;
+	min-width: 45px;
+	padding: 2px 3px;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	font-size: 10px;
+	background-color: white;
+	color: #333;
+	display: none;
+	-webkit-appearance: none;
+	text-align: center;
+}
+
 .search-field-container {
 	display: flex;
 	align-items: center;
@@ -80,31 +100,23 @@
 .required-field {
 	color: #e74c3c;
 }
-.no-cell {
-    width: 20px; /* 행 번호 */
-}
-
-.search-type-cell{
-    width: 80px;
+.search-type-cell {
+	width: 80px;
 }
 
 .drop-down-cell-small {
-    width: 40px;
+	width: 40px;
 }
 
 .drop-down-cell {
-    width: 60px;
+	width: 60px;
 }
 
 .drop-down-cell3 {
-    width: 50px;
+	width: 50px;
 }
 
 .drop-down-cell2 {
-    width: 70px;
-}
-
-.stock-date {
 	width: 70px;
 }
 
@@ -120,12 +132,12 @@
 	width: 30px;
 }
 
-.stone-weight-cell {
-	width: 35px;
-}
-
 .stock-note-cell {
 	width: 50px;
+}
+
+.stock-note-cell-large {
+	width: 70px;
 }
 
 .stock-size-cell {

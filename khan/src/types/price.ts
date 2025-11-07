@@ -3,7 +3,6 @@ export interface GradePolicyDto {
     workGradePolicyId: string;
     grade: string;
     laborCost: number;
-    note: string;
     groupId: number;
 }
 

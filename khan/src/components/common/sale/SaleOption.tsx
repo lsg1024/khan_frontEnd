@@ -92,12 +92,13 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 					<div className="sale-option-field-search-container">
 						<input
 							type="text"
-							value={options.customerName}
+							value={options.storeName}
 							readOnly
 							placeholder="거래처 검색"
 							disabled={disabled}
 							onClick={isStoreLoadedFromApi ? undefined : onCustomerSearchOpen}
 							style={{ backgroundColor: "#f5f5f5", color: "#000" }}
+							title={`거래처 ID: ${options.storeId || "미설정"}`}
 						/>
 						<button
 							className="btn-search"

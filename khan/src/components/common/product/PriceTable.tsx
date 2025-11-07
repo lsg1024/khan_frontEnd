@@ -28,7 +28,6 @@ const normalizePolicies = (
 			workGradePolicyId: `${groupIdForNew}-${idx + 1}`,
 			grade: g,
 			laborCost: 0,
-			note: "",
 			groupId: Number(groupIdForNew) || 0,
 		};
 	});
@@ -139,6 +138,16 @@ const PriceTable: React.FC<PriceTableProps> = ({
 
 	// 색상 변경
 	const handleColorChange = (rowIndex: number, colorId: string) => {
+		// 이미 다른 행에서 선택된 색상인지 확인
+		const isColorUsed = displayRows.some(
+			(row, idx) => idx !== rowIndex && row.colorId === colorId
+		);
+
+		if (isColorUsed && colorId) {
+			alert("이미 선택된 색상입니다. 다른 색상을 선택해주세요.");
+			return;
+		}
+
 		const selected = colorOptions.find((c) => c.colorId === colorId);
 		updateRowByIndex(rowIndex, (row) => ({
 			...row,
@@ -214,7 +223,6 @@ const PriceTable: React.FC<PriceTableProps> = ({
 									{index === 0 ? "기본" : `추가${index}`}
 								</span>
 							</td>
-
 							{/* 색상 */}
 							<td>
 								{editable ? (
@@ -243,19 +251,29 @@ const PriceTable: React.FC<PriceTableProps> = ({
 											) && (
 												<option value={group.colorId}>{group.colorName}</option>
 											)}
-										{colorOptions.map((c) => (
-											<option key={c.colorId} value={c.colorId}>
-												{c.colorName}
-											</option>
-										))}
+										{colorOptions.map((c) => {
+											// 현재 행이 아닌 다른 행에서 이미 선택된 색상인지 확인
+											const isUsedInOtherRow = displayRows.some(
+												(row, idx) => idx !== index && row.colorId === c.colorId
+											);
+											return (
+												<option
+													key={c.colorId}
+													value={c.colorId}
+													disabled={isUsedInOtherRow}
+												>
+													{c.colorName}
+													{isUsedInOtherRow ? " (이미 선택됨)" : ""}
+												</option>
+											);
+										})}
 									</select>
 								) : (
 									<span className="fixed-text">
 										{group.colorName || "색상 없음"}
 									</span>
 								)}
-							</td>
-
+							</td>{" "}
 							{/* 구매 공임 */}
 							<td>
 								{editable ? (
@@ -289,12 +307,9 @@ const PriceTable: React.FC<PriceTableProps> = ({
 									</span>
 								)}
 							</td>
-
 							{/* 1~4등급 공임 */}
 							{GRADE_ORDER.map((grade, n) => {
-								const policy = group.policyDtos.find(
-									(p) => p.grade === grade
-								);
+								const policy = group.policyDtos.find((p) => p.grade === grade);
 								const idx = group.policyDtos.findIndex(
 									(p) => p.grade === grade
 								);
@@ -334,7 +349,6 @@ const PriceTable: React.FC<PriceTableProps> = ({
 									</td>
 								);
 							})}
-
 							{/* 비고 */}
 							<td>
 								{editable ? (

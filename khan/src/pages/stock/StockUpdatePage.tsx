@@ -115,7 +115,7 @@ const StockUpdatePage: React.FC = () => {
 					);
 					handleRowUpdate(
 						rowId,
-						"stoneWeightTotal",
+						"stoneWeight",
 						calculatedStoneData.stoneWeight
 					);
 				}

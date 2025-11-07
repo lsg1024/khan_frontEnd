@@ -228,7 +228,37 @@ function ProductDetailPage() {
 			const response = await productApi.getProduct(productId);
 
 			if (isApiSuccess(response) && response.data) {
-				setProduct(response.data);
+				// 서버 응답의 gradePolicyDtos를 policyDtos로 변환
+				const transformedData: Product = {
+					...response.data,
+					productWorkGradePolicyGroupDto:
+						response.data.productWorkGradePolicyGroupDto.map(
+							(group: {
+								productGroupId: string;
+								productPurchasePrice: number;
+								colorId: string;
+								colorName: string;
+								note: string;
+								gradePolicyDtos?: unknown;
+								policyDtos?: unknown;
+							}) => ({
+								productGroupId: group.productGroupId,
+								productPurchasePrice: group.productPurchasePrice,
+								colorId: group.colorId,
+								colorName: group.colorName,
+								note: group.note,
+								policyDtos: (group.gradePolicyDtos ||
+									group.policyDtos ||
+									[]) as {
+									workGradePolicyId: string;
+									grade: string;
+									laborCost: number;
+									groupId: number;
+								}[],
+							})
+						),
+				};
+				setProduct(transformedData);
 			} else {
 				setError("상품 정보를 불러올 수 없습니다.");
 			}

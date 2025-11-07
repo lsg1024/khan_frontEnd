@@ -205,7 +205,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 						<th></th>
 						<th></th>
 						<th>유형</th>
-						<th>입고여부</th>
+						<th>입고</th>
 						<th>입고날짜</th>
 						<th>기본</th>
 						<th>추가</th>
@@ -227,12 +227,6 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 					{orderRows.map((row, index) => {
 						// 재고 상태 확인 (STOCK = 재고, SHIPPED = 출고됨)
 						const isStockStatus = row.currentStatus === "STOCK";
-						console.log(
-							"Row Status:",
-							row.currentStatus,
-							"Is Stock Status:",
-							isStockStatus
-						);
 
 						// 재고 상태일 때 붉은 배경색 스타일
 						const rowStyle = isStockStatus
@@ -245,8 +239,8 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								style={rowStyle}
 								className={isStockStatus ? "stock-status-row" : ""}
 							>
-								<td>{index + 1}</td>
-								<td>
+								<td className="order-create-table-no-cell">{index + 1}</td>
+								<td className="order-create-table-del-cell">
 									<button
 										className="btn-delete-row"
 										onClick={() => safeOnRowDelete(row.id)}
@@ -255,7 +249,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										🗑️
 									</button>
 								</td>
-								<td>
+								<td className="order-create-table-store-cell">
 									<div className="search-field-container">
 										<input
 											type="text"
@@ -309,7 +303,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										</span>
 									</div>
 								</td>
-								<td>
+								<td className="order-create-table-model-cell">
 									<div className="search-field-container">
 										<input
 											type="text"
@@ -363,7 +357,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										</span>
 									</div>
 								</td>
-								<td>
+								<td className="order-create-table-factory-cell">
 									<div className="search-field-container">
 										<input
 											type="text"
@@ -398,7 +392,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										</span>
 									</div>
 								</td>
-								<td>
+								<td className="order-create-table-material-cell">
 									<select
 										value={row.materialId}
 										onChange={(e) => {
@@ -461,7 +455,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										))}
 									</select>
 								</td>
-								<td>
+								<td className="order-create-table-color-cell">
 									<select
 										value={row.colorId}
 										onChange={(e) => {
@@ -524,7 +518,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 									</select>
 								</td>
 								{/* 보조석 필드들 */}
-								<td>
+								<td className="order-create-table-type-cell">
 									<select
 										value={
 											row.assistantStoneId === "1" && !row.assistantStoneName
@@ -583,7 +577,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										))}
 									</select>
 								</td>
-								<td>
+								<td className="order-create-table-insert-cell">
 									<select
 										value={row.assistantStone ? "Y" : "N"}
 										onChange={(e) => {
@@ -633,7 +627,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-money-cell">
 									<input
 										type="text"
 										value={row.productLaborCost.toLocaleString()}
@@ -642,7 +636,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-money-cell">
 									<input
 										type="text"
 										value={row.productAddLaborCost.toLocaleString()}
@@ -675,7 +669,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-money-cell">
 									<input
 										type="text"
 										value={row.mainStonePrice.toLocaleString()}
@@ -684,7 +678,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
-								<td>
+								<td className="money-cell-large">
 									<div className="search-field-container">
 										<input
 											type="text"
@@ -713,7 +707,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										</span>
 									</div>
 								</td>
-								<td>
+								<td className="order-create-table-money-cell">
 									<input
 										type="text"
 										value={row.stoneAddLaborCost.toLocaleString()}
@@ -737,7 +731,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-count-cell">
 									<input
 										type="text"
 										value={row.mainStoneCount.toString()}
@@ -746,7 +740,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-count-cell">
 									<input
 										type="text"
 										value={row.assistanceStoneCount.toString()}
@@ -755,7 +749,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-stone-weight-cell">
 									<input
 										type="text"
 										value={row.stoneWeightTotal.toString()}
@@ -774,7 +768,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-note-cell">
 									<input
 										type="text"
 										value={row.mainStoneNote}
@@ -782,7 +776,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											if (isStockStatus) return; // 재고 상태일 때 변경 방지
 											onRowUpdate(row.id, "mainStoneNote", e.target.value);
 										}}
-										placeholder="메인 알 메모"
+										placeholder="메인"
 										disabled={
 											loading || !safeIsRowInputEnabled(index) || isStockStatus
 										}
@@ -803,7 +797,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-note-cell">
 									<input
 										type="text"
 										value={row.assistanceStoneNote}
@@ -815,7 +809,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 												e.target.value
 											);
 										}}
-										placeholder="보조 알 메모"
+										placeholder="보조"
 										disabled={
 											loading || !safeIsRowInputEnabled(index) || isStockStatus
 										}
@@ -836,7 +830,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-size-cell">
 									<input
 										type="text"
 										value={row.productSize}
@@ -865,7 +859,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								<td>
+								<td className="order-create-table-priority-cell">
 									<select
 										value={row.priorityName}
 										onChange={(e) => {
@@ -925,7 +919,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										))}
 									</select>
 								</td>
-								<td>
+								<td className="order-create-table-note-cell">
 									<input
 										type="text"
 										value={row.orderNote}

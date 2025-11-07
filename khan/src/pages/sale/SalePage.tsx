@@ -203,7 +203,7 @@ export const SalePage = () => {
 
 	return (
 		<>
-			<div className="sale-page">
+			<div className="page">
 				{/* 에러 메시지 */}
 				{error && (
 					<div className="error-message">
@@ -224,7 +224,7 @@ export const SalePage = () => {
 				/>
 
 				{/* 판매 목록 */}
-				<div className="sale-list">
+				<div className="list">
 					<SaleList
 						sales={sales}
 						currentPage={currentPage}

@@ -20,9 +20,19 @@ export const SaleList = ({
 }: SaleListProps) => {
 	const PAGE_SIZE = 20;
 
+	// 판매 타입 한글 매핑
+	const saleTypeMap: Record<string, string> = {
+		SALE: "판매",
+		RETURN: "반품",
+		PAYMENT: "결제",
+		DISCOUNT: "DC",
+		PAYMENT_TO_BANK: "통장",
+		WG: "WG",
+	};
+
 	if (loading) {
 		return (
-			<div className="sale-list">
+			<div className="list">
 				<div className="loading-message">목록을 불러오는 중...</div>
 			</div>
 		);
@@ -30,14 +40,14 @@ export const SaleList = ({
 
 	if (sales.length === 0) {
 		return (
-			<div className="sale-list">
+			<div className="list">
 				<div className="no-data-message">데이터가 없습니다.</div>
 			</div>
 		);
 	}
 
 	return (
-		<table className="sale-table">
+		<table className="table">
 			<thead>
 				<tr>
 					<th>선택</th>
@@ -85,8 +95,23 @@ export const SaleList = ({
 				{sales.map((sale, index) => {
 					const rowNumber = (currentPage - 1) * PAGE_SIZE + index + 1;
 
+					// saleType에 따른 클래스 결정
+					let rowClass = "sale-row";
+					if (sale.saleType === "DISCOUNT") {
+						rowClass += " sale-row-discount"; // 하늘색
+					} else if (sale.saleType === "WG") {
+						rowClass += " sale-row-wg"; // 노란색
+					} else if (sale.saleType === "PAYMENT") {
+						rowClass += " sale-row-payment"; // 연노란색
+					} else if (sale.saleType === "PAYMENT_TO_BANK") {
+						rowClass += " sale-row-payment-bank"; // 더연노란색
+					} else if (sale.saleType === "RETURN") {
+						rowClass += " sale-row-return"; // 연붉은색
+					}
+					// SALE인 경우 기본 흰색 (추가 클래스 없음)
+
 					return (
-						<tr key={sale.saleCode} className="sale-row">
+						<tr key={sale.saleCode} className={rowClass}>
 							<td className="no-cell">
 								<input
 									type="checkbox"
@@ -112,7 +137,7 @@ export const SaleList = ({
 								{sale.createAt
 									? (() => {
 											const date = new Date(sale.createAt);
-											const year = date.getFullYear();
+											const year = String(date.getFullYear()).slice(-2); // 연도 2자리
 											const month = String(date.getMonth() + 1).padStart(
 												2,
 												"0"
@@ -123,7 +148,7 @@ export const SaleList = ({
 									: "-"}
 							</td>
 							<td className="sale-type-cell" title={sale.saleType}>
-								{sale.saleType}
+								{saleTypeMap[sale.saleType] || sale.saleType}
 							</td>
 							<td className="store-cell" title={sale.storeName}>
 								{sale.storeName}

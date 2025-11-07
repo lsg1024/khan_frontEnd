@@ -293,11 +293,6 @@ const ProductCreatePage = () => {
 						onFactorySelect={handleFactorySelect}
 						validationErrors={validationErrors}
 					/>
-					<div className="image-section">
-						<div className="no-image">
-							<img src="/images/not_ready.png" alt="이미지 없음" />
-						</div>
-					</div>
 				</div>
 
 				<PriceTable

@@ -210,7 +210,7 @@ function CataLogPage() {
 	}
 
 	return (
-		<div className="catalog-page">
+		<div className="page">
 			{/* 에러 메시지 */}
 			{error && (
 				<div className="error-message">
@@ -220,224 +220,229 @@ function CataLogPage() {
 			)}
 
 			{/* 검색 영역 */}
-			<div className="search-section-catalog">
-				<div className="search-filters-catalog">
-					<div className="filter-group-catalog">
-						<label htmlFor="factory">제조사:</label>
-						<select
-							id="factory"
-							value={searchFilters.factory}
-							onChange={(e) => handleFilterChange("factory", e.target.value)}
-							disabled={dropdownLoading}
-						>
-							<option value="">전체</option>
-							{factories.map((factory) => (
-								<option key={factory.factoryId} value={factory.factoryName}>
-									{factory.factoryName}
-								</option>
-							))}
-						</select>
+			<div className="search-section-common">
+				<div className="search-filters-common">
+					<div className="filter-row-common">
+						<div className="filter-group-common">
+							<select
+								id="factory"
+								value={searchFilters.factory}
+								onChange={(e) => handleFilterChange("factory", e.target.value)}
+								disabled={dropdownLoading}
+							>
+								<option value="">제조사</option>
+								{factories.map((factory) => (
+									<option key={factory.factoryId} value={factory.factoryName}>
+										{factory.factoryName}
+									</option>
+								))}
+							</select>
+						</div>
+						<div className="filter-group-common">
+							<select
+								id="classification"
+								value={searchFilters.classification}
+								onChange={(e) =>
+									handleFilterChange("classification", e.target.value)
+								}
+								disabled={dropdownLoading}
+							>
+								<option value="">분류</option>
+								{classifications.map((classification) => (
+									<option
+										key={classification.classificationId}
+										value={classification.classificationName}
+									>
+										{classification.classificationName}
+									</option>
+								))}
+							</select>
+						</div>
+						<div className="filter-group-common">
+							<select
+								id="setType"
+								value={searchFilters.setType}
+								onChange={(e) => handleFilterChange("setType", e.target.value)}
+								disabled={dropdownLoading}
+							>
+								<option value="">세트</option>
+								{setTypes.map((setType) => (
+									<option key={setType.setTypeId} value={setType.setTypeName}>
+										{setType.setTypeName}
+									</option>
+								))}
+							</select>
+						</div>
 					</div>
-
-					<div className="filter-group-catalog">
-						<label htmlFor="classification">분류:</label>
-						<select
-							id="classification"
-							value={searchFilters.classification}
-							onChange={(e) =>
-								handleFilterChange("classification", e.target.value)
-							}
-							disabled={dropdownLoading}
-						>
-							<option value="">전체</option>
-							{classifications.map((classification) => (
-								<option
-									key={classification.classificationId}
-									value={classification.classificationName}
-								>
-									{classification.classificationName}
-								</option>
-							))}
-						</select>
-					</div>
-
-					<div className="filter-group-catalog">
-						<label htmlFor="setType">세트타입:</label>
-						<select
-							id="setType"
-							value={searchFilters.setType}
-							onChange={(e) => handleFilterChange("setType", e.target.value)}
-							disabled={dropdownLoading}
-						>
-							<option value="">전체</option>
-							{setTypes.map((setType) => (
-								<option key={setType.setTypeId} value={setType.setTypeName}>
-									{setType.setTypeName}
-								</option>
-							))}
-						</select>
-					</div>
-				</div>
-				<div className="search-controls-catalog">
-					<div className="search-input-catalog">
+					<div className="search-controls-common">
 						<input
-							className="search-input-catalog"
+							className="search-input-common"
 							id="productName"
 							type="text"
 							placeholder="상품명을 입력하세요"
 							value={searchFilters.name}
 							onChange={(e) => handleFilterChange("name", e.target.value)}
 						/>
-					</div>
-					<div className="search-buttons-catalog">
-						<button
-							className="search-button"
-							onClick={handleSearch}
-							disabled={loading}
-						>
-							검색
-						</button>
-						<button
-							className="reset-button"
-							onClick={handleResetSearch}
-							disabled={loading}
-						>
-							초기화
-						</button>
-						<button
-							className="create-button"
-							onClick={handleCreate}
-							disabled={loading}
-						>
-							생성
-						</button>
-						<button
-							className="excel-button"
-							onClick={handleExcel}
-							disabled={loading}
-						>
-							엑셀 다운로드
-						</button>
+
+						<div className="search-buttons-common">
+							<button
+								className="search-btn-common"
+								onClick={handleSearch}
+								disabled={loading}
+							>
+								검색
+							</button>
+							<button
+								className="reset-btn-common"
+								onClick={handleResetSearch}
+								disabled={loading}
+							>
+								초기화
+							</button>
+							<button
+								className="common-btn-common"
+								onClick={handleCreate}
+								disabled={loading}
+							>
+								생성
+							</button>
+							<button
+								className="common-btn-common"
+								onClick={handleExcel}
+								disabled={loading}
+							>
+								엑셀 다운로드
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
 
-			{/* 상품 그리드 */}
-			<div className="products-grid">
-				{products.map((product) => (
-					<div
-						key={product.productId}
-						className="product-card"
-						onClick={() => handleProductClick(product.productId)}
-						style={{ cursor: "pointer" }}
-					>
-						{/* 상품 이미지 */}
-						<div>
-							<img
-								src={
-									product.productImagePath
-										? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${product.productImagePath}`
-										: "/images/not_ready.png"
-								}
-								alt={product.productName}
-								onError={(e) => {
-									e.currentTarget.src = "/images/not_ready.png";
-								}}
-							/>
-						</div>
+			<div className="list">
+				{/* 상품 그리드 */}
+				<div className="products-grid">
+					{products.map((product) => (
+						<div
+							key={product.productId}
+							className="product-card"
+							onClick={() => handleProductClick(product.productId)}
+							style={{ cursor: "pointer" }}
+						>
+							{/* 상품 이미지 */}
+							<div>
+								<img
+									src={
+										product.productImagePath
+											? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${product.productImagePath}`
+											: "/images/not_ready.png"
+									}
+									alt={product.productName}
+									onError={(e) => {
+										e.currentTarget.src = "/images/not_ready.png";
+									}}
+								/>
+							</div>
 
-						{/* 상품 정보 */}
-						<div className="product-info" data-product-id={product.productId}>
-							<h3 className="product-name">{product.productName}</h3>
-							<div className="product-details">
-								{/* 무게, 재질, 색상을 한 줄로 */}
-								<div className="detail-row combined">
-									<div className="detail-item">
-										<div className="value">{product.productWeight}g</div>
-									</div>
-									<div className="detail-item">
-										<div className="gold-content">
-											{getGoldTransferWeight(product.productWeight)}돈
+							{/* 상품 정보 */}
+							<div className="product-info" data-product-id={product.productId}>
+								<h3 className="product-name">{product.productName}</h3>
+								<div className="product-details">
+									{/* 무게, 재질, 색상을 한 줄로 */}
+									<div className="detail-row combined">
+										<div className="detail-item">
+											<div className="value">{product.productWeight}g</div>
+										</div>
+										<div className="detail-item">
+											<div className="gold-content">
+												{getGoldTransferWeight(product.productWeight)}돈
+											</div>
+										</div>
+										<div className="detail-item">
+											<span className="value">{product.productMaterial}</span>
 										</div>
 									</div>
-									<div className="detail-item">
-										<span className="value">{product.productMaterial}</span>
-									</div>
-								</div>
 
-								{/* 스톤 정보 표시 */}
-								{product.productStones && product.productStones.length > 0 && (
-									<div className="stones-section">
-										{product.productStones.map((stone, idx) => {
-											const isLast = idx === product.productStones.length - 1;
-											const totalCount = product.productStones.reduce(
-												(sum, s) => sum + s.stoneQuantity,
-												0
-											);
-											return (
-												<div key={stone.productStoneId} className="stone-row">
-													<span className="stone-info">
-														{stone.mainStone ? "M " : ""}
-														{stone.stoneName} × {stone.stoneQuantity}
-													</span>
-
-													{/* 마지막 행에만 총계 표시 */}
-													{isLast && (
-														<span className="stone-total-inline">
-															<span className="total-label">
-																총 개수:&nbsp;
+									{/* 스톤 정보 표시 */}
+									{product.productStones &&
+										product.productStones.length > 0 && (
+											<div className="stones-section">
+												{product.productStones.map((stone, idx) => {
+													const isLast =
+														idx === product.productStones.length - 1;
+													const totalCount = product.productStones.reduce(
+														(sum, s) => sum + s.stoneQuantity,
+														0
+													);
+													return (
+														<div
+															key={stone.productStoneId}
+															className="stone-row"
+														>
+															<span className="stone-info">
+																{stone.mainStone ? "M " : ""}
+																{stone.stoneName} × {stone.stoneQuantity}
 															</span>
-															<span className="total-value">{totalCount}</span>
-														</span>
-													)}
-												</div>
-											);
-										})}
-									</div>
-								)}
-								{/* 매입가와 판매가를 한 줄로 */}
-								<div className="detail-row combined price-row-combined">
-									<div>
-										<span className="price-label">판매가:</span>
-										<span className="selling-price">
-											{calculateTotalLaborCost(product).toLocaleString()}원
-										</span>
-									</div>
-								</div>
 
-								{/* 메모 */}
-								{product.productNote && (
-									<div className="detail-row note">
-										<span className="value">{product.productNote}</span>
+															{/* 마지막 행에만 총계 표시 */}
+															{isLast && (
+																<span className="stone-total-inline">
+																	<span className="total-label">
+																		총 개수:&nbsp;
+																	</span>
+																	<span className="total-value">
+																		{totalCount}
+																	</span>
+																</span>
+															)}
+														</div>
+													);
+												})}
+											</div>
+										)}
+									{/* 매입가와 판매가를 한 줄로 */}
+									<div className="detail-row combined price-row-combined">
+										<div>
+											<span className="price-label">판매가:</span>
+											<span className="selling-price">
+												{calculateTotalLaborCost(product).toLocaleString()}원
+											</span>
+										</div>
 									</div>
-								)}
+
+									{/* 메모 */}
+									{product.productNote && (
+										<div className="detail-row note">
+											<span className="value">{product.productNote}</span>
+										</div>
+									)}
+								</div>
 							</div>
 						</div>
-					</div>
-				))}
-			</div>
-
-			{/* 빈 상태 */}
-			{products.length === 0 && !loading && (
-				<div className="empty-state">
-					<span className="empty-icon">📦</span>
-					<h3>상품이 없습니다</h3>
-					<p>등록된 상품이 없습니다.</p>
+					))}
 				</div>
-			)}
 
-			{/* 페이지네이션 */}
-			<Pagination
-				currentPage={currentPage}
-				totalPages={totalPages}
-				totalElements={totalElements}
-				loading={loading}
-				onPageChange={(page) => {
-					setCurrentPage(page);
-					loadProducts(searchFilters, page);
-				}}
-				className="catalog"
-			/>
+				{/* 빈 상태 */}
+				{products.length === 0 && !loading && (
+					<div className="empty-state">
+						<span className="empty-icon">📦</span>
+						<h3>상품이 없습니다</h3>
+						<p>등록된 상품이 없습니다.</p>
+					</div>
+				)}
+
+				{/* 페이지네이션 */}
+				<Pagination
+					currentPage={currentPage}
+					totalPages={totalPages}
+					totalElements={totalElements}
+					loading={loading}
+					onPageChange={(page) => {
+						setCurrentPage(page);
+						loadProducts(searchFilters, page);
+					}}
+					className="catalog"
+				/>
+			</div>
 		</div>
 	);
 }

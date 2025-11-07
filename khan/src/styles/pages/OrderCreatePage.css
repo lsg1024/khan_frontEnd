@@ -1,5 +1,4 @@
 /* OrderCreatePage.css */
-
 .order-create-page {
 	padding: 10px;
 	background-color: var(--background-color);
@@ -438,6 +437,7 @@
 	border-radius: 8px;
 	overflow: auto;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	margin-top: 5px;
 	margin-bottom: 15px;
 	padding: 5px;
 }
@@ -616,127 +616,67 @@
 }
 
 /* 특정 컬럼 너비 조정 */
-.order-create-table th:nth-child(1),
-.order-create-table td:nth-child(1) {
+.order-create-table-no-cell {
 	width: 20px; /* 행 번호 */
 }
 
-.order-create-table th:nth-child(2),
-.order-create-table td:nth-child(2) {
+.order-create-table-del-cell {
 	width: 40px; /* 삭제 버튼 */
 }
 
-.order-create-table th:nth-child(3),
-.order-create-table td:nth-child(3) {
-	min-width: 80px; /* 상품명 */
+.order-create-table-store-cell {
+	min-width: 80px; /* 거래처 */
 	max-width: 100px;
 }
 
-.order-create-table th:nth-child(4),
-.order-create-table td:nth-child(4) {
-	min-width: 80px; /* 모델번호 */
-	max-width: 100px;
+.order-create-table-model-cell {
+	min-width: 100px; /* 모델번호 */
+	max-width: 120px;
 }
 
-.order-create-table th:nth-child(5),
-.order-create-table td:nth-child(5) {
-	min-width: 80px; /* 제조사 */
-	max-width: 100px;
+.order-create-table-factory-cell {
+	min-width: 70px; /* 제조사 */
+	max-width: 80px;
 }
 
-.order-create-table th:nth-child(6),
-.order-create-table td:nth-child(6) {
-	width: 50px; /* 재질 */
+.order-create-table-material-cell {
+	width: 50px;
 }
 
-.order-create-table th:nth-child(7),
-.order-create-table td:nth-child(7) {
-	width: 50px; /* 색상 */
+.order-create-table-color-cell {
+	width: 80px; /* 색상 */
 }
 
-.order-create-table th:nth-child(8),
-.order-create-table td:nth-child(8) {
-	width: 70px; /* 유형 */
+.order-create-table-type-cell {
+	width: 80px; /* 유형 */
 }
 
-.order-create-table th:nth-child(9),
-.order-create-table td:nth-child(9) {
-	width: 55px; /* 입고여부 */
+.order-create-table-insert-cell {
+	width: 40px; /* 입고여부 */
 }
 
-.order-create-table th:nth-child(10),
-.order-create-table td:nth-child(10) {
-	width: 55px; /* 입고날짜 */
+.order-create-table-money-cell {
+	width: 55px; /* 단가 */
 }
 
-.order-create-table th:nth-child(11),
-.order-create-table td:nth-child(11) {
-	width: 55px; /* 기본단가 */
+.order-create-table-count-cell {
+	width: 30px; /* 중심알 */
 }
 
-.order-create-table th:nth-child(12),
-.order-create-table td:nth-child(12) {
-	width: 55px; /* 보조단가 */
-}
-
-.order-create-table th:nth-child(13),
-.order-create-table td:nth-child(13) {
-	width: 50px; /* 중심알 */
-}
-
-.order-create-table th:nth-child(14),
-.order-create-table td:nth-child(14) {
-	width: 60px; /* 보조알 */
-}
-
-.order-create-table th:nth-child(15),
-.order-create-table td:nth-child(15) {
-	width: 50px; /* 추가알 */
-}
-
-.order-create-table th:nth-child(16),
-.order-create-table td:nth-child(16) {
-	max-width: 30px; /* 메인알 수 */
-}
-
-.order-create-table th:nth-child(17),
-.order-create-table td:nth-child(17) {
-	max-width: 30px; /* 보조알 수 */
-}
-
-.order-create-table th:nth-child(18),
-.order-create-table td:nth-child(18) {
+.order-create-table-stone-weight-cell {
 	width: 40px; /* 알중량 */
 }
 
-.order-create-table th:nth-child(19),
-.order-create-table td:nth-child(19) {
-	width: 70px; /* 메인메모 */
+.order-create-table-note-cell {
+	width: 70px; /* 메모 */
 }
 
-.order-create-table th:nth-child(20),
-.order-create-table td:nth-child(20) {
-	width: 70px; /* 보조메모 */
+.order-create-table-size-cell {
+	width: 45px; /* 사이즈 */
 }
 
-.order-create-table th:nth-child(21),
-.order-create-table td:nth-child(21) {
-	width: 30px; /* 사이즈 */
-}
-
-.order-create-table th:nth-child(22),
-.order-create-table td:nth-child(22) {
-	width: 30px; /* 급 */
-}
-
-.order-create-table th:nth-child(23),
-.order-create-table td:nth-child(23) {
-	width: 80px; /* 메모 */
-}
-
-.order-create-table th:nth-child(24),
-.order-create-table td:nth-child(24) {
-	width: 55px; /* 출고일 */
+.order-create-table-priority-cell {
+	width: 55px; /* 급 */
 }
 
 /* 반응형 */

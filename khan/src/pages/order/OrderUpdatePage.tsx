@@ -124,7 +124,7 @@ const OrderUpdatePage: React.FC = () => {
 		{ priorityName: string; priorityDate: number }[]
 	>([]);
 	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: number; assistantStoneName: string }[]
+		{ assistantStoneId: string; assistantStoneName: string }[]
 	>([]);
 
 	const orderStatus = MODE_TO_STATUS[mode as UpdateMode];
@@ -136,7 +136,7 @@ const OrderUpdatePage: React.FC = () => {
 
 		priorities: { priorityName: string; priorityDate: number }[],
 		assistantStonesParam: {
-			assistantStoneId: number;
+			assistantStoneId: string;
 			assistantStoneName: string;
 		}[]
 	): OrderRowData => {
@@ -501,7 +501,6 @@ const OrderUpdatePage: React.FC = () => {
 			const rowData = convertToOrderRowData(
 				orderDetail,
 				storeGrade,
-
 				priorities,
 				assistantStones
 			);
@@ -674,7 +673,7 @@ const OrderUpdatePage: React.FC = () => {
 				let prioritiesData: { priorityName: string; priorityDate: number }[] =
 					[];
 				let assistantStonesData: {
-					assistantStoneId: number;
+					assistantStoneId: string;
 					assistantStoneName: string;
 				}[] = [];
 
@@ -704,7 +703,7 @@ const OrderUpdatePage: React.FC = () => {
 
 				if (assistantStoneRes.success) {
 					assistantStonesData = (assistantStoneRes.data || []).map((a) => ({
-						assistantStoneId: a.assistantStoneId,
+						assistantStoneId: a.assistantStoneId.toString(),
 						assistantStoneName: a.assistantStoneName,
 					}));
 					setAssistantStones(assistantStonesData);
@@ -733,11 +732,13 @@ const OrderUpdatePage: React.FC = () => {
 				}
 
 				if (assistantStoneRes.success) {
-					const assistantStones = (assistantStoneRes.data || []).map((a) => ({
-						assistantStoneId: a.assistantStoneId,
-						assistantStoneName: a.assistantStoneName,
-					}));
-					setAssistantStones(assistantStones);
+					const assistantStonesData = (assistantStoneRes.data || []).map(
+						(a) => ({
+							assistantStoneId: a.assistantStoneId.toString(),
+							assistantStoneName: a.assistantStoneName,
+						})
+					);
+					setAssistantStones(assistantStonesData);
 				}
 			} catch (err) {
 				handleError(err, setError);

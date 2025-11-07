@@ -92,6 +92,11 @@
 	background-color: #218838;
 }
 
+.pagination-footer-stone {
+	border-top: 1px solid #efefef;
+	background-color: white !important;
+}
+
 /* 스톤 검색 전용 반응형 */
 @media (max-width: 480px) {
 	.table-header,

@@ -311,7 +311,7 @@ export const StockReturnPage = () => {
 
 	return (
 		<>
-			<div className="order-page">
+			<div className="page">
 				{/* 에러 메시지 */}
 				{error && (
 					<div className="error-message">

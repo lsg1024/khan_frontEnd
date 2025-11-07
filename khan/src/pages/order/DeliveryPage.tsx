@@ -467,7 +467,7 @@ export const ExpactPage = () => {
 
 	return (
 		<>
-			<div className="order-page">
+			<div className="page">
 				{/* 에러 메시지 */}
 				{error && (
 					<div className="error-message">
@@ -493,7 +493,7 @@ export const ExpactPage = () => {
 				/>
 
 				{/* 수리 목록 */}
-				<div className="order-list">
+				<div className="list">
 					<MainList
 						dtos={expacts}
 						selected={selectedExpact}

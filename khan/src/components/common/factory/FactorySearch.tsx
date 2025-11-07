@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import type { FactorySearchDto } from "../../../types/factory";
+import "../../../styles/components/factorySearch.css";
 
 interface FactorySearchProps {
 	onSelectFactory: (factory: FactorySearchDto) => void;
