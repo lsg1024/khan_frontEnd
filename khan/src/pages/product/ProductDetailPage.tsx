@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
@@ -23,28 +23,24 @@ function ProductDetailPage() {
 	const { handleError } = useErrorHandler();
 
 	// 이미지 슬라이더 상태 관리
-	const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+	// const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
 	// 이미지 슬라이더 네비게이션 함수들
-	const nextImage = useCallback(() => {
-		if (product?.productImageDtos && product.productImageDtos.length > 1) {
-			setCurrentImageIndex((prev) =>
-				prev === product.productImageDtos.length - 1 ? 0 : prev + 1
-			);
-		}
-	}, [product?.productImageDtos]);
+	// const nextImage = useCallback(() => {
+	// 	if (product?.productImageDtos && product.productImageDtos.length > 1) {
+	// 		setCurrentImageIndex((prev) =>
+	// 			prev === product.productImageDtos.length - 1 ? 0 : prev + 1
+	// 		);
+	// 	}
+	// }, [product?.productImageDtos]);
 
-	const prevImage = useCallback(() => {
-		if (product?.productImageDtos && product.productImageDtos.length > 1) {
-			setCurrentImageIndex((prev) =>
-				prev === 0 ? product.productImageDtos.length - 1 : prev - 1
-			);
-		}
-	}, [product?.productImageDtos]);
-
-	const goToImage = useCallback((index: number) => {
-		setCurrentImageIndex(index);
-	}, []);
+	// const prevImage = useCallback(() => {
+	// 	if (product?.productImageDtos && product.productImageDtos.length > 1) {
+	// 		setCurrentImageIndex((prev) =>
+	// 			prev === 0 ? product.productImageDtos.length - 1 : prev - 1
+	// 		);
+	// 	}
+	// }, [product?.productImageDtos]);
 
 	// 공장 선택 핸들러
 	const handleFactorySelect = (factoryId: number, factoryName: string) => {
@@ -279,7 +275,7 @@ function ProductDetailPage() {
 			// 서버 양식에 맞게 데이터 변환
 			const serverData: CreateProductRequest = {
 				factoryId: product.factoryId,
-				productFactoryName: product.factoryName,
+				productFactoryName: product.productFactoryName,
 				productName: product.productName,
 				setType: product.setTypeDto?.setTypeId || "",
 				classification: product.classificationDto?.classificationId || "",
@@ -350,7 +346,7 @@ function ProductDetailPage() {
 
 	// 상품이 변경될 때 이미지 인덱스 초기화
 	useEffect(() => {
-		setCurrentImageIndex(0);
+		// setCurrentImageIndex(0);
 	}, [product?.productImageDtos]);
 
 	// 키보드 네비게이션
@@ -358,16 +354,16 @@ function ProductDetailPage() {
 		const handleKeyPress = (event: KeyboardEvent) => {
 			if (product?.productImageDtos && product.productImageDtos.length > 1) {
 				if (event.key === "ArrowLeft") {
-					prevImage();
+					// prevImage();
 				} else if (event.key === "ArrowRight") {
-					nextImage();
+					// nextImage();
 				}
 			}
 		};
 
 		window.addEventListener("keydown", handleKeyPress);
 		return () => window.removeEventListener("keydown", handleKeyPress);
-	}, [nextImage, prevImage, product?.productImageDtos]);
+	}, [product?.productImageDtos]);
 
 	// 뒤로가기
 	const handleGoBack = () => {
@@ -415,55 +411,6 @@ function ProductDetailPage() {
 						onProductChange={handleProductChange}
 						onFactorySelect={handleFactorySelect}
 					/>
-
-					{/* 이미지 섹션 */}
-					<div className="image-section">
-						{product.productImageDtos && product.productImageDtos.length > 0 ? (
-							<div className="image-slider">
-								{/* 메인 이미지 */}
-								<div className="main-image-container">
-									{product.productImageDtos.length > 1 && (
-										<button className="image-nav prev" onClick={prevImage}>
-											‹
-										</button>
-									)}
-									<img
-										src={`/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${product.productImageDtos[currentImageIndex].imagePath}`}
-										alt={`${product.productName} ${currentImageIndex + 1}`}
-										onError={(e) => {
-											e.currentTarget.src = "/images/not_ready.png";
-										}}
-									/>
-									{product.productImageDtos.length > 1 && (
-										<button className="image-nav next" onClick={nextImage}>
-											›
-										</button>
-									)}
-								</div>
-
-								{/* 이미지 인디케이터 */}
-								{product.productImageDtos.length > 1 && (
-									<div className="image-indicators">
-										{product.productImageDtos.map((_, index) => (
-											<button
-												key={index}
-												className={`indicator ${
-													index === currentImageIndex ? "active" : ""
-												}`}
-												onClick={() => goToImage(index)}
-											>
-												{index + 1}
-											</button>
-										))}
-									</div>
-								)}
-							</div>
-						) : (
-							<div className="no-image">
-								<img src="/images/not_ready.png" alt="이미지 없음" />
-							</div>
-						)}
-					</div>
 				</div>
 
 				{/* 가격 정보 섹션 */}

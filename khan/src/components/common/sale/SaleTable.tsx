@@ -113,9 +113,6 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 						const goldWeight =
 							Number(row.totalWeight || 0) - Number(row.stoneWeightTotal || 0);
 
-						// 순금중량은 row.pureGoldWeight 사용
-						const pureGoldWeight = row.pureGoldWeight || 0;
-
 						return (
 							<tr key={row.id} onFocus={() => onRowFocus?.(row.id)}>
 								{/* No */}
@@ -452,7 +449,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 									<input
 										type="text"
 										value={
-											pureGoldWeight > 0 ? pureGoldWeight.toFixed(3) : "0.000"
+											row.pureGoldWeight
 										}
 										readOnly
 										disabled
@@ -526,12 +523,12 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.assistanceStonePrice?.toLocaleString() || "0"}
+										value={row.stoneAddLaborCost?.toLocaleString() || "0"}
 										onChange={(e) => {
 											const value = e.target.value.replace(/,/g, "");
 											onRowUpdate(
 												row.id,
-												"assistanceStonePrice",
+												"stoneAddLaborCost",
 												Number(value)
 											);
 										}}

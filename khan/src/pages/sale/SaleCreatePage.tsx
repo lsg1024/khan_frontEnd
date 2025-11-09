@@ -11,7 +11,7 @@ import type { StoreSearchDto } from "../../types/store";
 import type { PastOrderDto } from "../../types/order";
 import type { StockSaleRequest } from "../../types/stock";
 import SaleOption from "../../components/common/sale/SaleOption";
-import GoldHistory from "../../components/common/sale/GoldHistory";
+import AccountBalanceHistory from "../../components/common/sale/AccountBalanceHistory";
 import SaleTable from "../../components/common/sale/SaleTable";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import PastOrderHistory from "../../components/common/PastOrderHistory";
@@ -63,17 +63,23 @@ export const SaleCreatePage = () => {
 		useState<boolean>(false);
 
 	// 금 거래 내역 상태
-	const [goldHistory, setGoldHistory] = useState<GoldHistoryData>({
-		pureGold: 0,
-		goldAmount: 0,
-		totalPreviousBalance: 0,
-		previousBalance: 0,
-		sales: 0,
-		returns: 0,
-		dc: 0,
-		payment: 0,
-		afterBalance: 0,
-	});
+	const [accountBalanceHistoryData, setAccountBalanceHistory] =
+		useState<GoldHistoryData>({
+			goldBalance: 0,
+			moneyBalance: 0,
+			previousGoldBalance: 0,
+			previousMoneyBalance: 0,
+			salesGoldBalance: 0,
+			returnsGoldBalance: 0,
+			salesMoneyBalance: 0,
+			returnsMoneyBalance: 0,
+			dcGoldBalance: 0,
+			dcMoneyBalance: 0,
+			paymentGoldBalance: 0,
+			paymentMoneyBalance: 0,
+			afterGoldBalance: 0,
+			afterMoneyBalance: 0,
+		});
 
 	// 판매 행 상태
 	const [saleRows, setSaleRows] = useState<SaleCreateRow[]>(
@@ -99,6 +105,7 @@ export const SaleCreatePage = () => {
 			note: "",
 			productPrice: 0,
 			additionalProductPrice: 0,
+			stonePurchasePrice: 0,
 			mainStonePrice: 0,
 			assistanceStonePrice: 0,
 			stoneAddLaborCost: 0,
@@ -240,6 +247,47 @@ export const SaleCreatePage = () => {
 				if (row.id !== id) return row;
 
 				const updatedRow = { ...row, [field]: value };
+
+				// totalWeight가 변경되면 goldWeight 계산 (총중량 - 알중량)
+				if (field === "totalWeight") {
+					const totalWeight = parseFloat(String(value)) || 0;
+					const stoneWeight = row.stoneWeight || 0;
+					const goldWeight = totalWeight - stoneWeight;
+
+					updatedRow.goldWeight = parseFloat(goldWeight.toFixed(3));
+					updatedRow.pureGoldWeight = calculatePureGoldWeight(
+						goldWeight,
+						row.materialName
+					);
+				}
+
+				// stoneWeight가 변경되면 goldWeight 재계산
+				if (field === "stoneWeight") {
+					const stoneWeight = parseFloat(String(value)) || 0;
+					const totalWeight = row.totalWeight || 0;
+					const goldWeight = totalWeight - stoneWeight;
+
+					updatedRow.goldWeight = goldWeight;
+					updatedRow.pureGoldWeight = calculatePureGoldWeight(
+						goldWeight,
+						row.materialName
+					);
+				}
+
+				// goldWeight 또는 materialName이 변경되면 순금 중량 재계산
+				if (field === "goldWeight" || field === "materialName") {
+					const goldWeight =
+						field === "goldWeight"
+							? parseFloat(String(value)) || 0
+							: row.goldWeight;
+					const materialName =
+						field === "materialName" ? String(value) : row.materialName;
+
+					updatedRow.pureGoldWeight = calculatePureGoldWeight(
+						goldWeight,
+						materialName
+					);
+				}
 
 				// storeId, productId, materialName 중 하나가 변경되면 과거 거래내역 조회
 				if (
@@ -606,6 +654,7 @@ export const SaleCreatePage = () => {
 							note: stock.note || "",
 							productPrice: stock.productLaborCost || 0,
 							additionalProductPrice: stock.productAddLaborCost || 0,
+							stonePurchasePrice: calculatedStoneData.purchaseStonePrice,
 							mainStonePrice: calculatedStoneData.mainStonePrice,
 							assistanceStonePrice: calculatedStoneData.assistanceStonePrice,
 							stoneAddLaborCost: stock.stoneAddLaborCost || 0,
@@ -690,6 +739,7 @@ export const SaleCreatePage = () => {
 							note: stock.note || "",
 							productPrice: stock.productLaborCost,
 							additionalProductPrice: stock.productAddLaborCost || 0,
+							stonePurchasePrice: calculatedStoneData.purchaseStonePrice,
 							mainStonePrice: calculatedStoneData.mainStonePrice,
 							assistanceStonePrice: calculatedStoneData.assistanceStonePrice,
 							stoneAddLaborCost: stock.stoneAddLaborCost || 0,
@@ -718,37 +768,96 @@ export const SaleCreatePage = () => {
 
 	// 판매 행 변경 시 금 거래 내역 자동 계산
 	useEffect(() => {
-		// TODO: 구분에 따라 판매, 반품, DC, 결제 값 계산
-		const salesTotal = saleRows
+		// 순금 중량 합계 계산
+		const totalPureGold = saleRows.reduce(
+			(acc, row) => acc + (row.pureGoldWeight || 0),
+			0
+		);
+
+		// 금액 합계 계산 (상품 단가 + 추가 단가 + 스톤 매입 단가)
+		const totalMoney = saleRows.reduce(
+			(acc, row) =>
+				acc +
+				row.productPrice +
+				row.additionalProductPrice +
+				row.stonePurchasePrice,
+			0
+		);
+
+		// 구분에 따라 판매, 반품, DC, 결제 값 계산
+		const salesTotalMoney = saleRows
 			.filter((row) => row.status === "판매")
-			.reduce((acc, row) => acc + row.productPrice, 0);
+			.reduce(
+				(acc, row) =>
+					acc +
+					row.productPrice +
+					row.additionalProductPrice +
+					row.stonePurchasePrice,
+				0
+			);
 
-		const returnsTotal = saleRows
+		const salesTotalGold = saleRows
+			.filter((row) => row.status === "판매")
+			.reduce((acc, row) => acc + row.pureGoldWeight, 0);
+
+		const returnsTotalMoney = saleRows
 			.filter((row) => row.status === "반품")
-			.reduce((acc, row) => acc + row.productPrice, 0);
+			.reduce((acc, row) => acc + row.productPrice + row.stonePurchasePrice, 0);
 
-		const dcTotal = saleRows
+		const returnsTotalGold = saleRows
+			.filter((row) => row.status === "반품")
+			.reduce((acc, row) => acc + row.pureGoldWeight, 0);
+
+		const dcTotalMoney = saleRows
 			.filter((row) => row.status === "DC")
-			.reduce((acc, row) => acc + row.productPrice, 0);
+			.reduce((acc, row) => acc + row.productPrice + row.stonePurchasePrice, 0);
 
-		const paymentTotal = saleRows
+		const dcTotalGold = saleRows
+			.filter((row) => row.status === "DC")
+			.reduce((acc, row) => acc + row.pureGoldWeight, 0);
+
+		const paymentTotalMoney = saleRows
 			.filter((row) => row.status === "결제" || row.status === "결통")
-			.reduce((acc, row) => acc + row.productPrice, 0);
+			.reduce((acc, row) => acc + row.productPrice + row.stonePurchasePrice, 0);
 
-		setGoldHistory((prev) => ({
+		const paymentTotalGold = saleRows
+			.filter((row) => row.status === "결제" || row.status === "결통")
+			.reduce((acc, row) => acc + row.pureGoldWeight, 0);
+
+		const wgTotalMoney = saleRows
+			.filter((row) => row.status === "WG")
+			.reduce(
+				(acc, row) => acc + row.pureGoldWeight * saleOptions.marketPrice,
+				0
+			);
+
+		setAccountBalanceHistory((prev) => ({
 			...prev,
-			sales: salesTotal,
-			returns: returnsTotal,
-			dc: dcTotal,
-			payment: paymentTotal,
-			afterBalance:
-				prev.totalPreviousBalance +
-				salesTotal -
-				returnsTotal -
-				dcTotal -
-				paymentTotal,
+			goldBalance: totalPureGold,
+			moneyBalance: totalMoney,
+			salesGoldBalance: salesTotalGold,
+			salesMoneyBalance: salesTotalMoney,
+			returnsGoldBalance: returnsTotalGold,
+			returnsMoneyBalance: returnsTotalMoney,
+			dcGoldBalance: dcTotalGold,
+			dcMoneyBalance: dcTotalMoney,
+			paymentGoldBalance: paymentTotalGold,
+			paymentMoneyBalance: paymentTotalMoney,
+			previousGoldBalance: prev.previousGoldBalance,
+			previousMoneyBalance: prev.previousMoneyBalance,
+			afterGoldBalance:
+				salesTotalGold - returnsTotalGold - dcTotalGold - paymentTotalGold,
+			afterMoneyBalance:
+				salesTotalMoney +
+				wgTotalMoney -
+				returnsTotalMoney -
+				dcTotalMoney -
+				paymentTotalMoney,
 		}));
+	}, [saleRows, saleOptions.marketPrice]);
 
+	// 재질 목록 로드
+	useEffect(() => {
 		const loadMaterials = async () => {
 			try {
 				const materialRes = await materialApi.getMaterials();
@@ -763,8 +872,6 @@ export const SaleCreatePage = () => {
 				}
 			} catch (err) {
 				handleError(err, setError);
-			} finally {
-				setLoading(false);
 			}
 		};
 		loadMaterials();
@@ -802,7 +909,10 @@ export const SaleCreatePage = () => {
 					/>
 
 					{/* 금 거래 내역 */}
-					<GoldHistory history={goldHistory} disabled={loading} />
+					<AccountBalanceHistory
+						history={accountBalanceHistoryData}
+						disabled={loading}
+					/>
 				</div>
 
 				{/* 1.5. 과거 매출 거래 내역 */}

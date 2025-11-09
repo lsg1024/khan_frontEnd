@@ -71,6 +71,7 @@ export interface SaleCreateRow {
 	note: string; // 비고
 	productPrice: number; // 상품 단가 - 기본
 	additionalProductPrice: number; // 상품 단가 - 추가
+	stonePurchasePrice: number; // 알 구입가
 	mainStonePrice: number; // 알 단가 메인
 	assistanceStonePrice: number; // 알 단가 - 보조
 	stoneAddLaborCost: number; // 알 단가 - 추가
@@ -97,13 +98,18 @@ export interface SaleOptionData {
 }
 
 export interface GoldHistoryData {
-	pureGold: number; // 순금
-	goldAmount: number; // 금액
-	totalPreviousBalance: number; // 전 미수 총합
-	previousBalance: number; // 전 미수 이전
-	sales: number; // 판매
-	returns: number; // 반품
-	dc: number; // DC
-	payment: number; // 결제
-	afterBalance: number; // 후미수
+	goldBalance: number; // 순금
+	moneyBalance: number; // 금액
+	salesGoldBalance: number; // 판매 순금
+	salesMoneyBalance: number; // 판매 금액
+	returnsGoldBalance: number; // 반품 순금
+	returnsMoneyBalance: number; // 반품 금액
+	dcGoldBalance: number; // DC 순금
+	dcMoneyBalance: number; // DC 금액
+	paymentGoldBalance: number; // 결제 순금
+	paymentMoneyBalance: number; // 결제 금액
+	previousGoldBalance: number; // 전 미수 순금
+	previousMoneyBalance: number; // 전 미수 금액
+	afterGoldBalance: number; // 후미수 순금
+	afterMoneyBalance: number; // 후미수 금액
 }
