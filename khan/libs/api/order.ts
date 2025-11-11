@@ -150,8 +150,6 @@ export const orderApi = {
 		return apiRequest.get<PastOrderDto[]>("order/sale/past", { params });
 	},
 
-	//주문 상태 호출
-
 	// 주문 상태 변경
 	updateOrderStatus: async (
 		flowCode: string,

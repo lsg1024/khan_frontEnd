@@ -1,11 +1,12 @@
 import type { SaleCreateRow } from "../../../types/sale";
 import { isSaleStatus } from "../../../types/sale";
+import type { AssistantStoneDto } from "../../../types/AssistantStoneDto";
 import "../../../styles/components/sale/SaleTable.css";
 
 interface SaleTableProps {
 	rows: SaleCreateRow[];
 	loading: boolean;
-	assistantStones: { assistantStoneId: string; assistantStoneName: string }[];
+	assistantStones: AssistantStoneDto[];
 	materials: { materialId: string; materialName: string }[];
 	onRowUpdate: (id: string, field: keyof SaleCreateRow, value: unknown) => void;
 	onRowDelete: (id: string) => void;
@@ -27,10 +28,18 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 		onRowDelete,
 		onFlowCodeSearch,
 		onRowFocus,
-		onAssistanceStoneArrivalChange,
 		disabled = false,
 	} = props;
 
+		const safeOnAssistanceStoneArrivalChange = (_id: string, _value: string) => {
+		if (
+			"onAssistanceStoneArrivalChange" in props &&
+			props.onAssistanceStoneArrivalChange
+		) {
+			props.onAssistanceStoneArrivalChange(_id, _value);
+		}
+	};
+	
 	const canEditSerial = (row: SaleCreateRow): boolean => {
 		// 구분이 판매이고 시리얼에 값이 있는 경우 변경 불가능
 		if (isSaleStatus(row.status) && row.flowCode) {
@@ -49,6 +58,8 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 			props.onStoneInfoOpen(rowId);
 		}
 	};
+
+	console.log("Rendering SaleTable with rows:", rows.map(row => row.flowCode));
 
 	return (
 		<div className="sale-table-container">
@@ -255,7 +266,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										onChange={(e) => {
 											if (disabled) return;
 											const selectedStone = assistantStones.find(
-												(s) => s.assistantStoneId === e.target.value
+												(s) => s.assistantStoneId === Number(e.target.value)
 											);
 											onRowUpdate(row.id, "assistantStoneId", e.target.value);
 											onRowUpdate(
@@ -264,11 +275,9 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												selectedStone?.assistantStoneName || ""
 											);
 										}}
-										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										disabled={loading || disabled }
 										style={{
-											backgroundColor: !canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
+											backgroundColor: "white",
 										}}
 									>
 										<option value="">선택</option>
@@ -285,16 +294,14 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								{/* 보조석 - 입고여부 */}
 								<td className="drop-down-cell-small">
 									<select
-										value={row.hasAssistantStone ? "Y" : "N"}
+										value={row.assistantStone ? "Y" : "N"}
 										onChange={(e) => {
 											if (disabled) return;
-											onAssistanceStoneArrivalChange(row.id, e.target.value);
+											safeOnAssistanceStoneArrivalChange(row.id, e.target.value);
 										}}
-										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										disabled={loading || disabled }
 										style={{
-											backgroundColor: !canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
+											backgroundColor: "white",
 										}}
 									>
 										<option value="N">N</option>
@@ -305,25 +312,24 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								<td className="date-cell">
 									<input
 										type="date"
-										value={row.assistantStoneArrivalDate || ""}
+										value={row.assistantStoneCreateAt || ""}
 										onChange={(e) => {
 											if (disabled) return;
 											onRowUpdate(
 												row.id,
-												"assistantStoneArrivalDate",
+												"assistantStoneCreateAt",
 												e.target.value
 											);
 										}}
 										disabled={
 											loading ||
-											row.hasAssistantStone === false ||
-											disabled ||
-											!canEditForSaleOnly(row)
+											row.assistantStone === false ||
+											disabled
 										}
 										readOnly
 										style={{
 											backgroundColor:
-												row.hasAssistantStone === false ||
+												row.assistantStone === false ||
 												disabled ||
 												!canEditForSaleOnly(row)
 													? "#f5f5f5"
@@ -373,12 +379,10 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "productSize", e.target.value)
 										}
-										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										disabled={loading || disabled }
 										placeholder="사이즈"
 										style={{
-											backgroundColor: !canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
+											backgroundColor: "white"
 										}}
 									/>
 								</td>
@@ -448,9 +452,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								<td className="stone-weight-cell">
 									<input
 										type="text"
-										value={
-											row.pureGoldWeight
-										}
+										value={row.pureGoldWeight}
 										readOnly
 										disabled
 										style={{ backgroundColor: "#f5f5f5" }}
@@ -479,12 +481,10 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												Number(value)
 											);
 										}}
-										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										disabled={loading || disabled }
 										placeholder="0"
 										style={{
-											backgroundColor: !canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
+											backgroundColor: "white"
 										}}
 									/>
 								</td>
@@ -508,12 +508,21 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												const value = e.target.value.replace(/,/g, "");
 												onRowUpdate(row.id, "assistanceStonePrice", value);
 											}}
-											disabled={loading}
-											style={{ backgroundColor: "#f5f5f5" }}
+											readOnly
+											disabled={loading || disabled}
+											style={{
+											backgroundColor: !canEditForSaleOnly(row)
+												? "#f5f5f5"
+												: "white",
+										}}
 										/>
 										<span
 											className="search-icon"
 											onClick={() => safeOnStoneInfoOpen?.(row.id)}
+											style={{
+												opacity: loading || disabled ? 0.5 : 1,
+												cursor: loading || disabled ? "not-allowed" : "pointer",
+											}}
 										>
 											🔍
 										</span>
@@ -526,18 +535,12 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										value={row.stoneAddLaborCost?.toLocaleString() || "0"}
 										onChange={(e) => {
 											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(
-												row.id,
-												"stoneAddLaborCost",
-												Number(value)
-											);
+											onRowUpdate(row.id, "stoneAddLaborCost", Number(value));
 										}}
-										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										disabled={loading || disabled }
 										placeholder="0"
 										style={{
-											backgroundColor: !canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
+											backgroundColor: "white"
 										}}
 									/>
 								</td>

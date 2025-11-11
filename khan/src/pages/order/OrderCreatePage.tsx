@@ -14,6 +14,9 @@ import {
 	getLocalDate,
 	formatDateToString,
 } from "../../utils/dateUtils";
+import type { ColorDto } from "../../types/color";
+import type { MaterialDto } from "../../types/material";
+import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
 import type {
 	OrderRowData,
 	OrderCreateRequest,
@@ -55,18 +58,14 @@ const OrderCreatePage = () => {
 	const productModal = useSearchModal();
 
 	// 드롭다운 데이터
-	const [materials, setMaterials] = useState<
-		{ materialId: string; materialName: string }[]
-	>([]);
-	const [colors, setColors] = useState<
-		{ colorId: string; colorName: string }[]
-	>([]);
+	const [materials, setMaterials] = useState<MaterialDto[]>([]);
+	const [colors, setColors] = useState<ColorDto[]>([]);
 	const [priorities, setPriorities] = useState<
 		{ priorityName: string; priorityDate: number }[]
 	>([]);
-	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: string; assistantStoneName: string }[]
-	>([]);
+	const [assistantStones, setAssistantStones] = useState<AssistantStoneDto[]>(
+		[]
+	);
 
 	// 과거 주문 데이터 관련 state
 	const [pastOrdersCache, setPastOrdersCache] = useState<
@@ -789,34 +788,29 @@ const OrderCreatePage = () => {
 						priorityApi.getPriorities(),
 						assistantStoneApi.getAssistantStones(),
 					]);
-
-				let loadedMaterials: { materialId: string; materialName: string }[] =
-					[];
-				let loadedColors: { colorId: string; colorName: string }[] = [];
-				let loadedAssistantStones: {
-					assistantStoneId: string;
-					assistantStoneName: string;
-				}[] = [];
-
 				if (materialRes.success) {
-					loadedMaterials = (materialRes.data || []).map((m) => ({
+					const loadedMaterials = (materialRes.data || []).map((m) => ({
 						materialId: m.materialId?.toString() || "",
 						materialName: m.materialName,
+						materialGoldPurityPercent: m.materialGoldPurityPercent || "",
 					}));
 					setMaterials(loadedMaterials);
 				}
 				if (colorRes.success) {
-					loadedColors = (colorRes.data || []).map((c) => ({
-						colorId: c.colorId?.toString() || "",
+					const loadedColors = (colorRes.data || []).map((c) => ({
+						colorId: c.colorId || "",
 						colorName: c.colorName,
+						colorNote: c.colorNote || "",
 					}));
 					setColors(loadedColors);
 				}
 				if (assistantStoneRes.success) {
-					loadedAssistantStones = (assistantStoneRes.data || []).map((a) => ({
-						assistantStoneId: a.assistantStoneId.toString(),
-						assistantStoneName: a.assistantStoneName,
-					}));
+					const loadedAssistantStones = (assistantStoneRes.data || []).map(
+						(a) => ({
+							assistantStoneId: a.assistantStoneId,
+							assistantStoneName: a.assistantStoneName,
+						})
+					);
 					setAssistantStones(loadedAssistantStones);
 				}
 
@@ -910,12 +904,12 @@ const OrderCreatePage = () => {
 	// 주문 제출
 	const handleSubmit = async () => {
 		const validRows = orderRows.filter(
-			(row) => row.storeId && row.productId && row.materialId
+			(row) => row.storeId && row.productId && row.materialId && row.colorId
 		);
 
 		if (validRows.length === 0) {
 			alert(
-				"주문할 상품을 추가해주세요. (거래처, 모델번호, 재질은 필수입니다)"
+				"주문할 상품을 추가해주세요. (거래처, 모델번호, 재질, 색상은 필수입니다)"
 			);
 			return;
 		}

@@ -16,16 +16,16 @@ export const SalePage = () => {
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [sales, setSales] = useState<SaleRow[]>([]);
-	const [selected, setSelected] = useState<number[]>([]);
+	const [selected, setSelected] = useState<string[]>([]);
 	const saleCreatePopup = useRef<Window | null>(null);
 	const { handleError } = useErrorHandler();
 
-	const saleDetailPopups = useRef<Map<number, Window>>(new Map());
+	const saleDetailPopups = useRef<Map<string, Window>>(new Map());
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SaleSearchFilters>({
 		search: "",
-		start: "2025-01-01",
+		start: getLocalDate(),
 		end: getLocalDate(),
 		type: "",
 	});
@@ -46,7 +46,7 @@ export const SalePage = () => {
 	const prevEnd = () => searchFilters.end;
 
 	// 체크박스 선택 핸들러
-	const handleSelect = (saleCode: number, checked: boolean) => {
+	const handleSelect = (saleCode: string, checked: boolean) => {
 		if (checked) {
 			setSelected((prev) => [...prev, saleCode]);
 		} else {
@@ -55,10 +55,10 @@ export const SalePage = () => {
 	};
 
 	// No 클릭 시 상세보기 페이지 열기 (읽기 전용)
-	const handleSaleNoClick = (flowCode: number) => {
-		const url = `/stocks/detail/${flowCode}`;
+	const handleSaleNoClick = (flowCode: string, orderStatus: string) => {
+		const url = `/sales/detail/${orderStatus}/${flowCode}`;
 		const NAME = `sale_detail_${flowCode}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=350";
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=500";
 		const existingPopup = saleDetailPopups.current.get(flowCode);
 
 		if (existingPopup && !existingPopup.closed) {
@@ -114,7 +114,7 @@ export const SalePage = () => {
 	const handleReset = () => {
 		const resetFilters: SaleSearchFilters = {
 			search: "",
-			start: "2025-01-01",
+			start: getLocalDate(),
 			end: getLocalDate(),
 			type: "",
 		};
@@ -154,6 +154,8 @@ export const SalePage = () => {
 				if (response.success && response.data) {
 					const pageData = response.data.page || {};
 					const content = response.data.content || [];
+
+					console.log("판매 데이터:", response.data);
 
 					setSales(content || []);
 					setCurrentPage(page);

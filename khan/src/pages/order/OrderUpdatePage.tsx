@@ -13,6 +13,9 @@ import {
 	getLocalDate,
 	formatToLocalDate,
 } from "../../utils/dateUtils";
+import type { MaterialDto } from "../../types/material";
+import type { ColorDto } from "../../types/color";
+import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
 import type {
 	OrderRowData,
 	OrderResponseDetail,
@@ -114,18 +117,14 @@ const OrderUpdatePage: React.FC = () => {
 	const [storeGrade, setStoreGrade] = useState<string>("");
 
 	// 드롭다운 데이터
-	const [materials, setMaterials] = useState<
-		{ materialId: string; materialName: string }[]
-	>([]);
-	const [colors, setColors] = useState<
-		{ colorId: string; colorName: string }[]
-	>([]);
+	const [materials, setMaterials] = useState<MaterialDto[]>([]);
+	const [colors, setColors] = useState<ColorDto[]>([]);
 	const [priorities, setPriorities] = useState<
 		{ priorityName: string; priorityDate: number }[]
 	>([]);
-	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: string; assistantStoneName: string }[]
-	>([]);
+	const [assistantStones, setAssistantStones] = useState<AssistantStoneDto[]>(
+		[]
+	);
 
 	const orderStatus = MODE_TO_STATUS[mode as UpdateMode];
 	const currentDate = getLocalDate();
@@ -135,10 +134,7 @@ const OrderUpdatePage: React.FC = () => {
 		storeGrade: string,
 
 		priorities: { priorityName: string; priorityDate: number }[],
-		assistantStonesParam: {
-			assistantStoneId: string;
-			assistantStoneName: string;
-		}[]
+		assistantStonesParam: AssistantStoneDto[]
 	): OrderRowData => {
 		const calculatedStoneData = calculateStoneDetails(detail.stoneInfos);
 
@@ -506,8 +502,7 @@ const OrderUpdatePage: React.FC = () => {
 			);
 			setOrderRows([rowData]);
 		}
-	}, [orderDetail, priorities, storeGrade]); // eslint-disable-line react-hooks/exhaustive-deps
-
+	}, [orderDetail, priorities, storeGrade, assistantStones]); // eslint-disable-line react-hooks/exhaustive-deps
 	// 검색 결과 선택 핸들러들 (팝업용)
 	const handleStoreSelectWithRowId = (store: StoreSearchDto, rowId: string) => {
 		if (store.storeId === undefined || store.storeId === null) {
@@ -668,27 +663,24 @@ const OrderUpdatePage: React.FC = () => {
 				]);
 
 				// 드롭다운 데이터 설정
-				let materialsData: { materialId: string; materialName: string }[] = [];
-				let colorsData: { colorId: string; colorName: string }[] = [];
 				let prioritiesData: { priorityName: string; priorityDate: number }[] =
 					[];
-				let assistantStonesData: {
-					assistantStoneId: string;
-					assistantStoneName: string;
-				}[] = [];
+				let assistantStonesData: AssistantStoneDto[] = [];
 
 				if (materialRes.success) {
-					materialsData = (materialRes.data || []).map((m) => ({
+					const materialsData = (materialRes.data || []).map((m) => ({
 						materialId: m.materialId?.toString() || "",
 						materialName: m.materialName,
+						materialGoldPurityPercent: m.materialGoldPurityPercent || "",
 					}));
 					setMaterials(materialsData);
 				}
 
 				if (colorRes.success) {
-					colorsData = (colorRes.data || []).map((c) => ({
+					const colorsData = (colorRes.data || []).map((c) => ({
 						colorId: c.colorId?.toString() || "",
 						colorName: c.colorName,
+						colorNote: c.colorNote || "",
 					}));
 					setColors(colorsData);
 				}
@@ -703,7 +695,7 @@ const OrderUpdatePage: React.FC = () => {
 
 				if (assistantStoneRes.success) {
 					assistantStonesData = (assistantStoneRes.data || []).map((a) => ({
-						assistantStoneId: a.assistantStoneId.toString(),
+						assistantStoneId: a.assistantStoneId,
 						assistantStoneName: a.assistantStoneName,
 					}));
 					setAssistantStones(assistantStonesData);
@@ -729,16 +721,6 @@ const OrderUpdatePage: React.FC = () => {
 						assistantStonesData
 					);
 					setOrderRows([rowData]);
-				}
-
-				if (assistantStoneRes.success) {
-					const assistantStonesData = (assistantStoneRes.data || []).map(
-						(a) => ({
-							assistantStoneId: a.assistantStoneId.toString(),
-							assistantStoneName: a.assistantStoneName,
-						})
-					);
-					setAssistantStones(assistantStonesData);
 				}
 			} catch (err) {
 				handleError(err, setError);

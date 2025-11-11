@@ -157,8 +157,6 @@ export interface StockSaleRequest {
 	isProductWeightSale: boolean;
 	addProductLaborCost: number;
 	stoneAddLaborCost: number;
-	productPurchaseCost: number;
-	stonePurchaseCost: number;
 	mainStoneNote: string;
 	assistanceStoneNote: string;
 	stockNote: string;

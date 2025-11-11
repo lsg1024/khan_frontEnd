@@ -1,36 +1,6 @@
 import type { PageInfo } from "./page";
 import type { StoneInfo } from "./stone";
 
-export interface SaleSearchResponse {
-	content: SaleRow[];
-	page: PageInfo;
-}
-
-export interface SaleRow {
-	createAt: string;
-	createBy: string;
-	saleType: string;
-	storeName: string;
-	saleCode: number;
-	flowCode: number;
-	productName: string;
-	materialName: string | null;
-	colorName: string | null;
-	note: string | null;
-	assistantStone: boolean;
-	assistantName: string | null;
-	totalWeight: number;
-	goldWeight: number;
-	totalProductLaborCost: number;
-	mainStoneLaborCost: number;
-	assistanceStoneLaborCost: number;
-	stoneAddLaborCost: number;
-	mainStoneQuantity: number;
-	assistanceStoneQuantity: number;
-}
-
-// 판매 생성 페이지 관련 타입
-
 // 구분 타입 정의
 export type SaleStatusType = "판매" | "결제" | "DC" | "WG" | "결통" | "반품";
 
@@ -49,6 +19,61 @@ export const isOtherStatus = (status: SaleStatusType): boolean => {
 	return ["결제", "DC", "WG", "결통", "반품"].includes(status);
 };
 
+export interface SaleSearchResponse {
+	content: SaleRow[];
+	page: PageInfo;
+}
+
+export interface SaleRow {
+	createAt: string;
+	createBy: string;
+	saleType: string;
+	storeName: string;
+	saleCode: string; // 큰 정수값을 문자열로 처리
+	flowCode: string; // 큰 정수값을 문자열로 처리
+	productName: string;
+	materialName: string | null;
+	colorName: string | null;
+	note: string | null;
+	assistantStone: boolean;
+	assistantName: string | null;
+	totalWeight: number;
+	goldWeight: number;
+	totalProductLaborCost: number;
+	mainStoneLaborCost: number;
+	assistanceStoneLaborCost: number;
+	stoneAddLaborCost: number;
+	mainStoneQuantity: number;
+	assistanceStoneQuantity: number;
+}
+
+// 상세 조회
+export interface SaleDetailResponse {
+	flowCode: string;
+	createAt: string;
+	saleType: string;
+	name: string;
+	grade: string;
+	harry: number;
+	productName: string;
+	productSize: string;
+	materialName: string;
+	colorName: string;
+	mainStoneNote: string;
+	assistanceStoneNote: string;
+	note: string;
+	goldWeight: number;
+	stoneWeight: number;
+	productLaborCost: number;
+	productAddLaborCost: number;
+	addStoneLaborCost: number;
+	assistantStone: boolean | false;
+	assistantStoneId: string | "";
+	assistantStoneName: string | "";
+	assistantStoneCreateAt: string | "";
+	stoneInfos: StoneInfo[];
+}
+
 export interface SaleCreateRow {
 	id: string;
 	status: SaleStatusType; // 구분
@@ -60,11 +85,10 @@ export interface SaleCreateRow {
 	materialName: string; // 재질
 	colorId: string; // 색상 ID
 	colorName: string; // 색상
-	hasStone: boolean; // 스톤 여부
-	assistantStoneId: string; // 보조석 ID
-	assistantStoneName: string; // 보조석 이름
-	hasAssistantStone: boolean; // 보조석 여부
-	assistantStoneArrivalDate: string; // 보조석 입고날짜
+	assistantStoneId: string;
+	assistantStone: boolean; // 입고여부 (Y/N)
+	assistantStoneName: string; // 보조석 아이디 (없음, 랩, 천연, 모이사, 유색석)
+	assistantStoneCreateAt: string; // 입고날짜
 	mainStoneNote: string; // 메인 스톤 비고
 	assistanceStoneNote: string; // 보조 스톤 비고
 	productSize: string; // 사이즈
@@ -86,6 +110,26 @@ export interface SaleCreateRow {
 	stoneInfos: StoneInfo[];
 }
 
+export interface SaleUpdateRequest {
+	productSize?: string;
+	isProductWeightSale: boolean;
+	productPurchaseCost?: number;
+	productLaborCost?: number;
+	productAddLaborCost?: number;
+	stockNote?: string;
+	storeHarry?: string;
+	goldWeight?: string;
+	stoneWeight?: string;
+	mainStoneNote?: string;
+	assistanceStoneNote?: string;
+	assistantStone: boolean;
+	assistantStoneId?: string;
+	assistantStoneName?: string;
+	assistantStoneCreateAt?: string;
+	stoneInfos?: StoneInfo[]; 
+	stoneAddLaborCost?: number;
+}
+
 export interface SaleOptionData {
 	storeName: string; // 매장
 	storeId: string;
@@ -98,8 +142,6 @@ export interface SaleOptionData {
 }
 
 export interface GoldHistoryData {
-	goldBalance: number; // 순금
-	moneyBalance: number; // 금액
 	salesGoldBalance: number; // 판매 순금
 	salesMoneyBalance: number; // 판매 금액
 	returnsGoldBalance: number; // 반품 순금

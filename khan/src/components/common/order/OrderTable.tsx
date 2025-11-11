@@ -1,15 +1,18 @@
 import React from "react";
 import { addBusinessDays, formatDateToString } from "../../../utils/dateUtils";
 import type { OrderRowData } from "../../../types/order";
+import type { ColorDto } from "../../../types/color";
+import type { MaterialDto } from "../../../types/material";
+import type { AssistantStoneDto } from "../../../types/AssistantStoneDto";
 
 // 공통 Props
 interface BaseOrderTableProps {
 	orderRows: OrderRowData[];
 	loading: boolean;
-	materials: { materialId: string; materialName: string }[];
-	colors: { colorId: string; colorName: string }[];
+	materials: MaterialDto[];
+	colors: ColorDto[];
 	priorities: { priorityName: string; priorityDate: number }[];
-	assistantStones: { assistantStoneId: string; assistantStoneName: string }[];
+	assistantStones: AssistantStoneDto[];
 	onRowUpdate: (id: string, field: keyof OrderRowData, value: unknown) => void;
 	onStoneInfoOpen?: (rowId: string) => void; // 스톤 정보 관리 함수 추가
 }
@@ -530,7 +533,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 												return;
 											}
 											const selectedAssistantStone = assistantStones.find(
-												(a) => a.assistantStoneId === e.target.value
+												(a) => a.assistantStoneId === Number(e.target.value)
 											);
 											onRowUpdate(
 												row.id,

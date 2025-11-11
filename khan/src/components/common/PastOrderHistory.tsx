@@ -67,9 +67,8 @@ const PastOrderHistory: React.FC<PastOrderHistoryProps> = ({
 							const totalFee = pastOrder
 								? pastOrder.productLaborCost +
 								  pastOrder.productAddLaborCost +
-								  pastOrder.mainStoneLaborCost * pastOrder.mainStoneQuantity +
-								  pastOrder.assistanceStoneLaborCost *
-										pastOrder.assistanceStoneQuantity +
+								  pastOrder.mainStoneLaborCost +
+								  pastOrder.assistanceStoneLaborCost +
 								  pastOrder.addStoneLaborCost
 								: 0;
 

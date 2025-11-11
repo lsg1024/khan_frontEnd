@@ -5,9 +5,9 @@ interface SaleListProps {
 	sales: SaleRow[];
 	currentPage: number;
 	loading: boolean;
-	selected: number[];
-	onSelect: (saleCode: number, checked: boolean) => void;
-	onNoClick?: (flowCode: number) => void;
+	selected: string[];
+	onSelect: (saleCode: string, checked: boolean) => void;
+	onNoClick?: (flowCode: string, orderStatus: string) => void;
 }
 
 export const SaleList = ({
@@ -127,7 +127,7 @@ export const SaleList = ({
 									className="sale-no-btn"
 									onClick={(e) => {
 										e.stopPropagation();
-										onNoClick?.(sale.flowCode);
+										onNoClick?.(sale.flowCode, sale.saleType);
 									}}
 								>
 									{rowNumber}

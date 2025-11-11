@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { stockApi } from "../../../libs/api/stock";
-import { saleApi } from "../../../libs/api/sale";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
 import { assistantStoneApi } from "../../../libs/api/assistantStone";
@@ -12,7 +11,7 @@ import { getLocalDate } from "../../utils/dateUtils";
 import type {
 	StockOrderRows,
 	StockRegisterRequest,
-	ResponseDetail
+	ResponseDetail,
 } from "../../types/stock";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
@@ -88,7 +87,7 @@ const convertToStockOrderRowData = (
 		classificationId: "",
 		classificationName: "",
 		setTypeId: "",
-		setTypeName: ""
+		setTypeName: "",
 	};
 
 	return stockRow;
@@ -453,15 +452,9 @@ const StockRegisterPage: React.FC = () => {
 			return;
 		}
 
-		// type 파라미터에 따라 메시지와 API 호출 구분
-		const typeParam = searchParams.get("type");
-		const isStockRegister = typeParam === "STOCK";
-		const actionText = isStockRegister ? "재고 등록" : "판매 등록";
-		const apiStatus = isStockRegister ? "STOCK" : "SALES";
-
 		if (
 			!window.confirm(
-				`총 ${stockRows.length}개의 주문을 일괄 ${actionText}하시겠습니까?`
+				`총 ${stockRows.length}개의 주문을 일괄 재고 등록하시겠습니까?`
 			)
 		) {
 			return;
@@ -488,7 +481,6 @@ const StockRegisterPage: React.FC = () => {
 					orderNote: row.orderNote || "",
 					mainStoneNote: row.mainStoneNote || "",
 					assistanceStoneNote: row.assistanceStoneNote || "",
-					// 보조석 관련 필드
 					assistantStoneId: row.assistantStoneId || "1",
 					assistantStone: row.assistantStone || false,
 					assistantStoneName: row.assistantStoneName || "",
@@ -497,38 +489,27 @@ const StockRegisterPage: React.FC = () => {
 					stoneAddLaborCost: row.stoneAddLaborCost || 0,
 				};
 
-				// type에 따라 다른 API 호출
-				if (isStockRegister) {
-					return stockApi.updateStockRegister(row.id, apiStatus, stockDto);
-				} else {
-					// 판매 등록은 saleApi 사용
-					return saleApi.updateOrderToSale(row.id, apiStatus, stockDto);
-				}
+				return stockApi.updateStockRegister(row.id, "STOCK", stockDto);
 			});
 
 			await Promise.all(savePromises);
 
-			// 자식 창에서 alert 표시 (주문 생성과 동일한 방식)
 			alert(
-				`총 ${stockRows.length}개의 주문이 성공적으로 ${actionText}되었습니다.`
+				`총 ${stockRows.length}개의 주문이 성공적으로 재고 등록되었습니다.`
 			);
 
 			// 부모 창으로 메시지 전송 (새로고침용)
 			if (window.opener) {
-				const messageType = isStockRegister
-					? "STOCK_REGISTERED"
-					: "SALES_REGISTERED";
 				window.opener.postMessage(
-					{ type: messageType },
+					{ type: "STOCK_REGISTERED" },
 					window.location.origin
 				);
 			}
 
-			// alert 확인 후 창 닫기
 			window.close();
 		} catch (err) {
 			handleError(err, setError);
-			alert(`일괄 ${actionText}에 실패했습니다.`);
+			alert("일괄 재고 등록에 실패했습니다.");
 		} finally {
 			setLoading(false);
 		}
@@ -555,16 +536,10 @@ const StockRegisterPage: React.FC = () => {
 		}
 	};
 
-	// type에 따른 제목과 버튼 텍스트 결정
-	const typeParam = searchParams.get("type");
-	const isStockRegister = typeParam === "STOCK";
-	const pageTitle = isStockRegister ? "일괄 재고 등록" : "일괄 판매 등록";
-	const buttonText = isStockRegister ? "재고 등록" : "판매 등록";
-
 	return (
 		<div className="order-update-page">
 			<div className="page-header">
-				<h3>{pageTitle}</h3>
+				<h3>일괄 재고 등록</h3>
 				<p>총 {stockRows.length}개의 주문을 등록합니다.</p>
 			</div>
 			<div className="bulk-order-item">
@@ -584,7 +559,6 @@ const StockRegisterPage: React.FC = () => {
 					onFactorySearchOpen={openFactorySearch}
 				/>
 			</div>
-
 			{/* 저장/취소 버튼 */}
 			<div className="detail-button-group">
 				<button
@@ -595,10 +569,9 @@ const StockRegisterPage: React.FC = () => {
 					취소
 				</button>
 				<button className="btn-submit" onClick={handleSave} disabled={loading}>
-					{loading ? "저장 중..." : `전체 ${stockRows.length}개 ${buttonText}`}
+					{loading ? "저장 중..." : `전체 ${stockRows.length}개 재고 등록`}
 				</button>
-			</div>
-
+			</div>{" "}
 			{/* 검색 컴포넌트들 - 팝업 방식 */}
 			{isStoreSearchOpen && (
 				<StoreSearch
@@ -606,14 +579,12 @@ const StockRegisterPage: React.FC = () => {
 					onClose={handleStoreSearchClose}
 				/>
 			)}
-
 			{isFactoryModalOpen && (
 				<FactorySearch
 					onSelectFactory={handleFactorySelect}
 					onClose={handleFactorySearchClose}
 				/>
 			)}
-
 			{isProductSearchOpen && (
 				<ProductSearch
 					onSelectProduct={handleProductSelect}

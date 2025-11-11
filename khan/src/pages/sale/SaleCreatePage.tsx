@@ -9,7 +9,8 @@ import type {
 } from "../../types/sale";
 import type { StoreSearchDto } from "../../types/store";
 import type { PastOrderDto } from "../../types/order";
-import type { StockSaleRequest } from "../../types/stock";
+import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
+import type { StockSaleRequest, StockRegisterRequest } from "../../types/stock";
 import SaleOption from "../../components/common/sale/SaleOption";
 import AccountBalanceHistory from "../../components/common/sale/AccountBalanceHistory";
 import SaleTable from "../../components/common/sale/SaleTable";
@@ -31,7 +32,7 @@ export const SaleCreatePage = () => {
 	const [error, setError] = useState<string>("");
 	const [showStoreSearch, setShowStoreSearch] = useState<boolean>(false);
 	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: string; assistantStoneName: string }[]
+		AssistantStoneDto[]
 	>([]);
 	const [materials, setMaterials] = useState<
 		{ materialId: string; materialName: string }[]
@@ -65,8 +66,6 @@ export const SaleCreatePage = () => {
 	// 금 거래 내역 상태
 	const [accountBalanceHistoryData, setAccountBalanceHistory] =
 		useState<GoldHistoryData>({
-			goldBalance: 0,
-			moneyBalance: 0,
 			previousGoldBalance: 0,
 			previousMoneyBalance: 0,
 			salesGoldBalance: 0,
@@ -94,12 +93,11 @@ export const SaleCreatePage = () => {
 			materialName: "",
 			colorId: "",
 			colorName: "",
-			hasStone: false,
 			assistantStoneId: "",
 			assistantStoneName: "",
-			hasAssistantStone: false,
-			assistantStoneArrivalDate: "",
-			mainStoneNote: "",
+			assistantStone: false,
+			assistantStoneCreateAt: "",
+			mainStoneNote:"",
 			assistanceStoneNote: "",
 			productSize: "",
 			note: "",
@@ -255,10 +253,11 @@ export const SaleCreatePage = () => {
 					const goldWeight = totalWeight - stoneWeight;
 
 					updatedRow.goldWeight = parseFloat(goldWeight.toFixed(3));
-					updatedRow.pureGoldWeight = calculatePureGoldWeight(
-						goldWeight,
-						row.materialName
-					);
+					// 금중량이 0보다 클 때만 순금 중량 계산
+					updatedRow.pureGoldWeight =
+						goldWeight > 0
+							? calculatePureGoldWeight(goldWeight, row.materialName)
+							: 0;
 				}
 
 				// stoneWeight가 변경되면 goldWeight 재계산
@@ -268,10 +267,11 @@ export const SaleCreatePage = () => {
 					const goldWeight = totalWeight - stoneWeight;
 
 					updatedRow.goldWeight = goldWeight;
-					updatedRow.pureGoldWeight = calculatePureGoldWeight(
-						goldWeight,
-						row.materialName
-					);
+					// 금중량이 0보다 클 때만 순금 중량 계산
+					updatedRow.pureGoldWeight =
+						goldWeight > 0
+							? calculatePureGoldWeight(goldWeight, row.materialName)
+							: 0;
 				}
 
 				// goldWeight 또는 materialName이 변경되면 순금 중량 재계산
@@ -283,13 +283,12 @@ export const SaleCreatePage = () => {
 					const materialName =
 						field === "materialName" ? String(value) : row.materialName;
 
-					updatedRow.pureGoldWeight = calculatePureGoldWeight(
-						goldWeight,
-						materialName
-					);
-				}
-
-				// storeId, productId, materialName 중 하나가 변경되면 과거 거래내역 조회
+					// 금중량이 0보다 클 때만 순금 중량 계산
+					updatedRow.pureGoldWeight =
+						goldWeight > 0
+							? calculatePureGoldWeight(goldWeight, materialName)
+							: 0;
+				} // storeId, productId, materialName 중 하나가 변경되면 과거 거래내역 조회
 				if (
 					field === "storeId" ||
 					field === "productId" ||
@@ -395,44 +394,68 @@ export const SaleCreatePage = () => {
 			// 각 행을 개별적으로 API 호출
 			const results = await Promise.all(
 				validRows.map(async (row) => {
-					const productPurchaseCost = row.productPrice;
-
-					const stonePurchaseCost = (row.stoneInfos || []).reduce(
-						(total, stone) => {
-							if (stone.includeStone) {
-								return (
-									total + (stone.purchaseCost || 0) * (stone.quantity || 0)
-								);
-							}
-							return total;
-						},
-						0
-					);
-
-					const stockSaleData: StockSaleRequest = {
-						productSize: row.productSize,
-						isProductWeightSale: false,
-						addProductLaborCost: row.additionalProductPrice,
-						stoneAddLaborCost: row.stoneAddLaborCost,
-						productPurchaseCost: productPurchaseCost,
-						stonePurchaseCost: stonePurchaseCost,
-						mainStoneNote: row.mainStoneNote,
-						assistanceStoneNote: row.assistanceStoneNote,
-						stockNote: row.note,
-						assistantStone: row.hasAssistantStone,
-						assistantStoneId: row.assistantStoneId,
-						assistantStoneCreateAt: row.assistantStoneArrivalDate || "",
-						goldWeight: row.goldWeight.toString(),
-						stoneWeight: row.stoneWeight.toString(),
-						stoneInfos: row.stoneInfos,
-					};
+					const source = searchParams.get("source");
 
 					try {
-						// 개별 API 호출 (flowCode는 문자열로 전달)
-						const response = await saleApi.updateStockToSale(
-							row.flowCode,
-							stockSaleData
-						);
+						let response;
+
+						if (source === "order") {
+							// 주문에서 판매 등록 - StockRegisterRequest 타입 사용
+							const orderSaleData: StockRegisterRequest = {
+								createAt: saleOptions.tradeDate,
+								flowCode: row.flowCode,
+								materialId: row.materialId,
+								materialName: row.materialName,
+								colorId: row.colorId,
+								colorName: row.colorName,
+								productSize: row.productSize,
+								isProductWeightSale: false,
+								productPurchaseCost: 0,
+								productLaborCost: row.productPrice,
+								productAddLaborCost: row.additionalProductPrice,
+								storeHarry: saleOptions.appliedHarry,
+								goldWeight: row.goldWeight.toString(),
+								stoneWeight: row.stoneWeight.toString(),
+								orderNote: row.note,
+								mainStoneNote: row.mainStoneNote,
+								assistanceStoneNote: row.assistanceStoneNote,
+								assistantStoneId: row.assistantStoneId || "1",
+								assistantStone: row.assistantStone,
+								assistantStoneName: row.assistantStoneName,
+								assistantStoneCreateAt: row.assistantStoneCreateAt || "",
+								stoneInfos: row.stoneInfos || [],
+								stoneAddLaborCost: row.stoneAddLaborCost || 0,
+							};
+
+							response = await saleApi.updateOrderToSale(
+								row.flowCode,
+								"SALES",
+								orderSaleData
+							);
+						} else {
+							// 재고에서 판매 등록 - StockSaleRequest 타입 사용
+							const stockSaleData: StockSaleRequest = {
+								productSize: row.productSize,
+								isProductWeightSale: false,
+								addProductLaborCost: row.additionalProductPrice,
+								stoneAddLaborCost: row.stoneAddLaborCost,
+								mainStoneNote: row.mainStoneNote,
+								assistanceStoneNote: row.assistanceStoneNote,
+								stockNote: row.note,
+								assistantStone: row.assistantStone,
+								assistantStoneId: row.assistantStoneId,
+								assistantStoneCreateAt: row.assistantStoneCreateAt || "",
+								goldWeight: row.goldWeight.toString(),
+								stoneWeight: row.stoneWeight.toString(),
+								stoneInfos: row.stoneInfos,
+							};
+
+							response = await saleApi.updateStockToSale(
+								row.flowCode,
+								stockSaleData
+							);
+						}
+
 						return { success: response.success, flowCode: row.flowCode };
 					} catch (error) {
 						console.error(`판매 등록 실패 (${row.flowCode}):`, error);
@@ -552,14 +575,10 @@ export const SaleCreatePage = () => {
 		const loadAssistantStones = async () => {
 			try {
 				const assistantStoneRes = await assistantStoneApi.getAssistantStones();
-				let loadedAssistantStones: {
-					assistantStoneId: string;
-					assistantStoneName: string;
-				}[] = [];
-
+				
 				if (assistantStoneRes.success) {
-					loadedAssistantStones = (assistantStoneRes.data || []).map((a) => ({
-						assistantStoneId: a.assistantStoneId.toString(),
+					const loadedAssistantStones = (assistantStoneRes.data || []).map((a) => ({
+						assistantStoneId: a.assistantStoneId,
 						assistantStoneName: a.assistantStoneName,
 					}));
 					setAssistantStones(loadedAssistantStones);
@@ -622,11 +641,10 @@ export const SaleCreatePage = () => {
 						const stoneWeight = parseFloat(stock.stoneWeight) || 0;
 						const totalWeight = goldWeight + stoneWeight;
 
-						// 순금 중량 계산
-						const pureGoldWeight = calculatePureGoldWeight(
-							goldWeight,
-							stock.materialName || ""
-						);
+						const pureGoldWeight =
+							goldWeight > 0
+								? calculatePureGoldWeight(goldWeight, stock.materialName || "")
+								: 0;
 
 						return {
 							id: String(index + 1),
@@ -639,11 +657,10 @@ export const SaleCreatePage = () => {
 							materialName: stock.materialName || "",
 							colorId: stock.colorId?.toString() || "",
 							colorName: stock.colorName || "",
-							hasStone: (stock.stoneInfos || []).length > 0,
 							assistantStoneId: stock.assistantStoneId?.toString() || "",
 							assistantStoneName: stock.assistantStoneName || "",
-							hasAssistantStone: stock.assistantStone || false,
-							assistantStoneArrivalDate:
+							assistantStone: stock.assistantStone || false,
+							assistantStoneCreateAt:
 								stock.assistantStoneCreateAt &&
 								stock.assistantStoneCreateAt !== "null"
 									? stock.assistantStoneCreateAt
@@ -707,11 +724,11 @@ export const SaleCreatePage = () => {
 						const stoneWeight = parseFloat(stock.stoneWeight) || 0;
 						const totalWeight = goldWeight + stoneWeight;
 
-						// 순금 중량 계산
-						const pureGoldWeight = calculatePureGoldWeight(
-							goldWeight,
-							stock.materialName || ""
-						);
+						// 순금 중량 계산 (금중량이 0보다 클 때만)
+						const pureGoldWeight =
+							goldWeight > 0
+								? calculatePureGoldWeight(goldWeight, stock.materialName || "")
+								: 0;
 
 						return {
 							id: String(index + 1),
@@ -724,11 +741,10 @@ export const SaleCreatePage = () => {
 							materialName: stock.materialName || "",
 							colorId: stock.colorId?.toString() || "",
 							colorName: stock.colorName || "",
-							hasStone: (stock.stoneInfos || []).length > 0,
 							assistantStoneId: stock.assistantStoneId?.toString() || "",
 							assistantStoneName: stock.assistantStoneName || "",
-							hasAssistantStone: stock.assistantStone || false,
-							assistantStoneArrivalDate:
+							assistantStone: stock.assistantStone || false,
+							assistantStoneCreateAt:
 								stock.assistantStoneCreateAt &&
 								stock.assistantStoneCreateAt !== "null"
 									? stock.assistantStoneCreateAt
@@ -768,22 +784,6 @@ export const SaleCreatePage = () => {
 
 	// 판매 행 변경 시 금 거래 내역 자동 계산
 	useEffect(() => {
-		// 순금 중량 합계 계산
-		const totalPureGold = saleRows.reduce(
-			(acc, row) => acc + (row.pureGoldWeight || 0),
-			0
-		);
-
-		// 금액 합계 계산 (상품 단가 + 추가 단가 + 스톤 매입 단가)
-		const totalMoney = saleRows.reduce(
-			(acc, row) =>
-				acc +
-				row.productPrice +
-				row.additionalProductPrice +
-				row.stonePurchasePrice,
-			0
-		);
-
 		// 구분에 따라 판매, 반품, DC, 결제 값 계산
 		const salesTotalMoney = saleRows
 			.filter((row) => row.status === "판매")
@@ -792,7 +792,9 @@ export const SaleCreatePage = () => {
 					acc +
 					row.productPrice +
 					row.additionalProductPrice +
-					row.stonePurchasePrice,
+					row.mainStonePrice +
+					row.assistanceStonePrice +
+					row.stoneAddLaborCost,
 				0
 			);
 
@@ -833,8 +835,6 @@ export const SaleCreatePage = () => {
 
 		setAccountBalanceHistory((prev) => ({
 			...prev,
-			goldBalance: totalPureGold,
-			moneyBalance: totalMoney,
 			salesGoldBalance: salesTotalGold,
 			salesMoneyBalance: salesTotalMoney,
 			returnsGoldBalance: returnsTotalGold,

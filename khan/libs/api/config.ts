@@ -15,6 +15,28 @@ export const api = axios.create({
 	baseURL: getApiBaseUrl(),
 	withCredentials: true,
 	timeout: 15000,
+	transformResponse: [
+		(data) => {
+			if (typeof data === "string") {
+				try {
+					// 큰 정수 값을 문자열로 유지하기 위한 커스텀 JSON 파싱
+					// JavaScript의 Number.MAX_SAFE_INTEGER를 초과하는 정수를 문자열로 처리
+					// 정규식으로 JSON 문자열에서 큰 정수를 먼저 찾아서 문자열로 변환
+					const processedData = data.replace(
+						/"(saleCode|flowCode|id)":\s*(\d{16,})/g,
+						(_match, key, value) => {
+							// 16자리 이상의 숫자는 문자열로 변환
+							return `"${key}":"${value}"`;
+						}
+					);
+					return JSON.parse(processedData);
+				} catch {
+					return data;
+				}
+			}
+			return data;
+		},
+	],
 });
 
 let isRefreshing = false;

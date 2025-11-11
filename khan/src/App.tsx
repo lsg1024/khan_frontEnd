@@ -40,6 +40,7 @@ import ProductSearchPage from "./pages/search/ProductSearchPage";
 import AccountReceivablePage from "./pages/sale/AccountsReceivablePage";
 import SalePage from "./pages/sale/SalePage";
 import SaleCreatePage from "./pages/sale/SaleCreatePage";
+import SaleDetailPage from "./pages/sale/SaleDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 
@@ -119,6 +120,7 @@ function App() {
 						element={<StockCommonActionPage />}
 					/>
 					<Route path="/sales/create" element={<SaleCreatePage />} />
+					<Route path="/sales/detail/:orderStatus/:flowCode" element={<SaleDetailPage />} />
 
 					{/* Layout 안에서 렌더링 */}
 					<Route
@@ -153,7 +155,6 @@ function App() {
 						<Route path="/join" element={<Navigate to="/" replace />} />
 					</Route>
 
-					{/* catch-all 라우트는 가장 마지막에 */}
 					<Route path="*" element={<Navigate to="/" replace />} />
 				</Routes>
 			)}
