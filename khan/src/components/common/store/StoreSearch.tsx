@@ -1,15 +1,17 @@
 import React, { useEffect, useRef } from "react";
-import type { StoreSearchDto } from "../../../types/store";
+import type { StoreSearchDto, AccountInfoDto } from "../../../types/store";
 import "../../../styles/components/storeSearch.css";
 
 interface StoreSearchProps {
-	onSelectStore: (store: StoreSearchDto) => void;
+	onSelectStore: (store: StoreSearchDto | AccountInfoDto) => void;
 	onClose?: () => void;
+	useAttemptApi?: boolean; // 미수 금액 포함 API 사용 여부
 }
 
 const StoreSearch: React.FC<StoreSearchProps> = ({
 	onSelectStore,
 	onClose,
+	useAttemptApi = false,
 }) => {
 	// 함수들을 ref로 저장하여 리렌더링 시에도 동일한 참조 유지
 	const onSelectStoreRef = useRef(onSelectStore);
@@ -23,9 +25,12 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 
 	// 컴포넌트가 마운트되면 자동으로 팝업 열기
 	useEffect(() => {
-		// 팝업 창 열기
+		// 팝업 창 열기 (useAttemptApi 파라미터 전달)
+		const url = useAttemptApi
+			? "/store-search?useAttempt=true"
+			: "/store-search";
 		const popup = window.open(
-			"/store-search",
+			url,
 			"storeSearch",
 			"width=1000,height=450,scrollbars=yes,resizable=yes"
 		);
@@ -55,7 +60,7 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 			window.removeEventListener("message", handleMessage);
 			clearInterval(checkClosed);
 		};
-	}, []); // 빈 의존성 배열로 한 번만 실행
+	}, [useAttemptApi]); // useAttemptApi 의존성 추가
 
 	return null; // 실제 UI는 팝업에서 렌더링
 };

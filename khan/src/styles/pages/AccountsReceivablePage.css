@@ -1,0 +1,235 @@
+.accounts-receivable-page {
+	width: 100%;
+	height: 100%;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+.accounts-receivable-page .page-header {
+	margin-bottom: 20px;
+}
+
+.accounts-receivable-page .page-header h1 {
+	font-size: 24px;
+	font-weight: 600;
+	color: #333;
+	margin: 0;
+}
+
+/* 검색 섹션 */
+.accounts-receivable-page .search-section {
+	background: #f8f9fa;
+	padding: 15px;
+	border-radius: 4px;
+	margin-bottom: 15px;
+	border: 1px solid #dee2e6;
+}
+
+.accounts-receivable-page .search-input-group {
+	display: flex;
+	gap: 10px;
+	max-width: 600px;
+}
+
+.accounts-receivable-page .search-input {
+	flex: 1;
+	padding: 8px 12px;
+	border: 1px solid #ced4da;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.accounts-receivable-page .search-input:focus {
+	outline: none;
+	border-color: #80bdff;
+	box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.accounts-receivable-page .search-btn {
+	padding: 8px 20px;
+	background: #007bff;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	font-size: 14px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.accounts-receivable-page .search-btn:hover:not(:disabled) {
+	background: #0056b3;
+}
+
+.accounts-receivable-page .search-btn:disabled {
+	background: #6c757d;
+	cursor: not-allowed;
+}
+
+/* 컨텐츠 섹션 */
+.accounts-receivable-page .content-section {
+	background: white;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+}
+
+/* 상태 메시지 */
+.accounts-receivable-page .loading-state,
+.accounts-receivable-page .error-state,
+.accounts-receivable-page .empty-state {
+	padding: 40px 20px;
+	text-align: center;
+}
+
+.accounts-receivable-page .loading-state .spinner {
+	width: 40px;
+	height: 40px;
+	border: 4px solid #f3f4f6;
+	border-top-color: #007bff;
+	border-radius: 50%;
+	margin: 0 auto 15px;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.accounts-receivable-page .loading-state p,
+.accounts-receivable-page .empty-state p {
+	color: #6c757d;
+	font-size: 14px;
+	margin: 0;
+}
+
+.accounts-receivable-page .error-state p {
+	color: #dc3545;
+	font-size: 14px;
+	margin: 0;
+}
+
+/* 테이블 */
+.accounts-receivable-page .stores-table-container {
+	overflow-x: auto;
+	max-height: calc(100vh - 300px);
+	overflow-y: auto;
+}
+
+.accounts-receivable-page .stores-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+	background: white;
+}
+
+.accounts-receivable-page .stores-table thead {
+	background: #e9ecef;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+.accounts-receivable-page .stores-table th {
+	padding: 12px 8px;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	border: 1px solid #dee2e6;
+	white-space: nowrap;
+	background: #e9ecef;
+}
+
+.accounts-receivable-page .stores-table tbody tr {
+	border-bottom: 1px solid #dee2e6;
+}
+
+.accounts-receivable-page .stores-table tbody tr:hover {
+	background: #f8f9fa;
+}
+
+.accounts-receivable-page .stores-table td {
+	padding: 10px 8px;
+	color: #212529;
+	border: 1px solid #dee2e6;
+	text-align: center;
+}
+
+.accounts-receivable-page .stores-table .store-name {
+	font-weight: 500;
+	text-align: left;
+	padding-left: 12px;
+}
+
+.accounts-receivable-page .stores-table .gold-weight {
+	text-align: right;
+	font-weight: 500;
+	color: #fd7e14;
+	padding-right: 12px;
+}
+
+.accounts-receivable-page .stores-table .money-amount {
+	text-align: right;
+	font-weight: 600;
+	color: #007bff;
+	padding-right: 12px;
+}
+
+/* 등급 배지 */
+.accounts-receivable-page .level-badge {
+	display: inline-block;
+	padding: 4px 10px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+	text-align: center;
+}
+
+.accounts-receivable-page .level-badge.level-s {
+	background: #f8d7da;
+	color: #721c24;
+}
+
+.accounts-receivable-page .level-badge.level-a {
+	background: #fff3cd;
+	color: #856404;
+}
+
+.accounts-receivable-page .level-badge.level-b {
+	background: #d1ecf1;
+	color: #0c5460;
+}
+
+.accounts-receivable-page .level-badge.level-c {
+	background: #d4edda;
+	color: #155724;
+}
+
+.accounts-receivable-page .level-badge.level-d {
+	background: #e2e3e5;
+	color: #383d41;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+	.accounts-receivable-page {
+		padding: 10px;
+	}
+
+	.accounts-receivable-page .page-header h1 {
+		font-size: 20px;
+	}
+
+	.accounts-receivable-page .search-input-group {
+		max-width: 100%;
+	}
+
+	.accounts-receivable-page .stores-table {
+		font-size: 13px;
+	}
+
+	.accounts-receivable-page .stores-table th,
+	.accounts-receivable-page .stores-table td {
+		padding: 8px 6px;
+	}
+}

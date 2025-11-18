@@ -13,7 +13,6 @@ import SaleTable from "../../components/common/sale/SaleTable";
 import SaleOption from "../../components/common/sale/SaleOption";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 import { calculatePureGoldWeight } from "../../utils/goldUtils";
-import { v4 as uuidv4 } from "uuid";
 
 const SaleDetailPage: React.FC = () => {
 	const { flowCode, orderStatus } = useParams<{
@@ -41,7 +40,9 @@ const SaleDetailPage: React.FC = () => {
 		saleCode: "",
 		tradeType: "중량",
 		grade: "",
-		appliedHarry: "",
+		harry: "",
+		moneyAmount: 0,
+		goldWeight: "",
 	});
 
 	useEffect(() => {
@@ -103,15 +104,25 @@ const SaleDetailPage: React.FC = () => {
 					// 순금 중량 계산 (금중량이 0보다 클 때만)
 					const pureGoldWeight =
 						goldWeight > 0
-							? calculatePureGoldWeight(
-									goldWeight,
-									response.materialName || ""
-							  )
+							? calculatePureGoldWeight(goldWeight, response.materialName || "")
 							: 0;
+
+					// API saleType을 화면 표시용 한글로 변환
+					const getSaleStatusFromType = (saleType: string): SaleStatusType => {
+						const mapping: Record<string, SaleStatusType> = {
+							SALES: "판매",
+							PAYMENT: "결제",
+							DISCOUNT: "DC",
+							WG: "WG",
+							PAYMENT_COMPLETED: "결통",
+							RETURN: "반품",
+						};
+						return mapping[saleType] || "판매";
+					};
 
 					const saleData: SaleCreateRow = {
 						id: "1",
-						status: response.saleType as SaleStatusType,
+						status: getSaleStatusFromType(response.saleType),
 						flowCode: response.flowCode || "",
 						storeId: "",
 						productId: "",
@@ -158,7 +169,9 @@ const SaleDetailPage: React.FC = () => {
 						saleCode: "", // SaleDetailResponse에 saleCode 필드 없음
 						tradeType: "중량",
 						grade: response.grade || "",
-						appliedHarry: response.harry?.toString() || "",
+						harry: response.harry?.toString() || "",
+						moneyAmount: 0,
+						goldWeight: "",
 					});
 				}
 			} catch (err) {
@@ -182,6 +195,22 @@ const SaleDetailPage: React.FC = () => {
 
 			const updatedRow = { ...row, [field]: value };
 
+			// status가 변경되면 판매가 아닌 경우 재질을 24K로 설정
+			if (field === "status") {
+				const newStatus = String(value);
+				if (
+					newStatus !== "판매" &&
+					newStatus !== "WG" &&
+					newStatus !== "결통"
+				) {
+					const material24K = materials.find((m) => m.materialName === "24K");
+					if (material24K) {
+						updatedRow.materialId = material24K.materialId;
+						updatedRow.materialName = material24K.materialName;
+					}
+				}
+			}
+
 			if (field === "totalWeight") {
 				const totalWeight = parseFloat(String(value)) || 0;
 				const stoneWeight = row.stoneWeight || 0;
@@ -192,6 +221,36 @@ const SaleDetailPage: React.FC = () => {
 				updatedRow.pureGoldWeight =
 					goldWeight > 0
 						? calculatePureGoldWeight(goldWeight, row.materialName)
+						: 0;
+			}
+
+			// stoneWeight가 변경되면 goldWeight 재계산
+			if (field === "stoneWeight") {
+				const stoneWeight = parseFloat(String(value)) || 0;
+				const totalWeight = row.totalWeight || 0;
+				const goldWeight = totalWeight - stoneWeight;
+
+				updatedRow.goldWeight = goldWeight;
+				// 금중량이 0보다 클 때만 순금 중량 계산
+				updatedRow.pureGoldWeight =
+					goldWeight > 0
+						? calculatePureGoldWeight(goldWeight, row.materialName)
+						: 0;
+			}
+
+			// goldWeight 또는 materialName이 변경되면 순금 중량 재계산
+			if (field === "goldWeight" || field === "materialName") {
+				const goldWeight =
+					field === "goldWeight"
+						? parseFloat(String(value)) || 0
+						: row.goldWeight;
+				const materialName =
+					field === "materialName" ? String(value) : row.materialName;
+
+				// 금중량이 0보다 클 때만 순금 중량 계산
+				updatedRow.pureGoldWeight =
+					goldWeight > 0
+						? calculatePureGoldWeight(goldWeight, materialName)
 						: 0;
 			}
 
@@ -324,8 +383,6 @@ const SaleDetailPage: React.FC = () => {
 			setIsSaving(true);
 			setError("");
 
-			const eventId = uuidv4();
-
 			// SaleUpdateRequest DTO 형식으로 변환
 			const updateDto = {
 				productSize: saleRow.productSize,
@@ -334,7 +391,7 @@ const SaleDetailPage: React.FC = () => {
 				productLaborCost: saleRow.productPrice,
 				productAddLaborCost: saleRow.additionalProductPrice,
 				stockNote: saleRow.note,
-				storeHarry: saleOptions.appliedHarry,
+				storeHarry: saleOptions.harry,
 				goldWeight: saleRow.goldWeight.toString(),
 				stoneWeight: saleRow.stoneWeight.toString(),
 				mainStoneNote: saleRow.mainStoneNote,
@@ -347,7 +404,7 @@ const SaleDetailPage: React.FC = () => {
 				stoneAddLaborCost: saleRow.stoneAddLaborCost,
 			};
 
-			const response = await saleApi.updateSale(flowCode, updateDto, eventId);
+			const response = await saleApi.updateSale(flowCode, updateDto);
 
 			if (response.success) {
 				alert("저장되었습니다.");
@@ -396,33 +453,31 @@ const SaleDetailPage: React.FC = () => {
 			</div>
 
 			{/* 판매 옵션 (읽기 전용) */}
-			<div className="sale-detail-option">
-				<SaleOption
-					options={saleOptions}
-					onOptionChange={handleOptionChange}
-					onCustomerSearchOpen={handleCustomerSearchOpen}
-					disabled={true}
-					hasWGStatus={false}
-					isStoreLoadedFromApi={true}
-				/>
-			</div>
+			<SaleOption
+				options={saleOptions}
+				onOptionChange={handleOptionChange}
+				onCustomerSearchOpen={handleCustomerSearchOpen}
+				disabled={true}
+				hasWGStatus={false}
+				isStoreLoadedFromApi={true}
+			/>
 
 			{/* 판매 테이블 */}
-			<div className="bulk-order-item">
-				<SaleTable
-					rows={[saleRow]}
-					loading={loading}
-					onRowUpdate={onRowUpdate}
-					onRowDelete={onRowDelete}
-					onFlowCodeSearch={onFlowCodeSearch}
-					onRowFocus={onRowFocus}
-					disabled={false}
-					materials={materials}
-					assistantStones={assistantStones}
-					onStoneInfoOpen={openStoneInfoManager}
-					onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
-				/>
-			</div>
+			<SaleTable
+				rows={[saleRow]}
+				loading={loading}
+				onRowUpdate={onRowUpdate}
+				onRowDelete={onRowDelete}
+				onFlowCodeSearch={onFlowCodeSearch}
+				onRowFocus={onRowFocus}
+				disabled={loading}
+				materials={materials}
+				assistantStones={assistantStones}
+				onStoneInfoOpen={openStoneInfoManager}
+				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
+				storeId={saleOptions.storeId}
+				storeName={saleOptions.storeName}
+			/>
 
 			{/* 저장/닫기 버튼 */}
 			<div className="detail-button-group">

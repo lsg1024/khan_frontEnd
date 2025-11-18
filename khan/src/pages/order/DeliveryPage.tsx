@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Pagination from "../../components/common/Pagination";
-import BulkActionBar from "../../components/common/BulkActionBar";
+import BulkActionBar from "../../components/common/order/BulkActionBar";
 import OrderSearch from "../../components/common/order/OrderSearch";
 import type { SearchFilters } from "../../components/common/order/OrderSearch";
 import { useErrorHandler } from "../../utils/errorHandler";

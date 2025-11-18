@@ -134,7 +134,7 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 					<label className="required-field">적용해리</label>
 					<input
 						type="text"
-						value={options.appliedHarry}
+						value={options.harry}
 						readOnly
 						placeholder="거래처 해리"
 						disabled

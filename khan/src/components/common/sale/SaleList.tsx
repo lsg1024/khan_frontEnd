@@ -31,19 +31,11 @@ export const SaleList = ({
 	};
 
 	if (loading) {
-		return (
-			<div className="list">
-				<div className="loading-message">목록을 불러오는 중...</div>
-			</div>
-		);
+		return <div className="loading-message">목록을 불러오는 중...</div>;
 	}
 
 	if (sales.length === 0) {
-		return (
-			<div className="list">
-				<div className="no-data-message">데이터가 없습니다.</div>
-			</div>
-		);
+		return <div className="no-data-message">데이터가 없습니다.</div>;
 	}
 
 	return (

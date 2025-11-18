@@ -126,7 +126,7 @@ export interface SaleUpdateRequest {
 	assistantStoneId?: string;
 	assistantStoneName?: string;
 	assistantStoneCreateAt?: string;
-	stoneInfos?: StoneInfo[]; 
+	stoneInfos?: StoneInfo[];
 	stoneAddLaborCost?: number;
 }
 
@@ -138,7 +138,9 @@ export interface SaleOptionData {
 	saleCode: string; // 거래번호
 	tradeType: "중량" | "시세"; // 거래 형태
 	grade: string; // 공금 등급
-	appliedHarry: string; // 적용해리
+	harry: string; // 적용해리
+	moneyAmount: number; // 미수금
+	goldWeight: string; // 금중량
 }
 
 export interface GoldHistoryData {
@@ -154,4 +156,16 @@ export interface GoldHistoryData {
 	previousMoneyBalance: number; // 전 미수 금액
 	afterGoldBalance: number; // 후미수 순금
 	afterMoneyBalance: number; // 후미수 금액
+}
+
+export interface SalePaymentRequest {
+	id: number;
+	name: string;
+	harry: string;
+	grade: string;
+	orderStatus: string;
+	material: string;
+	note: string;
+	goldWeight: string;
+	payAmount: number;
 }

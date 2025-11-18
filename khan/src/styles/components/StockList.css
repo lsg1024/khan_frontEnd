@@ -320,18 +320,6 @@
 	color: white;
 }
 
-/* 로딩 및 빈 데이터 메시지 */
-.loading-message,
-.no-data-message {
-	text-align: center;
-	padding: 60px 20px;
-	color: #666;
-	font-size: 16px;
-}
-
-.loading-message {
-	color: #000000;
-}
 
 @media (max-width: 768px) {
 	.stock-table {

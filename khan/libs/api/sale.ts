@@ -1,5 +1,6 @@
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
+import { v4 as uuidv4 } from "uuid";
 import type {
 	StockRegisterRequest,
 	StockSaleRequest,
@@ -8,6 +9,7 @@ import type {
 	SaleSearchResponse,
 	SaleDetailResponse,
 	SaleUpdateRequest,
+	SalePaymentRequest,
 } from "../../src/types/sale";
 
 export const saleApi = {
@@ -42,20 +44,37 @@ export const saleApi = {
 		});
 	},
 
+	createPaymentSale: async (
+		saleData: SalePaymentRequest
+	): Promise<ApiResponse<string>> => {
+		const eventId = uuidv4();
+		const headers = {
+			"Idempotency-Key": eventId,
+		};
+
+		const requestBody = {
+			...saleData,
+		};
+
+		return apiRequest.post<string>("order/sales/payment", requestBody, {
+			headers,
+		});
+	},
+
 	updateSale: async (
 		flowCode: string,
-		updateDto: SaleUpdateRequest,
-		eventId: string
+		updateDto: SaleUpdateRequest
 	): Promise<ApiResponse<string>> => {
+		const eventId = uuidv4();
 		const params = { id: flowCode };
 
 		const headers = {
 			"Idempotency-Key": eventId,
 		};
 
-		return apiRequest.patch<string>("order/sale/product", updateDto, {
+		return apiRequest.patch<string>("order/sales/product", updateDto, {
 			params,
-			headers
+			headers,
 		});
 	},
 
@@ -65,7 +84,12 @@ export const saleApi = {
 		order_status: string,
 		orderData: StockRegisterRequest
 	): Promise<ApiResponse<string>> => {
+		const eventId = uuidv4();
 		const params = { id: flowCode, order_status: order_status };
+
+		const headers = {
+			"Idempotency-Key": eventId,
+		};
 
 		const requestBody = {
 			...orderData,
@@ -73,16 +97,40 @@ export const saleApi = {
 
 		return apiRequest.patch<string>("order/orders/order_sale", requestBody, {
 			params,
+			headers,
 		});
 	},
 	updateStockToSale: async (
 		flowCodes: string,
 		stockData: StockSaleRequest
 	): Promise<ApiResponse<string>> => {
+		const eventId = uuidv4();
 		const params = { id: flowCodes };
+		const headers = {
+			"Idempotency-Key": eventId,
+		};
 
 		return apiRequest.patch<string>("order/sales/stock_sale", stockData, {
 			params,
+			headers,
+		});
+	},
+
+	// 판매 삭제 (반품)
+	deleteSale: async (
+		type: string,
+		saleCode: number,
+		flowCode: number
+	): Promise<ApiResponse<string>> => {
+		const eventId = uuidv4();
+		const params = { code: saleCode, id: flowCode };
+		const headers = {
+			"Idempotency-Key": eventId,
+		};
+
+		return apiRequest.delete<string>(`order/sales/${type}`, {
+			params,
+			headers,
 		});
 	},
 };

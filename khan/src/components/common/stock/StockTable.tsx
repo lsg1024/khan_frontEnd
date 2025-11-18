@@ -841,6 +841,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										value={goldWeight > 0 ? goldWeight.toFixed(3) : "0.000"}
 										readOnly
 										disabled={loading || mode === "readonly"}
+										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
 								{/* 총중량(알) - 자동 계산 */}
@@ -851,6 +852,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										value={Number(row.stoneWeight).toFixed(3)}
 										readOnly
 										disabled={loading || mode === "readonly"}
+										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
 								{/* 매입헤리 - 드롭다운 */}

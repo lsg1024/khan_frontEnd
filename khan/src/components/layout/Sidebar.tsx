@@ -41,7 +41,7 @@ const sidebarItems: SidebarItem[] = [
 	{
 		path: "/sales",
 		label: "판매 관리",
-		icon: "💰",
+		icon: "💳",
 		children: [
 			{ path: "/sales", label: "판매 목록"},
 			{ path: "/sales/receipts", label: "미수 금액"},
@@ -56,8 +56,17 @@ const sidebarItems: SidebarItem[] = [
 			{ path: "/rentals/records", label: "누적 대여"},
 		],
 	},
-	{ path: "/settings", label: "설정", icon: "⚙️" },
-	{ path: "/help", label: "도움말", icon: "❓" },
+	{
+		path:"/accounts",
+		label: "거래처",
+		icon: "🏢"
+	},
+	{
+		path: "/accounts_gold",
+		label: "금&현금",
+		icon: "💰"
+	},
+	{ path: "/settings", label: "설정", icon: "⚙️" }
 ];
 
 export const Sidebar = ({ isOpen = true }: SidebarProps) => {

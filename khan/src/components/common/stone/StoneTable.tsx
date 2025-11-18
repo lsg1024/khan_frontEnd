@@ -178,6 +178,18 @@ const StoneTable: React.FC<StoneTableProps> = ({
       return;
     }
 
+    // 중복 체크: 같은 stoneId를 가진 스톤이 이미 존재하는지 확인
+    const isDuplicate = stones.some(
+      (stone) =>
+        stone.stoneId === selectedStone.stoneId &&
+        stone.productStoneId !== newStoneId
+    );
+
+    if (isDuplicate) {
+      alert(`"${selectedStone.stoneName}" 스톤은 이미 추가되어 있습니다.`);
+      return;
+    }
+
     // 선택된 스톤의 정보로 기존 스톤 정보 업데이트
     onStoneChange(newStoneId, "stoneId", selectedStone.stoneId);
     onStoneChange(newStoneId, "stoneName", selectedStone.stoneName);

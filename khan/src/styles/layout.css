@@ -5,6 +5,7 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+	height: 100%;
 }
 
 /* 레이아웃 바디 (TopBar 아래 영역) */

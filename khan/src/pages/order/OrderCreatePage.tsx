@@ -24,7 +24,7 @@ import type {
 } from "../../types/order";
 import type { Product, ProductDto } from "../../types/product";
 import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto } from "../../types/store";
+import type { StoreSearchDto, AccountInfoDto } from "../../types/store";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
@@ -538,15 +538,15 @@ const OrderCreatePage = () => {
 	};
 
 	// 거래처 선택 처리
-	const handleStoreSelect = (store: StoreSearchDto) => {
+	const handleStoreSelect = (store: StoreSearchDto | AccountInfoDto) => {
 		if (storeModal.selectedRowId) {
-			const storeIdValue = store.storeId?.toString();
+			const storeIdValue = store.accountId?.toString();
 
 			updateOrderRow(storeModal.selectedRowId, "storeId", storeIdValue);
 			updateOrderRow(
 				storeModal.selectedRowId,
 				"storeName",
-				store.storeName || ""
+				store.accountName || ""
 			);
 			updateOrderRow(
 				storeModal.selectedRowId,

@@ -7,6 +7,7 @@ import SaleList from "../../components/common/sale/SaleList";
 import Pagination from "../../components/common/Pagination";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SaleSearchFilters } from "../../components/common/sale/SaleSearch";
+import SaleBulkActionBar from "../../components/common/sale/SaleBulkActionBar";
 import "../../styles/pages/sale/SalePage.css";
 
 export const SalePage = () => {
@@ -136,6 +137,67 @@ export const SalePage = () => {
 		}
 	};
 
+	// 반품 처리
+	const handleReturn = async () => {
+		if (selected.length === 0) {
+			alert("반품할 판매 항목을 선택해주세요.");
+			return;
+		}
+
+		const confirmMessage = `선택한 ${selected.length}개의 판매 항목을 반품 처리하시겠습니까?`;
+		if (!confirm(confirmMessage)) {
+			return;
+		}
+
+		try {
+			setLoading(true);
+			setError("");
+
+			// 선택된 saleCode로 판매 데이터 찾기
+			const selectedSales = sales.filter((sale) =>
+				selected.includes(sale.saleCode)
+			);
+
+			// 각 판매 항목에 대해 반품 처리
+			const results = await Promise.all(
+				selectedSales.map(async (sale) => {
+					try {
+						const response = await saleApi.deleteSale(
+							sale.saleType,
+							parseInt(sale.saleCode),
+							parseInt(sale.flowCode)
+						);
+						return { success: response.success, saleCode: sale.saleCode };
+					} catch (error) {
+						console.error(`반품 실패 (${sale.saleCode}):`, error);
+						return { success: false, saleCode: sale.saleCode };
+					}
+				})
+			);
+
+			// 결과 확인
+			const failedItems = results.filter((r) => !r.success);
+
+			if (failedItems.length === 0) {
+				alert("반품 처리가 완료되었습니다.");
+				setSelected([]);
+				loadSales(searchFilters, currentPage);
+			} else {
+				const failedCodes = failedItems.map((item) => item.saleCode).join(", ");
+				alert(
+					`일부 항목의 반품 처리에 실패했습니다: ${failedCodes}\n성공한 항목만 반품 처리되었습니다.`
+				);
+				setSelected([]);
+				loadSales(searchFilters, currentPage);
+			}
+		} catch (err) {
+			handleError(err, setError);
+			alert("반품 처리 중 오류가 발생했습니다.");
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	// 판매 데이터 로드 함수
 	const loadSales = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
@@ -154,8 +216,6 @@ export const SalePage = () => {
 				if (response.success && response.data) {
 					const pageData = response.data.page || {};
 					const content = response.data.content || [];
-
-					console.log("판매 데이터:", response.data);
 
 					setSales(content || []);
 					setCurrentPage(page);
@@ -234,6 +294,11 @@ export const SalePage = () => {
 						selected={selected}
 						onSelect={handleSelect}
 						onNoClick={handleSaleNoClick}
+					/>
+
+					<SaleBulkActionBar
+						selectedCount={selected.length}
+						onReturn={handleReturn}
 					/>
 
 					{/* 페이지네이션 */}

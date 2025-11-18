@@ -7,7 +7,7 @@ import StockSearch from "../../components/common/stock/StockSearch";
 import StockList from "../../components/common/stock/StockList";
 import Pagination from "../../components/common/Pagination";
 import { useErrorHandler } from "../../utils/errorHandler";
-import StockBulkActionBar from "../../components/common/StockBulkActionBar";
+import StockBulkActionBar from "../../components/common/stock/StockBulkActionBar";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
 import "../../styles/pages/stock/StockPage.css";
 
@@ -123,7 +123,7 @@ export const StockReturnPage = () => {
 
 		try {
 			setLoading(true);
-			
+
 			const rollbackPromises = selectedStocks.map((flowCode) =>
 				stockApi.updateReturnToStock(flowCode, "RETURN")
 			);
@@ -136,9 +136,7 @@ export const StockReturnPage = () => {
 			if (failCount === 0) {
 				alert(`${successCount}개 복구 완료`);
 			} else {
-				alert(
-					`${successCount}개 복구 완료\n${failCount} 실패`
-				);
+				alert(`${successCount}개 복구 완료\n${failCount} 실패`);
 			}
 
 			await loadStocks(searchFilters, currentPage);

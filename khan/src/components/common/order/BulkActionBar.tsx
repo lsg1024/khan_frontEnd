@@ -1,5 +1,5 @@
 import React from "react";
-import "../../styles/components/BulkActionBar.css";
+import "../../../styles/components/BulkActionBar.css";
 
 interface BulkActionBarProps {
 	selectedCount: number;

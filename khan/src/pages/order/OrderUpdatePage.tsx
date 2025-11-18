@@ -27,7 +27,7 @@ import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto } from "../../types/store";
+import type { StoreSearchDto, AccountInfoDto } from "../../types/store";
 import type { ProductDto } from "../../types/product";
 import "../../styles/pages/OrderCreatePage.css";
 
@@ -505,25 +505,29 @@ const OrderUpdatePage: React.FC = () => {
 	}, [orderDetail, priorities, storeGrade, assistantStones]); // eslint-disable-line react-hooks/exhaustive-deps
 	// 검색 결과 선택 핸들러들 (팝업용)
 	const handleStoreSelectWithRowId = (store: StoreSearchDto, rowId: string) => {
-		if (store.storeId === undefined || store.storeId === null) {
+		if (store.accountId === undefined || store.accountId === null) {
 			alert("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.");
 			return;
 		}
 
-		updateOrderRow(rowId, "storeId", store.storeId.toString());
-		updateOrderRow(rowId, "storeName", store.storeName || "");
+		updateOrderRow(rowId, "storeId", store.accountId.toString());
+		updateOrderRow(rowId, "storeName", store.accountName || "");
 	};
 
 	// 검색 결과 선택 핸들러들 (모달용)
-	const handleStoreSelect = (store: StoreSearchDto) => {
+	const handleStoreSelect = (store: StoreSearchDto | AccountInfoDto) => {
 		if (selectedRowForStore) {
-			if (store.storeId === undefined || store.storeId === null) {
+			if (store.accountId === undefined || store.accountId === null) {
 				alert("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.");
 				return;
 			}
 
-			updateOrderRow(selectedRowForStore, "storeId", store.storeId.toString());
-			updateOrderRow(selectedRowForStore, "storeName", store.storeName || "");
+			updateOrderRow(
+				selectedRowForStore,
+				"storeId",
+				store.accountId.toString()
+			);
+			updateOrderRow(selectedRowForStore, "storeName", store.accountName || "");
 		}
 		setIsStoreSearchOpen(false);
 		setSelectedRowForStore("");

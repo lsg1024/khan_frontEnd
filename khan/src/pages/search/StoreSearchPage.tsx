@@ -1,14 +1,25 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
 import { storeApi } from "../../../libs/api/store";
-import type { StoreSearchDto, StoreSearchResponse } from "../../types/store";
+import type {
+	StoreSearchDto,
+	StoreAttemptDto,
+	StoreSearchResponse,
+	StoreAttemptResponse,
+} from "../../types/store";
 import StoreList from "../../components/common/store/StoreList";
 import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/StoreSearchPage.css";
 
 const StoreSearchPage: React.FC = () => {
+	const [searchParams] = useSearchParams();
+	const useAttempt = searchParams.get("useAttempt") === "true"; // URL 파라미터 확인
+
 	const [searchName, setSearchName] = useState("");
-	const [stores, setStores] = useState<StoreSearchDto[]>([]);
+	const [stores, setStores] = useState<(StoreSearchDto | StoreAttemptDto)[]>(
+		[]
+	);
 	const [loading, setLoading] = useState(false);
 
 	const [currentPage, setCurrentPage] = useState(1);
@@ -20,43 +31,69 @@ const StoreSearchPage: React.FC = () => {
 	const size = 5;
 
 	// 검색 API 호출
-	const performSearch = useCallback(async (name: string, page: number) => {
-		setLoading(true);
-		setError("");
+	const performSearch = useCallback(
+		async (name: string, page: number) => {
+			setLoading(true);
+			setError("");
 
-		try {
-			const res = await storeApi.getStores(name, page, size);
+			try {
+				if (useAttempt) {
+					// 미수 정보 API 호출
+					const res = await storeApi.getStoreAttempt(name, page, size);
 
-			// success=false 응답 처리
-			if (!isApiSuccess(res)) {
-				setError(res.message || "거래처 데이터를 불러오지 못했습니다.");
+					if (!isApiSuccess(res)) {
+						setError(res.message || "거래처 데이터를 불러오지 못했습니다.");
+						setStores([]);
+						setCurrentPage(1);
+						setTotalPages(0);
+						setTotalElements(0);
+						return;
+					}
+
+					const data = res.data as StoreAttemptResponse;
+					const content = data?.content ?? [];
+					const pageInfo = data?.page;
+
+					setStores(content);
+					const uiPage = (pageInfo?.number ?? page - 1) + 1;
+					setCurrentPage(uiPage);
+					setTotalPages(pageInfo?.totalPages ?? 1);
+					setTotalElements(pageInfo?.totalElements ?? content.length);
+				} else {
+					// 일반 검색 API 호출
+					const res = await storeApi.getStores(name, page, size);
+
+					if (!isApiSuccess(res)) {
+						setError(res.message || "거래처 데이터를 불러오지 못했습니다.");
+						setStores([]);
+						setCurrentPage(1);
+						setTotalPages(0);
+						setTotalElements(0);
+						return;
+					}
+
+					const data = res.data as StoreSearchResponse;
+					const content = data?.content ?? [];
+					const pageInfo = data?.page;
+
+					setStores(content);
+					const uiPage = (pageInfo?.number ?? page - 1) + 1;
+					setCurrentPage(uiPage);
+					setTotalPages(pageInfo?.totalPages ?? 1);
+					setTotalElements(pageInfo?.totalElements ?? content.length);
+				}
+			} catch {
+				setError("거래처 데이터를 불러오지 못했습니다.");
 				setStores([]);
 				setCurrentPage(1);
 				setTotalPages(0);
 				setTotalElements(0);
-				return;
+			} finally {
+				setLoading(false);
 			}
-
-			// success=true + data 파싱
-			const data = res.data as StoreSearchResponse;
-			const content = data?.content ?? [];
-			const pageInfo = data?.page;
-
-			setStores(content);
-			const uiPage = (pageInfo?.number ?? page - 1) + 1;
-			setCurrentPage(uiPage);
-			setTotalPages(pageInfo?.totalPages ?? 1);
-			setTotalElements(pageInfo?.totalElements ?? content.length);
-		} catch {
-			setError("거래처 데이터를 불러오지 못했습니다.");
-			setStores([]);
-			setCurrentPage(1);
-			setTotalPages(0);
-			setTotalElements(0);
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+		},
+		[useAttempt]
+	);
 
 	// 초기 데이터 로드
 	useEffect(() => {
@@ -77,7 +114,7 @@ const StoreSearchPage: React.FC = () => {
 	};
 
 	// 거래처 선택 처리
-	const handleStoreSelect = (store: StoreSearchDto) => {
+	const handleStoreSelect = (store: StoreSearchDto | StoreAttemptDto) => {
 		// 부모 창에 선택된 거래처 정보 전달
 		if (window.opener) {
 			window.opener.postMessage(

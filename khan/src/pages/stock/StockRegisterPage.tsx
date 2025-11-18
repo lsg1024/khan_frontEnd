@@ -17,7 +17,7 @@ import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto } from "../../types/store";
+import type { StoreSearchDto, StoreAttemptDto } from "../../types/store";
 import type { ProductDto } from "../../types/product";
 import StockTable from "../../components/common/stock/StockTable";
 import { calculateStoneDetails } from "../../utils/calculateStone";
@@ -144,19 +144,19 @@ const StockRegisterPage: React.FC = () => {
 	};
 
 	// 검색 결과 선택 핸들러들
-	const handleStoreSelect = async (store: StoreSearchDto) => {
+	const handleStoreSelect = async (store: StoreSearchDto | StoreAttemptDto) => {
 		if (selectedRowForStore) {
-			if (store.storeId === undefined || store.storeId === null) {
+			if (store.accountId === undefined || store.accountId === null) {
 				alert("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.");
 				return;
 			}
 
-			onRowUpdate(selectedRowForStore, "storeId", store.storeId.toString());
+			onRowUpdate(selectedRowForStore, "storeId", store.accountId.toString());
 			onRowUpdate(selectedRowForStore, "storeName", store.storeName || "");
 
 			try {
 				const gradeResponse = await storeApi.getStoreGrade(
-					store.storeId.toString()
+					store.accountId.toString()
 				);
 				if (gradeResponse.success && gradeResponse.data) {
 					// 3. 조회된 등급으로 해당 row의 grade 필드를 업데이트

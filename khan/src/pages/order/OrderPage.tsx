@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { orderApi } from "../../../libs/api/order";
 import Pagination from "../../components/common/Pagination";
-import BulkActionBar from "../../components/common/BulkActionBar";
+import BulkActionBar from "../../components/common/order/BulkActionBar";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { OrderDto } from "../../types/order";

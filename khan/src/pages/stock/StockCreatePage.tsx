@@ -14,7 +14,7 @@ import { getLocalDate } from "../../utils/dateUtils";
 import type { PastOrderDto } from "../../types/order";
 import type { Product, ProductDto } from "../../types/product";
 import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto } from "../../types/store";
+import type { StoreSearchDto, AccountInfoDto } from "../../types/store";
 import type { StockOrderRows, StockCreateRequest } from "../../types/stock";
 import StockTable from "../../components/common/stock/StockTable";
 import StoreSearch from "../../components/common/store/StoreSearch";
@@ -434,14 +434,14 @@ export const StockCreatePage = () => {
 		storeModal.openModal(rowId);
 	};
 
-	const handleStoreSelect = async (store: StoreSearchDto) => {
+	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
 		if (storeModal.selectedRowId) {
-			const storeIdValue = store.storeId?.toString();
+			const storeIdValue = store.accountId?.toString();
 			const rowId = storeModal.selectedRowId;
 			const newGrade = store.level || "1";
 
 			updateStockRow(rowId, "storeId", storeIdValue);
-			updateStockRow(rowId, "storeName", store.storeName || "");
+			updateStockRow(rowId, "storeName", store.accountName || "");
 			updateStockRow(rowId, "storeHarry", store.goldHarryLoss || "");
 			updateStockRow(rowId, "grade", newGrade);
 

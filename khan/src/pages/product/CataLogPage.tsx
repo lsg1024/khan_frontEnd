@@ -329,7 +329,7 @@ function CataLogPage() {
 							style={{ cursor: "pointer" }}
 						>
 							{/* 상품 이미지 */}
-							<div>
+							<div className="product-image">
 								<img
 									src={
 										product.productImagePath
@@ -348,16 +348,18 @@ function CataLogPage() {
 								<h3 className="product-name">{product.productName}</h3>
 								<div className="product-details">
 									{/* 무게, 재질, 색상을 한 줄로 */}
-									<div className="detail-row combined">
-										<div className="detail-item">
+									<div className="detail-row">
+										<div className="catalog-detail-item">
+											<div>무게:</div>
 											<div className="value">{product.productWeight}g</div>
 										</div>
-										<div className="detail-item">
+										<div className="catalog-detail-item">
 											<div className="gold-content">
 												{getGoldTransferWeight(product.productWeight)}돈
 											</div>
 										</div>
-										<div className="detail-item">
+										<div className="catalog-detail-item">
+											<div>재질:</div>
 											<span className="value">{product.productMaterial}</span>
 										</div>
 									</div>
@@ -366,13 +368,7 @@ function CataLogPage() {
 									{product.productStones &&
 										product.productStones.length > 0 && (
 											<div className="stones-section">
-												{product.productStones.map((stone, idx) => {
-													const isLast =
-														idx === product.productStones.length - 1;
-													const totalCount = product.productStones.reduce(
-														(sum, s) => sum + s.stoneQuantity,
-														0
-													);
+												{product.productStones.map((stone) => {
 													return (
 														<div
 															key={stone.productStoneId}
@@ -382,18 +378,6 @@ function CataLogPage() {
 																{stone.mainStone ? "M " : ""}
 																{stone.stoneName} × {stone.stoneQuantity}
 															</span>
-
-															{/* 마지막 행에만 총계 표시 */}
-															{isLast && (
-																<span className="stone-total-inline">
-																	<span className="total-label">
-																		총 개수:&nbsp;
-																	</span>
-																	<span className="total-value">
-																		{totalCount}
-																	</span>
-																</span>
-															)}
 														</div>
 													);
 												})}
@@ -401,6 +385,19 @@ function CataLogPage() {
 										)}
 									{/* 매입가와 판매가를 한 줄로 */}
 									<div className="detail-row combined price-row-combined">
+										{/* 스톤 총 개수 */}
+										{product.productStones &&
+											product.productStones.length > 0 && (
+												<div className="stone-total-inline">
+													<span className="total-label">스톤개수:</span>
+													<span className="total-value">
+														{product.productStones.reduce(
+															(sum, s) => sum + s.stoneQuantity,
+															0
+														)}
+													</span>
+												</div>
+											)}
 										<div>
 											<span className="price-label">판매가:</span>
 											<span className="selling-price">

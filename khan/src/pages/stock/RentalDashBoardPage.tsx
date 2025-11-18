@@ -6,7 +6,7 @@ import type { StockResponse } from "../../types/stock";
 import StockSearch from "../../components/common/stock/StockSearch";
 import StockList from "../../components/common/stock/StockList";
 import Pagination from "../../components/common/Pagination";
-import StockBulkActionBar from "../../components/common/StockBulkActionBar";
+import StockBulkActionBar from "../../components/common/stock/StockBulkActionBar";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
 import "../../styles/pages/stock/StockPage.css";

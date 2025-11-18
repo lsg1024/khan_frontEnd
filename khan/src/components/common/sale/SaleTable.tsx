@@ -16,6 +16,8 @@ interface SaleTableProps {
 	onAssistanceStoneArrivalChange: (id: string, value: string) => void;
 	onStoneInfoOpen?: (rowId: string) => void;
 	disabled?: boolean;
+	storeId?: string;
+	storeName?: string;
 }
 
 const SaleTable: React.FC<SaleTableProps> = (props) => {
@@ -29,9 +31,13 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 		onFlowCodeSearch,
 		onRowFocus,
 		disabled = false,
+		storeId = ""
 	} = props;
 
-		const safeOnAssistanceStoneArrivalChange = (_id: string, _value: string) => {
+	// 거래처가 선택되지 않았는지 확인
+	const isStoreNotSelected = !storeId;
+
+	const safeOnAssistanceStoneArrivalChange = (_id: string, _value: string) => {
 		if (
 			"onAssistanceStoneArrivalChange" in props &&
 			props.onAssistanceStoneArrivalChange
@@ -39,8 +45,12 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 			props.onAssistanceStoneArrivalChange(_id, _value);
 		}
 	};
-	
+
 	const canEditSerial = (row: SaleCreateRow): boolean => {
+		// 판매가 아닌 경우 시리얼 잠금
+		if (!isSaleStatus(row.status)) {
+			return false;
+		}
 		// 구분이 판매이고 시리얼에 값이 있는 경우 변경 불가능
 		if (isSaleStatus(row.status) && row.flowCode) {
 			return false;
@@ -53,13 +63,57 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 		return isSaleStatus(row.status);
 	};
 
+	// 보조석 관련 필드 편집 가능 여부 (판매만 가능)
+	const canEditAssistantStone = (row: SaleCreateRow): boolean => {
+		return isSaleStatus(row.status);
+	};
+
+	// 사이즈 편집 가능 여부 (판매만 가능)
+	const canEditSize = (row: SaleCreateRow): boolean => {
+		return isSaleStatus(row.status);
+	};
+
+	// 알 단가 관련 필드 편집 가능 여부 (판매만 가능)
+	const canEditStonePrice = (row: SaleCreateRow): boolean => {
+		return isSaleStatus(row.status);
+	};
+
+	// productPrice 편집 가능 여부
+	const canEditProductPrice = (row: SaleCreateRow): boolean => {
+		// 결제, DC, WG, 결통은 열림
+		if (
+			row.status === "결제" ||
+			row.status === "DC" ||
+			row.status === "WG" ||
+			row.status === "결통"
+		) {
+			return true;
+		}
+		// 판매는 잠김
+		return false;
+	};
+
+	// additionalProductPrice 편집 가능 여부
+	const canEditAdditionalProductPrice = (row: SaleCreateRow): boolean => {
+		// 판매만 열림
+		return isSaleStatus(row.status);
+	};
+
+	// totalWeight 편집 가능 여부
+	const canEditTotalWeight = (row: SaleCreateRow): boolean => {
+		// 결제, DC는 열림
+		if (row.status === "판매" || row.status === "결제" || row.status === "DC") {
+			return true;
+		}
+		// WG, 결통은 잠김
+		return false;
+	};
+
 	const safeOnStoneInfoOpen = (rowId: string) => {
 		if (props.onStoneInfoOpen) {
 			props.onStoneInfoOpen(rowId);
 		}
 	};
-
-	console.log("Rendering SaleTable with rows:", rows.map(row => row.flowCode));
 
 	return (
 		<div className="sale-table-container">
@@ -149,7 +203,10 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												e.target.value as SaleCreateRow["status"]
 											)
 										}
-										disabled={loading || disabled}
+										disabled={loading || disabled || isStoreNotSelected}
+										style={{
+											backgroundColor: isStoreNotSelected ? "#f5f5f5" : "white",
+										}}
 									>
 										<option value="판매">판매</option>
 										<option value="결제">결제</option>
@@ -158,7 +215,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										<option value="결통">결통</option>
 										<option value="반품">반품</option>
 									</select>
-								</td>{" "}
+								</td>
 								{/* 시리얼 */}
 								<td className="search-type-cell">
 									<div className="search-field-container">
@@ -167,18 +224,27 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 											value={row.flowCode}
 											readOnly
 											placeholder="시리얼 검색"
-											disabled={loading || disabled || !canEditSerial(row)}
+											disabled={
+												loading ||
+												disabled ||
+												isStoreNotSelected ||
+												!canEditSerial(row)
+											}
 											onClick={() => {
-												if (canEditSerial(row)) {
+												if (!isStoreNotSelected && canEditSerial(row)) {
 													onFlowCodeSearch(row.id);
 												}
 											}}
 											style={{
-												backgroundColor: !canEditSerial(row)
-													? "#f5f5f5"
-													: "white",
+												backgroundColor:
+													isStoreNotSelected || !canEditSerial(row)
+														? "#f5f5f5"
+														: "white",
 												cursor:
-													loading || disabled || !canEditSerial(row)
+													loading ||
+													disabled ||
+													isStoreNotSelected ||
+													!canEditSerial(row)
 														? "not-allowed"
 														: "pointer",
 											}}
@@ -186,17 +252,25 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										<span
 											className="search-icon"
 											onClick={() => {
-												if (canEditSerial(row)) {
+												if (!isStoreNotSelected && canEditSerial(row)) {
 													onFlowCodeSearch(row.id);
 												}
 											}}
 											style={{
 												cursor:
-													loading || disabled || !canEditSerial(row)
+													loading ||
+													disabled ||
+													isStoreNotSelected ||
+													!canEditSerial(row)
 														? "not-allowed"
 														: "pointer",
 												opacity:
-													loading || disabled || !canEditSerial(row) ? 0.5 : 1,
+													loading ||
+													disabled ||
+													isStoreNotSelected ||
+													!canEditSerial(row)
+														? 0.5
+														: 1,
 											}}
 										>
 											🔍
@@ -207,7 +281,9 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								<td className="search-type-cell">
 									<input
 										type="text"
-										value={row.productName}
+										value={
+											isSaleStatus(row.status) ? row.productName : row.status
+										}
 										readOnly
 										disabled
 										style={{ backgroundColor: "#f5f5f5" }}
@@ -218,7 +294,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 									<select
 										value={row.materialId}
 										onChange={(e) => {
-											if (disabled) return;
+											if (disabled || isStoreNotSelected) return;
 											const selectedMaterial = materials.find(
 												(m) => m.materialId === e.target.value
 											);
@@ -229,9 +305,9 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												selectedMaterial?.materialName || ""
 											);
 										}}
-										disabled={loading || disabled || !!row.materialId}
+										disabled={loading || disabled || isStoreNotSelected}
 										style={{
-											backgroundColor: row.materialId ? "#f5f5f5" : "white",
+											backgroundColor: isStoreNotSelected ? "#f5f5f5" : "white",
 										}}
 									>
 										<option value="">선택</option>
@@ -244,7 +320,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 											</option>
 										))}
 									</select>
-								</td>{" "}
+								</td>
 								{/* 색상 */}
 								<td className="drop-down-cell-small">
 									<input
@@ -264,7 +340,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												: row.assistantStoneId
 										}
 										onChange={(e) => {
-											if (disabled) return;
+											if (disabled || isStoreNotSelected) return;
 											const selectedStone = assistantStones.find(
 												(s) => s.assistantStoneId === Number(e.target.value)
 											);
@@ -275,9 +351,17 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												selectedStone?.assistantStoneName || ""
 											);
 										}}
-										disabled={loading || disabled }
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditAssistantStone(row)
+										}
 										style={{
-											backgroundColor: "white",
+											backgroundColor:
+												isStoreNotSelected || !canEditAssistantStone(row)
+													? "#f5f5f5"
+													: "white",
 										}}
 									>
 										<option value="">선택</option>
@@ -296,12 +380,23 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 									<select
 										value={row.assistantStone ? "Y" : "N"}
 										onChange={(e) => {
-											if (disabled) return;
-											safeOnAssistanceStoneArrivalChange(row.id, e.target.value);
+											if (disabled || isStoreNotSelected) return;
+											safeOnAssistanceStoneArrivalChange(
+												row.id,
+												e.target.value
+											);
 										}}
-										disabled={loading || disabled }
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditAssistantStone(row)
+										}
 										style={{
-											backgroundColor: "white",
+											backgroundColor:
+												isStoreNotSelected || !canEditAssistantStone(row)
+													? "#f5f5f5"
+													: "white",
 										}}
 									>
 										<option value="N">N</option>
@@ -314,7 +409,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										type="date"
 										value={row.assistantStoneCreateAt || ""}
 										onChange={(e) => {
-											if (disabled) return;
+											if (disabled || isStoreNotSelected) return;
 											onRowUpdate(
 												row.id,
 												"assistantStoneCreateAt",
@@ -324,19 +419,22 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										disabled={
 											loading ||
 											row.assistantStone === false ||
-											disabled
+											disabled ||
+											isStoreNotSelected ||
+											!canEditAssistantStone(row)
 										}
 										readOnly
 										style={{
 											backgroundColor:
 												row.assistantStone === false ||
 												disabled ||
-												!canEditForSaleOnly(row)
+												isStoreNotSelected ||
+												!canEditAssistantStone(row)
 													? "#f5f5f5"
 													: "white",
 										}}
 									/>
-								</td>{" "}
+								</td>
 								{/* 스톤 비고 - 메인 */}
 								<td className="stock-note-cell">
 									<input
@@ -345,12 +443,18 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "mainStoneNote", e.target.value)
 										}
-										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditForSaleOnly(row)
+										}
 										placeholder="메인"
 										style={{
-											backgroundColor: !canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
+											backgroundColor:
+												isStoreNotSelected || !canEditForSaleOnly(row)
+													? "#f5f5f5"
+													: "white",
 										}}
 									/>
 								</td>
@@ -362,12 +466,18 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "assistanceStoneNote", e.target.value)
 										}
-										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditForSaleOnly(row)
+										}
 										placeholder="보조"
 										style={{
-											backgroundColor: !canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
+											backgroundColor:
+												isStoreNotSelected || !canEditForSaleOnly(row)
+													? "#f5f5f5"
+													: "white",
 										}}
 									/>
 								</td>
@@ -379,10 +489,18 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "productSize", e.target.value)
 										}
-										disabled={loading || disabled }
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditSize(row)
+										}
 										placeholder="사이즈"
 										style={{
-											backgroundColor: "white"
+											backgroundColor:
+												isStoreNotSelected || !canEditSize(row)
+													? "#f5f5f5"
+													: "white",
 										}}
 									/>
 								</td>
@@ -394,8 +512,11 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "note", e.target.value)
 										}
-										disabled={loading || disabled}
+										disabled={loading || disabled || isStoreNotSelected}
 										placeholder="비고"
+										style={{
+											backgroundColor: isStoreNotSelected ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								{/* 알중량 */}
@@ -406,12 +527,18 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "stoneWeightTotal", e.target.value)
 										}
-										disabled={loading || disabled || !canEditForSaleOnly(row)}
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditForSaleOnly(row)
+										}
 										placeholder="0.000"
 										style={{
-											backgroundColor: !canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
+											backgroundColor:
+												isStoreNotSelected || !canEditForSaleOnly(row)
+													? "#f5f5f5"
+													: "white",
 										}}
 									/>
 								</td>
@@ -424,8 +551,19 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 											const newTotalWeight = parseFloat(e.target.value) || 0;
 											onRowUpdate(row.id, "totalWeight", newTotalWeight);
 										}}
-										disabled={loading || disabled}
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditTotalWeight(row)
+										}
 										placeholder="0.000"
+										style={{
+											backgroundColor:
+												isStoreNotSelected || !canEditTotalWeight(row)
+													? "#f5f5f5"
+													: "white",
+										}}
 									/>
 								</td>
 								{/* 총 중량 - 알중량 */}
@@ -463,9 +601,23 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 									<input
 										type="text"
 										value={row.productPrice?.toLocaleString() || "0"}
-										readOnly
-										disabled
-										style={{ backgroundColor: "#f5f5f5" }}
+										onChange={(e) => {
+											const value = e.target.value.replace(/,/g, "");
+											onRowUpdate(row.id, "productPrice", Number(value));
+										}}
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditProductPrice(row)
+										}
+										placeholder="0"
+										style={{
+											backgroundColor:
+												isStoreNotSelected || !canEditProductPrice(row)
+													? "#f5f5f5"
+													: "white",
+										}}
 									/>
 								</td>
 								{/* 상품 단가 - 추가 */}
@@ -481,10 +633,19 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												Number(value)
 											);
 										}}
-										disabled={loading || disabled }
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditAdditionalProductPrice(row)
+										}
 										placeholder="0"
 										style={{
-											backgroundColor: "white"
+											backgroundColor:
+												isStoreNotSelected ||
+												!canEditAdditionalProductPrice(row)
+													? "#f5f5f5"
+													: "white",
 										}}
 									/>
 								</td>
@@ -493,9 +654,23 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 									<input
 										type="text"
 										value={row.mainStonePrice?.toLocaleString() || "0"}
-										readOnly
-										disabled
-										style={{ backgroundColor: "#f5f5f5" }}
+										onChange={(e) => {
+											const value = e.target.value.replace(/,/g, "");
+											onRowUpdate(row.id, "mainStonePrice", Number(value));
+										}}
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditStonePrice(row)
+										}
+										placeholder="0"
+										style={{
+											backgroundColor:
+												isStoreNotSelected || !canEditStonePrice(row)
+													? "#f5f5f5"
+													: "white",
+										}}
 									/>
 								</td>
 								{/* 알 단가 - 보조 */}
@@ -509,19 +684,41 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												onRowUpdate(row.id, "assistanceStonePrice", value);
 											}}
 											readOnly
-											disabled={loading || disabled}
+											disabled={
+												loading ||
+												disabled ||
+												isStoreNotSelected ||
+												!canEditStonePrice(row)
+											}
 											style={{
-											backgroundColor: !canEditForSaleOnly(row)
-												? "#f5f5f5"
-												: "white",
-										}}
+												backgroundColor:
+													isStoreNotSelected || !canEditStonePrice(row)
+														? "#f5f5f5"
+														: "white",
+											}}
 										/>
 										<span
 											className="search-icon"
-											onClick={() => safeOnStoneInfoOpen?.(row.id)}
+											onClick={() => {
+												if (!isStoreNotSelected) {
+													safeOnStoneInfoOpen?.(row.id);
+												}
+											}}
 											style={{
-												opacity: loading || disabled ? 0.5 : 1,
-												cursor: loading || disabled ? "not-allowed" : "pointer",
+												opacity:
+													loading ||
+													disabled ||
+													isStoreNotSelected ||
+													!canEditStonePrice(row)
+														? 0.5
+														: 1,
+												cursor:
+													loading ||
+													disabled ||
+													isStoreNotSelected ||
+													!canEditStonePrice(row)
+														? "not-allowed"
+														: "pointer",
 											}}
 										>
 											🔍
@@ -537,10 +734,18 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 											const value = e.target.value.replace(/,/g, "");
 											onRowUpdate(row.id, "stoneAddLaborCost", Number(value));
 										}}
-										disabled={loading || disabled }
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											!canEditStonePrice(row)
+										}
 										placeholder="0"
 										style={{
-											backgroundColor: "white"
+											backgroundColor:
+												isStoreNotSelected || !canEditStonePrice(row)
+													? "#f5f5f5"
+													: "white",
 										}}
 									/>
 								</td>
