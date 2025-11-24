@@ -46,18 +46,57 @@ export const SalePage = () => {
 
 	const prevEnd = () => searchFilters.end;
 
-	// 체크박스 선택 핸들러
+	// 한글 판매 타입을 영어 enum으로 변환
+	const convertSaleTypeToEnum = (saleType: string): string => {
+		const typeMap: Record<string, string> = {
+			판매: "SALE",
+			반품: "RETURN",
+			결제: "PAYMENT",
+			DC: "DISCOUNT",
+			통장: "PAYMENT_TO_BANK",
+			WG: "WG",
+		};
+		// 이미 영어 enum인 경우 그대로 반환, 한글인 경우 매핑
+		return typeMap[saleType] || saleType;
+	};
+
+	// 체크박스 선택 핸들러 (동일 거래처만 중복 선택 가능)
 	const handleSelect = (saleCode: string, checked: boolean) => {
 		if (checked) {
-			setSelected((prev) => [...prev, saleCode]);
+			// 첫 선택이거나 동일 거래처인 경우만 추가
+			const selectedSale = sales.find((sale) => sale.saleCode === saleCode);
+			if (!selectedSale) return;
+
+			if (selected.length === 0) {
+				// 첫 선택
+				setSelected([saleCode]);
+			} else {
+				// 기존 선택된 항목의 거래처 확인
+				const firstSelectedSale = sales.find(
+					(sale) => sale.saleCode === selected[0]
+				);
+				if (
+					firstSelectedSale &&
+					selectedSale.storeName === firstSelectedSale.storeName
+				) {
+					// 동일 거래처
+					setSelected((prev) => [...prev, saleCode]);
+				} else {
+					// 다른 거래처
+					alert(
+						`동일한 거래처(${firstSelectedSale?.storeName})의 항목만 선택할 수 있습니다.`
+					);
+				}
+			}
 		} else {
 			setSelected((prev) => prev.filter((code) => code !== saleCode));
 		}
 	};
 
-	// No 클릭 시 상세보기 페이지 열기 (읽기 전용)
+	// No 클릭 시 상세보기 페이지 열기
 	const handleSaleNoClick = (flowCode: string, orderStatus: string) => {
-		const url = `/sales/detail/${orderStatus}/${flowCode}`;
+		const enumStatus = convertSaleTypeToEnum(orderStatus);
+		const url = `/sales/detail/${enumStatus}/${flowCode}`;
 		const NAME = `sale_detail_${flowCode}`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=500";
 		const existingPopup = saleDetailPopups.current.get(flowCode);
@@ -69,7 +108,7 @@ export const SalePage = () => {
 			if (newPopup) {
 				saleDetailPopups.current.set(flowCode, newPopup);
 
-				// 팝업 닫힘 감지
+				// 팝업 닫힘 감지 (메시지로 저장 여부 확인)
 				const checkClosed = setInterval(() => {
 					if (newPopup.closed) {
 						clearInterval(checkClosed);
@@ -137,65 +176,64 @@ export const SalePage = () => {
 		}
 	};
 
-	// 반품 처리
-	const handleReturn = async () => {
+	// 반품 처리 - SaleDetailPage 팝업으로 열기
+	const handleReturn = () => {
 		if (selected.length === 0) {
 			alert("반품할 판매 항목을 선택해주세요.");
 			return;
 		}
 
-		const confirmMessage = `선택한 ${selected.length}개의 판매 항목을 반품 처리하시겠습니까?`;
-		if (!confirm(confirmMessage)) {
-			return;
-		}
+		// 선택된 판매 항목들의 flowCode, saleType, storeId 가져오기
+		const selectedSales = sales.filter((sale) =>
+			selected.includes(sale.saleCode)
+		);
 
-		try {
-			setLoading(true);
-			setError("");
+		// 선택된 항목들의 정보를 URL 파라미터로 변환
+		const salesData = selectedSales.map((sale) => ({
+			flowCode: sale.flowCode,
+			orderStatus: convertSaleTypeToEnum(sale.saleType),
+			storeId: sale.storeId,
+		}));
 
-			// 선택된 saleCode로 판매 데이터 찾기
-			const selectedSales = sales.filter((sale) =>
-				selected.includes(sale.saleCode)
-			);
+		const queryParams = salesData
+			.map(
+				(data) =>
+					`flowCode=${encodeURIComponent(
+						data.flowCode
+					)}&orderStatus=${encodeURIComponent(data.orderStatus)}`
+			)
+			.join("&");
 
-			// 각 판매 항목에 대해 반품 처리
-			const results = await Promise.all(
-				selectedSales.map(async (sale) => {
-					try {
-						const response = await saleApi.deleteSale(
-							sale.saleType,
-							parseInt(sale.saleCode),
-							parseInt(sale.flowCode)
-						);
-						return { success: response.success, saleCode: sale.saleCode };
-					} catch (error) {
-						console.error(`반품 실패 (${sale.saleCode}):`, error);
-						return { success: false, saleCode: sale.saleCode };
+		const storeIdParam =
+			salesData.length > 0
+				? `&storeId=${encodeURIComponent(salesData[0].storeId)}`
+				: "";
+
+		const url = `/sales/detail/bulk?${queryParams}${storeIdParam}`;
+		const NAME = "sale_return_bulk";
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
+
+		const existingPopup = saleDetailPopups.current.get("bulk_return");
+
+		if (existingPopup && !existingPopup.closed) {
+			existingPopup.focus();
+		} else {
+			const newPopup = window.open(url, NAME, FEATURES);
+			if (newPopup) {
+				saleDetailPopups.current.set("bulk_return", newPopup);
+
+				// 팝업 닫힘 감지 (메시지로 저장 여부 확인)
+				const checkClosed = setInterval(() => {
+					if (newPopup.closed) {
+						clearInterval(checkClosed);
+						saleDetailPopups.current.delete("bulk_return");
 					}
-				})
-			);
-
-			// 결과 확인
-			const failedItems = results.filter((r) => !r.success);
-
-			if (failedItems.length === 0) {
-				alert("반품 처리가 완료되었습니다.");
-				setSelected([]);
-				loadSales(searchFilters, currentPage);
-			} else {
-				const failedCodes = failedItems.map((item) => item.saleCode).join(", ");
-				alert(
-					`일부 항목의 반품 처리에 실패했습니다: ${failedCodes}\n성공한 항목만 반품 처리되었습니다.`
-				);
-				setSelected([]);
-				loadSales(searchFilters, currentPage);
+				}, 1000);
 			}
-		} catch (err) {
-			handleError(err);
-			alert("반품 처리 중 오류가 발생했습니다.");
-		} finally {
-			setLoading(false);
 		}
+
+		// 선택 해제
+		setSelected([]);
 	};
 
 	// 판매 데이터 로드 함수
@@ -247,11 +285,12 @@ export const SalePage = () => {
 	useEffect(() => {
 		loadSales(searchFilters, 1);
 
-		// 메시지 이벤트 리스너 등록 (상세보기 팝업 닫힘 감지용)
+		// 메시지 이벤트 리스너 등록 (상세보기 팝업에서 저장 완료 시 새로고침)
 		const handleMessage = (event: MessageEvent) => {
 			if (event.origin !== window.location.origin) return;
 
-			if (event.data.type === "SALE_DETAIL_CLOSED") {
+			// 저장이 완료된 경우에만 새로고침
+			if (event.data.type === "SALE_SAVED") {
 				loadSales(searchFilters, currentPage);
 			}
 		};

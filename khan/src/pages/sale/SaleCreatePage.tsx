@@ -67,7 +67,7 @@ export const SaleCreatePage = () => {
 	const [isStoreLoadedFromApi, setIsStoreLoadedFromApi] =
 		useState<boolean>(false);
 
-	// 금 거래 내역 상태
+	// 거래 내역 상태
 	const [accountBalanceHistoryData, setAccountBalanceHistory] =
 		useState<GoldHistoryData>({
 			previousGoldBalance: 0,

@@ -127,6 +127,7 @@ function App() {
 						path="/sales/detail/:orderStatus/:flowCode"
 						element={<SaleDetailPage />}
 					/>
+					<Route path="/sales/detail/bulk" element={<SaleDetailPage />} />
 					<Route path="/accounts/detail/:id?" element={<AccountFormPage />} />
 
 					{/* Layout 안에서 렌더링 */}

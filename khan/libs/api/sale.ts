@@ -119,11 +119,10 @@ export const saleApi = {
 	// 판매 삭제 (반품)
 	deleteSale: async (
 		type: string,
-		saleCode: number,
-		flowCode: number
+		flowCode: string
 	): Promise<ApiResponse<string>> => {
 		const eventId = uuidv4();
-		const params = { code: saleCode, id: flowCode };
+		const params = { id: flowCode };
 		const headers = {
 			"Idempotency-Key": eventId,
 		};

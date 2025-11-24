@@ -18,6 +18,7 @@ interface SaleTableProps {
 	disabled?: boolean;
 	storeId?: string;
 	storeName?: string;
+	isBulkReturnMode?: boolean;
 }
 
 const SaleTable: React.FC<SaleTableProps> = (props) => {
@@ -31,7 +32,8 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 		onFlowCodeSearch,
 		onRowFocus,
 		disabled = false,
-		storeId = ""
+		storeId = "",
+		isBulkReturnMode = false,
 	} = props;
 
 	// 거래처가 선택되지 않았는지 확인
@@ -47,6 +49,10 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 	};
 
 	const canEditSerial = (row: SaleCreateRow): boolean => {
+		// 벌크 반품 모드에서는 편집 불가
+		if (isBulkReturnMode) {
+			return false;
+		}
 		// 판매가 아닌 경우 시리얼 잠금
 		if (!isSaleStatus(row.status)) {
 			return false;
@@ -60,26 +66,46 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 
 	// 구분이 "판매"인 경우에만 편집 가능
 	const canEditForSaleOnly = (row: SaleCreateRow): boolean => {
+		// 벌크 반품 모드에서는 편집 불가
+		if (isBulkReturnMode) {
+			return false;
+		}
 		return isSaleStatus(row.status);
 	};
 
 	// 보조석 관련 필드 편집 가능 여부 (판매만 가능)
 	const canEditAssistantStone = (row: SaleCreateRow): boolean => {
+		// 벌크 반품 모드에서는 편집 불가
+		if (isBulkReturnMode) {
+			return false;
+		}
 		return isSaleStatus(row.status);
 	};
 
 	// 사이즈 편집 가능 여부 (판매만 가능)
 	const canEditSize = (row: SaleCreateRow): boolean => {
+		// 벌크 반품 모드에서는 편집 불가
+		if (isBulkReturnMode) {
+			return false;
+		}
 		return isSaleStatus(row.status);
 	};
 
 	// 알 단가 관련 필드 편집 가능 여부 (판매만 가능)
 	const canEditStonePrice = (row: SaleCreateRow): boolean => {
+		// 벌크 반품 모드에서는 편집 불가
+		if (isBulkReturnMode) {
+			return false;
+		}
 		return isSaleStatus(row.status);
 	};
 
 	// productPrice 편집 가능 여부
 	const canEditProductPrice = (row: SaleCreateRow): boolean => {
+		// 벌크 반품 모드에서는 편집 불가
+		if (isBulkReturnMode) {
+			return false;
+		}
 		// 결제, DC, WG, 결통은 열림
 		if (
 			row.status === "결제" ||
@@ -95,12 +121,20 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 
 	// additionalProductPrice 편집 가능 여부
 	const canEditAdditionalProductPrice = (row: SaleCreateRow): boolean => {
+		// 벌크 반품 모드에서는 편집 불가
+		if (isBulkReturnMode) {
+			return false;
+		}
 		// 판매만 열림
 		return isSaleStatus(row.status);
 	};
 
 	// totalWeight 편집 가능 여부
 	const canEditTotalWeight = (row: SaleCreateRow): boolean => {
+		// 벌크 반품 모드에서는 편집 불가
+		if (isBulkReturnMode) {
+			return false;
+		}
 		// 결제, DC는 열림
 		if (row.status === "판매" || row.status === "결제" || row.status === "DC") {
 			return true;
@@ -197,15 +231,19 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 									<select
 										value={row.status}
 										onChange={(e) =>
-											onRowUpdate(
-												row.id,
-												"status",
-												e.target.value as SaleCreateRow["status"]
-											)
+											onRowUpdate(row.id, "status", e.target.value)
 										}
-										disabled={loading || disabled || isStoreNotSelected}
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											isBulkReturnMode
+										}
 										style={{
-											backgroundColor: isStoreNotSelected ? "#f5f5f5" : "white",
+											backgroundColor:
+												isStoreNotSelected || isBulkReturnMode
+													? "#f5f5f5"
+													: "white",
 										}}
 									>
 										<option value="판매">판매</option>
@@ -305,9 +343,17 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 												selectedMaterial?.materialName || ""
 											);
 										}}
-										disabled={loading || disabled || isStoreNotSelected}
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											isBulkReturnMode
+										}
 										style={{
-											backgroundColor: isStoreNotSelected ? "#f5f5f5" : "white",
+											backgroundColor:
+												isStoreNotSelected || isBulkReturnMode
+													? "#f5f5f5"
+													: "white",
 										}}
 									>
 										<option value="">선택</option>
@@ -512,10 +558,18 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										onChange={(e) =>
 											onRowUpdate(row.id, "note", e.target.value)
 										}
-										disabled={loading || disabled || isStoreNotSelected}
+										disabled={
+											loading ||
+											disabled ||
+											isStoreNotSelected ||
+											isBulkReturnMode
+										}
 										placeholder="비고"
 										style={{
-											backgroundColor: isStoreNotSelected ? "#f5f5f5" : "white",
+											backgroundColor:
+												isStoreNotSelected || isBulkReturnMode
+													? "#f5f5f5"
+													: "white",
 										}}
 									/>
 								</td>

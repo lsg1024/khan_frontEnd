@@ -28,6 +28,7 @@ export interface SaleRow {
 	createAt: string;
 	createBy: string;
 	saleType: string;
+	storeId: string;
 	storeName: string;
 	saleCode: string; // 큰 정수값을 문자열로 처리
 	flowCode: string; // 큰 정수값을 문자열로 처리
@@ -77,6 +78,7 @@ export interface SaleDetailResponse {
 export interface SaleCreateRow {
 	id: string;
 	status: SaleStatusType; // 구분
+	saleType?: string; // API의 saleType (SALES, RETURN 등)
 	flowCode: string; // 시리얼
 	storeId: string; // 상점 ID
 	productId: string; // 상품 ID

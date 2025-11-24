@@ -6,7 +6,7 @@ interface GoldHistoryProps {
 	disabled?: boolean;
 }
 
-const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
+const AccountPaymentHistory: React.FC<GoldHistoryProps> = ({
 	history,
 	disabled = false,
 }) => {
@@ -156,4 +156,4 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 	);
 };
 
-export default AccountBalanceHistory;
+export default AccountPaymentHistory;
