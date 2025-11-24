@@ -4,11 +4,15 @@ import "../../../styles/components/sale/AccountsReceivableList.css";
 interface AccountsReceivableListProps {
 	stores: AccountInfoDto[];
 	loading: boolean;
+	currentPage: number;
+	size: number;
 }
 
 export const AccountsReceivableList = ({
 	stores,
 	loading,
+	currentPage,
+	size,
 }: AccountsReceivableListProps) => {
 	if (loading) {
 		return <div className="loading-message">목록을 불러오는 중...</div>;
@@ -22,6 +26,7 @@ export const AccountsReceivableList = ({
 		<table className="table">
 			<thead>
 				<tr>
+					<th>No</th>
 					<th>거래처명</th>
 					<th>등급</th>
 					<th>해리</th>
@@ -39,46 +44,53 @@ export const AccountsReceivableList = ({
 				</tr>
 			</thead>
 			<tbody>
-				{stores.map((store, index) => (
-					<tr key={store.accountId || `store-${index}`}>
-						<td className="store-name">{store.accountName}</td>
-						<td>
-							<span
-								className={`level-badge level-${store.level.toLowerCase()}`}
-							>
-								{store.level}급
-							</span>
-						</td>
-						<td>{store.goldHarryLoss}%</td>
-						<td>{store.tradeType}</td>
-						<td>{store.businessOwnerName || "-"}</td>
-						<td>{store.businessOwnerNumber || "-"}</td>
-						<td>{store.businessNumber1 || "-"}</td>
-						<td>{store.businessNumber2 || "-"}</td>
-						<td>{store.faxNumber || "-"}</td>
-						<td className="address-cell" title={store.address || "-"}>
-							{store.address || "-"}
-						</td>
-						<td className="note-cell" title={store.note || "-"}>
-							{store.note || "-"}
-						</td>
-						<td className="date-cell">
-							{store.lastPaymentDate
-								? (() => {
-										const date = new Date(store.lastPaymentDate);
-										const year = String(date.getFullYear()).slice(-2);
-										const month = String(date.getMonth() + 1).padStart(2, "0");
-										const day = String(date.getDate()).padStart(2, "0");
-										return `${year}-${month}-${day}`;
-								  })()
-								: "-"}
-						</td>
-						<td className="gold-weight">{store.goldWeight}g</td>
-						<td className="money-amount">
-							{Number(store.moneyAmount).toLocaleString()}원
-						</td>
-					</tr>
-				))}
+				{stores.map((store, index) => {
+					const rowNumber = (currentPage - 1) * size + index + 1;
+					return (
+						<tr key={store.accountId || `store-${index}`}>
+							<td>{rowNumber}</td>
+							<td className="store-name">{store.accountName}</td>
+							<td>
+								<span
+									className={`level-badge level-${store.level.toLowerCase()}`}
+								>
+									{store.level}급
+								</span>
+							</td>
+							<td>{store.goldHarryLoss}%</td>
+							<td>{store.tradeType}</td>
+							<td>{store.businessOwnerName || "-"}</td>
+							<td>{store.businessOwnerNumber || "-"}</td>
+							<td>{store.businessNumber1 || "-"}</td>
+							<td>{store.businessNumber2 || "-"}</td>
+							<td>{store.faxNumber || "-"}</td>
+							<td className="address-cell" title={store.address || "-"}>
+								{store.address || "-"}
+							</td>
+							<td className="note-cell" title={store.note || "-"}>
+								{store.note || "-"}
+							</td>
+							<td className="date-cell">
+								{store.lastPaymentDate
+									? (() => {
+											const date = new Date(store.lastPaymentDate);
+											const year = String(date.getFullYear()).slice(-2);
+											const month = String(date.getMonth() + 1).padStart(
+												2,
+												"0"
+											);
+											const day = String(date.getDate()).padStart(2, "0");
+											return `${year}-${month}-${day}`;
+									  })()
+									: "-"}
+							</td>
+							<td className="gold-weight">{store.goldWeight}g</td>
+							<td className="money-amount">
+								{Number(store.moneyAmount).toLocaleString()}원
+							</td>
+						</tr>
+					);
+				})}
 			</tbody>
 		</table>
 	);

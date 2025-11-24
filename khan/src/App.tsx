@@ -37,6 +37,9 @@ import StoneInfoPage from "./pages/order/StoneInfoPage";
 import FactorySearchPage from "./pages/search/FactorySearchPage";
 import StoreSearchPage from "./pages/search/StoreSearchPage";
 import ProductSearchPage from "./pages/search/ProductSearchPage";
+import StorePage from "./pages/account/StorePage";
+import FactoryPage from "./pages/account/FactoryPage";
+import AccountFormPage from "./pages/account/AccountFormPage";
 import AccountReceivablePage from "./pages/sale/AccountsReceivablePage";
 import SalePage from "./pages/sale/SalePage";
 import SaleCreatePage from "./pages/sale/SaleCreatePage";
@@ -120,7 +123,11 @@ function App() {
 						element={<StockCommonActionPage />}
 					/>
 					<Route path="/sales/create" element={<SaleCreatePage />} />
-					<Route path="/sales/detail/:orderStatus/:flowCode" element={<SaleDetailPage />} />
+					<Route
+						path="/sales/detail/:orderStatus/:flowCode"
+						element={<SaleDetailPage />}
+					/>
+					<Route path="/accounts/detail/:id?" element={<AccountFormPage />} />
 
 					{/* Layout 안에서 렌더링 */}
 					<Route
@@ -151,6 +158,8 @@ function App() {
 						<Route path="/sales/receipts" element={<AccountReceivablePage />} />
 						<Route path="/rentals/now" element={<RentalDashBoardPage />} />
 						<Route path="/rentals/records" element={<TotalRentalListPage />} />
+						<Route path="/accounts/store" element={<StorePage />} />
+						<Route path="/accounts/factory" element={<FactoryPage />} />
 						<Route path="/login" element={<Navigate to="/" replace />} />
 						<Route path="/join" element={<Navigate to="/" replace />} />
 					</Route>

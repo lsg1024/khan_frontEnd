@@ -153,7 +153,7 @@ const StockDetailPage: React.FC = () => {
 					setStockRow(stockData);
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err)
 			} finally {
 				setLoading(false);
 			}

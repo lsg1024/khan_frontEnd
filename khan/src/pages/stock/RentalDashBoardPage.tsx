@@ -9,7 +9,6 @@ import Pagination from "../../components/common/Pagination";
 import StockBulkActionBar from "../../components/common/stock/StockBulkActionBar";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
-import "../../styles/pages/stock/StockPage.css";
 
 export const RentalDashBoardPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -160,7 +159,7 @@ export const RentalDashBoardPage = () => {
 			await loadStocks(searchFilters, currentPage);
 			setSelectedStocks([]);
 		} catch (err) {
-			handleError(err, setError);
+			handleError(err);
 			alert("재고 반납 중 오류가 발생했습니다.");
 		} finally {
 			setLoading(false);
@@ -244,7 +243,7 @@ export const RentalDashBoardPage = () => {
 					return content;
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 				setStocks([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -296,7 +295,7 @@ export const RentalDashBoardPage = () => {
 				setColors(colorResponse.data);
 			}
 		} catch (err) {
-			handleError(err, setError);
+			handleError(err);
 		} finally {
 			setDropdownLoading(false);
 		}

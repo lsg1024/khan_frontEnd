@@ -1,11 +1,16 @@
-// libs/api/factory.ts
-import { apiRequest } from "./config";
+import { type AxiosResponse } from "axios";
+import { api, apiRequest } from "./config";
 import type { ApiResponse } from "./config";
 import type {
 	StoreSearchResponse,
 	StoreAttemptResponse,
 	AccountInfoDto,
 } from "../../src/types/store";
+import type {
+	AccountSingleResponse,
+	StoreCreateRequest,
+	StoreUpdateRequest,
+} from "../../src/types/AccountDto";
 
 export const storeApi = {
 	// 판매처 검색 (페이징 지원)
@@ -31,8 +36,10 @@ export const storeApi = {
 	},
 
 	// 판매처 상세 조회
-	getStore: async (storeId: string): Promise<ApiResponse<unknown>> => {
-		return apiRequest.get(`account/stores/${storeId}`);
+	getStore: async (
+		storeId: string
+	): Promise<ApiResponse<AccountSingleResponse>> => {
+		return apiRequest.get<AccountSingleResponse>(`account/store/${storeId}`);
 	},
 
 	// 개별 판매처 미수 정보 조회
@@ -43,16 +50,32 @@ export const storeApi = {
 	},
 
 	// 판매처 생성
-	createStore: async (data: unknown): Promise<ApiResponse<unknown>> => {
-		return apiRequest.post("account/stores", data);
+	createStore: async (
+		data: StoreCreateRequest
+	): Promise<ApiResponse<string>> => {
+		return apiRequest.post("account/store", data);
 	},
 
 	// 판매처 수정
 	updateStore: async (
 		storeId: string,
-		data: unknown
-	): Promise<ApiResponse<unknown>> => {
+		data: StoreUpdateRequest
+	): Promise<ApiResponse<string>> => {
 		return apiRequest.patch(`account/stores/${storeId}`, data);
+	},
+
+	updateHarry: async (
+		storeId: string,
+		harryId: string
+	): Promise<ApiResponse<string>> => {
+		return apiRequest.patch(`account/stores/harry/${storeId}/${harryId}`);
+	},
+
+	updateGrade: async (
+		storeId: string,
+		grade: string
+	): Promise<ApiResponse<string>> => {
+		return apiRequest.patch(`account/stores/grade/${storeId}/${grade}`);
 	},
 
 	// 판매처 삭제
@@ -63,5 +86,12 @@ export const storeApi = {
 	// 판매처 등급
 	getStoreGrade: async (storeId: string): Promise<ApiResponse<string>> => {
 		return apiRequest.get("account/stores/grade", { params: { id: storeId } });
+	},
+
+	// 판매처 엑셀 다운로드
+	downloadExcel: async (): Promise<AxiosResponse<Blob>> => {
+		return api.get("account/stores/excel", {
+			responseType: "blob",
+		});
 	},
 };

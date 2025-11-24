@@ -17,7 +17,7 @@ import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto, StoreAttemptDto } from "../../types/store";
+import type { StoreSearchDto, AccountInfoDto } from "../../types/store";
 import type { ProductDto } from "../../types/product";
 import StockTable from "../../components/common/stock/StockTable";
 import { calculateStoneDetails } from "../../utils/calculateStone";
@@ -144,7 +144,7 @@ const StockRegisterPage: React.FC = () => {
 	};
 
 	// 검색 결과 선택 핸들러들
-	const handleStoreSelect = async (store: StoreSearchDto | StoreAttemptDto) => {
+	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
 		if (selectedRowForStore) {
 			if (store.accountId === undefined || store.accountId === null) {
 				alert("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.");
@@ -152,7 +152,7 @@ const StockRegisterPage: React.FC = () => {
 			}
 
 			onRowUpdate(selectedRowForStore, "storeId", store.accountId.toString());
-			onRowUpdate(selectedRowForStore, "storeName", store.storeName || "");
+			onRowUpdate(selectedRowForStore, "storeName", store.accountName || "");
 
 			try {
 				const gradeResponse = await storeApi.getStoreGrade(
@@ -163,8 +163,7 @@ const StockRegisterPage: React.FC = () => {
 					onRowUpdate(selectedRowForStore, "grade", gradeResponse.data);
 				}
 			} catch (err) {
-				handleError(err, setError);
-				alert("거래처 등급을 불러오는 데 실패했습니다.");
+				handleError(err)
 				onRowUpdate(selectedRowForStore, "grade", ""); // 실패 시 등급 초기화
 			}
 		}
@@ -427,7 +426,7 @@ const StockRegisterPage: React.FC = () => {
 					setOrderRows(allRows);
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err)
 			} finally {
 				setLoading(false);
 			}
@@ -508,8 +507,7 @@ const StockRegisterPage: React.FC = () => {
 
 			window.close();
 		} catch (err) {
-			handleError(err, setError);
-			alert("일괄 재고 등록에 실패했습니다.");
+			handleError(err)
 		} finally {
 			setLoading(false);
 		}

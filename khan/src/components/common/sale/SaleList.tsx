@@ -116,7 +116,7 @@ export const SaleList = ({
 							</td>
 							<td className="no-cell">
 								<button
-									className="sale-no-btn"
+									className="no-btn"
 									onClick={(e) => {
 										e.stopPropagation();
 										onNoClick?.(sale.flowCode, sale.saleType);

@@ -5,6 +5,7 @@ export function extractSubdomain(hostname: string): string {
     console.log("hostname:", hostname);
     if (!hostname) return "";
     const pure = hostname.split(":")[0];
+    
     console.log("pure hostname:", pure);
 
     if (
@@ -21,8 +22,7 @@ export function extractSubdomain(hostname: string): string {
 
     const parts = pure.split(".");
     console.log("domain parts:", parts);
-    // ex) khan.example.co.kr -> ["khan","example","co","kr"]
-    const subdomain = parts.length >= 3 ? parts[0] : "";
+    const subdomain = parts.length >= 4 ? parts[0] : "";
     console.log("extracted subdomain:", subdomain);
     return subdomain;
 }

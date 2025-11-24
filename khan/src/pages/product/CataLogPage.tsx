@@ -78,7 +78,7 @@ function CataLogPage() {
 					setTotalElements(pageData.totalElements || 0);
 				}
 			} catch (err: unknown) {
-				handleError(err, setError);
+				handleError(err);
 				setProducts([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -210,7 +210,7 @@ function CataLogPage() {
 	}
 
 	return (
-		<div className="page">
+		<div className="page catalog-page">
 			{/* 에러 메시지 */}
 			{error && (
 				<div className="error-message">
@@ -329,7 +329,7 @@ function CataLogPage() {
 							style={{ cursor: "pointer" }}
 						>
 							{/* 상품 이미지 */}
-							<div className="product-image">
+							<div className="catalog-product-image">
 								<img
 									src={
 										product.productImagePath

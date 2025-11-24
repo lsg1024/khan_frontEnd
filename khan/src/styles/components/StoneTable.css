@@ -335,13 +335,6 @@
 	box-shadow: 0 0 0 3px rgba(224, 49, 49, 0.1);
 }
 
-/* 에러 메시지 */
-.error-message {
-	margin-top: 4px;
-	color: #e03131;
-	font-size: 12px;
-}
-
 /* 769px - 1024px 사이즈 반응형 스타일 */
 @media (max-width: 1024px) {
 	.price-table {

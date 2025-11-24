@@ -57,14 +57,18 @@ const sidebarItems: SidebarItem[] = [
 		],
 	},
 	{
-		path:"/accounts",
-		label: "거래처",
-		icon: "🏢"
-	},
-	{
 		path: "/accounts_gold",
 		label: "금&현금",
 		icon: "💰"
+	},
+		{
+		path:"/accounts",
+		label: "거래처",
+		icon: "🏢",
+		children: [
+			{ path: "/accounts/store", label: "판매처"},
+			{ path: "/accounts/factory", label: "매입처"},
+		],
 	},
 	{ path: "/settings", label: "설정", icon: "⚙️" }
 ];

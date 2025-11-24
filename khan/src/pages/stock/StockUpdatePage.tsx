@@ -280,7 +280,7 @@ const StockUpdatePage: React.FC = () => {
 
 				setStockRows(allStockRows);
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err)
 			} finally {
 				setLoading(false);
 			}
@@ -362,8 +362,7 @@ const StockUpdatePage: React.FC = () => {
 
 			handleClose();
 		} catch (err) {
-			handleError(err, setError);
-			alert("재고 정보 업데이트 중 오류가 발생했습니다.");
+			handleError(err)
 		} finally {
 			setLoading(false);
 		}

@@ -12,7 +12,6 @@ function LoginPage() {
 	// 모든 state를 컴포넌트 최상단에서 선언
 	const [userId, setUserId] = useState("");
 	const [password, setPassword] = useState("");
-	const [error, setError] = useState("");
 	const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
 	useEffect(() => {
@@ -23,7 +22,7 @@ function LoginPage() {
 
 				if (response.success) {
 					console.log("LoginPage: 인증 성공. 메인 페이지로 이동.");
-					setIsCheckingAuth(false); 
+					setIsCheckingAuth(false);
 					window.dispatchEvent(new Event("tokenChange"));
 					navigate("/", { replace: true });
 					return;
@@ -42,7 +41,6 @@ function LoginPage() {
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setError("");
 
 		if (userId === "" || password === "") {
 			return;
@@ -67,7 +65,7 @@ function LoginPage() {
 							window.dispatchEvent(new Event("tokenChange"));
 							navigate("/", { replace: true }); // 루트로 리다이렉트, replace 사용
 						} else {
-							setError("인증 정보 확인에 실패했습니다.");
+							alert("인증 정보 확인에 실패했습니다.");
 						}
 					} catch {
 						// 토큰 변화 이벤트 발생시켜 App.tsx 상태 업데이트
@@ -75,10 +73,10 @@ function LoginPage() {
 						navigate("/");
 					}
 				} else {
-					setError("로그인 처리 중 오류가 발생했습니다.");
+					alert("로그인 처리 중 오류가 발생했습니다.");
 				}
 			} else {
-				setError(data?.message || "로그인에 실패했습니다.");
+				alert(data?.message || "로그인에 실패했습니다.");
 			}
 		} catch (error: unknown) {
 			// 로그인 실패 시 더 구체적인 에러 메시지 표시
@@ -94,18 +92,18 @@ function LoginPage() {
 				const responseData = axiosError.response?.data;
 
 				if (status === 401) {
-					setError("아이디 또는 비밀번호가 올바르지 않습니다.");
+					alert("아이디 또는 비밀번호가 올바르지 않습니다.");
 				} else if (status === 403) {
-					setError("계정이 비활성화되었거나 접근이 제한되었습니다.");
+					alert("계정이 비활성화되었거나 접근이 제한되었습니다.");
 				} else if (status === 404) {
-					setError("존재하지 않는 사용자입니다.");
+					alert("존재하지 않는 사용자입니다.");
 				} else if (responseData?.message) {
-					setError(responseData.message);
+					alert(responseData.message);
 				} else {
-					setError("로그인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+					alert("로그인에 실패했습니다. 잠시 후 다시 시도해주세요.");
 				}
 			} else {
-				setError("네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.");
+				alert("네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.");
 			}
 		}
 	};
@@ -141,10 +139,9 @@ function LoginPage() {
 							value={userId}
 							onChange={(e) => {
 								setUserId(e.target.value);
-								if (error) setError(""); // 입력 시 에러 메시지 제거
 							}}
 							required
-							className={`form-input ${error ? "error" : ""}`}
+							className="form-input"
 						/>
 					</div>
 
@@ -157,19 +154,11 @@ function LoginPage() {
 							value={password}
 							onChange={(e) => {
 								setPassword(e.target.value);
-								if (error) setError(""); // 입력 시 에러 메시지 제거
 							}}
 							required
-							className={`form-input ${error ? "error" : ""}`}
+							className="form-input"
 						/>
 					</div>
-
-					{error && (
-						<div className="error-message">
-							<span>⚠️</span>
-							<p>{error}</p>
-						</div>
-					)}
 
 					<button type="submit" className="login-button">
 						로그인

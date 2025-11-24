@@ -16,6 +16,7 @@ export interface StoreSearchDto {
 	address: string;
 }
 
+
 // 상점 검색 API 응답
 export interface StoreSearchResponse {
 	content: StoreSearchDto[];

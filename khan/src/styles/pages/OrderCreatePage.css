@@ -418,19 +418,6 @@
 	text-align: center;
 }
 
-/* 에러 메시지 */
-.error-message {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	background-color: #fee;
-	border: 1px solid #fcc;
-	color: #c66;
-	padding: 12px;
-	border-radius: 4px;
-	margin-bottom: 15px;
-}
-
 /* 테이블 컨테이너 */
 .order-table-container {
 	background-color: white;

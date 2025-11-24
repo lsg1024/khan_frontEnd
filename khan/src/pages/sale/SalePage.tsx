@@ -191,7 +191,7 @@ export const SalePage = () => {
 				loadSales(searchFilters, currentPage);
 			}
 		} catch (err) {
-			handleError(err, setError);
+			handleError(err);
 			alert("반품 처리 중 오류가 발생했습니다.");
 		} finally {
 			setLoading(false);
@@ -231,7 +231,7 @@ export const SalePage = () => {
 					setTotalElements(0);
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 				setSales([]);
 				setCurrentPage(1);
 				setTotalPages(0);

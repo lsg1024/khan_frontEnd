@@ -300,27 +300,6 @@
 	background-color: #fff3cd !important; /* 수리 + 재고 = 노란색 */
 }
 
-/* No 클릭 버튼 스타일 */
-.stock-no-btn {
-	background: none;
-	border: none;
-	color: #28a745; /* 주문목록과 같은 초록색 */
-	cursor: pointer;
-	text-decoration: underline;
-	font-weight: bold;
-	padding: 2px 4px;
-	border-radius: 3px;
-	transition: background-color 0.2s;
-	text-decoration-line: none;
-}
-
-.stock-no-btn:hover {
-	background-color: #28a745;
-	text-decoration: none;
-	color: white;
-}
-
-
 @media (max-width: 768px) {
 	.stock-table {
 		font-size: 12px;

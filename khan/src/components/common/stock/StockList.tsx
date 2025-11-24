@@ -132,7 +132,7 @@ export const StockList = ({
 							</td>
 							<td className="no-cell">
 								<button
-									className="stock-no-btn"
+									className="no-btn"
 									onClick={(e) => {
 										e.stopPropagation();
 										onNoClick?.(stock.flowCode);

@@ -15,7 +15,7 @@ export function handleApiError(
 	options: ErrorHandlerOptions = {}
 ): string {
 	const {
-		showAlert = false,
+		showAlert = true, // 기본값을 true로 변경하여 항상 alert 표시
 		defaultMessage = "서버와 통신 중 오류가 발생했습니다.",
 		onError,
 	} = options;
@@ -36,14 +36,36 @@ export function handleApiError(
 		const responseData = response?.data;
 
 		if (statusCode === 400) {
-			// 400 에러: 서버에서 내려주는 메시지 사용
-			errorMessage = responseData?.message || "잘못된 요청입니다.";
+			// 400 에러: data 객체에 상세 오류 메시지가 있으면 사용, 없으면 message 사용
+			if (responseData?.data && typeof responseData.data === "object") {
+				const detailMessages = Object.entries(responseData.data)
+					.map(([, value]) => `${value}`)
+					.join("\n");
+				if (detailMessages) {
+					errorMessage = detailMessages;
+				} else {
+					errorMessage = responseData?.message || "잘못된 요청입니다.";
+				}
+			} else {
+				errorMessage = responseData?.message || "잘못된 요청입니다.";
+			}
 		} else if (statusCode === 403) {
 			// 403 에러: 토큰 관련 에러
 			errorMessage = "접근 권한이 없습니다. 다시 로그인해주세요.";
-		} else if (responseData && !responseData.success && responseData.message) {
-			// 기타 에러: 서버 응답 메시지가 있으면 사용
-			errorMessage = responseData.message;
+		} else if (responseData && !responseData.success) {
+			// 기타 에러: data 객체에 상세 오류 메시지가 있으면 사용, 없으면 message 사용
+			if (responseData.data && typeof responseData.data === "object") {
+				const detailMessages = Object.entries(responseData.data)
+					.map(([, value]) => `${value}`)
+					.join("\n");
+				if (detailMessages) {
+					errorMessage = detailMessages;
+				} else {
+					errorMessage = responseData.message || defaultMessage;
+				}
+			} else {
+				errorMessage = responseData.message || defaultMessage;
+			}
 		} else {
 			// 그 외의 경우: 기본 메시지
 			errorMessage = defaultMessage;
@@ -75,9 +97,9 @@ export function handleApiError(
  */
 export function useErrorHandler() {
 	return {
-		handleError: (error: unknown, setError: (message: string) => void) => {
-			const message = handleApiError(error);
-			setError(message);
+		handleError: (error: unknown) => {
+			// alert로 표시하고 setError는 사용하지 않음
+			handleApiError(error, { showAlert: true });
 		},
 	};
 }

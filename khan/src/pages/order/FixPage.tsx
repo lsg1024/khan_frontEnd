@@ -98,7 +98,7 @@ export const FixPage = () => {
 					setTotalElements(pageData.totalElements || 0);
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 				setFixes([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -261,8 +261,7 @@ export const FixPage = () => {
 				setSelectedFix([]);
 				await loadFixes(searchFilters, currentPage);
 			} catch (err) {
-				handleError(err, setError);
-				alert("수리 삭제에 실패했습니다.");
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}
@@ -310,8 +309,7 @@ export const FixPage = () => {
 				alert("수리 상태가 성공적으로 변경되었습니다.");
 				await loadFixes(searchFilters, currentPage);
 			} catch (err) {
-				handleError(err, setError);
-				alert("수리 상태 변경에 실패했습니다.");
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}
@@ -345,8 +343,7 @@ export const FixPage = () => {
 				setIsFactorySearchOpen(false);
 				setSelectedFixForFactory("");
 			} catch (err) {
-				handleError(err, setError);
-				alert("제조사 변경에 실패했습니다.");
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}

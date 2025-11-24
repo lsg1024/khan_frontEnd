@@ -243,26 +243,6 @@
 	min-width: 30px;
 }
 
-/* No 클릭 버튼 스타일 */
-.sale-no-btn {
-	background: none;
-	border: none;
-	color: #28a745; /* 초록색 */
-	cursor: pointer;
-	text-decoration: underline;
-	font-weight: bold;
-	padding: 2px 4px;
-	border-radius: 3px;
-	transition: background-color 0.2s;
-	text-decoration-line: none;
-}
-
-.sale-no-btn:hover {
-	background-color: #28a745;
-	text-decoration: none;
-	color: white;
-}
-
 /* 로딩 및 빈 데이터 메시지 */
 .loading-message,
 .no-data-message {

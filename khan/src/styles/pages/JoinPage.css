@@ -96,27 +96,6 @@
 	border-color: var(--success-color);
 }
 
-.error-message {
-	display: flex;
-	align-items: center;
-	gap: var(--spacing-xs);
-	background-color: rgba(220, 53, 69, 0.1);
-	border: 1px solid rgba(220, 53, 69, 0.3);
-	border-radius: var(--border-radius);
-	padding: var(--spacing-sm);
-	margin-bottom: var(--spacing-lg);
-	color: var(--danger-color);
-	font-size: var(--font-size-sm);
-}
-
-.error-message span {
-	font-size: 1rem;
-}
-
-.error-message p {
-	margin: 0;
-}
-
 .join-button {
 	width: 100%;
 	padding: var(--spacing-md);

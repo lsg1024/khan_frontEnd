@@ -714,8 +714,7 @@ export const SaleCreatePage = () => {
 				}
 			}
 		} catch (err) {
-			console.error("판매 등록 실패:", err);
-			handleError(err, setError);
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -1041,8 +1040,7 @@ export const SaleCreatePage = () => {
 				}
 			}
 		} catch (err) {
-			handleError(err, setError);
-			alert("데이터 로드에 실패했습니다.");
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -1142,7 +1140,7 @@ export const SaleCreatePage = () => {
 					setMaterials(loadedMaterials);
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 			}
 		};
 		loadMaterials();

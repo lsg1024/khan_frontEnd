@@ -80,7 +80,6 @@ export const StockCreatePage = () => {
 	);
 
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
 
 	const currentDate = getLocalDate();
 
@@ -930,7 +929,7 @@ export const StockCreatePage = () => {
 				}
 				setStockRows(initialRows);
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}
@@ -1023,8 +1022,7 @@ export const StockCreatePage = () => {
 				window.close();
 			}
 		} catch (err) {
-			handleError(err, setError);
-			alert("재고 등록에 실패했습니다.");
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -1050,14 +1048,6 @@ export const StockCreatePage = () => {
 
 	return (
 		<div className="stock-create-page">
-			{/* 에러 메시지 */}
-			{error && (
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-			)}
-
 			{/* 상품 정보 섹션 */}
 			<ProductInfoSection
 				currentProductDetail={currentProductDetail}

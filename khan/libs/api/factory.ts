@@ -1,32 +1,78 @@
-// libs/api/factory.ts
-import { apiRequest } from "./config";
+import { type AxiosResponse } from "axios";
+import { api, apiRequest } from "./config";
 import type { ApiResponse } from "./config";
 import type { FactorySearchResponse } from "../../src/types/factory";
+import type {
+	AccountSingleResponse,
+	FactoryCreateRequest,
+	FactoryUpdateRequest,
+} from "../../src/types/AccountDto";
 
 export const factoryApi = {
-    // 제조사 검색 (페이징 지원)
-    getFactories: async (name?: string, page: number = 1, size: number = 12): Promise<ApiResponse<FactorySearchResponse>> => {
-        return apiRequest.get<FactorySearchResponse>("account/factories", 
-            { params: {search: name || "", page: page, size: size} });
-    },
+	// 제조사 검색 (페이징 지원)
+	getFactories: async (
+		name?: string,
+		page: number = 1,
+		size: number = 12
+	): Promise<ApiResponse<FactorySearchResponse>> => {
+		return apiRequest.get<FactorySearchResponse>("account/factories", {
+			params: { search: name || "", page: page, size: size },
+		});
+	},
 
-    // 제조사 상세 조회
-    getFactory: async (factoryId: string): Promise<ApiResponse<unknown>> => {
-        return apiRequest.get(`account/factories/${factoryId}`);
-    },
+	// 제조사 상세 조회
+	getFactory: async (
+		factoryId: string
+	): Promise<ApiResponse<AccountSingleResponse>> => {
+		return apiRequest.get<AccountSingleResponse>(
+			`account/factory/${factoryId}`
+		);
+	},
 
-    // 제조사 생성
-    createFactory: async (data: unknown): Promise<ApiResponse<unknown>> => {
-        return apiRequest.post("account/factories", data);
-    },
+	// 제조사 생성
+	createFactory: async (
+		data: FactoryCreateRequest
+	): Promise<ApiResponse<unknown>> => {
+		return apiRequest.post("account/factory", data);
+	},
 
-    // 제조사 수정
-    updateFactory: async (factoryId: string, data: unknown): Promise<ApiResponse<unknown>> => {
-        return apiRequest.patch(`account/factories/${factoryId}`, data);
-    },
+	// 제조사 수정
+	updateFactory: async (
+		factoryId: string,
+		data: FactoryUpdateRequest
+	): Promise<ApiResponse<unknown>> => {
+		return apiRequest.patch(`account/factories/${factoryId}`, data);
+	},
 
-    // 제조사 삭제
-    deleteFactory: async (factoryId: string): Promise<ApiResponse<unknown>> => {
-        return apiRequest.delete(`account/factories/${factoryId}`);
-    }
+	getFactoryGrades: async (factoryId: string): Promise<ApiResponse<string>> => {
+		return apiRequest.get<string>("account/factories/grade", {
+			params: { id: factoryId },
+		});
+	},
+
+	updateHarry: async (
+		factoryId: string,
+		harryId: string
+	): Promise<ApiResponse<string>> => {
+		return apiRequest.patch(`account/factories/harry/${factoryId}/${harryId}`);
+	},
+
+	updateGrade: async (
+		factoryId: string,
+		grade: string
+	): Promise<ApiResponse<string>> => {
+		return apiRequest.patch(`account/factories/grade/${factoryId}/${grade}`);
+	},
+
+	// 제조사 삭제
+	deleteFactory: async (factoryId: string): Promise<ApiResponse<unknown>> => {
+		return apiRequest.delete(`account/factories/${factoryId}`);
+	},
+
+	// 제조사 엑셀 다운로드
+	downloadExcel: async (): Promise<AxiosResponse<Blob>> => {
+		return api.get("account/factories/excel", {
+			responseType: "blob",
+		});
+	},
 };

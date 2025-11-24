@@ -131,8 +131,7 @@ export const OrderPage = () => {
 			link.parentNode?.removeChild(link);
 			window.URL.revokeObjectURL(url);
 		} catch (err) {
-			handleError(err, setError);
-			alert("엑셀 다운로드에 실패했습니다.");
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -181,8 +180,7 @@ export const OrderPage = () => {
 				// 현재 페이지 데이터 새로고침
 				await loadOrders(searchFilters, currentPage);
 			} catch (err) {
-				handleError(err, setError);
-				alert(error);
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}
@@ -221,8 +219,7 @@ export const OrderPage = () => {
 				setIsFactorySearchOpen(false);
 				setSelectedOrderForFactory("");
 			} catch (err) {
-				handleError(err, setError);
-				alert("제조사 변경에 실패했습니다.");
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}
@@ -306,7 +303,7 @@ export const OrderPage = () => {
 					return content;
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 				setOrders([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -343,8 +340,7 @@ export const OrderPage = () => {
 				// 데이터 새로고침
 				await loadOrders(searchFilters, currentPage);
 			} catch (err) {
-				handleError(err, setError);
-				alert("출고일 변경에 실패했습니다.");
+				handleError(err);
 			} finally {
 				setIsDatePickerOpen(false); // 날짜 선택창 닫기
 				setLoading(false);
@@ -469,8 +465,7 @@ export const OrderPage = () => {
 				setSelectedOrders([]);
 				await loadOrders(searchFilters, currentPage);
 			} catch (err) {
-				handleError(err, setError);
-				alert("주문 삭제에 실패했습니다.");
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}

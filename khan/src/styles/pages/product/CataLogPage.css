@@ -239,6 +239,13 @@
 	color: var(--text-muted);
 }
 
+/* ===== CataLogPage 전용 list 오버라이드 ===== */
+.catalog-page .list {
+	min-width: auto; /* min-width 제거 */
+	max-width: 100%; /* 최대 너비를 100%로 설정 */
+	width: 100%; /* 너비를 100%로 설정 */
+}
+
 /* ===== 상품 그리드 ===== */
 .products-grid {
 	display: grid;
@@ -257,7 +264,6 @@
 	border: 1px solid #e0e0e0;
 	display: flex;
 	flex-direction: column;
-	height: 420px; /* 500px에서 420px로 감소 */
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -266,25 +272,28 @@
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	border-color: var(--primary-color);
 }
-.product-image {
-	height: 150px; /* 이미지 영역 150px */
+.catalog-product-image {
+	width: 170px; /* 고정 너비 */
+	height: 120px; /* 고정 높이 */
+	margin: 0 auto; /* 중앙 정렬 */
 	background-color: #f8f9fa;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
 	border-bottom: 1px solid #ddd;
+	flex-shrink: 0; /* 이미지 영역이 줄어들지 않도록 설정 */
 }
 
-.product-image img {
-	width: 100%;
-	height: 100%;
+.catalog-product-image img {
+	width: 90%;
+	height: 90%;
 	object-fit: contain;
 	transition: transform 0.3s ease;
 	border-radius: var(--border-radius);
 }
 
-.product-card:hover .product-image img {
+.product-card:hover .catalog-product-image img {
 	transform: scale(1.05);
 }
 
@@ -349,8 +358,9 @@
 
 .catalog-detail-item {
 	display: flex;
-    align-items: center;
-    font-size: 12px;
+	align-items: center;
+	font-size: 12px;
+	color: black;
 }
 
 /* 가격 정보 한 줄 스타일 - 배경 제거 */
@@ -400,13 +410,13 @@
 .labor-cost {
 	color: var(--info-color);
 	font-weight: var(--font-weight-medium);
-	font-size: 12px; 
+	font-size: 12px;
 }
 
 .selling-price {
 	color: var(--primary-color);
 	font-weight: var(--font-weight-bold);
-	font-size: 12px; 
+	font-size: 12px;
 }
 
 .color-tag {
@@ -452,24 +462,26 @@
 /* 대형 화면 (1200px ~ 1399px) */
 @media (max-width: 1399px) and (min-width: 1200px) {
 	.products-grid {
-		grid-template-columns: repeat(4, 1fr); /* 4개로 통일 */
+		grid-template-columns: repeat(5, 1fr); /* 4개로 통일 */
 		gap: var(--spacing-lg);
 	}
 
-	.product-image {
-		min-height: 130px; /* 이미지 최소 높이 보장 */
+	.catalog-product-image {
+		width: 170px; /* 고정 너비 유지 */
+		height: 120px; /* 고정 높이 유지 */
 	}
 }
 
 /* 중간 데스크탑 (992px ~ 1199px) */
 @media (max-width: 1199px) and (min-width: 992px) {
 	.products-grid {
-		grid-template-columns: repeat(3, 1fr); /* 4개 */
+		grid-template-columns: repeat(4, 1fr); /* 4개 */
 		gap: var(--spacing-lg);
 	}
 
-	.product-image {
-		min-height: 125px; /* 이미지 최소 높이 보장 */
+	.catalog-product-image {
+		width: 170px; /* 고정 너비 유지 */
+		height: 120px; /* 고정 높이 유지 */
 	}
 }
 
@@ -501,8 +513,9 @@
 		gap: var(--spacing-md);
 	}
 
-	.product-image {
-		min-height: 120px; /* 이미지 최소 높이 120px 보장 */
+	.catalog-product-image {
+		width: 170px; /* 고정 너비 유지 */
+		height: 120px; /* 고정 높이 유지 */
 	}
 }
 
@@ -534,9 +547,9 @@
 		gap: var(--spacing-sm); /* 간격 줄임 */
 	}
 
-	.product-image {
-		height: 45%; /* 이미지 비율을 45%로 줄여서 텍스트 공간 확보 */
-		min-height: 120px; /* 이미지 최소 높이 120px 보장 */
+	.catalog-product-image {
+		width: 150px; /* 화면 크기에 따라 축소 */
+		height: 105px; /* 비율 유지하며 축소 */
 	}
 
 	.product-info {
@@ -570,46 +583,6 @@
 	}
 }
 
-/* 작은 태블릿/큰 모바일 (600px 이하) */
-@media (max-width: 600px) {
-	.catalog-page {
-		padding: var(--spacing-xs);
-	}
-
-	.products-grid {
-		grid-template-columns: repeat(2, 1fr); /* 2개 유지 */
-		gap: var(--spacing-xs); /* 간격 더 줄임 */
-	}
-
-	.product-image {
-		height: 40%; /* 이미지 비율 더 줄임 */
-		min-height: 120px; /* 이미지 최소 높이 120px 보장 */
-	}
-
-	.product-info {
-		padding: 6px; /* 패딩 더 줄임 */
-	}
-
-	.product-name {
-		font-size: 0.85rem;
-		line-height: 1.1;
-	}
-
-	.detail-row .label,
-	.price-label {
-		font-size: 10px;
-	}
-
-	.detail-row .value {
-		font-size: 10px;
-	}
-
-	.labor-cost,
-	.selling-price {
-		font-size: 10px;
-	}
-}
-
 /* 모바일 (480px 이하) */
 @media (max-width: 480px) {
 	.catalog-page {
@@ -631,9 +604,13 @@
 		gap: var(--spacing-xs);
 	}
 
-	.product-image {
-		height: 35%; /* 이미지 비율 더 줄여서 텍스트 공간 확보 */
-		min-height: 120px; /* 이미지 최소 높이 120px 보장 */
+	.product-card {
+		min-height: 310px; /* 최소 높이 설정 */
+	}
+
+	.catalog-product-image {
+		width: 110px; /* 화면 크기에 따라 축소 */
+		height: 77px; /* 비율 유지하며 축소 */
 	}
 
 	.product-info {
@@ -699,14 +676,13 @@
 	}
 
 	.product-card {
-		height: 320px; /* 360px에서 320px로 감소 */
 		margin: 0 auto;
 		max-width: 280px; /* 최대 너비 제한 */
 	}
 
-	.product-image {
-		height: 35%; /* 이미지 비율 유지 */
-		min-height: 120px; /* 이미지 최소 높이 120px 보장 */
+	.catalog-product-image {
+		width: 100px; /* 화면 크기에 따라 축소 */
+		height: 70px; /* 비율 유지하며 축소 */
 	}
 
 	.product-info {
@@ -772,13 +748,13 @@
 }
 
 .total-label {
-	font-size: 12px; 
+	font-size: 12px;
 	color: #666;
 	font-weight: var(--font-weight-normal);
 }
 
 .total-value {
-	font-size: 12px; 
+	font-size: 12px;
 	color: #007bff;
 	font-weight: var(--font-weight-bold);
 	margin-left: 1px;

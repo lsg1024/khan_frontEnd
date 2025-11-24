@@ -4,9 +4,9 @@ import { isApiSuccess } from "../../../libs/api/config";
 import { storeApi } from "../../../libs/api/store";
 import type {
 	StoreSearchDto,
-	StoreAttemptDto,
 	StoreSearchResponse,
 	StoreAttemptResponse,
+	AccountInfoDto
 } from "../../types/store";
 import StoreList from "../../components/common/store/StoreList";
 import Pagination from "../../components/common/Pagination";
@@ -17,7 +17,7 @@ const StoreSearchPage: React.FC = () => {
 	const useAttempt = searchParams.get("useAttempt") === "true"; // URL 파라미터 확인
 
 	const [searchName, setSearchName] = useState("");
-	const [stores, setStores] = useState<(StoreSearchDto | StoreAttemptDto)[]>(
+	const [stores, setStores] = useState<(StoreSearchDto | AccountInfoDto)[]>(
 		[]
 	);
 	const [loading, setLoading] = useState(false);
@@ -114,7 +114,7 @@ const StoreSearchPage: React.FC = () => {
 	};
 
 	// 거래처 선택 처리
-	const handleStoreSelect = (store: StoreSearchDto | StoreAttemptDto) => {
+	const handleStoreSelect = (store: StoreSearchDto | AccountInfoDto) => {
 		// 부모 창에 선택된 거래처 정보 전달
 		if (window.opener) {
 			window.opener.postMessage(

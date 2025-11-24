@@ -143,24 +143,25 @@ export const AccountReceivablePage = () => {
 			/>
 
 			{/* 결과 섹션 */}
-            <div className="list">
-                <AccountsReceivableList 
-                stores={stores} 
-                loading={loading} 
-            />
-
-			{/* 페이지네이션 */}
-			{!error && stores.length > 0 && (
-				<Pagination
-					currentPage={currentPage}
-					totalPages={totalPages}
-					totalElements={totalElements}
+			<div className="list">
+				<AccountsReceivableList
+					stores={stores}
 					loading={loading}
-					onPageChange={handlePageChange}
+					currentPage={currentPage}
+					size={size}
 				/>
-			)}
-            </div>
-			
+
+				{/* 페이지네이션 */}
+				{!error && stores.length > 0 && (
+					<Pagination
+						currentPage={currentPage}
+						totalPages={totalPages}
+						totalElements={totalElements}
+						loading={loading}
+						onPageChange={handlePageChange}
+					/>
+				)}
+			</div>
 		</div>
 	);
 };

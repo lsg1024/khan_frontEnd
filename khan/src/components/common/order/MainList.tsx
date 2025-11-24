@@ -74,7 +74,7 @@ const MainList = ({
 						</td>
 						<td>
 							<button
-								className="order-no-btn"
+								className="no-btn"
 								onClick={() => onClick?.(dto.flowCode)}
 							>
 								{(currentPage - 1) * 16 + index + 1}

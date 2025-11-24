@@ -8,7 +8,7 @@
 }
 
 /* 에러 메시지 */
-.sale-page .error-message {
+.sale-page  {
 	background-color: var(--error-background);
 	border-left: 4px solid var(--error-border);
 	padding: 16px;
@@ -20,16 +20,6 @@
 	max-width: 1200px;
 	margin-left: auto;
 	margin-right: auto;
-}
-
-.sale-page .error-message span {
-	font-size: 24px;
-}
-
-.sale-page .error-message p {
-	margin: 0;
-	color: var(--error-text);
-	font-weight: 500;
 }
 
 /* 판매 목록 영역 */

@@ -9,7 +9,6 @@ import Pagination from "../../components/common/Pagination";
 import StockBulkActionBar from "../../components/common/stock/StockBulkActionBar";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
-import "../../styles/pages/stock/StockPage.css";
 
 export const StockPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -228,8 +227,7 @@ export const StockPage = () => {
 			await loadStocks(searchFilters, currentPage);
 			setSelectedStocks([]);
 		} catch (err) {
-			handleError(err, setError);
-			alert("재고 삭제 중 오류가 발생했습니다.");
+			handleError(err)
 		} finally {
 			setLoading(false);
 		}
@@ -312,7 +310,7 @@ export const StockPage = () => {
 					return content;
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err)
 				setStocks([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -364,7 +362,7 @@ export const StockPage = () => {
 				setColors(colorResponse.data);
 			}
 		} catch (err) {
-			handleError(err, setError);
+			handleError(err)
 		} finally {
 			setDropdownLoading(false);
 		}

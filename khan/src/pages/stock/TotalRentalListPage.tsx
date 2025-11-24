@@ -8,7 +8,6 @@ import StockList from "../../components/common/stock/StockList";
 import Pagination from "../../components/common/Pagination";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
-import "../../styles/pages/stock/StockPage.css";
 
 export const TotalRentalListPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -183,7 +182,7 @@ export const TotalRentalListPage = () => {
 					return content;
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err)
 				setStocks([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -235,7 +234,7 @@ export const TotalRentalListPage = () => {
 				setColors(colorResponse.data);
 			}
 		} catch (err) {
-			handleError(err, setError);
+			handleError(err)
 		} finally {
 			setDropdownLoading(false);
 		}
