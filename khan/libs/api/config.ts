@@ -61,12 +61,33 @@ const processQueue = (error: Error | null) => {
 api.interceptors.request.use((config) => {
 	const token = tokenUtils.getToken();
 
+	if (!config.headers) {
+		config.headers = new AxiosHeaders();
+	} else {
+		config.headers = AxiosHeaders.from(config.headers);
+	}
+
+	// X-Tenant-ID 헤더 추가 (클라이언트 URL의 서브도메인)
+	const hostname = window.location.hostname;
+	const parts = hostname.split(".");
+	// khan.kkhan.co.kr -> khan
+	const subdomain = parts.length >= 3 ? parts[0] : "";
+	if (subdomain) {
+		(config.headers as AxiosHeaders).set("X-Tenant-ID", subdomain);
+	}
+
+	// 로그인 요청 시 헤더 로그 출력
+	if (config.url?.includes("/auth/login")) {
+		console.log("=== Login Request Headers ===");
+		console.log("URL:", config.url);
+		console.log("Hostname:", hostname);
+		console.log("Subdomain:", subdomain);
+		console.log("X-Tenant-ID:", config.headers.get("X-Tenant-ID"));
+		console.log("All Headers:", config.headers);
+		console.log("=============================");
+	}
+
 	if (token) {
-		if (!config.headers) {
-			config.headers = new AxiosHeaders();
-		} else {
-			config.headers = AxiosHeaders.from(config.headers);
-		}
 		(config.headers as AxiosHeaders).set("Authorization", `Bearer ${token}`);
 	}
 	return config;

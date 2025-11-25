@@ -1,0 +1,9 @@
+version: '3'
+services:
+  khan-client:
+    container_name: khan-client
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8026:80"  
