@@ -22,7 +22,11 @@ const settingItems: SettingItem[] = [
 	// 생품관련
 	{ id: "material", label: "재질 (14K,18K...)", category: "생품관련" },
 	{ id: "harry", label: "해리 (1.1, 1.07...)", category: "생품관련" },
-	{ id: "product-type", label: "생품분류 (반지, 귀걸이...)", category: "생품관련" },
+	{
+		id: "product-type",
+		label: "생품분류 (반지, 귀걸이...)",
+		category: "생품관련",
+	},
 	{ id: "color", label: "색상 (G, W, B, R)", category: "생품관련" },
 	{ id: "set-type", label: "세트 구분 (예륜, 전주)", category: "생품관련" },
 
@@ -42,8 +46,16 @@ const settingItems: SettingItem[] = [
 	{ id: "barcode-printer", label: "바코드 프린터 설정", category: "재고관련" },
 
 	// 스톤관련
-	{ id: "stone-type", label: "스톤 종류 (이큐비, 블랙큐빅...)", category: "스톤관련" },
-	{ id: "stone-shape", label: "스톤 모양 (라운드, 스퀘어...)", category: "스톤관련" },
+	{
+		id: "stone-type",
+		label: "스톤 종류 (이큐비, 블랙큐빅...)",
+		category: "스톤관련",
+	},
+	{
+		id: "stone-shape",
+		label: "스톤 모양 (라운드, 스퀘어...)",
+		category: "스톤관련",
+	},
 
 	// 경비관련
 	{ id: "expense-type", label: "지출(출비) 계정", category: "경비관련" },
