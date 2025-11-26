@@ -1,0 +1,89 @@
+.barcode-printer-settings {
+	padding: 20px;
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.printer-status {
+	margin-bottom: 16px;
+	padding: 12px;
+	background: #f5f5f5;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.printer-error {
+	margin-bottom: 16px;
+	padding: 12px;
+	background: #fee;
+	border: 1px solid #fcc;
+	border-radius: 4px;
+	color: #c33;
+	font-size: 14px;
+}
+
+.printer-select-section {
+	margin-bottom: 20px;
+}
+
+.printer-select-section label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 600;
+	font-size: 14px;
+	color: #333;
+}
+
+.printer-select {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+	background: white;
+}
+
+.printer-select:focus {
+	outline: none;
+	border-color: #4a90e2;
+}
+
+.no-printer {
+	color: #999;
+	font-size: 14px;
+	margin: 8px 0;
+}
+
+.printer-test-section {
+	margin-top: 20px;
+}
+
+.test-print-btn {
+	padding: 10px 20px;
+	background: #4a90e2;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.test-print-btn:hover:not(:disabled) {
+	background: #357abd;
+}
+
+.test-print-btn:disabled {
+	background: #ccc;
+	cursor: not-allowed;
+}
+
+.print-status {
+	margin-top: 12px;
+	padding: 10px;
+	background: #f0f8ff;
+	border-radius: 4px;
+	font-size: 13px;
+	color: #333;
+}

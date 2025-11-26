@@ -45,7 +45,7 @@ import SalePage from "./pages/sale/SalePage";
 import SaleCreatePage from "./pages/sale/SaleCreatePage";
 import SaleDetailPage from "./pages/sale/SaleDetailPage";
 import ProfilePage from "./pages/ProfilePage";
-import SettingsPage from "./pages/SettingsPage";
+import SettingsPage from "./pages/setting/SettingsPage";
 
 import Layout from "./components/layout/Layout";
 
