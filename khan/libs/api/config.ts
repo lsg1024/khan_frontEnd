@@ -1,14 +1,14 @@
 // libs/api/config.ts
 import axios, { AxiosHeaders } from "axios";
 import type { AxiosRequestConfig } from "axios";
-import { buildApiOriginFromEnv, resolveApiPrefix } from "../domain";
+import { extractSubdomain } from "../domain";
 import { tokenUtils } from "../../src/utils/tokenUtils";
 
+// API 기본 URL (HTTPS 고정)
+const API_BASE_URL = "https://api.kkhan.co.kr";
+
 export function getApiBaseUrl(): string {
-	const { hostname } = window.location;
-	const origin = buildApiOriginFromEnv(hostname);
-	const prefix = resolveApiPrefix();
-	return `${origin}${prefix}`;
+	return API_BASE_URL;
 }
 
 export const api = axios.create({
@@ -19,9 +19,6 @@ export const api = axios.create({
 		(data) => {
 			if (typeof data === "string") {
 				try {
-					// 큰 정수 값을 문자열로 유지하기 위한 커스텀 JSON 파싱
-					// JavaScript의 Number.MAX_SAFE_INTEGER를 초과하는 정수를 문자열로 처리
-					// 정규식으로 JSON 문자열에서 큰 정수를 먼저 찾아서 문자열로 변환
 					const processedData = data.replace(
 						/"(saleCode|flowCode|id)":\s*(\d{16,})/g,
 						(_match, key, value) => {
@@ -67,20 +64,15 @@ api.interceptors.request.use((config) => {
 		config.headers = AxiosHeaders.from(config.headers);
 	}
 
-	// X-Tenant-ID 헤더 추가 (클라이언트 URL의 서브도메인)
-	const hostname = window.location.hostname;
-	const parts = hostname.split(".");
-	// khan.kkhan.co.kr -> khan
-	const subdomain = parts.length >= 3 ? parts[0] : "";
-	if (subdomain) {
-		(config.headers as AxiosHeaders).set("X-Tenant-ID", subdomain);
-	}
+	// X-Tenant-ID 헤더 추가 (클라이언트 URL의 서브도메인, 항상 포함)
+	const subdomain = extractSubdomain(window.location.hostname);
+	(config.headers as AxiosHeaders).set("X-Tenant-ID", subdomain || "");
 
 	// 로그인 요청 시 헤더 로그 출력
 	if (config.url?.includes("/auth/login")) {
 		console.log("=== Login Request Headers ===");
 		console.log("URL:", config.url);
-		console.log("Hostname:", hostname);
+		console.log("Hostname:", window.location.hostname);
 		console.log("Subdomain:", subdomain);
 		console.log("X-Tenant-ID:", config.headers.get("X-Tenant-ID"));
 		console.log("All Headers:", config.headers);
