@@ -3,3 +3,8 @@ export interface SetTypeDto {
     setTypeName: string;
     setTypeNote: string;
 }
+
+export interface SetTypeRequest {
+    name: string;
+    note: string;
+}

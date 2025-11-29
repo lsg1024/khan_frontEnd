@@ -10,7 +10,7 @@ import type { ProductStoneDto } from "../../types/stone";
 import type {
 	ProductData,
 	Product,
-	CreateProductRequest,
+	UpdateProductRequest,
 } from "../../types/product";
 import "../../styles/pages/product/ProductDetailPage.css";
 
@@ -20,6 +20,7 @@ function ProductDetailPage() {
 	const [product, setProduct] = useState<Product | null>(null);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string>("");
+	const [imageFile, setImageFile] = useState<File | null>(null);
 	const { handleError } = useErrorHandler();
 
 	// 이미지 슬라이더 상태 관리
@@ -69,6 +70,11 @@ function ProductDetailPage() {
 				};
 			});
 		}
+	};
+
+	// 이미지 변경 핸들러
+	const handleImageChange = (file: File | null) => {
+		setImageFile(file);
 	};
 	// 스톤 정보 변경 핸들러
 	const handleStoneChange = (
@@ -259,7 +265,7 @@ function ProductDetailPage() {
 				setError("상품 정보를 불러올 수 없습니다.");
 			}
 		} catch (err: unknown) {
-			handleError(err, setError);
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -273,7 +279,7 @@ function ProductDetailPage() {
 			setLoading(true);
 
 			// 서버 양식에 맞게 데이터 변환
-			const serverData: CreateProductRequest = {
+			const serverData: UpdateProductRequest = {
 				factoryId: product.factoryId,
 				productFactoryName: product.productFactoryName,
 				productName: product.productName,
@@ -327,8 +333,28 @@ function ProductDetailPage() {
 			);
 
 			if (isApiSuccess(response)) {
+				// 이미지가 변경되었다면 업로드 (기존 이미지 자동 대체)
+				if (imageFile) {
+					try {
+						const imageResponse = await productApi.uploadProductImage(
+							product.productId,
+							imageFile
+						);
+
+						if (!imageResponse.success) {
+							console.error("이미지 업로드 실패:", imageResponse.message);
+							alert("상품 정보는 저장되었으나 이미지 업로드에 실패했습니다.");
+						}
+					} catch (imageError) {
+						console.error("이미지 업로드 오류:", imageError);
+						alert(
+							"상품 정보는 저장되었으나 이미지 업로드 중 오류가 발생했습니다."
+						);
+					}
+				}
 				alert(response.data || "상품 정보가 성공적으로 저장되었습니다.");
-				loadProductDetail();
+				setImageFile(null); // 이미지 파일 초기화
+				loadProductDetail(); // 상품 정보 다시 로드
 			} else {
 				alert("저장에 실패했습니다: " + response.data);
 			}
@@ -364,6 +390,36 @@ function ProductDetailPage() {
 		window.addEventListener("keydown", handleKeyPress);
 		return () => window.removeEventListener("keydown", handleKeyPress);
 	}, [product?.productImageDtos]);
+
+	// 상품 삭제
+	const handleDeleteProduct = async () => {
+		if (!product) return;
+
+		if (
+			!window.confirm(
+				`정말로 "${product.productName}" 상품을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
+			)
+		) {
+			return;
+		}
+
+		try {
+			setLoading(true);
+
+			const response = await productApi.deleteProduct(product.productId);
+
+			if (isApiSuccess(response)) {
+				alert("상품이 삭제되었습니다.");
+				navigate("/catalog");
+			} else {
+				alert("삭제에 실패했습니다: " + response.message);
+			}
+		} catch (error) {
+			handleError(error);
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	// 뒤로가기
 	const handleGoBack = () => {
@@ -410,6 +466,7 @@ function ProductDetailPage() {
 						editable={true}
 						onProductChange={handleProductChange}
 						onFactorySelect={handleFactorySelect}
+						onImageChange={handleImageChange}
 					/>
 				</div>
 
@@ -454,15 +511,22 @@ function ProductDetailPage() {
 
 				{/* 버튼 섹션 */}
 				<div className="action-buttons">
-					<button onClick={handleGoBack} className="back-button">
+					<button onClick={handleGoBack} className="reset-btn-common">
 						뒤로
 					</button>
 					<button
 						onClick={handleSaveProduct}
-						className="save-button"
+						className="common-btn-common"
 						disabled={loading}
 					>
 						{loading ? "저장 중..." : "수정"}
+					</button>
+					<button
+						onClick={handleDeleteProduct}
+						className="delete-btn-common"
+						disabled={loading}
+					>
+						{loading ? "처리 중..." : "삭제"}
 					</button>
 				</div>
 			</div>

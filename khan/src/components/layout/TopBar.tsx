@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { tokenUtils } from "../../utils/tokenUtils";
 import { authApi } from "../../../libs/api/auth";
+import { extractSubdomain } from "../../../libs/domain";
 
 interface TopBarProps {
 	onLogout?: () => void;
@@ -9,7 +11,9 @@ interface TopBarProps {
 }
 
 function TopBar({ onLogout, onToggleSidebar, isSidebarOpen }: TopBarProps) {
+	const navigate = useNavigate();
 	const [nickname, setNickname] = useState<string | null>(null);
+	const [subdomain, setSubdomain] = useState<string>("");
 
 	const handleLogout = useCallback(async () => {
 		try {
@@ -30,10 +34,18 @@ function TopBar({ onLogout, onToggleSidebar, isSidebarOpen }: TopBarProps) {
 	}, [onLogout]);
 
 	useEffect(() => {
-		// 닉네임만 설정
+		// 닉네임 설정
 		const userNickname = tokenUtils.getNickname();
 		setNickname(userNickname);
+
+		// 서브도메인 추출
+		const currentSubdomain = extractSubdomain(window.location.hostname);
+		setSubdomain(currentSubdomain);
 	}, []);
+
+	const handleTitleClick = () => {
+		navigate("/home");
+	};
 
 	return (
 		<div className="top-bar">
@@ -47,7 +59,9 @@ function TopBar({ onLogout, onToggleSidebar, isSidebarOpen }: TopBarProps) {
 					<span className="hamburger-line"></span>
 					<span className="hamburger-line"></span>
 				</button>
-				<h2>Khan System</h2>
+				<h2 onClick={handleTitleClick} style={{ cursor: "pointer" }}>
+					{subdomain ? subdomain.toUpperCase() : "Khan System"}
+				</h2>
 			</div>
 			<div className="top-bar-right">
 				{nickname && (

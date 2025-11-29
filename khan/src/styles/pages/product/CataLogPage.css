@@ -273,16 +273,16 @@
 	border-color: var(--primary-color);
 }
 .catalog-product-image {
-	width: 170px; /* 고정 너비 */
-	height: 120px; /* 고정 높이 */
-	margin: 0 auto; /* 중앙 정렬 */
-	background-color: #f8f9fa;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	overflow: hidden;
-	border-bottom: 1px solid #ddd;
-	flex-shrink: 0; /* 이미지 영역이 줄어들지 않도록 설정 */
+    width: 170px;
+    height: 120px;
+    margin: 10 auto;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
 }
 
 .catalog-product-image img {
@@ -390,9 +390,9 @@
 	font-size: 12px;
 }
 
-/* 메모장 내부 value 스타일 */
 .detail-row.note .value {
 	flex: 1;
+	width: 100%;
 	word-wrap: break-word;
 	word-break: break-word;
 	overflow-wrap: break-word;

@@ -3,3 +3,8 @@ export interface ClassificationDto {
     classificationName: string;
     classificationNote: string;
 }
+
+export interface ClassificationRequest {
+    name: string;
+    note: string;
+}

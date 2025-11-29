@@ -20,6 +20,7 @@ function CataLogPage() {
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [error, setError] = useState<string>("");
+	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 	const { handleError } = useErrorHandler();
 	const navigate = useNavigate();
 
@@ -39,7 +40,7 @@ function CataLogPage() {
 	const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 
-	// 총 판매가 계산 (상품 판매가 + 스톤 판매가 총합)
+	// 총 판매가 계산 (상품 판매가 + 스톤 판매가)
 	const calculateTotalLaborCost = (product: ProductDto): number => {
 		const productCost = parseInt(product.productLaborCost) || 0;
 		const stoneCost = product.productStones.reduce((sum, stone) => {
@@ -52,6 +53,73 @@ function CataLogPage() {
 	const handleProductClick = (productId: string) => {
 		navigate(`/catalog/${productId}`);
 	};
+
+	// 이미지 로드 함수 (캐싱 적용)
+	const loadProductImages = useCallback(async (productList: ProductDto[]) => {
+		// 이미지 캐시 키 생성
+		const getImageCacheKey = (imageId: string, imagePath: string) => {
+			return `product_image_${imageId}_${imagePath}`;
+		};
+
+		// 세션 스토리지에서 이미지 가져오기
+		const getCachedImage = (
+			imageId: string,
+			imagePath: string
+		): string | null => {
+			try {
+				const cacheKey = getImageCacheKey(imageId, imagePath);
+				return sessionStorage.getItem(cacheKey);
+			} catch (error) {
+				console.error("세션 스토리지 읽기 실패:", error);
+				return null;
+			}
+		};
+
+		// 세션 스토리지에 이미지 저장
+		const setCachedImage = (
+			imageId: string,
+			imagePath: string,
+			blobUrl: string
+		) => {
+			try {
+				const cacheKey = getImageCacheKey(imageId, imagePath);
+				sessionStorage.setItem(cacheKey, blobUrl);
+			} catch (error) {
+				console.error("세션 스토리지 저장 실패:", error);
+			}
+		};
+		const newImageUrls: Record<string, string> = {};
+
+		for (const product of productList) {
+			if (product.image?.imageId && product.image?.imagePath) {
+				const { imageId, imagePath } = product.image;
+
+				// 캐시된 이미지 확인
+				const cachedUrl = getCachedImage(imageId, imagePath);
+				if (cachedUrl) {
+					newImageUrls[product.productId] = cachedUrl;
+					continue;
+				}
+
+				// 캐시가 없으면 API 호출
+				try {
+					const blob = await productApi.getProductImageByPath(imagePath);
+					const blobUrl = URL.createObjectURL(blob);
+					newImageUrls[product.productId] = blobUrl;
+
+					// 세션 스토리지에 저장
+					setCachedImage(imageId, imagePath, blobUrl);
+				} catch (error) {
+					console.error(
+						`이미지 로드 실패 (productId: ${product.productId}):`,
+						error
+					);
+				}
+			}
+		}
+
+		setImageUrls(newImageUrls);
+	}, []);
 
 	// 상품 데이터 로드 (검색 파라미터 포함)
 	const loadProducts = useCallback(
@@ -76,6 +144,11 @@ function CataLogPage() {
 					setCurrentPage(page);
 					setTotalPages(pageData.totalPages || 1);
 					setTotalElements(pageData.totalElements || 0);
+
+					// 이미지 로드
+					if (content.length > 0) {
+						loadProductImages(content);
+					}
 				}
 			} catch (err: unknown) {
 				handleError(err);
@@ -87,7 +160,7 @@ function CataLogPage() {
 				setLoading(false);
 			}
 		},
-		[handleError]
+		[handleError, loadProductImages]
 	);
 
 	// 검색 필터 변경 핸들러
@@ -180,6 +253,11 @@ function CataLogPage() {
 					setCurrentPage(1);
 					setTotalPages(pageData.totalPages || 1);
 					setTotalElements(pageData.totalElements || 0);
+
+					// 이미지 로드
+					if (content.length > 0) {
+						loadProductImages(content);
+					}
 				}
 			} catch (err: unknown) {
 				console.error("초기 상품 로드 실패:", err);
@@ -195,7 +273,7 @@ function CataLogPage() {
 
 		loadDropdowns();
 		initialLoad();
-	}, []); // 빈 의존성 배열로 한 번만 실행
+	}, [loadProductImages]); // 빈 의존성 배열로 한 번만 실행
 
 	// 로딩 상태 렌더링
 	if (loading) {
@@ -331,18 +409,13 @@ function CataLogPage() {
 							{/* 상품 이미지 */}
 							<div className="catalog-product-image">
 								<img
-									src={
-										product.productImagePath
-											? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${product.productImagePath}`
-											: "/images/not_ready.png"
-									}
+									src={imageUrls[product.productId] || "/images/not_ready.png"}
 									alt={product.productName}
 									onError={(e) => {
 										e.currentTarget.src = "/images/not_ready.png";
 									}}
 								/>
-							</div>
-
+							</div>{" "}
 							{/* 상품 정보 */}
 							<div className="product-info" data-product-id={product.productId}>
 								<h3 className="product-name">{product.productName}</h3>

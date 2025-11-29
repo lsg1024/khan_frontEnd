@@ -61,11 +61,16 @@ export const FactoryPage = () => {
 			}
 		},
 		[handleError]
-	); // 초기 데이터 로드
+	);
+
+	// 초기 데이터 로드
 	useEffect(() => {
 		loadFactories("", 1);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
-		// 메시지 이벤트 리스너 등록
+	// 메시지 이벤트 리스너
+	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
 			if (event.origin !== window.location.origin) return;
 
@@ -83,7 +88,7 @@ export const FactoryPage = () => {
 		return () => {
 			window.removeEventListener("message", handleMessage);
 		};
-	}, [searchName, currentPage]); 
+	}, [searchName, currentPage, loadFactories]);
 
 	// 검색 처리
 	const handleSearch = () => {

@@ -1,4 +1,4 @@
-FROM node:18-alpine as builder
+FROM node:20-alpine as builder 
 
 RUN apk add --no-cache \
     python3 \
@@ -10,7 +10,6 @@ RUN apk add --no-cache \
     giflib-dev \
     cairo-dev \
     pango-dev
-
 
 WORKDIR /app
 

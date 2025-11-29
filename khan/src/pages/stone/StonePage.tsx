@@ -57,7 +57,7 @@ export const StonePage = () => {
 				setError("스톤 목록을 불러올 수 없습니다.");
 			}
 		} catch (err: unknown) {
-			handleError(err, setError);
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -122,44 +122,46 @@ export const StonePage = () => {
 	return (
 		<div className="stone-page">
 			{/* 검색 섹션 */}
-			<div className="search-section-stone">
-				<div className="search-input-group">
-					<input
-						type="text"
-						className="search-input"
-						placeholder="스톤명으로 검색..."
-						value={searchTerm}
-						onChange={(e) => setSearchTerm(e.target.value)}
-						onKeyDown={handleKeyPress}
-					/>
-					<button
-						className="search-button"
-						onClick={handleSearch}
-						disabled={loading}
-					>
-						검색
-					</button>
-					<button
-						className="clear-button"
-						onClick={handleClearSearch}
-						disabled={loading}
-					>
-						초기화
-					</button>
-					<button
-						className="create-button"
-						onClick={handleCreateStone}
-						disabled={loading}
-					>
-						생성
-					</button>
-					<button
-						className="excel-button"
-						onClick={handleDownExcel}
-						disabled={loading}
-					>
-						엑셀 다운로드
-					</button>
+			<div className="search-section-common">
+				<div className="search-section-stone">
+					<div className="search-input-group">
+						<input
+							type="text"
+							className="search-input-common"
+							placeholder="스톤명으로 검색..."
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+							onKeyDown={handleKeyPress}
+						/>
+						<button
+							className="search-button"
+							onClick={handleSearch}
+							disabled={loading}
+						>
+							검색
+						</button>
+						<button
+							className="clear-button"
+							onClick={handleClearSearch}
+							disabled={loading}
+						>
+							초기화
+						</button>
+						<button
+							className="create-button"
+							onClick={handleCreateStone}
+							disabled={loading}
+						>
+							생성
+						</button>
+						<button
+							className="excel-button"
+							onClick={handleDownExcel}
+							disabled={loading}
+						>
+							엑셀 다운로드
+						</button>
+					</div>
 				</div>
 			</div>
 
@@ -190,8 +192,10 @@ export const StonePage = () => {
 				<>
 					<StoneListTable
 						stones={stones}
-						showTitle={false} // 페이지 헤더에 이미 제목이 있음
+						showTitle={false}
 						showTotalRow={true}
+						currentPage={currentPage}
+						pageSize={pageInfo.size}
 					/>
 
 					{/* 페이지네이션 */}

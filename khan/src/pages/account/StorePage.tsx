@@ -23,7 +23,6 @@ export const StorePage = () => {
 
 	const { handleError } = useErrorHandler();
 
-	// 거래처 목록 조회
 	const loadStores = useCallback(
 		async (name: string, page: number) => {
 			setLoading(true);
@@ -60,11 +59,14 @@ export const StorePage = () => {
 			}
 		},
 		[handleError]
-	); // 초기 데이터 로드
+	);
+
 	useEffect(() => {
 		loadStores("", 1);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
-		// 메시지 이벤트 리스너 등록
+	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
 			if (event.origin !== window.location.origin) return;
 
@@ -82,22 +84,19 @@ export const StorePage = () => {
 		return () => {
 			window.removeEventListener("message", handleMessage);
 		};
-	}, [searchName, currentPage]);
+	}, [searchName, currentPage, loadStores]);
 
-	// 검색 처리
 	const handleSearch = () => {
 		setCurrentPage(1);
 		loadStores(searchName, 1);
 	};
 
-	// 초기화 처리
 	const handleReset = () => {
 		setSearchName("");
 		setCurrentPage(1);
 		loadStores("", 1);
 	};
 
-	// 단일 선택/해제 (한 개만 선택 가능)
 	const handleSelectOne = (id: number) => {
 		if (selectedId === id) {
 			setSelectedId(null);
@@ -106,7 +105,6 @@ export const StorePage = () => {
 		}
 	};
 
-	// 상세 페이지 팝업으로 열기
 	const handleDetailClick = (id: number) => {
 		const url = `/accounts/detail/${id}?type=store`;
 		const NAME = `account_detail_${id}`;

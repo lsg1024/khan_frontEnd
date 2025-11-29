@@ -4,7 +4,6 @@ import type { AxiosRequestConfig } from "axios";
 import { extractSubdomain } from "../domain";
 import { tokenUtils } from "../../src/utils/tokenUtils";
 
-// API 기본 URL (HTTPS 고정)
 const API_BASE_URL = "https://api.kkhan.co.kr";
 
 export function getApiBaseUrl(): string {
@@ -54,7 +53,6 @@ const processQueue = (error: Error | null) => {
 	failedQueue = [];
 };
 
-// 개발용 Bearer 토큰 인터셉터
 api.interceptors.request.use((config) => {
 	const token = tokenUtils.getToken();
 
@@ -64,20 +62,8 @@ api.interceptors.request.use((config) => {
 		config.headers = AxiosHeaders.from(config.headers);
 	}
 
-	// X-Tenant-ID 헤더 추가 (클라이언트 URL의 서브도메인, 항상 포함)
 	const subdomain = extractSubdomain(window.location.hostname);
 	(config.headers as AxiosHeaders).set("X-Tenant-ID", subdomain || "");
-
-	// 로그인 요청 시 헤더 로그 출력
-	if (config.url?.includes("/auth/login")) {
-		console.log("=== Login Request Headers ===");
-		console.log("URL:", config.url);
-		console.log("Hostname:", window.location.hostname);
-		console.log("Subdomain:", subdomain);
-		console.log("X-Tenant-ID:", config.headers.get("X-Tenant-ID"));
-		console.log("All Headers:", config.headers);
-		console.log("=============================");
-	}
 
 	if (token) {
 		(config.headers as AxiosHeaders).set("Authorization", `Bearer ${token}`);
@@ -109,11 +95,12 @@ api.interceptors.response.use(
 				}
 			}
 		}
-
+		console.log("API 응답 인터셉터 통과:", extractSubdomain(window.location.hostname));
 		return res;
 	},
 	async (err) => {
 		// 401 에러 시 재발급 요청 실패 시 로그아웃 처리
+		console.log("API 응답 인터셉터 통과:", extractSubdomain(window.location.hostname));
 		const originalRequest = err.config;
 		if (err.response?.status === 401 && !originalRequest._retry) {
 			if (isRefreshing) {
@@ -125,6 +112,7 @@ api.interceptors.response.use(
 						// 재발급 성공 후, 헤더에 새 토큰을 설정하여 원래 요청을 다시 보냄
 						originalRequest.headers["Authorization"] =
 							"Bearer " + tokenUtils.getToken();
+						originalRequest.headers["X-Tenant-ID"] = extractSubdomain(window.location.hostname);
 						return api(originalRequest);
 					})
 					.catch((err) => {
@@ -142,6 +130,7 @@ api.interceptors.response.use(
 					credentials: "include",
 					headers: {
 						"Content-Type": "application/json",
+						"X-Tenant-ID": extractSubdomain(window.location.hostname)
 					},
 				});
 
@@ -181,7 +170,22 @@ api.interceptors.response.use(
 			}
 		}
 
-		return Promise.reject(err);
+		const responseData = err.response?.data;
+		const errorMessage =
+			responseData?.message ||
+			err.message ||
+			`HTTP ${err.response?.status || ""} 오류가 발생했습니다.`;
+
+		if (
+			responseData &&
+			typeof responseData === "object" &&
+			"message" in responseData
+		) {
+			return Promise.reject(new Error(responseData.message as string));
+		}
+
+		return Promise.reject(new Error(errorMessage));
+
 	}
 );
 

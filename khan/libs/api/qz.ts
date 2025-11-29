@@ -1,6 +1,7 @@
 import type { ApiResponse } from "./config";
 import { getApiBaseUrl } from "./config";
 import { tokenUtils } from "../../src/utils/tokenUtils";
+import { extractSubdomain } from "../../libs/domain";
 
 export const qzApi = {
 	// qz 서명 인증 - fetch를 사용하여 axios 인터셉터를 우회
@@ -9,12 +10,16 @@ export const qzApi = {
 
 		const url = `${getApiBaseUrl()}/order/api/qz/sign`;
 
+		const subdomain = extractSubdomain(window.location.hostname);
+		document.title = subdomain.toUpperCase();
+
 		const token = tokenUtils.getToken();
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
 		};
 		if (token) {
 			headers["Authorization"] = `Bearer ${token}`;
+			headers["X-Tenant-ID"] = subdomain;
 		}
 
 		const response = await fetch(url, {

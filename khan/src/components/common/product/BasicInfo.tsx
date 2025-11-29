@@ -6,6 +6,7 @@ import type { SetTypeDto } from "../../../types/setType";
 import { classificationApi } from "../../../../libs/api/classification";
 import { materialApi } from "../../../../libs/api/material";
 import { setTypeApi } from "../../../../libs/api/setType";
+import { productApi } from "../../../../libs/api/product";
 import FactorySearch from "../factory/FactorySearch";
 import "../../../styles/components/BasicInfo.css";
 
@@ -15,6 +16,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 	editable = true,
 	onProductChange,
 	onFactorySelect,
+	onImageChange,
 	validationErrors = {},
 }) => {
 	const [classifications, setClassifications] = useState<ClassificationDto[]>(
@@ -31,6 +33,12 @@ const BasicInfo: React.FC<ProductInfo> = ({
 
 	// 제조사 검색 모달 상태
 	const [isFactoryModalOpen, setIsFactoryModalOpen] = useState(false);
+
+	// 이미지 관련 state
+	const [imageFile, setImageFile] = useState<File | null>(null);
+	const [imagePreview, setImagePreview] = useState<string | null>(null);
+	const [currentImageId, setCurrentImageId] = useState<number | null>(null);
+	const [imageLoading, setImageLoading] = useState(false);
 
 	// 제조사 선택 핸들러
 	const handleFactorySelect = (factory: {
@@ -59,6 +67,181 @@ const BasicInfo: React.FC<ProductInfo> = ({
 	// 제조사 검색 버튼 클릭 핸들러
 	const handleFactorySearchClick = () => {
 		setIsFactoryModalOpen(true);
+	};
+
+	// API를 통해 이미지 로드하여 blob URL 생성 (캐싱 적용)
+	const loadImageFromPath = async (
+		imageId: string,
+		imagePath: string
+	): Promise<string> => {
+		// 캐시 키 생성
+		const cacheKey = `product_image_${imageId}_${imagePath}`;
+
+		// 세션 스토리지에서 캐시 확인
+		try {
+			const cachedUrl = sessionStorage.getItem(cacheKey);
+			if (cachedUrl) {
+				return cachedUrl;
+			}
+		} catch (error) {
+			console.error("세션 스토리지 읽기 실패:", error);
+		}
+
+		// 캐시가 없으면 API 호출
+		try {
+			const blob = await productApi.getProductImageByPath(imagePath);
+			const blobUrl = URL.createObjectURL(blob);
+
+			// 세션 스토리지에 저장
+			try {
+				sessionStorage.setItem(cacheKey, blobUrl);
+			} catch (error) {
+				console.error("세션 스토리지 저장 실패:", error);
+			}
+
+			return blobUrl;
+		} catch (error) {
+			console.error("이미지 로드 실패:", error);
+			throw error;
+		}
+	};
+
+	// 상품 데이터에서 이미지 로드
+	useEffect(() => {
+		let blobUrl: string | null = null;
+
+		const loadImage = async () => {
+			if (product.productImageDtos && product.productImageDtos.length > 0) {
+				const firstImage = product.productImageDtos[0];
+				if (firstImage.imageId && firstImage.imagePath) {
+					try {
+						blobUrl = await loadImageFromPath(
+							firstImage.imageId,
+							firstImage.imagePath
+						);
+						setImagePreview(blobUrl);
+						setCurrentImageId(parseInt(firstImage.imageId));
+					} catch {
+						setImagePreview(null);
+					}
+				}
+			} else {
+				setImagePreview(null);
+				setCurrentImageId(null);
+			}
+		};
+
+		loadImage();
+
+		// cleanup: blob URL은 세션 스토리지에 저장되므로 해제하지 않음
+	}, [product.productImageDtos]);
+
+	// 이미지 파일 선택 핸들러
+	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		// 이미지 파일 타입 검증
+		if (!file.type.startsWith("image/")) {
+			alert("이미지 파일만 업로드 가능합니다.");
+			return;
+		}
+
+		// 파일 크기 검증 (5MB)
+		if (file.size > 5 * 1024 * 1024) {
+			alert("이미지 크기는 5MB를 초과할 수 없습니다.");
+			return;
+		}
+
+		setImageFile(file);
+
+		// 미리보기 생성
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			setImagePreview(reader.result as string);
+		};
+		reader.readAsDataURL(file);
+
+		// 부모 컴포넌트에 파일 전달
+		if (onImageChange) {
+			onImageChange(file);
+		}
+	};
+
+	// 이미지 업로드/수정 (productId가 있을 때만)
+	const handleImageUpload = async () => {
+		if (!imageFile || !product.productId) return;
+
+		setImageLoading(true);
+		try {
+			const response = await productApi.uploadProductImage(
+				product.productId.toString(),
+				imageFile
+			);
+			if (response.success) {
+				alert("이미지가 수정되었습니다.");
+				// 부모 컴포넌트에서 상품 데이터를 다시 불러와야 함
+				window.location.reload();
+			}
+			setImageFile(null);
+			if (onImageChange) {
+				onImageChange(null);
+			}
+		} catch (error) {
+			console.error("이미지 업로드 실패:", error);
+			alert("이미지 업로드에 실패했습니다.");
+		} finally {
+			setImageLoading(false);
+		}
+	};
+
+	// 이미지 삭제
+	const handleImageDelete = async () => {
+		if (!currentImageId) return;
+
+		if (!confirm("이미지를 삭제하시겠습니까?")) return;
+
+		setImageLoading(true);
+		try {
+			// 세션 스토리지에서 캐시 제거
+			if (product.productImageDtos && product.productImageDtos.length > 0) {
+				const firstImage = product.productImageDtos[0];
+				if (firstImage.imageId && firstImage.imagePath) {
+					const cacheKey = `product_image_${firstImage.imageId}_${firstImage.imagePath}`;
+					try {
+						const cachedUrl = sessionStorage.getItem(cacheKey);
+						if (cachedUrl) {
+							URL.revokeObjectURL(cachedUrl);
+							sessionStorage.removeItem(cacheKey);
+						}
+					} catch (error) {
+						console.error("세션 스토리지 제거 실패:", error);
+					}
+				}
+			}
+
+			// API를 통해 이미지 삭제
+			const response = await productApi.deleteProductImage(
+				currentImageId.toString()
+			);
+
+			if (response.success) {
+				alert("이미지가 삭제되었습니다.");
+				setImagePreview(null);
+				setCurrentImageId(null);
+				setImageFile(null);
+				if (onImageChange) {
+					onImageChange(null);
+				}
+				// 부모 컴포넌트에서 상품 데이터를 다시 불러와야 함
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error("이미지 삭제 실패:", error);
+			alert("이미지 삭제에 실패했습니다.");
+		} finally {
+			setImageLoading(false);
+		}
 	};
 
 	// 필드 변경 핸들러
@@ -191,202 +374,258 @@ const BasicInfo: React.FC<ProductInfo> = ({
 	return (
 		<div className="top-section">
 			<div className="image-section">
-				<div className="no-image">
-					<img src="/images/not_ready.png" alt="이미지 없음" />
-				</div>
-			</div>
-			<div className="basic-info-section">
-				{showTitle && <h2>기본 정보</h2>}
-			<div className="info-grid">
-				{/* 상품명과 공장명을 같은 줄에 */}
-				<div className="info-row">
-					<div className="info-item half-width">
-						<span className="required-field-basic">*</span>
-						<span className="label">모델번호:</span>
-						{editable ? (
-							<input
-								type="text"
-								className={`editable-input ${
-									validationErrors.productName ? "error" : ""
-								}`}
-								value={product.productName}
-								onChange={(e) =>
-									handleFieldChange("productName", e.target.value)
-								}
-								placeholder={
-									validationErrors.productName || "모델번호를 입력하세요"
-								}
-							/>
-						) : (
-							<span className="value">{product.productName}</span>
-						)}
-					</div>
-					<div className="info-item half-width">
-						<span className="label">제조번호:</span>
-						{editable ? (
-							<input
-								type="text"
-								className="editable-input"
-								value={product.productFactoryName}
-								onChange={(e) =>
-									handleFieldChange("productFactoryName", e.target.value)
-								}
-								placeholder="제조번호를 입력하세요"
-							/>
-						) : (
-							<span className="value">{product.productFactoryName}</span>
-						)}
-					</div>
-					<div className="info-item half-width">
-						<span className="required-field-basic">*</span>
-						<span className="label">제조사:</span>
-						{editable ? (
-							<div
-								className={`basicinfo-factory-search-container ${
-									validationErrors.factoryId ? "error" : ""
-								}`}
-							>
-								<span className="factory-display-value">
-									{validationErrors.factoryId || product.factoryName}
-								</span>
-								<button
-									type="button"
-									className="factory-search-btn"
-									onClick={handleFactorySearchClick}
-								>
-									검색
-								</button>
-							</div>
-						) : (
-							<span className="value">{product.factoryName}</span>
-						)}
-					</div>
-				</div>
-
-				{/* 기준 무게, 재질, 분류, 세트 타입을 같은 줄에 */}
-				<div className="info-row">
-					<div className="info-item quarter-width">
-						<span className="label">무게:</span>
-						{editable ? (
-							<div className="input-with-unit">
-								<input
-									type="text"
-									className="editable-input weight-input"
-									value={product.standardWeight}
-									onChange={(e) =>
-										handleFieldChange("standardWeight", e.target.value)
-									}
-									placeholder="무게"
-								/>
-								<span className="unit"></span>
-							</div>
-						) : (
-							<span className="value">{product.standardWeight}</span>
-						)}
-					</div>
-					<div className="info-item quarter-width">
-						<span className="label">재질:</span>
-						{editable ? (
-							<select
-								className="editable-select"
-								value={product.materialDto?.materialId || ""}
-								onChange={(e) =>
-									handleFieldChange("materialId", e.target.value)
-								}
-								disabled={loading}
-							>
-								<option value={product.materialDto?.materialId}>
-									{product.materialDto?.materialName}
-								</option>
-								{materials.map((material) => (
-									<option key={material.materialId} value={material.materialId}>
-										{material.materialName}
-									</option>
-								))}
-							</select>
-						) : (
-							<span className="value">{product.materialDto?.materialName}</span>
-						)}
-					</div>
-					<div className="info-item quarter-width">
-						<span className="label">분류:</span>
-						{editable ? (
-							<select
-								className="editable-select"
-								value={product.classificationDto?.classificationId || ""}
-								onChange={(e) =>
-									handleFieldChange("classificationId", e.target.value)
-								}
-								disabled={loading}
-							>
-								<option value={product.classificationDto?.classificationId}>
-									{product.classificationDto?.classificationName}
-								</option>
-								{classifications.map((classification) => (
-									<option
-										key={classification.classificationId}
-										value={classification.classificationId}
+				{imageLoading ? (
+					<div className="image-loading">로딩 중...</div>
+				) : (
+					<div className="image-container">
+						{editable && (
+							<div className="image-button-group">
+								{!imagePreview && (
+									<label className="image-icon-btn add" title="이미지 업로드">
+										➕
+										<input
+											type="file"
+											accept="image/*"
+											onChange={handleImageChange}
+											style={{ display: "none" }}
+										/>
+									</label>
+								)}
+								{imagePreview && (
+									<button
+										type="button"
+										className="image-icon-btn delete"
+										onClick={handleImageDelete}
+										title="이미지 삭제"
 									>
-										{classification.classificationName}
-									</option>
-								))}
-							</select>
-						) : (
-							<span className="value">
-								{product.classificationDto?.classificationName}
-							</span>
+										🗑️
+									</button>
+								)}
+							</div>
 						)}
-					</div>
-					<div className="info-item quarter-width">
-						<span className="label">세트:</span>
-						{editable ? (
-							<select
-								className="editable-select"
-								value={product.setTypeDto?.setTypeId || ""}
-								onChange={(e) => handleFieldChange("setTypeId", e.target.value)}
-								disabled={loading}
-							>
-								<option value={product.setTypeDto?.setTypeId}>
-									{product.setTypeDto?.setTypeName}
-								</option>
-								{setTypes.map((setType) => (
-									<option key={setType.setTypeId} value={setType.setTypeId}>
-										{setType.setTypeName}
-									</option>
-								))}
-							</select>
+						{imagePreview ? (
+							<>
+								<img
+									src={imagePreview}
+									alt="상품 이미지"
+									className="product-image"
+								/>
+								{editable && imageFile && product.productId && (
+									<button
+										type="button"
+										className="image-save-btn"
+										onClick={handleImageUpload}
+										style={{ marginTop: "10px" }}
+									>
+										저장
+									</button>
+								)}
+							</>
 						) : (
-							<span className="value">{product.setTypeDto?.setTypeName}</span>
-						)}
-					</div>
-				</div>
-
-				{/* 메모는 전체 너비 */}
-				{product.productNote !== undefined && (
-					<div className=".info-item.full-width-memo">
-						{editable ? (
-							<textarea
-								className="editable-textarea"
-								value={product.productNote || ""}
-								onChange={(e) =>
-									handleFieldChange("productNote", e.target.value)
-								}
-								placeholder="메모를 입력하세요..."
-							/>
-						) : (
-							<span className="value">{product.productNote}</span>
+							<img src="/images/not_ready.png" alt="이미지 없음" />
 						)}
 					</div>
 				)}
 			</div>
+			<div className="basic-info-section">
+				{showTitle && <h2>기본 정보</h2>}
+				<div className="info-grid">
+					{/* 상품명과 공장명을 같은 줄에 */}
+					<div className="info-row">
+						<div className="info-item half-width">
+							<span className="required-field-basic">*</span>
+							<span className="label">모델번호:</span>
+							{editable ? (
+								<input
+									type="text"
+									className={`editable-input ${
+										validationErrors.productName ? "error" : ""
+									}`}
+									value={product.productName}
+									onChange={(e) =>
+										handleFieldChange("productName", e.target.value)
+									}
+									placeholder={
+										validationErrors.productName || "모델번호를 입력하세요"
+									}
+								/>
+							) : (
+								<span className="value">{product.productName}</span>
+							)}
+						</div>
+						<div className="info-item half-width">
+							<span className="label">제조번호:</span>
+							{editable ? (
+								<input
+									type="text"
+									className="editable-input"
+									value={product.productFactoryName}
+									onChange={(e) =>
+										handleFieldChange("productFactoryName", e.target.value)
+									}
+									placeholder="제조번호를 입력하세요"
+								/>
+							) : (
+								<span className="value">{product.productFactoryName}</span>
+							)}
+						</div>
+						<div className="info-item half-width">
+							<span className="required-field-basic">*</span>
+							<span className="label">제조사:</span>
+							{editable ? (
+								<div
+									className={`basicinfo-factory-search-container ${
+										validationErrors.factoryId ? "error" : ""
+									}`}
+								>
+									<span className="factory-display-value">
+										{validationErrors.factoryId || product.factoryName}
+									</span>
+									<button
+										type="button"
+										className="factory-search-btn"
+										onClick={handleFactorySearchClick}
+									>
+										검색
+									</button>
+								</div>
+							) : (
+								<span className="value">{product.factoryName}</span>
+							)}
+						</div>
+					</div>
 
-			{/* 제조사 검색 모달 */}
-			{isFactoryModalOpen && (
-				<FactorySearch
-					onClose={() => setIsFactoryModalOpen(false)}
-					onSelectFactory={handleFactorySelect}
-				/>
-			)}
+					{/* 기준 무게, 재질, 분류, 세트 타입을 같은 줄에 */}
+					<div className="info-row">
+						<div className="info-item quarter-width">
+							<span className="label">무게:</span>
+							{editable ? (
+								<div className="input-with-unit">
+									<input
+										type="text"
+										className="editable-input weight-input"
+										value={product.standardWeight}
+										onChange={(e) =>
+											handleFieldChange("standardWeight", e.target.value)
+										}
+										placeholder="무게"
+									/>
+									<span className="unit"></span>
+								</div>
+							) : (
+								<span className="value">{product.standardWeight}</span>
+							)}
+						</div>
+						<div className="info-item quarter-width">
+							<span className="label">재질:</span>
+							{editable ? (
+								<select
+									className="editable-select"
+									value={product.materialDto?.materialId || ""}
+									onChange={(e) =>
+										handleFieldChange("materialId", e.target.value)
+									}
+									disabled={loading}
+								>
+									<option value={product.materialDto?.materialId}>
+										{product.materialDto?.materialName}
+									</option>
+									{materials.map((material) => (
+										<option
+											key={material.materialId}
+											value={material.materialId}
+										>
+											{material.materialName}
+										</option>
+									))}
+								</select>
+							) : (
+								<span className="value">
+									{product.materialDto?.materialName}
+								</span>
+							)}
+						</div>
+						<div className="info-item quarter-width">
+							<span className="label">분류:</span>
+							{editable ? (
+								<select
+									className="editable-select"
+									value={product.classificationDto?.classificationId || ""}
+									onChange={(e) =>
+										handleFieldChange("classificationId", e.target.value)
+									}
+									disabled={loading}
+								>
+									<option value={product.classificationDto?.classificationId}>
+										{product.classificationDto?.classificationName}
+									</option>
+									{classifications.map((classification) => (
+										<option
+											key={classification.classificationId}
+											value={classification.classificationId}
+										>
+											{classification.classificationName}
+										</option>
+									))}
+								</select>
+							) : (
+								<span className="value">
+									{product.classificationDto?.classificationName}
+								</span>
+							)}
+						</div>
+						<div className="info-item quarter-width">
+							<span className="label">세트:</span>
+							{editable ? (
+								<select
+									className="editable-select"
+									value={product.setTypeDto?.setTypeId || ""}
+									onChange={(e) =>
+										handleFieldChange("setTypeId", e.target.value)
+									}
+									disabled={loading}
+								>
+									<option value={product.setTypeDto?.setTypeId}>
+										{product.setTypeDto?.setTypeName}
+									</option>
+									{setTypes.map((setType) => (
+										<option key={setType.setTypeId} value={setType.setTypeId}>
+											{setType.setTypeName}
+										</option>
+									))}
+								</select>
+							) : (
+								<span className="value">{product.setTypeDto?.setTypeName}</span>
+							)}
+						</div>
+					</div>
+
+					{/* 메모는 전체 너비 */}
+					{product.productNote !== undefined && (
+						<div className=".info-item.full-width-memo">
+							{editable ? (
+								<textarea
+									className="editable-textarea"
+									value={product.productNote || ""}
+									onChange={(e) =>
+										handleFieldChange("productNote", e.target.value)
+									}
+									placeholder="메모를 입력하세요..."
+								/>
+							) : (
+								<span className="value">{product.productNote}</span>
+							)}
+						</div>
+					)}
+				</div>
+
+				{/* 제조사 검색 모달 */}
+				{isFactoryModalOpen && (
+					<FactorySearch
+						onClose={() => setIsFactoryModalOpen(false)}
+						onSelectFactory={handleFactorySelect}
+					/>
+				)}
 			</div>
 		</div>
 	);

@@ -1,4 +1,3 @@
-// ProductCreatePage.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
@@ -32,7 +31,7 @@ const buildCreatePayload = (p: Product): CreateProductRequest => ({
 			colorId: g.colorId,
 			note: g.note ?? "",
 			policyDtos: (g.policyDtos || []).map((pol) => ({
-				workGradePolicyId: pol.workGradePolicyId, // workGradePolicyId 값을 grade 필드로 매핑
+				grade: pol.grade,
 				laborCost: pol.laborCost ?? 0,
 			})),
 		})
@@ -99,6 +98,7 @@ const ProductCreatePage = () => {
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string>
 	>({});
+	const [imageFile, setImageFile] = useState<File | null>(null);
 	const { handleError } = useErrorHandler();
 
 	const validateProduct = (): boolean => {
@@ -149,6 +149,10 @@ const ProductCreatePage = () => {
 
 	const handleProductChange = (updated: Partial<ProductData>) =>
 		setProduct((prev) => ({ ...prev, ...updated }));
+
+	const handleImageChange = (file: File | null) => {
+		setImageFile(file);
+	};
 
 	const handlePriceGroupChange = (updated: ProductWorkGradePolicyGroupDto[]) =>
 		setProduct((prev) => ({
@@ -243,6 +247,36 @@ const ProductCreatePage = () => {
 			const res = await productApi.createProduct(payload);
 
 			if (isApiSuccess(res)) {
+				let createdProductId: string | null = null;
+				if (
+					res.data &&
+					typeof res.data === "object" &&
+					"productId" in res.data
+				) {
+					createdProductId = (res.data as { productId: string }).productId;
+				}
+
+				// 이미지가 있고 productId가 생성되었다면 이미지 업로드
+				if (imageFile && createdProductId) {
+					try {
+						const uploadRes = await productApi.uploadProductImage(
+							createdProductId,
+							imageFile
+						);
+						if (!uploadRes.success) {
+							console.error("이미지 업로드 실패:", uploadRes.message);
+							alert(
+								"상품은 생성되었으나 이미지 업로드에 실패했습니다.\n상세 페이지에서 이미지를 다시 업로드해주세요."
+							);
+						}
+					} catch (uploadErr) {
+						console.error("이미지 업로드 오류:", uploadErr);
+						alert(
+							"상품은 생성되었으나 이미지 업로드 중 오류가 발생했습니다.\n상세 페이지에서 이미지를 다시 업로드해주세요."
+						);
+					}
+				}
+
 				const { factoryId, factoryName } = product;
 				const again = window.confirm(
 					"상품이 생성되었습니다.\n추가 등록 하시겠습니까?"
@@ -251,6 +285,7 @@ const ProductCreatePage = () => {
 					setProduct({ ...EMPTY_PRODUCT, factoryId, factoryName });
 					setValidationErrors({});
 					setError("");
+					setImageFile(null);
 				} else {
 					navigate("/catalog");
 				}
@@ -263,7 +298,7 @@ const ProductCreatePage = () => {
 					);
 			}
 		} catch (err: unknown) {
-			handleError(err, setError);
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -291,6 +326,7 @@ const ProductCreatePage = () => {
 						editable
 						onProductChange={handleProductChange}
 						onFactorySelect={handleFactorySelect}
+						onImageChange={handleImageChange}
 						validationErrors={validationErrors}
 					/>
 				</div>

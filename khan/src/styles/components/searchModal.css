@@ -432,7 +432,7 @@
 	display: flex;
 	gap: 5px; /* 버튼들 사이의 간격 */
 }
-
+.delete-btn-common,
 .search-btn-common,
 .reset-btn-common,
 .common-btn-common {
@@ -472,6 +472,16 @@
 	background-color: #218838;
 }
 
+.delete-btn-common {
+	background-color: #dc3545;
+	color: white;
+}
+
+.delete-btn-common:hover:not(:disabled) {
+	background-color: #b52a37;
+}
+
+.delete-btn-common:disabled,	
 .search-btn-common:disabled,
 .reset-btn-common:disabled,
 .common-btn-common:disabled {

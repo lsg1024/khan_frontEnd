@@ -45,7 +45,7 @@ const StoneSearch: React.FC<StoneSearchProps> = ({
 				setTotalElements(pageData.totalElements || 0);
 			}
 		} catch (err: unknown) {
-			handleError(err, setError);
+			handleError(err);
 			setStones([]);
 			setCurrentPage(1);
 			setTotalPages(0);

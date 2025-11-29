@@ -3,3 +3,8 @@ export interface StoneTypeDto {
     stoneTypeName: string;
     stoneTypeNote: string;
 }
+
+export interface StoneTypeRequest {
+    name: string;
+    note: string;
+}

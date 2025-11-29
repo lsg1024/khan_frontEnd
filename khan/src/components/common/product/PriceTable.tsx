@@ -34,7 +34,7 @@ const normalizePolicies = (
 };
 
 const makeTemplateGroup = (index: number): ProductWorkGradePolicyGroupDto => {
-	const gid = `new-${index + 1}`;
+	const gid = `GRADE_${index + 1}`;
 	return {
 		productGroupId: "", // 새 행은 서버 id 없음
 		colorId: "", // 선택 유도 (빈 값)

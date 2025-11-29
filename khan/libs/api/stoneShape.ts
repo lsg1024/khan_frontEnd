@@ -1,32 +1,42 @@
-// libs/api/stoneShape.ts
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
 import type { StoneShapeDto } from "../../src/types/stoneShape";
 
+type StoneShapeResponseSingle = StoneShapeDto;
+type StoneShapeResponseList = StoneShapeDto[];
+
 export const stoneShapeApi = {
-    // 스톤 모양 목록 조회
-    getStoneShapes: async (name?: string): Promise<ApiResponse<StoneShapeDto[]>> => {
-        return apiRequest.get<StoneShapeDto[]>('product/stone/shapes', 
-            { params: {name: name || "" } });
-    },
+	getStoneShapes: async (
+		name?: string
+	): Promise<ApiResponse<StoneShapeResponseList>> => {
+		const params = name ? { name } : {};
+		return apiRequest.get<StoneShapeResponseList>("product/stone/shapes", {
+			params,
+		});
+	},
 
-    // 스톤 모양 상세 조회
-    getStoneShape: async (id: string): Promise<ApiResponse<StoneShapeDto>> => {
-        return apiRequest.get<StoneShapeDto>(`product/stone/shapes/${id}`);
-    },
-    
-    // 스톤 모양 생성
-    createStoneShape: async (data: Partial<StoneShapeDto>): Promise<ApiResponse<StoneShapeDto>> => {
-        return apiRequest.post<StoneShapeDto>("product/stone/shapes", data);
-    },
+	getStoneShape: async (
+		id: string
+	): Promise<ApiResponse<StoneShapeResponseSingle>> => {
+		return apiRequest.get<StoneShapeResponseSingle>(
+			`product/stone/shapes/${id}`
+		);
+	},
 
-    // 스톤 모양 수정
-    updateStoneShape: async (id: string, data: Partial<StoneShapeDto>): Promise<ApiResponse<StoneShapeDto>> => {
-        return apiRequest.patch<StoneShapeDto>(`product/stone/shapes/${id}`, data);
-    },
+	createStoneShape: async (
+		data: Partial<StoneShapeDto>
+	): Promise<ApiResponse<string>> => {
+		return apiRequest.post<string>("product/stone/shapes", data);
+	},
 
-    // 스톤 모양 삭제
-    deleteStoneShape: async (id: string): Promise<ApiResponse<void>> => {
-        return apiRequest.delete(`product/stone/shapes/${id}`);
-    }
+	updateStoneShape: async (
+		id: string,
+		data: Partial<StoneShapeDto>
+	): Promise<ApiResponse<string>> => {
+		return apiRequest.patch<string>(`product/stone/shapes/${id}`, data);
+	},
+
+	deleteStoneShape: async (id: string): Promise<ApiResponse<string>> => {
+		return apiRequest.delete<string>(`product/stone/shapes/${id}`);
+	},
 };
