@@ -10,7 +10,9 @@ type ItemType =
 	| "setType"
 	| "priority"
 	| "stoneType"
-	| "stoneShape";
+	| "stoneShape"
+	| "user"
+	| "role";
 
 interface SettingItem {
 	id: number | string;

@@ -70,7 +70,7 @@ const sidebarItems: SidebarItem[] = [
 			{ path: "/accounts/factory", label: "매입처"},
 		],
 	},
-	{ path: "/settings", label: "설정", icon: "⚙️" }
+	{ path: "/settings", label: "기초 관리", icon: "⚙️" }
 ];
 
 export const Sidebar = ({ isOpen = true }: SidebarProps) => {

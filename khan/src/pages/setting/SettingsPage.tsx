@@ -2,7 +2,7 @@ import { useState, type JSX } from "react";
 import BarcodePrinterSettings from "../../components/setting/BarcodePrinterSettings";
 import "../../styles/pages/settingsPage.css";
 
-type SettingCategory = "상품" | "주문" | "재고" | "스톤";
+type SettingCategory = "상품" | "주문" | "재고" | "스톤" | "사용자 관리";
 
 interface SettingItem {
 	id: string;
@@ -16,7 +16,9 @@ interface SettingItem {
 		| "setType"
 		| "priority"
 		| "stoneType"
-		| "stoneShape";
+		| "stoneShape"
+		| "user"
+		| "role";
 	adminOnly?: boolean;
 }
 
@@ -46,7 +48,7 @@ const settingItems: SettingItem[] = [
 	// 주문 / 판매 / 대여 관련
 	{
 		id: "order-classification",
-		label: "급지구분",
+		label: "급 구분",
 		category: "주문",
 		modalType: "priority",
 	},
@@ -67,9 +69,23 @@ const settingItems: SettingItem[] = [
 		category: "스톤",
 		modalType: "stoneShape",
 	},
+
+	// 회원관리
+	{
+		id: "user",
+		label: "사용자 목록",
+		category: "사용자 관리",
+		modalType: "user",
+	}
 ];
 
-const categories: SettingCategory[] = ["상품", "주문", "재고", "스톤"];
+const categories: SettingCategory[] = [
+	"상품",
+	"주문",
+	"재고",
+	"스톤",
+	"사용자 관리",
+];
 
 export default function SettingsPage(): JSX.Element {
 	const [showPrinterSettings, setShowPrinterSettings] = useState(false);
@@ -77,6 +93,18 @@ export default function SettingsPage(): JSX.Element {
 	const handleItemClick = (item: SettingItem) => {
 		if (item.id === "barcode-printer") {
 			setShowPrinterSettings(true);
+		} else if (item.id === "user") {
+			// 사용자 관리는 별도 팝업
+			const width = 500;
+			const height = 650;
+			const left = window.screenX + (window.outerWidth - width) / 2;
+			const top = window.screenY + (window.outerHeight - height) / 2;
+
+			window.open(
+				`/user-management`,
+				`user_management_popup`,
+				`width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+			);
 		} else if (item.modalType) {
 			// 새 창으로 설정 페이지 열기 (동일한 이름으로 하나의 팝업만 유지)
 			const width = 500;

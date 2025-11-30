@@ -47,6 +47,7 @@ import SaleDetailPage from "./pages/sale/SaleDetailPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/setting/SettingsPage";
 import SettingItemPopupPage from "./pages/setting/SettingItemPopupPage";
+import UserManagementPopupPage from "./pages/setting/UserManagementPopupPage";
 
 import Layout from "./components/layout/Layout";
 
@@ -95,6 +96,10 @@ function App() {
 				<Routes>
 					{/* Layout 없이 단독 페이지 렌더링 */}
 					<Route path="/setting-item" element={<SettingItemPopupPage />} />
+					<Route
+						path="/user-management"
+						element={<UserManagementPopupPage />}
+					/>
 					<Route path="/stone/create" element={<StoneCreatePage />} />
 					<Route
 						path="/orders/update/:mode/:flowCode"
