@@ -10,6 +10,26 @@ export function getApiBaseUrl(): string {
 	return API_BASE_URL;
 }
 
+function parseJwt(token: string) {
+	try {
+		const base64Url = token.split(".")[1];
+		const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+		const jsonPayload = decodeURIComponent(
+			window
+				.atob(base64)
+				.split("")
+				.map(function (c) {
+					return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+				})
+				.join("")
+		);
+
+		return JSON.parse(jsonPayload);
+	} catch {
+		return null;
+	}
+}
+
 export const api = axios.create({
 	baseURL: getApiBaseUrl(),
 	withCredentials: true,
@@ -55,6 +75,7 @@ const processQueue = (error: Error | null) => {
 
 api.interceptors.request.use((config) => {
 	const token = tokenUtils.getToken();
+	const currentSubdomain = extractSubdomain(window.location.hostname);
 
 	if (!config.headers) {
 		config.headers = new AxiosHeaders();
@@ -62,10 +83,33 @@ api.interceptors.request.use((config) => {
 		config.headers = AxiosHeaders.from(config.headers);
 	}
 
-	const subdomain = extractSubdomain(window.location.hostname);
-	(config.headers as AxiosHeaders).set("X-Tenant-ID", subdomain || "");
+	(config.headers as AxiosHeaders).set("X-Tenant-ID", currentSubdomain || "");
 
 	if (token) {
+		const decoded = parseJwt(token);
+
+		const tokenTenantId = decoded?.tenantId || decoded?.tenant;
+
+		if (
+			tokenTenantId &&
+			currentSubdomain &&
+			tokenTenantId !== currentSubdomain
+		) {
+			console.warn(
+				`Tenant mismatch detected! Token: ${tokenTenantId}, Current: ${currentSubdomain}`
+			);
+
+			tokenUtils.removeToken();
+
+			const controller = new AbortController();
+			config.signal = controller.signal;
+			controller.abort("Cross-Tenant Access Detected");
+
+			window.dispatchEvent(new CustomEvent("tokenExpired"));
+
+			throw new Error("Tenant mismatch: Please login again.");
+		}
+
 		(config.headers as AxiosHeaders).set("Authorization", `Bearer ${token}`);
 	}
 	return config;
@@ -95,12 +139,18 @@ api.interceptors.response.use(
 				}
 			}
 		}
-		console.log("API 응답 인터셉터 통과:", extractSubdomain(window.location.hostname));
+		console.log(
+			"API 응답 인터셉터 통과:",
+			extractSubdomain(window.location.hostname)
+		);
 		return res;
 	},
 	async (err) => {
 		// 401 에러 시 재발급 요청 실패 시 로그아웃 처리
-		console.log("API 응답 인터셉터 통과:", extractSubdomain(window.location.hostname));
+		console.log(
+			"API 응답 인터셉터 통과:",
+			extractSubdomain(window.location.hostname)
+		);
 		const originalRequest = err.config;
 		if (err.response?.status === 401 && !originalRequest._retry) {
 			if (isRefreshing) {
@@ -112,7 +162,9 @@ api.interceptors.response.use(
 						// 재발급 성공 후, 헤더에 새 토큰을 설정하여 원래 요청을 다시 보냄
 						originalRequest.headers["Authorization"] =
 							"Bearer " + tokenUtils.getToken();
-						originalRequest.headers["X-Tenant-ID"] = extractSubdomain(window.location.hostname);
+						originalRequest.headers["X-Tenant-ID"] = extractSubdomain(
+							window.location.hostname
+						);
 						return api(originalRequest);
 					})
 					.catch((err) => {
@@ -120,8 +172,15 @@ api.interceptors.response.use(
 					});
 			}
 
-			originalRequest._retry = true; // 재시도 플래그 설정 (무한 루프 방지)
+			originalRequest._retry = true;
 			isRefreshing = true;
+
+			if (
+				originalRequest.url?.includes("/login") ||
+				originalRequest.url?.includes("/auth/login")
+			) {
+				return Promise.reject(err);
+			}
 
 			try {
 				// reissue 요청은 인터셉터를 우회하여 직접 fetch 사용
@@ -130,7 +189,7 @@ api.interceptors.response.use(
 					credentials: "include",
 					headers: {
 						"Content-Type": "application/json",
-						"X-Tenant-ID": extractSubdomain(window.location.hostname)
+						"X-Tenant-ID": extractSubdomain(window.location.hostname),
 					},
 				});
 
@@ -185,7 +244,6 @@ api.interceptors.response.use(
 		}
 
 		return Promise.reject(new Error(errorMessage));
-
 	}
 );
 
