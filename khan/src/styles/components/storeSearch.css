@@ -99,7 +99,7 @@
 }
 
 .search-btn:hover:not(:disabled) {
-	background-color: var(--primary-hover-color);
+	background-color: #218838;
 }
 
 .search-btn:disabled {

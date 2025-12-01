@@ -17,6 +17,40 @@
 	width: 100%;
 	max-width: 500px;
 	animation: fadeInUp 0.6s ease-out;
+	position: relative;
+}
+
+.loading-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--border-radius-lg);
+	z-index: 1000;
+	background-color: transparent;
+}
+
+.loading-overlay .loading-state {
+	text-align: center;
+	background-color: transparent;
+	padding: 0;
+}
+
+.loading-overlay .loading-state .spinner {
+	width: 48px;
+	height: 48px;
+	border-width: 4px;
+}
+
+.loading-overlay .loading-state p {
+	margin-top: var(--spacing-md);
+	color: var(--text-primary);
+	font-weight: var(--font-weight-medium);
+	display: none;
 }
 
 @keyframes fadeInUp {

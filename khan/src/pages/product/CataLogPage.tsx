@@ -68,7 +68,17 @@ function CataLogPage() {
 		): string | null => {
 			try {
 				const cacheKey = getImageCacheKey(imageId, imagePath);
-				return sessionStorage.getItem(cacheKey);
+				const cachedUrl = sessionStorage.getItem(cacheKey);
+
+				if (cachedUrl && cachedUrl.startsWith("blob:")) {
+					return cachedUrl;
+				}
+
+				if (cachedUrl) {
+					sessionStorage.removeItem(cacheKey);
+				}
+
+				return null;
 			} catch (error) {
 				console.error("세션 스토리지 읽기 실패:", error);
 				return null;
@@ -88,6 +98,17 @@ function CataLogPage() {
 				console.error("세션 스토리지 저장 실패:", error);
 			}
 		};
+
+		// 세션 스토리지에서 이미지 삭제
+		const removeCachedImage = (imageId: string, imagePath: string) => {
+			try {
+				const cacheKey = getImageCacheKey(imageId, imagePath);
+				sessionStorage.removeItem(cacheKey);
+			} catch (error) {
+				console.error("세션 스토리지 삭제 실패:", error);
+			}
+		};
+
 		const newImageUrls: Record<string, string> = {};
 
 		for (const product of productList) {
@@ -114,6 +135,8 @@ function CataLogPage() {
 						`이미지 로드 실패 (productId: ${product.productId}):`,
 						error
 					);
+					// 로드 실패 시 캐시 삭제
+					removeCachedImage(imageId, imagePath);
 				}
 			}
 		}
