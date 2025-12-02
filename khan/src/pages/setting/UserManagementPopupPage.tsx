@@ -83,12 +83,9 @@ export default function UserManagementPopupPage(): JSX.Element {
 				setShowEditForm(false);
 				setEditFormData(null);
 				fetchUsers();
-			} else {
-				alert(response?.message || "수정에 실패했습니다.");
 			}
 		} catch (error) {
-			console.error("Failed to update user:", error);
-			alert("수정 중 오류가 발생했습니다.");
+			handleError(error);
 		}
 	};
 
@@ -107,12 +104,9 @@ export default function UserManagementPopupPage(): JSX.Element {
 				setShowEditForm(false);
 				setEditFormData(null);
 				fetchUsers();
-			} else {
-				alert(response?.message || "삭제에 실패했습니다.");
 			}
 		} catch (error) {
-			console.error("Failed to delete user:", error);
-			alert("삭제 중 오류가 발생했습니다.");
+			handleError(error);
 		}
 	};
 
@@ -162,12 +156,9 @@ export default function UserManagementPopupPage(): JSX.Element {
 			if (response?.success) {
 				alert("비밀번호가 변경되었습니다.");
 				handleClosePasswordForm();
-			} else {
-				alert(response?.message || "비밀번호 변경에 실패했습니다.");
 			}
 		} catch (error) {
-			console.error("Failed to change password:", error);
-			alert("비밀번호 변경 중 오류가 발생했습니다.");
+			handleError(error);
 		}
 	};
 
@@ -194,7 +185,7 @@ export default function UserManagementPopupPage(): JSX.Element {
 							</button>
 							<button
 								type="button"
-								className="common-btn-common"
+								className="reset-btn-common"
 								onClick={fetchUsers}
 							>
 								새로고침

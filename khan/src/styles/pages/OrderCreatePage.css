@@ -564,6 +564,21 @@
 	background-color: #5a6268;
 }
 
+
+.btn-delete {
+	background-color: #c82333;
+	color: white;
+}
+
+.btn-delete:hover:not(:disabled) {
+	background-color: #a71d2a;
+}
+
+.btn-cancel:hover:not(:disabled) {
+	background-color: #5a6268;
+}
+
+
 .btn-add-row {
 	background-color: var(--primary-color);
 	color: white;
@@ -573,6 +588,7 @@
 	background-color: var(--primary-hover-color);
 }
 
+.btn-delete,
 .btn-submit,
 .btn-cancel {
 	padding: 6px 12px;
@@ -595,6 +611,7 @@
 	transition: background-color 0.2s;
 }
 
+.btn-delete:disabled,
 .btn-add-row:disabled,
 .btn-submit:disabled,
 .btn-cancel:disabled {

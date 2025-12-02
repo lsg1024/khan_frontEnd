@@ -80,14 +80,24 @@ const BasicInfo: React.FC<ProductInfo> = ({
 		// 세션 스토리지에서 캐시 확인
 		try {
 			const cachedUrl = sessionStorage.getItem(cacheKey);
-			if (cachedUrl) {
-				return cachedUrl;
+			if (cachedUrl && cachedUrl.startsWith("blob:")) {
+				// blob URL 유효성 검사
+				try {
+					await fetch(cachedUrl, { method: "HEAD" });
+					return cachedUrl;
+				} catch {
+					// 유효하지 않은 blob URL이면 캐시 삭제하고 재로드
+					sessionStorage.removeItem(cacheKey);
+				}
+			} else if (cachedUrl) {
+				// blob: 형식이 아니면 잘못된 캐시이므로 삭제
+				sessionStorage.removeItem(cacheKey);
 			}
 		} catch (error) {
 			console.error("세션 스토리지 읽기 실패:", error);
 		}
 
-		// 캐시가 없으면 API 호출
+		// 캐시가 없거나 유효하지 않으면 API 호출
 		try {
 			const blob = await productApi.getProductImageByPath(imagePath);
 			const blobUrl = URL.createObjectURL(blob);
@@ -102,6 +112,12 @@ const BasicInfo: React.FC<ProductInfo> = ({
 			return blobUrl;
 		} catch (error) {
 			console.error("이미지 로드 실패:", error);
+			// API 호출 실패 시에도 캐시 삭제
+			try {
+				sessionStorage.removeItem(cacheKey);
+			} catch {
+				// 무시
+			}
 			throw error;
 		}
 	};

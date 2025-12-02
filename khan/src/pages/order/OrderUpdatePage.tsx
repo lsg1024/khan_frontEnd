@@ -103,8 +103,6 @@ const OrderUpdatePage: React.FC = () => {
 	>();
 	const [orderRows, setOrderRows] = useState<OrderRowData[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
-
 	// 검색 모달 상태
 	const [isStoreSearchOpen, setIsStoreSearchOpen] = useState(false);
 	const [selectedRowForStore, setSelectedRowForStore] = useState<string>("");
@@ -727,7 +725,7 @@ const OrderUpdatePage: React.FC = () => {
 					setOrderRows([rowData]);
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}
@@ -799,7 +797,7 @@ const OrderUpdatePage: React.FC = () => {
 				throw new Error(response.message || "주문 업데이트에 실패했습니다.");
 			}
 		} catch (err) {
-			handleError(err, setError);
+			handleError(err);
 			alert("주문 업데이트에 실패했습니다.");
 		} finally {
 			setLoading(false);
@@ -826,14 +824,6 @@ const OrderUpdatePage: React.FC = () => {
 
 	return (
 		<div className="order-update-page">
-			{/* 에러 메시지 */}
-			{error && (
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-			)}
-
 			{/* 주문 상세 정보 카드 */}
 			<div className="order-detail-card">
 				<img src={initialImagePath} alt="Product" />

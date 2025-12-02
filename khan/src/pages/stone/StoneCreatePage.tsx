@@ -369,188 +369,177 @@ const StoneCreatePage: React.FC = () => {
 
 	return (
 		<div className="stone-create-page">
-			<div className="stone-create-section">
-				<div className="stone-create-table-wrap">
-					<table className="stone-create-table">
-						<thead>
-							<tr>
-								<th className="no-th">No</th>
-								<th className="stone-th">스톤종류</th>
-								<th className="stone-th">스톤모양</th>
-								<th className="stone-th">스톤사이즈</th>
-								<th className="note-th">스톤 이름</th>
-								<th className="note-th">비고</th>
-								<th>중량(g)</th>
-								<th>구매단가</th>
-								<th>1등급</th>
-								<th>2등급</th>
-								<th>3등급</th>
-								<th>4등급</th>
+			<div className="stone-create-table-wrap">
+				<table className="stone-create-table">
+					<thead>
+						<tr>
+							<th className="no-th">No</th>
+							<th className="stone-th">스톤종류</th>
+							<th className="stone-th">스톤모양</th>
+							<th className="stone-th">스톤사이즈</th>
+							<th className="note-th">스톤 이름</th>
+							<th className="note-th">비고</th>
+							<th>중량(g)</th>
+							<th>구매단가</th>
+							<th>1등급</th>
+							<th>2등급</th>
+							<th>3등급</th>
+							<th>4등급</th>
+						</tr>
+					</thead>
+					<tbody>
+						{rows.map((row, idx) => (
+							<tr
+								key={idx}
+								style={{
+									backgroundColor: duplicateRows.has(idx)
+										? "#ffebee"
+										: "transparent",
+									border: duplicateRows.has(idx) ? "1px solid #f44336" : "none",
+								}}
+							>
+								<td>{idx + 1}</td>
+								<td>
+									<select
+										value={row.stoneTypeId}
+										onChange={(e) =>
+											handleChange(idx, "stoneTypeId", e.target.value)
+										}
+									>
+										<option value="">선택</option>
+										{stoneTypes.map((t) => (
+											<option key={t.stoneTypeId} value={t.stoneTypeId}>
+												{t.stoneTypeName}
+											</option>
+										))}
+									</select>
+								</td>
+								<td>
+									<select
+										value={row.stoneShapeId}
+										onChange={(e) =>
+											handleChange(idx, "stoneShapeId", e.target.value)
+										}
+									>
+										<option value="">선택</option>
+										{stoneShapes.map((s) => (
+											<option key={s.stoneShapeId} value={s.stoneShapeId}>
+												{s.stoneShapeName}
+											</option>
+										))}
+									</select>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.stoneSize}
+										onChange={(e) =>
+											handleChange(idx, "stoneSize", e.target.value)
+										}
+										style={{
+											backgroundColor: checkingRows.has(idx)
+												? "#f0f8ff"
+												: "white",
+											border: checkingRows.has(idx)
+												? "1px solid #007bff"
+												: "1px solid #ddd",
+										}}
+										placeholder={checkingRows.has(idx) ? "중복 검사 중..." : ""}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.stoneName}
+										readOnly
+										className="readonly-stone-name"
+										style={{
+											backgroundColor: duplicateRows.has(idx)
+												? "#ffcdd2"
+												: "#f5f5f5",
+											border: duplicateRows.has(idx)
+												? "1px solid #f44336"
+												: "1px solid #ddd",
+										}}
+										title={
+											duplicateRows.has(idx) ? "중복된 스톤 이름입니다" : ""
+										}
+									/>
+								</td>
+								<td>
+									<input
+										type="text"
+										value={row.note}
+										onChange={(e) => handleChange(idx, "note", e.target.value)}
+									/>
+								</td>
+								<td>
+									<input
+										type="number"
+										value={row.weight}
+										onChange={(e) =>
+											handleChange(idx, "weight", e.target.value)
+										}
+									/>
+								</td>
+								<td>
+									<input
+										type="number"
+										value={row.purchasePrice}
+										onChange={(e) =>
+											handleChange(idx, "purchasePrice", e.target.value)
+										}
+									/>
+								</td>
+								<td>
+									<input
+										type="number"
+										value={row.grade_1}
+										onChange={(e) =>
+											handleChange(idx, "grade_1", e.target.value)
+										}
+									/>
+								</td>
+								<td>
+									<input
+										type="number"
+										value={row.grade_2}
+										onChange={(e) =>
+											handleChange(idx, "grade_2", e.target.value)
+										}
+									/>
+								</td>
+								<td>
+									<input
+										type="number"
+										value={row.grade_3}
+										onChange={(e) =>
+											handleChange(idx, "grade_3", e.target.value)
+										}
+									/>
+								</td>
+								<td>
+									<input
+										type="number"
+										value={row.grade_4}
+										onChange={(e) =>
+											handleChange(idx, "grade_4", e.target.value)
+										}
+									/>
+								</td>
 							</tr>
-						</thead>
-						<tbody>
-							{rows.map((row, idx) => (
-								<tr
-									key={idx}
-									style={{
-										backgroundColor: duplicateRows.has(idx)
-											? "#ffebee"
-											: "transparent",
-										border: duplicateRows.has(idx)
-											? "1px solid #f44336"
-											: "none",
-									}}
-								>
-									<td>{idx + 1}</td>
-									<td>
-										<select
-											value={row.stoneTypeId}
-											onChange={(e) =>
-												handleChange(idx, "stoneTypeId", e.target.value)
-											}
-										>
-											<option value="">선택</option>
-											{stoneTypes.map((t) => (
-												<option key={t.stoneTypeId} value={t.stoneTypeId}>
-													{t.stoneTypeName}
-												</option>
-											))}
-										</select>
-									</td>
-									<td>
-										<select
-											value={row.stoneShapeId}
-											onChange={(e) =>
-												handleChange(idx, "stoneShapeId", e.target.value)
-											}
-										>
-											<option value="">선택</option>
-											{stoneShapes.map((s) => (
-												<option key={s.stoneShapeId} value={s.stoneShapeId}>
-													{s.stoneShapeName}
-												</option>
-											))}
-										</select>
-									</td>
-									<td>
-										<input
-											type="text"
-											value={row.stoneSize}
-											onChange={(e) =>
-												handleChange(idx, "stoneSize", e.target.value)
-											}
-											style={{
-												backgroundColor: checkingRows.has(idx)
-													? "#f0f8ff"
-													: "white",
-												border: checkingRows.has(idx)
-													? "1px solid #007bff"
-													: "1px solid #ddd",
-											}}
-											placeholder={
-												checkingRows.has(idx) ? "중복 검사 중..." : ""
-											}
-										/>
-									</td>
-									<td>
-										<input
-											type="text"
-											value={row.stoneName}
-											readOnly
-											className="readonly-stone-name"
-											style={{
-												backgroundColor: duplicateRows.has(idx)
-													? "#ffcdd2"
-													: "#f5f5f5",
-												border: duplicateRows.has(idx)
-													? "1px solid #f44336"
-													: "1px solid #ddd",
-											}}
-											title={
-												duplicateRows.has(idx) ? "중복된 스톤 이름입니다" : ""
-											}
-										/>
-									</td>
-									<td>
-										<input
-											type="text"
-											value={row.note}
-											onChange={(e) =>
-												handleChange(idx, "note", e.target.value)
-											}
-										/>
-									</td>
-									<td>
-										<input
-											type="number"
-											value={row.weight}
-											onChange={(e) =>
-												handleChange(idx, "weight", e.target.value)
-											}
-										/>
-									</td>
-									<td>
-										<input
-											type="number"
-											value={row.purchasePrice}
-											onChange={(e) =>
-												handleChange(idx, "purchasePrice", e.target.value)
-											}
-										/>
-									</td>
-									<td>
-										<input
-											type="number"
-											value={row.grade_1}
-											onChange={(e) =>
-												handleChange(idx, "grade_1", e.target.value)
-											}
-										/>
-									</td>
-									<td>
-										<input
-											type="number"
-											value={row.grade_2}
-											onChange={(e) =>
-												handleChange(idx, "grade_2", e.target.value)
-											}
-										/>
-									</td>
-									<td>
-										<input
-											type="number"
-											value={row.grade_3}
-											onChange={(e) =>
-												handleChange(idx, "grade_3", e.target.value)
-											}
-										/>
-									</td>
-									<td>
-										<input
-											type="number"
-											value={row.grade_4}
-											onChange={(e) =>
-												handleChange(idx, "grade_4", e.target.value)
-											}
-										/>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+						))}
+					</tbody>
+				</table>
+			</div>
 
-				<div className="stone-create-actions">
-					<button
-						className="sc-btn sc-btn-danger"
-						onClick={() => window.close()}
-					>
-						닫기
-					</button>
-					<button className="sc-btn sc-btn-primary" onClick={handleSave}>
-						등록
-					</button>
-				</div>
+			<div className="stone-create-actions">
+				<button className="btn-cancel" onClick={() => window.close()}>
+					닫기
+				</button>
+				<button className="btn-submit" onClick={handleSave}>
+					등록
+				</button>
 			</div>
 		</div>
 	);

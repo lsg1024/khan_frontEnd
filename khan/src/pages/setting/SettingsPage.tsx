@@ -95,7 +95,7 @@ export default function SettingsPage(): JSX.Element {
 			setShowPrinterSettings(true);
 		} else if (item.id === "user") {
 			// 사용자 관리는 별도 팝업
-			const width = 500;
+			const width = 550;
 			const height = 650;
 			const left = window.screenX + (window.outerWidth - width) / 2;
 			const top = window.screenY + (window.outerHeight - height) / 2;
@@ -107,7 +107,7 @@ export default function SettingsPage(): JSX.Element {
 			);
 		} else if (item.modalType) {
 			// 새 창으로 설정 페이지 열기 (동일한 이름으로 하나의 팝업만 유지)
-			const width = 500;
+			const width = 550;
 			const height = 600;
 			const left = window.screenX + (window.outerWidth - width) / 2;
 			const top = window.screenY + (window.outerHeight - height) / 2;

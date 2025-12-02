@@ -23,26 +23,6 @@ function ProductDetailPage() {
 	const [imageFile, setImageFile] = useState<File | null>(null);
 	const { handleError } = useErrorHandler();
 
-	// 이미지 슬라이더 상태 관리
-	// const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-
-	// 이미지 슬라이더 네비게이션 함수들
-	// const nextImage = useCallback(() => {
-	// 	if (product?.productImageDtos && product.productImageDtos.length > 1) {
-	// 		setCurrentImageIndex((prev) =>
-	// 			prev === product.productImageDtos.length - 1 ? 0 : prev + 1
-	// 		);
-	// 	}
-	// }, [product?.productImageDtos]);
-
-	// const prevImage = useCallback(() => {
-	// 	if (product?.productImageDtos && product.productImageDtos.length > 1) {
-	// 		setCurrentImageIndex((prev) =>
-	// 			prev === 0 ? product.productImageDtos.length - 1 : prev - 1
-	// 		);
-	// 	}
-	// }, [product?.productImageDtos]);
-
 	// 공장 선택 핸들러
 	const handleFactorySelect = (factoryId: number, factoryName: string) => {
 		// 상품 정보에도 반영
@@ -333,34 +313,25 @@ function ProductDetailPage() {
 			);
 
 			if (isApiSuccess(response)) {
-				// 이미지가 변경되었다면 업로드 (기존 이미지 자동 대체)
 				if (imageFile) {
 					try {
 						const imageResponse = await productApi.uploadProductImage(
 							product.productId,
 							imageFile
 						);
-
-						if (!imageResponse.success) {
-							console.error("이미지 업로드 실패:", imageResponse.message);
-							alert("상품 정보는 저장되었으나 이미지 업로드에 실패했습니다.");
-						}
-					} catch (imageError) {
-						console.error("이미지 업로드 오류:", imageError);
 						alert(
-							"상품 정보는 저장되었으나 이미지 업로드 중 오류가 발생했습니다."
+							imageResponse.data || "상품 이미지가 성공적으로 업로드되었습니다."
 						);
+					} catch (imageError) {
+						handleError(imageError);
 					}
 				}
 				alert(response.data || "상품 정보가 성공적으로 저장되었습니다.");
 				setImageFile(null); // 이미지 파일 초기화
 				loadProductDetail(); // 상품 정보 다시 로드
-			} else {
-				alert("저장에 실패했습니다: " + response.data);
 			}
 		} catch (error) {
-			console.error("저장 오류:", error);
-			alert("저장 중 오류가 발생했습니다.");
+			handleError(error);
 		} finally {
 			setLoading(false);
 		}

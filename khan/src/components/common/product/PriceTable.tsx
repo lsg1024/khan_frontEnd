@@ -80,7 +80,6 @@ const PriceTable: React.FC<PriceTableProps> = ({
 		loadColorOptions();
 	}, [loadColorOptions]);
 
-	// 화면에 보여줄 3줄 구성: 서버의 0~2번째를 우선 배치하고 부족분은 템플릿으로
 	const displayRows: ProductWorkGradePolicyGroupDto[] = useMemo(() => {
 		const src = Array.isArray(priceGroups) ? priceGroups : [];
 		const out: ProductWorkGradePolicyGroupDto[] = [];
@@ -197,7 +196,6 @@ const PriceTable: React.FC<PriceTableProps> = ({
 		<div className="price-section">
 			{showTitle && <h2>가격 정보</h2>}
 
-			{/* 테이블 상단 에러 (필드별 문구는 숨기고 테두리/aria만 표시) */}
 			{baseRowError && <div className="table-level-error">{baseRowError}</div>}
 
 			<table className="price-table">
@@ -273,7 +271,7 @@ const PriceTable: React.FC<PriceTableProps> = ({
 										{group.colorName || "색상 없음"}
 									</span>
 								)}
-							</td>{" "}
+							</td>
 							{/* 구매 공임 */}
 							<td>
 								{editable ? (

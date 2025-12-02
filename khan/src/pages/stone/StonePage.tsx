@@ -114,6 +114,9 @@ export const StonePage = () => {
 			if (e.data && e.data.type === "STONE_CREATED") {
 				loadStones(searchTerm, currentPage);
 			}
+			if (e.data && e.data.type === "STONE_UPDATED") {
+				loadStones(searchTerm, currentPage);
+			}
 		};
 		window.addEventListener("message", onMessage);
 		return () => window.removeEventListener("message", onMessage);
@@ -123,8 +126,18 @@ export const StonePage = () => {
 		<div className="stone-page">
 			{/* 검색 섹션 */}
 			<div className="search-section-common">
-				<div className="search-section-stone">
-					<div className="search-input-group">
+				{/* <div className="search-filters-common">
+					<div className="filter-row-common">
+						<div className="filter-group-common">
+							<select id="stoneType" value={"t"}></select>
+						</div>
+						<div className="filter-group-common">
+							<select id="stoneType" value={"t"}></select>
+						</div>
+					</div>
+				</div> */}
+				<div className="search-filters-common">
+					<div className="search-controls-common">
 						<input
 							type="text"
 							className="search-input-common"
@@ -133,34 +146,44 @@ export const StonePage = () => {
 							onChange={(e) => setSearchTerm(e.target.value)}
 							onKeyDown={handleKeyPress}
 						/>
-						<button
-							className="search-button"
-							onClick={handleSearch}
-							disabled={loading}
-						>
-							검색
-						</button>
-						<button
-							className="clear-button"
-							onClick={handleClearSearch}
-							disabled={loading}
-						>
-							초기화
-						</button>
-						<button
-							className="create-button"
-							onClick={handleCreateStone}
-							disabled={loading}
-						>
-							생성
-						</button>
-						<button
-							className="excel-button"
-							onClick={handleDownExcel}
-							disabled={loading}
-						>
-							엑셀 다운로드
-						</button>
+						<div className="search-buttons-common">
+							<div className="filter-group-common">
+								<button
+									className="search-btn-common"
+									onClick={handleSearch}
+									disabled={loading}
+								>
+									검색
+								</button>
+							</div>
+							<div className="filter-group-common">
+								<button
+									className="reset-btn-common"
+									onClick={handleClearSearch}
+									disabled={loading}
+								>
+									초기화
+								</button>
+							</div>
+							<div className="filter-group-common">
+								<button
+									className="common-btn-common"
+									onClick={handleCreateStone}
+									disabled={loading}
+								>
+									생성
+								</button>
+							</div>
+							<div className="filter-group-common">
+								<button
+									className="common-btn-common"
+									onClick={handleDownExcel}
+									disabled={loading}
+								>
+									엑셀 다운로드
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -187,28 +210,30 @@ export const StonePage = () => {
 				</div>
 			)}
 
-			{/* 스톤 테이블 */}
-			{!loading && !error && (
-				<>
-					<StoneListTable
-						stones={stones}
-						showTitle={false}
-						showTotalRow={true}
-						currentPage={currentPage}
-						pageSize={pageInfo.size}
-					/>
-
-					{/* 페이지네이션 */}
-					{pageInfo.totalPages > 0 && (
-						<Pagination
+			{/* 스톤 목록 */}
+			<div className="list">
+				{!loading && !error && (
+					<>
+						<StoneListTable
+							stones={stones}
+							showTitle={false}
+							showTotalRow={true}
 							currentPage={currentPage}
-							totalPages={pageInfo.totalPages}
-							totalElements={pageInfo.totalElements}
-							onPageChange={handlePageChange}
+							pageSize={pageInfo.size}
 						/>
-					)}
-				</>
-			)}
+
+						{/* 페이지네이션 */}
+						{pageInfo.totalPages > 0 && (
+							<Pagination
+								currentPage={currentPage}
+								totalPages={pageInfo.totalPages}
+								totalElements={pageInfo.totalElements}
+								onPageChange={handlePageChange}
+							/>
+						)}
+					</>
+				)}
+			</div>
 
 			{/* 데이터가 없는 경우 */}
 			{!loading && !error && stones.length === 0 && (

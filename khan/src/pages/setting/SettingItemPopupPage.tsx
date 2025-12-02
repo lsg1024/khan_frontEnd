@@ -1,5 +1,6 @@
 import { useEffect, useState, type JSX } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useErrorHandler } from "../../utils/errorHandler";
 import "../../styles/pages/settingItemPopup.css";
 
 type ItemType =
@@ -28,6 +29,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 	const [items, setItems] = useState<SettingItem[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [actualSearchQuery, setActualSearchQuery] = useState("");
 	const [showCreateForm, setShowCreateForm] = useState(false);
 	const [createFormData, setCreateFormData] = useState({
 		name: "",
@@ -35,141 +37,146 @@ export default function SettingItemPopupPage(): JSX.Element {
 	});
 	const [showEditForm, setShowEditForm] = useState(false);
 	const [editFormData, setEditFormData] = useState<SettingItem | null>(null);
+	const { handleError } = useErrorHandler();
+
+	const fetchItems = async () => {
+		if (!itemType) return;
+
+		setLoading(true);
+		try {
+			let response;
+
+			switch (itemType) {
+				case "material": {
+					const { materialApi } = await import("../../../libs/api/material");
+					response = await materialApi.getMaterials(actualSearchQuery);
+					break;
+				}
+				case "harry": {
+					const { goldHarryApi } = await import("../../../libs/api/goldHarry");
+					response = await goldHarryApi.getGoldHarry();
+					break;
+				}
+				case "classification": {
+					const { classificationApi } = await import(
+						"../../../libs/api/classification"
+					);
+					response = await classificationApi.getClassifications(
+						actualSearchQuery
+					);
+					break;
+				}
+				case "color": {
+					const { colorApi } = await import("../../../libs/api/color");
+					response = await colorApi.getColors(actualSearchQuery);
+					break;
+				}
+				case "setType": {
+					const { setTypeApi } = await import("../../../libs/api/setType");
+					response = await setTypeApi.getSetTypes(actualSearchQuery);
+					break;
+				}
+				case "priority": {
+					const { priorityApi } = await import("../../../libs/api/priority");
+					response = await priorityApi.getPriorities();
+					break;
+				}
+				case "stoneType": {
+					const { stoneTypeApi } = await import("../../../libs/api/stoneType");
+					response = await stoneTypeApi.getStoneTypes(actualSearchQuery);
+					break;
+				}
+				case "stoneShape": {
+					const { stoneShapeApi } = await import(
+						"../../../libs/api/stoneShape"
+					);
+					response = await stoneShapeApi.getStoneShapes(actualSearchQuery);
+					break;
+				}
+				default:
+					return;
+			}
+
+			if (response?.data) {
+				const rawData = Array.isArray(response.data) ? response.data : [];
+
+				// DTO를 SettingItem으로 변환
+				const mappedItems: SettingItem[] = rawData.map((item: unknown) => {
+					const anyItem = item as Record<string, unknown>;
+					// 각 타입별로 id와 name 필드를 매핑
+					let id: string | number = "";
+					let name = "";
+					let note = "";
+
+					switch (itemType) {
+						case "material":
+							id = (anyItem.materialId as string) || "";
+							name = (anyItem.materialName as string) || "";
+							note = (anyItem.materialGoldPurityPercent as string) || "";
+							break;
+						case "harry":
+							id = (anyItem.goldHarryId as number) || "";
+							name = (anyItem.goldHarryLoss as number)?.toString() || "";
+							break;
+						case "classification":
+							id = (anyItem.classificationId as string) || "";
+							name = (anyItem.classificationName as string) || "";
+							note = (anyItem.classificationNote as string) || "";
+							break;
+						case "color":
+							id = (anyItem.colorId as string) || "";
+							name = (anyItem.colorName as string) || "";
+							note = (anyItem.colorNote as string) || "";
+							break;
+						case "setType":
+							id = (anyItem.setTypeId as string) || "";
+							name = (anyItem.setTypeName as string) || "";
+							note = (anyItem.setTypeNote as string) || "";
+							break;
+						case "priority":
+							id = (anyItem.priorityId as string) || "";
+							name = (anyItem.priorityName as string) || "";
+							note = (anyItem.priorityDate as string) || "";
+							break;
+						case "stoneType":
+							id = (anyItem.stoneTypeId as string) || "";
+							name = (anyItem.stoneTypeName as string) || "";
+							note = (anyItem.stoneTypeNote as string) || "";
+							break;
+						case "stoneShape":
+							id = (anyItem.stoneShapeId as string) || "";
+							name = (anyItem.stoneShapeName as string) || "";
+							note = (anyItem.stoneShapeNote as string) || "";
+							break;
+					}
+
+					return { id, name, note, ...anyItem };
+				});
+
+				setItems(mappedItems);
+			}
+		} catch (error) {
+			handleError(error);
+			setItems([]);
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	useEffect(() => {
-		const fetchItems = async () => {
-			if (!itemType) return;
-
-			setLoading(true);
-			try {
-				let response;
-
-				switch (itemType) {
-					case "material": {
-						const { materialApi } = await import("../../../libs/api/material");
-						response = await materialApi.getMaterials(searchQuery);
-						break;
-					}
-					case "harry": {
-						const { goldHarryApi } = await import(
-							"../../../libs/api/goldHarry"
-						);
-						response = await goldHarryApi.getGoldHarry();
-						break;
-					}
-					case "classification": {
-						const { classificationApi } = await import(
-							"../../../libs/api/classification"
-						);
-						response = await classificationApi.getClassifications(searchQuery);
-						break;
-					}
-					case "color": {
-						const { colorApi } = await import("../../../libs/api/color");
-						response = await colorApi.getColors(searchQuery);
-						break;
-					}
-					case "setType": {
-						const { setTypeApi } = await import("../../../libs/api/setType");
-						response = await setTypeApi.getSetTypes(searchQuery);
-						break;
-					}
-					case "priority": {
-						const { priorityApi } = await import("../../../libs/api/priority");
-						response = await priorityApi.getPriorities();
-						break;
-					}
-					case "stoneType": {
-						const { stoneTypeApi } = await import(
-							"../../../libs/api/stoneType"
-						);
-						response = await stoneTypeApi.getStoneTypes(searchQuery);
-						break;
-					}
-					case "stoneShape": {
-						const { stoneShapeApi } = await import(
-							"../../../libs/api/stoneShape"
-						);
-						response = await stoneShapeApi.getStoneShapes(searchQuery);
-						break;
-					}
-					default:
-						return;
-				}
-
-				if (response?.data) {
-					const rawData = Array.isArray(response.data) ? response.data : [];
-
-					// DTO를 SettingItem으로 변환
-					const mappedItems: SettingItem[] = rawData.map((item: unknown) => {
-						const anyItem = item as Record<string, unknown>;
-						// 각 타입별로 id와 name 필드를 매핑
-						let id: string | number = "";
-						let name = "";
-						let note = "";
-
-						switch (itemType) {
-							case "material":
-								id = (anyItem.materialId as string) || "";
-								name = (anyItem.materialName as string) || "";
-								note = (anyItem.materialGoldPurityPercent as string) || "";
-								break;
-							case "harry":
-								id = (anyItem.goldHarryId as number) || "";
-								name = (anyItem.goldHarryLoss as number)?.toString() || "";
-								break;
-							case "classification":
-								id = (anyItem.classificationId as string) || "";
-								name = (anyItem.classificationName as string) || "";
-								note = (anyItem.classificationNote as string) || "";
-								break;
-							case "color":
-								id = (anyItem.colorId as string) || "";
-								name = (anyItem.colorName as string) || "";
-								note = (anyItem.colorNote as string) || "";
-								break;
-							case "setType":
-								id = (anyItem.setTypeId as string) || "";
-								name = (anyItem.setTypeName as string) || "";
-								note = (anyItem.setTypeNote as string) || "";
-								break;
-							case "priority":
-								id = (anyItem.priorityId as string) || "";
-								name = (anyItem.priorityName as string) || "";
-								note = (anyItem.priorityDate as string) || "";
-								break;
-							case "stoneType":
-								id = (anyItem.stoneTypeId as string) || "";
-								name = (anyItem.stoneTypeName as string) || "";
-								note = (anyItem.stoneTypeNote as string) || "";
-								break;
-							case "stoneShape":
-								id = (anyItem.stoneShapeId as string) || "";
-								name = (anyItem.stoneShapeName as string) || "";
-								note = (anyItem.stoneShapeNote as string) || "";
-								break;
-						}
-
-						return { id, name, note, ...anyItem };
-					});
-
-					setItems(mappedItems);
-				}
-			} catch (error) {
-				console.error("Failed to fetch items:", error);
-				setItems([]);
-			} finally {
-				setLoading(false);
-			}
-		};
-
 		fetchItems();
-	}, [itemType, searchQuery]);
+	}, []);
 
 	const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
 			e.preventDefault();
+			setActualSearchQuery(searchQuery);
 		}
+	};
+
+	const handleReset = () => {
+		setSearchQuery("");
+		setActualSearchQuery("");
 	};
 
 	const handleCreateClick = () => {
@@ -206,7 +213,9 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "classification": {
-					const { classificationApi } = await import("../../../libs/api/classification");
+					const { classificationApi } = await import(
+						"../../../libs/api/classification"
+					);
 					response = await classificationApi.createClassification({
 						name: createFormData.name,
 						note: createFormData.note,
@@ -262,11 +271,12 @@ export default function SettingItemPopupPage(): JSX.Element {
 				setShowCreateForm(false);
 				setCreateFormData({ name: "", note: "" });
 				setSearchQuery("");
+				await fetchItems();
 			} else {
 				alert("생성에 실패했습니다.");
 			}
-		} catch (error) {	
-			alert(error instanceof Error ? error.message : "생성 중 오류가 발생했습니다.");
+		} catch (error) {
+			handleError(error);
 		}
 	};
 
@@ -330,12 +340,12 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "priority": {
-					const { priorityApi } = await import ("../../../libs/api/priority");
-                    response = await priorityApi.updatePriority(
-                        id, 
-                        editFormData.name, 
-                        Number(editFormData.note)
-                    );
+					const { priorityApi } = await import("../../../libs/api/priority");
+					response = await priorityApi.updatePriority(
+						id,
+						editFormData.name,
+						Number(editFormData.note)
+					);
 					break;
 				}
 				case "stoneType": {
@@ -363,12 +373,10 @@ export default function SettingItemPopupPage(): JSX.Element {
 				setShowEditForm(false);
 				setEditFormData(null);
 				setSearchQuery("");
-			} else {
-				alert("수정에 실패했습니다.");
-			}
+				await fetchItems();
+			} 
 		} catch (error) {
-			console.error("Failed to update item:", error);
-			alert("수정 중 오류가 발생했습니다.");
+			handleError(error);
 		}
 	};
 
@@ -390,8 +398,8 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "harry": {
-					const {goldHarryApi} = await import("../../../libs/api/goldHarry");
-                    response = await goldHarryApi.deleteGoldHarry(id);
+					const { goldHarryApi } = await import("../../../libs/api/goldHarry");
+					response = await goldHarryApi.deleteGoldHarry(id);
 					return;
 				}
 				case "classification": {
@@ -434,11 +442,14 @@ export default function SettingItemPopupPage(): JSX.Element {
 				setShowEditForm(false);
 				setEditFormData(null);
 				setSearchQuery("");
+				await fetchItems();
 			} else {
 				alert("삭제에 실패했습니다.");
 			}
 		} catch (error) {
-			alert(error instanceof Error ? error.message : "삭제 중 오류가 발생했습니다.");
+			alert(
+				error instanceof Error ? error.message : "삭제 중 오류가 발생했습니다."
+			);
 		}
 	};
 
@@ -456,8 +467,19 @@ export default function SettingItemPopupPage(): JSX.Element {
 							className="search-input-common"
 						/>
 						<div className="search-buttons-common">
-							<button type="submit" className="search-btn-common">
+							<button
+								type="button"
+								className="search-btn-common"
+								onClick={() => setActualSearchQuery(searchQuery)}
+							>
 								검색
+							</button>
+							<button
+								type="button"
+								className="reset-btn-common"
+								onClick={handleReset}
+							>
+								초기화
 							</button>
 							<button
 								type="button"

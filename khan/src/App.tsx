@@ -15,6 +15,7 @@ import ProductCreatePage from "./pages/product/ProductCreatePage";
 import ProductDetailPage from "./pages/product/ProductDetailPage";
 import StonePage from "./pages/stone/StonePage";
 import StoneCreatePage from "./pages/stone/StoneCreatePage";
+import StoneEditPage from "./pages/stone/StoneEditPage";
 import OrderPage from "./pages/order/OrderPage";
 import FixPage from "./pages/order/FixPage";
 import ExpactPage from "./pages/order/DeliveryPage";
@@ -101,6 +102,7 @@ function App() {
 						element={<UserManagementPopupPage />}
 					/>
 					<Route path="/stone/create" element={<StoneCreatePage />} />
+					<Route path="/stone/edit/:stoneId" element={<StoneEditPage />} />
 					<Route
 						path="/orders/update/:mode/:flowCode"
 						element={<OrderUpdatePage />}

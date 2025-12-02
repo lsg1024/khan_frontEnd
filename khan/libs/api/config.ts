@@ -151,6 +151,7 @@ api.interceptors.response.use(
 			"API 응답 인터셉터 통과:",
 			extractSubdomain(window.location.hostname)
 		);
+		console.error("API 응답 오류:", err.response);
 		const originalRequest = err.config;
 		if (err.response?.status === 401 && !originalRequest._retry) {
 			if (isRefreshing) {

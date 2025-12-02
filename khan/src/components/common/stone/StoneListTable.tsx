@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import type { ProductStoneDto } from "../../../types/stone";
 import "../../../styles/components/StoneListTable.css";
 
@@ -17,8 +16,6 @@ const StoneListTable: React.FC<StoneListTableProps> = ({
 	currentPage = 1,
 	pageSize = 20,
 }) => {
-	const navigate = useNavigate();
-
 	// 툴팁 상태 관리
 	const [tooltip, setTooltip] = useState<{
 		show: boolean;
@@ -133,14 +130,21 @@ const StoneListTable: React.FC<StoneListTableProps> = ({
 		}
 	}, [tooltip.show, tooltip.x, tooltip.y]);
 
-	// 스톤 상세/수정 페이지로 이동
+	// 스톤 상세/수정 페이지를 팝업으로 열기
 	const handleStoneClick = (stoneId: string) => {
-		navigate(`/stone/${stoneId}`);
+		const url = `/stone/edit/${stoneId}`;
+		const NAME = `stone_edit_${stoneId}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=600";
+
+		const popup = window.open(url, NAME, FEATURES);
+		if (!popup) {
+			alert("팝업 차단을 해제해주세요.");
+		}
 	};
 
 	if (!stones || stones.length === 0) {
 		return (
-			<div className="stone-list-section">
+			<div>
 				{showTitle && (
 					<div className="stone-list-header">
 						<h2>스톤 목록</h2>
@@ -151,7 +155,7 @@ const StoneListTable: React.FC<StoneListTableProps> = ({
 	}
 
 	return (
-		<div className="stone-list-section">
+		<div>
 			{showTitle && (
 				<div className="stone-list-header">
 					<h2>스톤 목록</h2>
@@ -186,9 +190,9 @@ const StoneListTable: React.FC<StoneListTableProps> = ({
 						return (
 							<tr key={stone.productStoneId}>
 								{/* No - 클릭 가능 */}
-								<td>
+								<td className="no-cell">
 									<button
-										className="stone-number-button"
+										className="no-btn"
 										onClick={() => handleStoneClick(stone.stoneId)}
 										title="스톤 상세 정보 보기"
 									>

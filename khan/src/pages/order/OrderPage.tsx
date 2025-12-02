@@ -14,7 +14,6 @@ import "../../styles/pages/OrderPage.css";
 
 export const OrderPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
@@ -96,7 +95,6 @@ export const OrderPage = () => {
 	const handleExcelDownload = async () => {
 		try {
 			setLoading(true);
-			setError("");
 			const response = await orderApi.downloadOrdersExcel(
 				searchFilters.start,
 				searchFilters.end,
@@ -272,7 +270,6 @@ export const OrderPage = () => {
 	const loadOrders = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
 			setLoading(true);
-			setError("");
 
 			setSelectedOrders([]);
 
@@ -512,7 +509,6 @@ export const OrderPage = () => {
 	useEffect(() => {
 		const initializeData = async () => {
 			setCurrentPage(1);
-			setError("");
 			await Promise.all([loadOrders(searchFilters, 1), fetchDropdownData()]);
 		};
 
@@ -577,14 +573,6 @@ export const OrderPage = () => {
 	return (
 		<>
 			<div className="page">
-				{/* 에러 메시지 */}
-				{error && (
-					<div className="error-message">
-						<span>⚠️</span>
-						<p>{error}</p>
-					</div>
-				)}
-
 				{/* 출고일 변경 모달 */}
 				{isDatePickerOpen && (
 					<div className="date-picker-modal-overlay">

@@ -1,7 +1,7 @@
 /* ===== 카탈로그 페이지 스타일 ===== */
 .catalog-page {
-	width: 90%;
-	max-width: 1400px;
+	width: 100%;
+	max-width: 1300px;
 	margin: 0 auto;
 	padding: var(--spacing-lg);
 	background-color: var(--bg-secondary);

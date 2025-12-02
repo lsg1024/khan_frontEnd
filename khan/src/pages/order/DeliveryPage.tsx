@@ -15,7 +15,6 @@ import "../../styles/pages/OrderPage.css";
 
 export const ExpactPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
@@ -252,7 +251,7 @@ export const ExpactPage = () => {
 				setSelectedExpact([]);
 				await loadExpacts(searchFilters, currentPage);
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 				alert("출고 삭제에 실패했습니다.");
 			} finally {
 				setLoading(false);
@@ -270,7 +269,7 @@ export const ExpactPage = () => {
 				alert("출고 상태가 성공적으로 변경되었습니다.");
 				await loadExpacts(searchFilters, currentPage);
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 				alert("출고 상태 변경에 실패했습니다.");
 			} finally {
 				setLoading(false);
@@ -311,7 +310,7 @@ export const ExpactPage = () => {
 				setIsFactorySearchOpen(false);
 				setSelectedExpactForFactory("");
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 				alert("제조사 변경에 실패했습니다.");
 			} finally {
 				setLoading(false);
@@ -323,7 +322,6 @@ export const ExpactPage = () => {
 	const loadExpacts = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
 			setLoading(true);
-			setError("");
 
 			setSelectedExpact([]);
 			try {
@@ -348,7 +346,7 @@ export const ExpactPage = () => {
 					setTotalElements(pageData.totalElements || 0);
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 				setExpacts([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -403,8 +401,6 @@ export const ExpactPage = () => {
 	useEffect(() => {
 		const initializeData = async () => {
 			setCurrentPage(1);
-			setError("");
-
 			await Promise.all([loadExpacts(searchFilters, 1), fetchDropdownData()]);
 		};
 
@@ -468,14 +464,6 @@ export const ExpactPage = () => {
 	return (
 		<>
 			<div className="page">
-				{/* 에러 메시지 */}
-				{error && (
-					<div className="error-message">
-						<span>⚠️</span>
-						<p>{error}</p>
-					</div>
-				)}
-
 				{/* 검색 영역 */}
 				<OrderSearch
 					searchFilters={searchFilters}

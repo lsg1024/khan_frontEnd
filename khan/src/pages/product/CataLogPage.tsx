@@ -71,7 +71,16 @@ function CataLogPage() {
 				const cachedUrl = sessionStorage.getItem(cacheKey);
 
 				if (cachedUrl && cachedUrl.startsWith("blob:")) {
-					return cachedUrl;
+					// blob URL이 유효한지 확인
+					try {
+						fetch(cachedUrl).catch(() => {
+							sessionStorage.removeItem(cacheKey);
+						});
+						return cachedUrl;
+					} catch {
+						sessionStorage.removeItem(cacheKey);
+						return null;
+					}
 				}
 
 				if (cachedUrl) {

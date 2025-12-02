@@ -256,24 +256,17 @@ const ProductCreatePage = () => {
 					createdProductId = (res.data as { productId: string }).productId;
 				}
 
-				// 이미지가 있고 productId가 생성되었다면 이미지 업로드
 				if (imageFile && createdProductId) {
 					try {
 						const uploadRes = await productApi.uploadProductImage(
 							createdProductId,
 							imageFile
 						);
-						if (!uploadRes.success) {
-							console.error("이미지 업로드 실패:", uploadRes.message);
-							alert(
-								"상품은 생성되었으나 이미지 업로드에 실패했습니다.\n상세 페이지에서 이미지를 다시 업로드해주세요."
-							);
-						}
-					} catch (uploadErr) {
-						console.error("이미지 업로드 오류:", uploadErr);
 						alert(
-							"상품은 생성되었으나 이미지 업로드 중 오류가 발생했습니다.\n상세 페이지에서 이미지를 다시 업로드해주세요."
+							uploadRes.data || "상품 이미지가 성공적으로 업로드되었습니다."
 						);
+					} catch (uploadErr) {
+						handleError(uploadErr);
 					}
 				}
 

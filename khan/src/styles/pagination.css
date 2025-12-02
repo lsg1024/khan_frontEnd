@@ -47,9 +47,9 @@
 .page-btn,
 .page-number {
 	padding: var(--spacing-sm) var(--spacing-md);
-	border: 1px solid var(--border-color);
-	background-color: var(--bg-primary);
-	color: var(--text-primary);
+	border: 1px solid var(--primary-light);
+	background-color: var(--primary-color);
+	color: var(--text-white);
 	border-radius: var(--border-radius);
 	cursor: pointer;
 	transition: all 0.3s ease;
@@ -59,9 +59,9 @@
 
 .page-btn:hover:not(:disabled),
 .page-number:hover {
-	background-color: var(--primary-color);
+	background-color: var(--primary-dark);
 	color: var(--text-white);
-	border-color: var(--primary-color);
+	border-color: var(--primary-dark);
 }
 
 .page-btn:disabled {

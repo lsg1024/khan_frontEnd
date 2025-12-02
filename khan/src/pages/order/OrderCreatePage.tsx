@@ -80,8 +80,6 @@ const OrderCreatePage = () => {
 		useState<Product | null>(null);
 
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
-
 	const currentDate = getLocalDate();
 
 	const foundPriority = priorities.find(
@@ -891,7 +889,7 @@ const OrderCreatePage = () => {
 					setOrderRows(initialRows);
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}
@@ -980,13 +978,10 @@ const OrderCreatePage = () => {
 				);
 			}
 
-			console.log("Created flow codes:", createdFlowCodes);
-
 			// 팝업창 닫기
 			window.close();
 		} catch (err) {
-			handleError(err, setError);
-			alert("주문 등록에 실패했습니다.");
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -1012,14 +1007,6 @@ const OrderCreatePage = () => {
 
 	return (
 		<div className="order-create-page">
-			{/* 에러 메시지 */}
-			{error && (
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-			)}
-
 			{/* 상품 정보 섹션 */}
 			<ProductInfoSection
 				currentProductDetail={currentProductDetail}

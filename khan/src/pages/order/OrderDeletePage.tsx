@@ -89,7 +89,7 @@ export const OrderDeletedPage = () => {
 					setTotalElements(pageData.totalElements || 0);
 				}
 			} catch (err) {
-				handleError(err, setError);
+				handleError(err);
 				setDeleteds([]);
 				setCurrentPage(1);
 				setTotalPages(0);

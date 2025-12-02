@@ -4,17 +4,18 @@ import { stoneApi } from "../../../libs/api/stone";
 import type { StoneInfo } from "../../types/stone";
 import type { StoneSearchDto } from "../../types/stone";
 import StoneSearch from "../../components/common/stone/StoneSearch";
+import { useErrorHandler } from "../../utils/errorHandler";
 import "../../styles/pages/stone/StoneInfoPage.css";
 
 const StoneInfoPage: React.FC = () => {
 	const [searchParams] = useSearchParams();
 	const rowId = searchParams.get("rowId") || "";
 	const parentOrigin = searchParams.get("origin") || "*";
+	const { handleError } = useErrorHandler();
 
 	const [stoneInfos, setStoneInfos] = useState<StoneInfo[]>([]);
 	const [availableStones, setAvailableStones] = useState<StoneSearchDto[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
 	const [storeGrade, setStoreGrade] = useState<string>(""); // store grade 정보
 
 	// 스톤 검색 모달 상태
@@ -39,7 +40,7 @@ const StoneInfoPage: React.FC = () => {
 	const getDefaultGradeByStoreGrade = useCallback(
 		(storeGrade: string): string => {
 			// store grade에 따른 기본 등급 매핑
-			console.log("getDefaultGradeByStoreGrade " + storeGrade)
+			console.log("getDefaultGradeByStoreGrade " + storeGrade);
 			const storeGradeMap: { [key: string]: string } = {
 				"1": "GRADE_1",
 				"2": "GRADE_2",
@@ -55,7 +56,6 @@ const StoneInfoPage: React.FC = () => {
 	const loadInitialData = useCallback(async () => {
 		try {
 			setLoading(true);
-			setError("");
 
 			// 부모 창에서 현재 스톤 정보 및 store grade 요청
 			if (window.opener) {
@@ -82,11 +82,9 @@ const StoneInfoPage: React.FC = () => {
 
 			if (response.success) {
 				setAvailableStones(response.data?.content || []);
-			} else {
-				setError("스톤 목록을 불러오는데 실패했습니다.");
 			}
-		} catch {
-			setError("데이터를 불러오는 중 오류가 발생했습니다.");
+		} catch (error) {
+			handleError(error);
 		} finally {
 			setLoading(false);
 		}
@@ -399,13 +397,6 @@ const StoneInfoPage: React.FC = () => {
 	return (
 		<div className="stone-info-manager">
 			<div className="stone-info-manager-content">
-				{error && (
-					<div className="stone-info-manager-error">
-						<span>⚠️</span>
-						<p>{error}</p>
-					</div>
-				)}
-
 				{loading ? (
 					<>
 						<div className="loading-container">

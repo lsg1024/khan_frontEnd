@@ -68,7 +68,7 @@
 }
 
 .setting-card:hover .card-label {
-	color: #1976d2;
+	color: var(--primary-light);
 }
 
 .setting-card.admin-only {
