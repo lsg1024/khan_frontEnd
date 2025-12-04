@@ -95,9 +95,6 @@ api.interceptors.request.use((config) => {
 			currentSubdomain &&
 			tokenTenantId !== currentSubdomain
 		) {
-			console.warn(
-				`Tenant mismatch detected! Token: ${tokenTenantId}, Current: ${currentSubdomain}`
-			);
 
 			tokenUtils.removeToken();
 
@@ -139,19 +136,9 @@ api.interceptors.response.use(
 				}
 			}
 		}
-		console.log(
-			"API 응답 인터셉터 통과:",
-			extractSubdomain(window.location.hostname)
-		);
 		return res;
 	},
 	async (err) => {
-		// 401 에러 시 재발급 요청 실패 시 로그아웃 처리
-		console.log(
-			"API 응답 인터셉터 통과:",
-			extractSubdomain(window.location.hostname)
-		);
-		console.error("API 응답 오류:", err.response);
 		const originalRequest = err.config;
 		if (err.response?.status === 401 && !originalRequest._retry) {
 			if (isRefreshing) {

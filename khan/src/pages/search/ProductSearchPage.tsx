@@ -14,8 +14,62 @@ const ProductSearchPage: React.FC = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
+	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
-	const size = 10;
+	const size = 12;
+
+	// API를 통해 이미지 로드하여 blob URL 생성 (캐싱 적용)
+	const loadImageFromPath = async (
+		imageId: string,
+		imagePath: string
+	): Promise<string> => {
+		// 캐시 키 생성
+		const cacheKey = `product_image_${imageId}_${imagePath}`;
+
+		// 세션 스토리지에서 캐시 확인
+		try {
+			const cachedUrl = sessionStorage.getItem(cacheKey);
+			if (cachedUrl && cachedUrl.startsWith("blob:")) {
+				// blob URL 유효성 검사
+				try {
+					await fetch(cachedUrl, { method: "HEAD" });
+					return cachedUrl;
+				} catch {
+					// 유효하지 않은 blob URL이면 캐시 삭제하고 재로드
+					sessionStorage.removeItem(cacheKey);
+				}
+			} else if (cachedUrl) {
+				// blob: 형식이 아니면 잘못된 캐시이므로 삭제
+				sessionStorage.removeItem(cacheKey);
+			}
+		} catch (error) {
+			console.error("세션 스토리지 읽기 실패:", error);
+		}
+
+		// 캐시가 없거나 유효하지 않으면 API 호출
+		try {
+			const blob = await productApi.getProductImageByPath(imagePath);
+			const blobUrl = URL.createObjectURL(blob);
+
+			// 세션 스토리지에 저장
+			try {
+				sessionStorage.setItem(cacheKey, blobUrl);
+			} catch (error) {
+				console.error("세션 스토리지 저장 실패:", error);
+			}
+
+			return blobUrl;
+		} catch (error) {
+			console.error("이미지 로드 실패:", error);
+			// API 호출 실패 시에도 캐시 삭제
+			try {
+				sessionStorage.removeItem(cacheKey);
+			} catch {
+				// 무시
+			}
+			throw error;
+		}
+	};
 
 	// 상품 검색
 	const performSearch = useCallback(async (name: string, page: number) => {
@@ -50,6 +104,26 @@ const ProductSearchPage: React.FC = () => {
 			setCurrentPage(uiPage);
 			setTotalPages(pageInfo?.totalPages ?? 1);
 			setTotalElements(pageInfo?.totalElements ?? content.length);
+
+			// 각 상품의 이미지 로드
+			const newImageUrls: Record<string, string> = {};
+			for (const product of content) {
+				if (product.image?.imageId && product.image?.imagePath) {
+					try {
+						const blobUrl = await loadImageFromPath(
+							product.image.imageId,
+							product.image.imagePath
+						);
+						newImageUrls[product.productId] = blobUrl;
+					} catch {
+						// 이미지 로드 실패 시 기본 이미지 사용
+						newImageUrls[product.productId] = "/images/not_ready.png";
+					}
+				} else {
+					newImageUrls[product.productId] = "/images/not_ready.png";
+				}
+			}
+			setImageUrls(newImageUrls);
 		} catch {
 			setError("상품 데이터를 불러오지 못했습니다.");
 			setProducts([]);
@@ -174,9 +248,7 @@ const ProductSearchPage: React.FC = () => {
 									<div className="search-product-image">
 										<img
 											src={
-												product.productImagePath
-													? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${product.productImagePath}`
-													: "/images/not_ready.png"
+												imageUrls[product.productId] || "/images/not_ready.png"
 											}
 											alt={product.productName}
 											onError={(e) => {

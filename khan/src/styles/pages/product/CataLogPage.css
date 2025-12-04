@@ -6,6 +6,10 @@
 	padding: var(--spacing-lg);
 	background-color: var(--bg-secondary);
 	min-height: 100vh;
+	height: 100vh;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
 	transition: var(--transition-base);
 }
 
@@ -244,6 +248,10 @@
 	min-width: auto; /* min-width 제거 */
 	max-width: 100%; /* 최대 너비를 100%로 설정 */
 	width: 100%; /* 너비를 100%로 설정 */
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
 }
 
 /* ===== 상품 그리드 ===== */
@@ -273,16 +281,16 @@
 	border-color: var(--primary-color);
 }
 .catalog-product-image {
-    width: 170px;
-    height: 120px;
-    margin: 10 auto;
-    background-color: #f8f9fa;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border: 1px solid #ddd;
-    flex-shrink: 0;
+	width: 170px;
+	height: 120px;
+	margin: 10 auto;
+	background-color: #f8f9fa;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border: 1px solid #ddd;
+	flex-shrink: 0;
 }
 
 .catalog-product-image img {
@@ -462,7 +470,7 @@
 /* 대형 화면 (1200px ~ 1399px) */
 @media (max-width: 1399px) and (min-width: 1200px) {
 	.products-grid {
-		grid-template-columns: repeat(5, 1fr); /* 4개로 통일 */
+		grid-template-columns: repeat(4, 1fr);
 		gap: var(--spacing-lg);
 	}
 

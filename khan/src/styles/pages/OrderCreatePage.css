@@ -268,12 +268,6 @@
 	min-height: 0; /* flex 아이템이 줄어들 수 있도록 */
 }
 
-.info-row-last .info-item {
-	display: flex;
-	flex-direction: row;
-	flex: 1;
-}
-
 .stone-info-container,
 .product-memo {
 	flex-grow: 1;
@@ -285,20 +279,6 @@
 	overflow-y: auto;
 	min-height: 120px; /* 최소 높이 설정 */
 	color: #333;
-}
-
-.info-item .label {
-	font-weight: 500;
-	color: #555;
-	font-size: 12px;
-	min-width: 60px;
-	white-space: nowrap;
-}
-
-.info-item .value {
-	color: #333;
-	font-size: 12px;
-	font-weight: 400;
 }
 
 /* 스톤 아이템 스타일 */
@@ -564,7 +544,6 @@
 	background-color: #5a6268;
 }
 
-
 .btn-delete {
 	background-color: #c82333;
 	color: white;
@@ -577,7 +556,6 @@
 .btn-cancel:hover:not(:disabled) {
 	background-color: #5a6268;
 }
-
 
 .btn-add-row {
 	background-color: var(--primary-color);
@@ -731,14 +709,9 @@
 	.info-row {
 		flex-direction: column;
 		gap: 8px;
-		align-items: flex-start;
+		align-items: stretch;
+		display: flex;
 	}
-
-	.info-item {
-		width: 100%;
-		justify-content: space-between;
-	}
-
 	.product-info-header {
 		flex-direction: column;
 		gap: 10px;

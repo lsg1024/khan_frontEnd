@@ -2,31 +2,132 @@
 	padding: 2rem 3rem;
 	min-height: calc(100vh - 60px);
 	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .setting-list {
 	display: grid;
 	background: var(--bg-secondary);
-	grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	max-width: 1200px;
 	min-width: 1200px;
 	margin: 0 auto;
 	width: 100%;
+	gap: 0;
 }
 
-@media (max-width: 1200px) {
-	.list {
-		grid-template-columns: repeat(2, 1fr);
+@media (max-width: 1280px) {
+	.setting-page {
+		padding: 2rem 1.5rem;
+	}
+
+	.setting-list {
+		max-width: 100%;
+		min-width: auto;
+	}
+
+	.category-group {
+		margin: 0.75rem !important;
+		padding: 1.25rem !important;
+		min-width: 250px !important;
+	}
+
+	.category-title {
+		font-size: 1.15rem;
+	}
+
+	.card-label {
+		font-size: 0.9rem;
+	}
+}
+
+@media (max-width: 1024px) {
+	.setting-page {
+		padding: 1.5rem 1rem;
+	}
+
+	.setting-list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		max-width: 100%;
+		min-width: auto;
+	}
+
+	.category-group {
+		margin: 0.5rem !important;
+		padding: 1rem !important;
+	}
+
+	.category-title {
+		font-size: 1.1rem;
+		padding-bottom: 0.5rem;
+	}
+
+	.card-label {
+		font-size: 0.875rem;
+	}
+
+	.setting-card {
+		padding: 0.875rem 0.5rem;
 	}
 }
 
 @media (max-width: 768px) {
-	.list {
-		grid-template-columns: 1fr;
+	.setting-page {
+		padding: 1rem 0.5rem;
 	}
 
-	.page {
-		padding: 1rem;
+	.setting-list {
+		grid-template-columns: 1fr;
+		max-width: 100%;
+		min-width: auto;
+	}
+
+	.category-group {
+		margin: 0.25rem !important;
+		padding: 0.75rem !important;
+	}
+
+	.category-title {
+		font-size: 1rem;
+		padding-bottom: 0.5rem;
+	}
+
+	.card-label {
+		font-size: 0.85rem;
+	}
+
+	.setting-card {
+		padding: 0.75rem 0.5rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.setting-page {
+		padding: 0.75rem 0.25rem;
+	}
+
+	.category-group {
+		margin: 0.25rem !important;
+		padding: 0.5rem !important;
+		border-radius: 6px !important;
+	}
+
+	.category-title {
+		font-size: 0.95rem;
+		padding-bottom: 0.4rem;
+	}
+
+	.card-label {
+		font-size: 0.8rem;
+	}
+
+	.setting-card {
+		padding: 0.6rem 0.4rem;
+	}
+
+	.admin-badge {
+		font-size: 9px;
+		padding: 1px 4px;
 	}
 }
 .category-group {

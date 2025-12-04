@@ -123,19 +123,9 @@ export const StonePage = () => {
 	}, [loadStones, searchTerm, currentPage]);
 
 	return (
-		<div className="stone-page">
+		<div className="page">
 			{/* 검색 섹션 */}
 			<div className="search-section-common">
-				{/* <div className="search-filters-common">
-					<div className="filter-row-common">
-						<div className="filter-group-common">
-							<select id="stoneType" value={"t"}></select>
-						</div>
-						<div className="filter-group-common">
-							<select id="stoneType" value={"t"}></select>
-						</div>
-					</div>
-				</div> */}
 				<div className="search-filters-common">
 					<div className="search-controls-common">
 						<input

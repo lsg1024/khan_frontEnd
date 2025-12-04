@@ -302,12 +302,6 @@
 		gap: 1rem;
 	}
 
-	.info-item {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.5rem;
-	}
-
 	.stone-flags {
 		flex-direction: column;
 		gap: 0.5rem;
@@ -477,15 +471,6 @@
 		font-size: 0.85rem;
 	}
 
-	.info-item {
-		padding: 0.6rem;
-	}
-
-	.info-item .label,
-	.info-item .value {
-		font-size: 0.9rem;
-	}
-
 	.stone-flags span {
 		padding: 0.3rem 0.6rem;
 		font-size: 0.75rem;
@@ -505,18 +490,21 @@
 		gap: 0.5rem;
 	}
 
-	/* 기본정보 섹션 - 순서를 2번째로 */
+	/* 이미지 섹션 - 순서를 1번째로 (위로) */
 	.top-section > :first-child {
+		flex: none;
+		order: 1;
+	}
+
+	/* 기본정보 섹션 - 순서를 2번째로 */
+	.top-section .basic-info-section {
 		flex: none;
 		order: 2;
 	}
 
-	/* 이미지 섹션 - 순서를 1번째로 (위로) */
 	.top-section .image-section {
-		flex: none;
 		min-width: auto;
 		max-width: none;
-		order: 1;
 	}
 }
 
