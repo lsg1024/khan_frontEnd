@@ -45,6 +45,8 @@ import AccountReceivablePage from "./pages/sale/AccountsReceivablePage";
 import SalePage from "./pages/sale/SalePage";
 import SaleCreatePage from "./pages/sale/SaleCreatePage";
 import SaleDetailPage from "./pages/sale/SaleDetailPage";
+import GoldMoneyPage from "./pages/gold_money/GoldMoneyPage";
+import PurchasePage from "./pages/purchase/PurchasePage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/setting/SettingsPage";
 import SettingItemPopupPage from "./pages/setting/SettingItemPopupPage";
@@ -170,6 +172,8 @@ function App() {
 						<Route path="/rentals/records" element={<TotalRentalListPage />} />
 						<Route path="/accounts/store" element={<StorePage />} />
 						<Route path="/accounts/factory" element={<FactoryPage />} />
+						<Route path="/gold-money" element={<GoldMoneyPage />} />
+						<Route path="/purchase" element={<PurchasePage />} />
 						<Route path="/login" element={<Navigate to="/" replace />} />
 						<Route path="/join" element={<Navigate to="/" replace />} />
 					</Route>
