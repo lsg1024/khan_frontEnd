@@ -132,4 +132,10 @@ export const saleApi = {
 			headers,
 		});
 	},
+
+	// 판매 등록 전 동일 거래처 확인
+	checkBeforeSale: async (accountId: number): Promise<ApiResponse<string>> => {
+		const params = { id: accountId };
+		return apiRequest.get<string>("order/sale/check", { params });
+	},
 };

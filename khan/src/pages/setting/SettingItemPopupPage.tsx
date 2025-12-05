@@ -12,6 +12,7 @@ type ItemType =
 	| "priority"
 	| "stoneType"
 	| "stoneShape"
+	| "assistantStone"
 	| "user"
 	| "role";
 
@@ -93,6 +94,13 @@ export default function SettingItemPopupPage(): JSX.Element {
 					response = await stoneShapeApi.getStoneShapes(actualSearchQuery);
 					break;
 				}
+				case "assistantStone": {
+					const { assistantStoneApi } = await import(
+						"../../../libs/api/assistantStone"
+					);
+					response = await assistantStoneApi.getAssistantStones();
+					break;
+				}
 				default:
 					return;
 			}
@@ -148,11 +156,14 @@ export default function SettingItemPopupPage(): JSX.Element {
 							name = (anyItem.stoneShapeName as string) || "";
 							note = (anyItem.stoneShapeNote as string) || "";
 							break;
+						case "assistantStone":
+							id = (anyItem.assistantStoneId as number) || "";
+							name = (anyItem.assistantStoneName as string) || "";
+							break;
 					}
 
 					return { id, name, note, ...anyItem };
 				});
-
 				setItems(mappedItems);
 			}
 		} catch (error) {
@@ -165,7 +176,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 
 	useEffect(() => {
 		fetchItems();
-	}, []);
+	}, [itemType, actualSearchQuery]);
 
 	const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
@@ -261,6 +272,16 @@ export default function SettingItemPopupPage(): JSX.Element {
 					response = await stoneShapeApi.createStoneShape({
 						stoneShapeName: createFormData.name,
 						stoneShapeNote: createFormData.note,
+					});
+					break;
+				}
+				case "assistantStone": {
+					const { assistantStoneApi } = await import(
+						"../../../libs/api/assistantStone"
+					);
+					response = await assistantStoneApi.createAssistantStone({
+						assistantStoneId: 0,
+						assistantStoneName: createFormData.name,
 					});
 					break;
 				}
@@ -366,6 +387,16 @@ export default function SettingItemPopupPage(): JSX.Element {
 					});
 					break;
 				}
+				case "assistantStone": {
+					const { assistantStoneApi } = await import(
+						"../../../libs/api/assistantStone"
+					);
+					response = await assistantStoneApi.updateAssistantStone(id, {
+						assistantStoneId: Number(id),
+						assistantStoneName: editFormData.name,
+					});
+					break;
+				}
 			}
 
 			if (response?.success) {
@@ -374,7 +405,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 				setEditFormData(null);
 				setSearchQuery("");
 				await fetchItems();
-			} 
+			}
 		} catch (error) {
 			handleError(error);
 		}
@@ -433,6 +464,13 @@ export default function SettingItemPopupPage(): JSX.Element {
 						"../../../libs/api/stoneShape"
 					);
 					response = await stoneShapeApi.deleteStoneShape(id);
+					break;
+				}
+				case "assistantStone": {
+					const { assistantStoneApi } = await import(
+						"../../../libs/api/assistantStone"
+					);
+					response = await assistantStoneApi.deleteAssistantStone(id);
 					break;
 				}
 			}

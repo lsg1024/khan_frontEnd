@@ -18,7 +18,10 @@ import SaleTable from "../../components/common/sale/SaleTable";
 import SaleOption from "../../components/common/sale/SaleOption";
 import AccountPaymentHistory from "../../components/common/sale/AccountPaymentHistory";
 import { calculateStoneDetails } from "../../utils/calculateStone";
-import { calculatePureGoldWeight } from "../../utils/goldUtils";
+import {
+	calculatePureGoldWeight,
+	calculatePureGoldWeightWithHarry,
+} from "../../utils/goldUtils";
 
 const SaleDetailPage: React.FC = () => {
 	const { flowCode, orderStatus } = useParams<{
@@ -139,18 +142,17 @@ const SaleDetailPage: React.FC = () => {
 								(a) => a.assistantStoneName === response.assistantStoneName
 							);
 
-							const goldWeight = parseFloat(String(response.goldWeight)) || 0;
+							const rawGoldWeight =
+								parseFloat(String(response.goldWeight)) || 0;
+							const goldWeight = rawGoldWeight;
 							const stoneWeight = parseFloat(String(response.stoneWeight)) || 0;
-							const totalWeight = response.goldWeight + stoneWeight || 0;
+							const totalWeight = goldWeight + stoneWeight;
 
-							const pureGoldWeight =
-								goldWeight > 0
-									? calculatePureGoldWeight(
-											goldWeight,
-											response.materialName || ""
-									  )
-									: 0;
-
+							// bulk 모드는 status가 반품이므로 해리 미적용
+							const pureGoldWeight = calculatePureGoldWeight(
+								goldWeight,
+								response.materialName || ""
+							);
 							const saleData: SaleCreateRow = {
 								id: `bulk_${index}`,
 								status: "반품", // 벌크 모드는 항상 반품
@@ -375,15 +377,10 @@ const SaleDetailPage: React.FC = () => {
 					);
 
 					// 금중량, 알중량
-					const goldWeight = parseFloat(String(response.goldWeight)) || 0;
+					const rawGoldWeight = parseFloat(String(response.goldWeight)) || 0;
+					const goldWeight = rawGoldWeight;
 					const stoneWeight = parseFloat(String(response.stoneWeight)) || 0;
-					const totalWeight = response.goldWeight + stoneWeight || 0;
-
-					// 순금 중량 계산 (금중량이 0보다 클 때만)
-					const pureGoldWeight =
-						goldWeight > 0
-							? calculatePureGoldWeight(goldWeight, response.materialName || "")
-							: 0;
+					const totalWeight = goldWeight + stoneWeight;
 
 					const getSaleStatusFromType = (saleType: string): SaleStatusType => {
 						const mapping: Record<string, SaleStatusType> = {
@@ -397,12 +394,28 @@ const SaleDetailPage: React.FC = () => {
 						return mapping[saleType] || "판매";
 					};
 
+					// status 확인 후 해리 적용 여부 결정
+					const finalStatus =
+						orderStatus === "RETURN"
+							? "반품"
+							: getSaleStatusFromType(response.saleType);
+
+					// 순금 중량 계산 (판매일 때만 해리 적용)
+					const pureGoldWeight =
+						finalStatus === "판매"
+							? calculatePureGoldWeightWithHarry(
+									goldWeight,
+									response.materialName || "",
+									response.harry
+							  )
+							: calculatePureGoldWeight(
+									goldWeight,
+									response.materialName || ""
+							  );
+
 					const saleData: SaleCreateRow = {
 						id: "1",
-						status:
-							orderStatus === "RETURN"
-								? "반품"
-								: getSaleStatusFromType(response.saleType),
+						status: finalStatus,
 						flowCode: response.flowCode || "",
 						storeId: "",
 						productId: "",
@@ -496,6 +509,11 @@ const SaleDetailPage: React.FC = () => {
 
 				const updatedRow = { ...row, [field]: value };
 
+				// bulk 모드에서는 status 변경 불가
+				if (field === "status" && isBulkMode) {
+					return row; // 변경하지 않고 원래 행 반환
+				}
+
 				// status가 변경되면 판매가 아닌 경우 재질을 24K로 설정
 				if (field === "status") {
 					const newStatus = String(value);
@@ -510,6 +528,19 @@ const SaleDetailPage: React.FC = () => {
 							updatedRow.materialName = material24K.materialName;
 						}
 					}
+					// status 변경 시 순금 중량 재계산 (판매일 때만 해리 적용)
+					if (newStatus === "판매") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
+							row.goldWeight,
+							row.materialName,
+							saleOptions.harry
+						);
+					} else {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							row.goldWeight,
+							row.materialName
+						);
+					}
 				}
 
 				if (field === "totalWeight") {
@@ -518,11 +549,19 @@ const SaleDetailPage: React.FC = () => {
 					const goldWeight = totalWeight - stoneWeight;
 
 					updatedRow.goldWeight = parseFloat(goldWeight.toFixed(3));
-					// 금중량이 0보다 클 때만 순금 중량 계산
-					updatedRow.pureGoldWeight =
-						goldWeight > 0
-							? calculatePureGoldWeight(goldWeight, row.materialName)
-							: 0;
+					// 판매일 때만 해리 적용
+					if (row.status === "판매") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
+							goldWeight,
+							row.materialName,
+							saleOptions.harry
+						);
+					} else {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							goldWeight,
+							row.materialName
+						);
+					}
 				}
 
 				// stoneWeight가 변경되면 goldWeight 재계산
@@ -531,12 +570,20 @@ const SaleDetailPage: React.FC = () => {
 					const totalWeight = row.totalWeight || 0;
 					const goldWeight = totalWeight - stoneWeight;
 
-					updatedRow.goldWeight = goldWeight;
-					// 금중량이 0보다 클 때만 순금 중량 계산
-					updatedRow.pureGoldWeight =
-						goldWeight > 0
-							? calculatePureGoldWeight(goldWeight, row.materialName)
-							: 0;
+					updatedRow.goldWeight = parseFloat(goldWeight.toFixed(3));
+					// 판매일 때만 해리 적용
+					if (row.status === "판매") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
+							goldWeight,
+							row.materialName,
+							saleOptions.harry
+						);
+					} else {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							goldWeight,
+							row.materialName
+						);
+					}
 				}
 
 				// goldWeight 또는 materialName이 변경되면 순금 중량 재계산
@@ -548,13 +595,20 @@ const SaleDetailPage: React.FC = () => {
 					const materialName =
 						field === "materialName" ? String(value) : row.materialName;
 
-					// 금중량이 0보다 클 때만 순금 중량 계산
-					updatedRow.pureGoldWeight =
-						goldWeight > 0
-							? calculatePureGoldWeight(goldWeight, materialName)
-							: 0;
+					// 판매일 때만 해리 적용
+					if (row.status === "판매") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
+							goldWeight,
+							materialName,
+							saleOptions.harry
+						);
+					} else {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							goldWeight,
+							materialName
+						);
+					}
 				}
-
 				return {
 					...updatedRow,
 				};

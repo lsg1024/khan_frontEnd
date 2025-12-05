@@ -23,7 +23,10 @@ import { stockApi } from "../../../libs/api/stock";
 import { storeApi } from "../../../libs/api/store";
 import { materialApi } from "../../../libs/api/material";
 import { calculateStoneDetails } from "../../utils/calculateStone";
-import { calculatePureGoldWeight } from "../../utils/goldUtils";
+import {
+	calculatePureGoldWeight,
+	calculatePureGoldWeightWithHarry,
+} from "../../utils/goldUtils";
 import "../../styles/pages/sale/SaleCreatePage.css";
 import { saleApi } from "../../../libs/api/sale";
 
@@ -137,7 +140,7 @@ export const SaleCreatePage = () => {
 	};
 
 	// 거래처 선택 핸들러
-	const handleStoreSelect = (store: StoreSearchDto | AccountInfoDto) => {
+	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
 		// StoreAttemptDto 타입 가드
 		const isStoreAttempt = (
 			s: StoreSearchDto | AccountInfoDto
@@ -149,6 +152,31 @@ export const SaleCreatePage = () => {
 		if (!isStoreAttempt(store)) {
 			console.warn("⚠️ SaleCreatePage에서는 StoreAttemptDto가 필요합니다.");
 			return;
+		}
+
+		// 오늘 동일한 거래처로 판매 등록된 데이터가 있는지 확인
+		try {
+			const accountId = store.accountId;
+			if (accountId) {
+				const checkResponse = await saleApi.checkBeforeSale(accountId);
+				
+				if (checkResponse.success && checkResponse.data) {
+					const existingSaleCode = checkResponse.data;
+					
+					if (existingSaleCode) {
+						const shouldAdd = window.confirm(
+							`오늘 동일한 거래처(${store.accountName})로 등록된 판매장(${existingSaleCode})이 있습니다.\n해당 판매장에 추가하시겠습니까?`
+						);
+						
+						if (!shouldAdd) {
+							return; // 사용자가 취소하면 거래처 선택 취소
+						}
+					}
+				}
+			}
+		} catch (err) {
+			console.error("판매 중복 확인 실패:", err);
+			// 에러가 발생해도 거래처 선택은 진행
 		}
 
 		setSaleOptions((prev) => ({
@@ -287,6 +315,19 @@ export const SaleCreatePage = () => {
 							updatedRow.materialName = material24K.materialName;
 						}
 					}
+					// status 변경 시 순금 중량 재계산 (판매일 때만 해리 적용)
+					if (newStatus === "판매") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
+							row.goldWeight,
+							row.materialName,
+							saleOptions.harry
+						);
+					} else {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							row.goldWeight,
+							row.materialName
+						);
+					}
 				}
 
 				// totalWeight가 변경되면 goldWeight 계산 (총중량 - 알중량)
@@ -296,25 +337,31 @@ export const SaleCreatePage = () => {
 					const goldWeight = totalWeight - stoneWeight;
 
 					updatedRow.goldWeight = parseFloat(goldWeight.toFixed(3));
-					// 금중량이 0보다 클 때만 순금 중량 계산
-					updatedRow.pureGoldWeight =
-						goldWeight > 0
-							? calculatePureGoldWeight(goldWeight, row.materialName)
-							: 0;
-				}
-
-				// stoneWeight가 변경되면 goldWeight 재계산
+					// 판매일 때만 해리 적용
+					if (row.status === "판매") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
+							goldWeight,
+							row.materialName,
+							saleOptions.harry
+						);
+					} else {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							goldWeight,
+							row.materialName
+						);
+					}
+				} // stoneWeight가 변경되면 goldWeight 재계산
 				if (field === "stoneWeight") {
 					const stoneWeight = parseFloat(String(value)) || 0;
 					const totalWeight = row.totalWeight || 0;
 					const goldWeight = totalWeight - stoneWeight;
 
-					updatedRow.goldWeight = goldWeight;
-					// 금중량이 0보다 클 때만 순금 중량 계산
-					updatedRow.pureGoldWeight =
-						goldWeight > 0
-							? calculatePureGoldWeight(goldWeight, row.materialName)
-							: 0;
+					updatedRow.goldWeight = parseFloat(goldWeight.toFixed(3));
+					updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
+						goldWeight,
+						row.materialName,
+						saleOptions.harry
+					);
 				}
 
 				// goldWeight 또는 materialName이 변경되면 순금 중량 재계산
@@ -326,11 +373,19 @@ export const SaleCreatePage = () => {
 					const materialName =
 						field === "materialName" ? String(value) : row.materialName;
 
-					// 금중량이 0보다 클 때만 순금 중량 계산
-					updatedRow.pureGoldWeight =
-						goldWeight > 0
-							? calculatePureGoldWeight(goldWeight, materialName)
-							: 0;
+					// 판매일 때만 해리 적용
+					if (row.status === "판매") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
+							goldWeight,
+							materialName,
+							saleOptions.harry
+						);
+					} else {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							goldWeight,
+							materialName
+						);
+					}
 				} // storeId, productId, materialName 중 하나가 변경되면 과거 거래내역 조회
 				if (
 					field === "storeId" ||
@@ -618,10 +673,10 @@ export const SaleCreatePage = () => {
 					alert("판매 등록이 완료되었습니다.");
 
 					console.log("모든 판매 등록 성공:", results);
-					
+
 					// 초기화
 					resetForm();
-					
+
 					// 부모 창으로 판매 등록 완료 메시지 전송
 					if (window.opener) {
 						window.opener.postMessage(
@@ -884,15 +939,17 @@ export const SaleCreatePage = () => {
 						);
 
 						// 금중량, 알중량
-						const goldWeight = parseFloat(stock.goldWeight) || 0;
+						const rawGoldWeight = parseFloat(stock.goldWeight) || 0;
+						const goldWeight = rawGoldWeight;
 						const stoneWeight = parseFloat(stock.stoneWeight) || 0;
 						const totalWeight = goldWeight + stoneWeight;
 
-						const pureGoldWeight =
-							goldWeight > 0
-								? calculatePureGoldWeight(goldWeight, stock.materialName || "")
-								: 0;
-
+						// 초기 status가 판매이므로 해리 적용
+						const pureGoldWeight = calculatePureGoldWeightWithHarry(
+							goldWeight,
+							stock.materialName || "",
+							stock.storeHarry
+						);
 						return {
 							id: String(index + 1),
 							status: "판매",
@@ -985,16 +1042,17 @@ export const SaleCreatePage = () => {
 						);
 
 						// 금중량, 알중량
-						const goldWeight = parseFloat(stock.goldWeight) || 0;
+						const rawGoldWeight = parseFloat(stock.goldWeight) || 0;
+						const goldWeight = rawGoldWeight;
 						const stoneWeight = parseFloat(stock.stoneWeight) || 0;
 						const totalWeight = goldWeight + stoneWeight;
 
-						// 순금 중량 계산 (금중량이 0보다 클 때만)
-						const pureGoldWeight =
-							goldWeight > 0
-								? calculatePureGoldWeight(goldWeight, stock.materialName || "")
-								: 0;
-
+						// 초기 status가 판매이므로 해리 적용
+						const pureGoldWeight = calculatePureGoldWeightWithHarry(
+							goldWeight,
+							stock.materialName || "",
+							stock.storeHarry
+						);
 						return {
 							id: String(index + 1),
 							status: "판매",

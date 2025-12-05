@@ -107,6 +107,8 @@ const ProductCreatePage = () => {
 			errors.productName = "상품명은 필수 입력값입니다.";
 		if (!product.factoryId || product.factoryId === 0)
 			errors.factoryId = "제조사는 필수 선택값입니다.";
+		if (!product.productFactoryName.trim())
+			errors.productFactoryName = "제조사 품명은 필수 입력값입니다.";
 
 		const groups = product.productWorkGradePolicyGroupDto || [];
 		if (groups.length === 0) {

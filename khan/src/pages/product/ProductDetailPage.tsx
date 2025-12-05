@@ -255,6 +255,23 @@ function ProductDetailPage() {
 	const handleSaveProduct = async () => {
 		if (!product) return;
 
+		// 유효성 검사
+		if (!product.productName.trim()) {
+			alert("상품명은 필수 입력값입니다.");
+			setLoading(false);
+			return;
+		}
+		if (!product.factoryId || product.factoryId === 0) {
+			alert("제조사는 필수 선택값입니다.");
+			setLoading(false);
+			return;
+		}
+		if (!product.productFactoryName.trim()) {
+			alert("제조사 품명은 필수 입력값입니다.");
+			setLoading(false);
+			return;
+		}
+
 		try {
 			setLoading(true);
 

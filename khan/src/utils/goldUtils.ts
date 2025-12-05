@@ -95,3 +95,32 @@ export const getGoldTransferWeight = (weight: string | number): number => {
 	const result = weightInteger / divisorInteger;
 	return parseFloat(result.toFixed(3)); // 소수점 최대 3자리로 제한
 };
+
+/**
+ * 해리 값을 포함한 순금 중량 계산 함수
+ * @param goldWeight - 금중량 (문자열 또는 숫자)
+ * @param material - 재질 (14K, 18K, 24K 등)
+ * @param harry - 해리 값 (문자열 또는 숫자, 기본값 1.0)
+ * @returns 해리가 적용된 순금 중량 (숫자) 또는 0
+ */
+export const calculatePureGoldWeightWithHarry = (
+	goldWeight: string | number,
+	material: string,
+	harry: string | number = 1.0
+): number => {
+	const goldWeightNum =
+		typeof goldWeight === "string" ? parseFloat(goldWeight) : goldWeight;
+	if (isNaN(goldWeightNum) || goldWeightNum <= 0) return 0;
+
+	// 순금 중량 계산
+	const pureGold = calculatePureGoldWeight(goldWeightNum, material);
+	if (pureGold === 0) return 0;
+
+	// 해리 값 처리
+	const harryNum = typeof harry === "string" ? parseFloat(harry) : harry;
+	const validHarry = isNaN(harryNum) || harryNum <= 0 ? 1.0 : harryNum;
+
+	// 해리 적용
+	const result = pureGold * validHarry;
+	return parseFloat(result.toFixed(3)); // 소수점 최대 3자리로 제한
+};

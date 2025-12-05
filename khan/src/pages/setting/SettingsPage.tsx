@@ -17,6 +17,7 @@ interface SettingItem {
 		| "priority"
 		| "stoneType"
 		| "stoneShape"
+		| "assistantStone"
 		| "user"
 		| "role";
 	adminOnly?: boolean;
@@ -69,6 +70,12 @@ const settingItems: SettingItem[] = [
 		category: "스톤",
 		modalType: "stoneShape",
 	},
+	{
+		id: "assistant-stone",
+		label: "보조석",
+		category: "스톤",
+		modalType: "assistantStone",
+	},
 
 	// 회원관리
 	{
@@ -76,7 +83,7 @@ const settingItems: SettingItem[] = [
 		label: "사용자 목록",
 		category: "사용자 관리",
 		modalType: "user",
-	}
+	},
 ];
 
 const categories: SettingCategory[] = [
