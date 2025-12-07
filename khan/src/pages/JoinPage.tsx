@@ -17,26 +17,24 @@ function JoinPage() {
 	const [password, setPassword] = useState("");
 	const [confirm_password, setConfirmPassword] = useState("");
 	const [nickname, setNickname] = useState("");
-	const [error, setError] = useState("");
 
 	const handleSignUp = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setError("");
 
 		if (userId.length < 5) {
-			setError("아이디는 최소 5자 이상이어야 합니다.");
+			alert("아이디는 최소 5자 이상이어야 합니다.");
 			return;
 		}
 		if (password.length < 6) {
-			setError("비밀번호는 최소 6자 이상이어야 합니다.");
+			alert("비밀번호는 최소 6자 이상이어야 합니다.");
 			return;
 		}
 		if (password !== confirm_password) {
-			setError("비밀번호가 일치하지 않습니다.");
+			alert("비밀번호가 일치하지 않습니다.");
 			return;
 		}
 		if (nickname.trim() === "") {
-			setError("닉네임을 입력하세요.");
+			alert("닉네임을 입력하세요.");
 			return;
 		}
 
@@ -121,8 +119,6 @@ function JoinPage() {
 							className="form-input"
 						/>
 					</div>
-
-					{error && <div className="login-error">{error}</div>}
 
 					<button type="submit" className="login-button">
 						회원 가입
