@@ -14,30 +14,60 @@ function LoginPage() {
 	const [isLoggingIn, setIsLoggingIn] = useState(false);
 
 	useEffect(() => {
+		let isMounted = true;
+		let hasTriedReissue = false;
+
 		const checkAuthentication = async () => {
 			const token = tokenUtils.getToken();
 
-			if (!token) {
-				setIsCheckingAuth(false);
+			// AccessToken이 없으면 RefreshToken으로 재발급 시도 (1회만)
+			if (!token && !hasTriedReissue) {
+				hasTriedReissue = true;
+				try {
+					// RefreshToken이 쿠키에 있으면 재발급 시도
+					const reissueResponse = await authApi.refreshToken();
+
+					if (isMounted && reissueResponse.success) {
+						// 재발급 성공 시 홈으로 리다이렉트
+						window.dispatchEvent(new Event("tokenChange"));
+						navigate("/", { replace: true });
+						return;
+					}
+				} catch {
+					// RefreshToken도 없거나 유효하지 않으면 로그인 페이지 표시
+				}
+
+				if (isMounted) {
+					setIsCheckingAuth(false);
+				}
 				return;
 			}
 
-			try {
-				const response = await authApi.getProfile();
+			// AccessToken이 있으면 프로필 조회로 유효성 확인
+			if (token) {
+				try {
+					const response = await authApi.getProfile();
 
-				if (response.success) {
-					window.dispatchEvent(new Event("tokenChange"));
-					navigate("/", { replace: true });
-					return;
+					if (isMounted && response.success) {
+						window.dispatchEvent(new Event("tokenChange"));
+						navigate("/", { replace: true });
+						return;
+					}
+				} catch {
+					tokenUtils.removeToken();
 				}
-			} catch {
-				tokenUtils.removeToken();
 			}
 
-			setIsCheckingAuth(false);
+			if (isMounted) {
+				setIsCheckingAuth(false);
+			}
 		};
 
 		checkAuthentication();
+
+		return () => {
+			isMounted = false;
+		};
 	}, [navigate]);
 
 	const handleLogin = async (e: React.FormEvent) => {

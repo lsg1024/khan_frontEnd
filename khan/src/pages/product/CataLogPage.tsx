@@ -240,7 +240,7 @@ function CataLogPage() {
 			try {
 				const [factoriesRes, classificationsRes, setTypesRes] =
 					await Promise.all([
-						factoryApi.getFactories("", 1),
+						factoryApi.getFactories("", 1, true),
 						classificationApi.getClassifications(),
 						setTypeApi.getSetTypes(),
 					]);
