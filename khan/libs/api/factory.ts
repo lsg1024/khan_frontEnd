@@ -13,7 +13,7 @@ export const factoryApi = {
 	getFactories: async (
 		name?: string,
 		page: number = 1,
-		un_page = false, 
+		un_page? : boolean, 
 		size: number = 12
 	): Promise<ApiResponse<FactorySearchResponse>> => {
 		return apiRequest.get<FactorySearchResponse>("account/factories", {

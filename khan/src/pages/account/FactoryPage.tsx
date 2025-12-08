@@ -30,7 +30,7 @@ export const FactoryPage = () => {
 			setLoading(true);
 
 			try {
-				const res = await factoryApi.getFactories(name, page, size);
+				const res = await factoryApi.getFactories(name, page, false, size);
 
 				if (!isApiSuccess(res)) {
 					alert(res.message || "제조사 데이터를 불러오지 못했습니다.");

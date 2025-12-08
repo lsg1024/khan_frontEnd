@@ -24,7 +24,7 @@ const FactorySearchPage: React.FC = () => {
 		setError("");
 
 		try {
-			const res = await factoryApi.getFactories(name, page, size);
+			const res = await factoryApi.getFactories(name, page, false, size);
 
 			// success=false 응답 처리
 			if (!isApiSuccess(res)) {
