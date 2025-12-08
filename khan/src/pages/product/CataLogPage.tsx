@@ -19,7 +19,6 @@ function CataLogPage() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
-	const [error, setError] = useState<string>("");
 	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 	const { handleError } = useErrorHandler();
 	const navigate = useNavigate();
@@ -157,7 +156,6 @@ function CataLogPage() {
 	const loadProducts = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
 			setLoading(true);
-			setError("");
 
 			try {
 				const response = await productApi.getProducts(
@@ -266,7 +264,6 @@ function CataLogPage() {
 		// 초기 로드 - 빈 필터로 전체 상품 로드
 		const initialLoad = async () => {
 			setLoading(true);
-			setError("");
 
 			try {
 				const response = await productApi.getProducts(
@@ -293,7 +290,7 @@ function CataLogPage() {
 				}
 			} catch (err: unknown) {
 				console.error("초기 상품 로드 실패:", err);
-				setError("상품 목록을 불러오는데 실패했습니다.");
+				handleError(err);
 				setProducts([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -321,13 +318,6 @@ function CataLogPage() {
 
 	return (
 		<div className="page catalog-page">
-			{/* 에러 메시지 */}
-			{error && (
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-			)}
 
 			{/* 검색 영역 */}
 			<div className="search-section-common">
