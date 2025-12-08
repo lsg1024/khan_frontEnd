@@ -176,7 +176,6 @@ export default function SettingItemPopupPage(): JSX.Element {
 
 	useEffect(() => {
 		fetchItems();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [itemType, actualSearchQuery]);
 
 	const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -203,23 +202,12 @@ export default function SettingItemPopupPage(): JSX.Element {
 
 	const handleCreateSubmit = async () => {
 		if (!createFormData.name.trim()) {
-			alert(
-				itemType === "material"
-					? "재질을 입력해주세요."
-					: itemType === "harry"
-					? "해리를 입력해주세요."
-					: "이름을 입력해주세요."
-			);
+			alert(itemType === 'material' ? '재질을 입력해주세요.' : itemType === 'harry' ? '해리를 입력해주세요.' : '이름을 입력해주세요.');
 			return;
 		}
 
-		if (itemType === "material" && !createFormData.note.trim()) {
-			alert("순도를 입력해주세요.");
-			return;
-		}
-
-		if (itemType === "priority" && !createFormData.note.trim()) {
-			alert("날짜를 입력해주세요.");
+		if (itemType === 'material' && !createFormData.note.trim()) {
+			alert('순도를 입력해주세요.');
 			return;
 		}
 
@@ -330,23 +318,12 @@ export default function SettingItemPopupPage(): JSX.Element {
 
 	const handleUpdateSubmit = async () => {
 		if (!editFormData?.name.trim()) {
-			alert(
-				itemType === "material"
-					? "재질을 입력해주세요."
-					: itemType === "harry"
-					? "해리를 입력해주세요."
-					: "이름을 입력해주세요."
-			);
+			alert(itemType === 'material' ? '재질을 입력해주세요.' : itemType === 'harry' ? '해리를 입력해주세요.' : '이름을 입력해주세요.');
 			return;
 		}
 
-		if (itemType === "material" && !editFormData?.note?.trim()) {
-			alert("순도를 입력해주세요.");
-			return;
-		}
-
-		if (itemType === "priority" && !editFormData?.note?.trim()) {
-			alert("날짜를 입력해주세요.");
+		if (itemType === 'material' && !editFormData?.note?.trim()) {
+			alert('순도를 입력해주세요.');
 			return;
 		}
 
@@ -581,14 +558,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 						</div>
 						<div className="create-form-body">
 							<div className="form-group">
-								<label>
-									{itemType === "material"
-										? "재질"
-										: itemType === "harry"
-										? "해리"
-										: "이름"}
-									<span style={{ color: "red", marginLeft: "4px" }}>*</span>
-								</label>
+								<label>이름 *</label>
 								<input
 									type="text"
 									value={createFormData.name}
@@ -598,26 +568,11 @@ export default function SettingItemPopupPage(): JSX.Element {
 											name: e.target.value,
 										})
 									}
-									placeholder={
-										itemType === "material"
-											? "재질을 입력하세요"
-											: itemType === "harry"
-											? "1.00 (소수점 두자리까지 가능)"
-											: "이름을 입력하세요"
-									}
+									placeholder="이름을 입력하세요"
 								/>
 							</div>
 							<div className="form-group">
-								<label>
-									{itemType === "material"
-										? "순도"
-										: itemType === "priority"
-										? "날짜"
-										: "비고"}
-									{(itemType === "material" || itemType === "priority") && (
-										<span style={{ color: "red", marginLeft: "4px" }}>*</span>
-									)}
-								</label>
+								<label>비고</label>
 								<input
 									type="text"
 									value={createFormData.note}
@@ -627,13 +582,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 											note: e.target.value,
 										})
 									}
-									placeholder={
-										itemType === "material"
-											? "순도를 입력하세요"
-											: itemType === "priority"
-											? "날짜를 입력하세요"
-											: "비고를 입력하세요"
-									}
+									placeholder="비고를 입력하세요"
 								/>
 							</div>
 						</div>
@@ -641,10 +590,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 							<button className="reset-btn-common" onClick={handleCancelCreate}>
 								취소
 							</button>
-							<button
-								className="common-btn-common"
-								onClick={handleCreateSubmit}
-							>
+							<button className="common-btn-common" onClick={handleCreateSubmit}>
 								생성
 							</button>
 						</div>
@@ -666,14 +612,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 						</div>
 						<div className="create-form-body">
 							<div className="form-group">
-								<label>
-									{itemType === "material"
-										? "재질"
-										: itemType === "harry"
-										? "해리"
-										: "이름"}
-									<span style={{ color: "red", marginLeft: "4px" }}>*</span>
-								</label>
+								<label>이름 *</label>
 								<input
 									type="text"
 									value={editFormData.name}
@@ -683,26 +622,11 @@ export default function SettingItemPopupPage(): JSX.Element {
 											name: e.target.value,
 										})
 									}
-									placeholder={
-										itemType === "material"
-											? "재질을 입력하세요"
-											: itemType === "harry"
-											? "1.00 (소수점 두자리까지 가능)"
-											: "이름을 입력하세요"
-									}
+									placeholder="이름을 입력하세요"
 								/>
 							</div>
 							<div className="form-group">
-								<label>
-									{itemType === "material"
-										? "순도"
-										: itemType === "priority"
-										? "날짜"
-										: "비고"}
-									{itemType === "material" && (
-										<span style={{ color: "red", marginLeft: "4px" }}>*</span>
-									)}
-								</label>
+								<label>비고</label>
 								<input
 									type="text"
 									value={editFormData.note || ""}
@@ -712,13 +636,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 											note: e.target.value,
 										})
 									}
-									placeholder={
-										itemType === "material"
-											? "순도를 입력하세요"
-											: itemType === "priority"
-											? "날짜를 입력하세요"
-											: "비고를 입력하세요"
-									}
+									placeholder="비고를 입력하세요"
 								/>
 							</div>
 						</div>
@@ -726,16 +644,10 @@ export default function SettingItemPopupPage(): JSX.Element {
 							<button className="reset-btn-common" onClick={handleCloseEdit}>
 								닫기
 							</button>
-							<button
-								className="delete-btn-common"
-								onClick={handleDeleteSubmit}
-							>
+							<button className="delete-btn-common" onClick={handleDeleteSubmit}>
 								삭제
 							</button>
-							<button
-								className="common-btn-common"
-								onClick={handleUpdateSubmit}
-							>
+							<button className="common-btn-common" onClick={handleUpdateSubmit}>
 								수정
 							</button>
 						</div>
@@ -753,20 +665,8 @@ export default function SettingItemPopupPage(): JSX.Element {
 						<thead>
 							<tr>
 								<th>No</th>
-								<th>
-									{itemType === "material"
-										? "재질"
-										: itemType === "harry"
-										? "해리"
-										: "이름"}
-								</th>
-								<th>
-									{itemType === "material"
-										? "순도"
-										: itemType === "priority"
-										? "날짜"
-										: "기타"}
-								</th>
+								<th>이름</th>
+								<th>기타</th>
 							</tr>
 						</thead>
 						<tbody>
