@@ -213,8 +213,8 @@ export default function SettingItemPopupPage(): JSX.Element {
 				case "material": {
 					const { materialApi } = await import("../../../libs/api/material");
 					response = await materialApi.createMaterial({
-						materialName: createFormData.name,
-						materialGoldPurityPercent: createFormData.note,
+						name: createFormData.name,
+						materialGoldPurityPercent: createFormData.note || "",
 					});
 					break;
 				}
@@ -236,8 +236,8 @@ export default function SettingItemPopupPage(): JSX.Element {
 				case "color": {
 					const { colorApi } = await import("../../../libs/api/color");
 					response = await colorApi.createColor({
-						colorName: createFormData.name,
-						colorNote: createFormData.note,
+						name: createFormData.name,
+						note: createFormData.note || "",
 					});
 					break;
 				}
@@ -325,8 +325,8 @@ export default function SettingItemPopupPage(): JSX.Element {
 				case "material": {
 					const { materialApi } = await import("../../../libs/api/material");
 					response = await materialApi.updateMaterial(id, {
-						materialName: editFormData.name,
-						materialGoldPurityPercent: editFormData.note,
+						name: editFormData.name,
+						materialGoldPurityPercent: editFormData.note || "",
 					});
 					break;
 				}
@@ -347,8 +347,8 @@ export default function SettingItemPopupPage(): JSX.Element {
 				case "color": {
 					const { colorApi } = await import("../../../libs/api/color");
 					response = await colorApi.updateColor(id, {
-						colorName: editFormData.name,
-						colorNote: editFormData.note,
+						name: editFormData.name,
+						note: editFormData.note || "",
 					});
 					break;
 				}

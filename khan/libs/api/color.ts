@@ -16,14 +16,14 @@ export const colorApi = {
 	},
 
 	createColor: async (
-		data: Partial<ColorDto>
+		data: { name: string; note: string }
 	): Promise<ApiResponse<string>> => {
 		return apiRequest.post<string>("product/colors", data);
 	},
 
 	updateColor: async (
 		id: string,
-		data: Partial<ColorDto>
+		data: { name: string; note: string }
 	): Promise<ApiResponse<string>> => {
 		return apiRequest.patch<string>(`product/colors/${id}`, data);
 	},
