@@ -470,6 +470,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 							)}
 						</div>
 						<div className="info-item half-width">
+							<span className="required-field-basic">*</span>
 							<span className="label">제조번호:</span>
 							{editable ? (
 								<input
@@ -618,7 +619,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 
 					{/* 메모는 전체 너비 */}
 					{product.productNote !== undefined && (
-						<div className=".info-item.full-width-memo">
+						<div className="full-width">
 							{editable ? (
 								<textarea
 									className="editable-textarea"

@@ -97,9 +97,11 @@
 	align-items: flex-start;
 	min-height: 45px; /* 최소 높이 더 축소 */
 	padding: 0px;
+	flex: 1;
 }
 
-.info-item.full-width .value {
+.full-width .value {
+	display: flex;
 	width: 100%;
 	margin-top: 0.3rem; /* 마진 더 축소 */
 	padding: 0.3rem; /* 패딩 더 축소 */
@@ -109,29 +111,29 @@
 }
 
 /* 편집 가능한 필드 스타일 */
-.editable-textarea {
+.product-editable-textarea {
 	width: 100%;
-	min-height: 45px; /* 높이 더 축소 */
-	padding: 4px 8px; /* 패딩 더 축소 */
+	height: 100%;
+	padding: 8px 12px;
 	border: 1px solid #ddd;
 	border-radius: 4px;
 	font-family: inherit;
-	font-size: 12px; /* 글씨 크기 축소 */
-	line-height: 1.2; /* 줄 간격 더 축소 */
+	font-size: 12px;
+	line-height: 1.4;
 	resize: vertical;
 	background: white !important;
 	color: #333 !important;
 	transition: border-color 0.3s;
 }
 
-.editable-textarea:focus {
+.product-editable-textarea:focus {
 	outline: none;
 	border-color: #007bff;
 	box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 	color: #333 !important;
 }
 
-.editable-textarea::placeholder {
+.product-editable-textarea::placeholder {
 	color: #999;
 	font-size: 11px; /* placeholder 글씨 크기 축소 */
 }
@@ -169,7 +171,7 @@
 		width: 100%;
 	}
 
-	.editable-textarea {
+	.product-editable-textarea {
 		min-height: 50px;
 		padding: 5px 8px;
 		font-size: 11px;
@@ -211,7 +213,7 @@
 		gap: 0.5rem;
 	}
 
-	.editable-textarea {
+	.product-editable-textarea {
 		min-height: 45px;
 		padding: 4px 6px;
 		font-size: 10px;
@@ -315,7 +317,7 @@
 		padding: 3px 4px;
 	}
 
-	.editable-textarea {
+	.product-editable-textarea {
 		min-height: 40px;
 		font-size: 10px;
 		padding: 4px 6px;
