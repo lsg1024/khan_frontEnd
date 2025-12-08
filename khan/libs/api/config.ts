@@ -228,7 +228,7 @@ api.interceptors.response.use(
 			typeof responseData === "object" &&
 			"message" in responseData
 		) {
-			return Promise.reject(new Error(responseData.message as string));
+			return Promise.reject(new Error(responseData.data as string));
 		}
 
 		return Promise.reject(new Error(errorMessage));

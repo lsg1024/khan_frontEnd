@@ -16,12 +16,12 @@ export const materialApi = {
     },
 
     // 재질 생성
-    createMaterial: async (data: { name: string; materialGoldPurityPercent: string }): Promise<ApiResponse<MaterialDto>> => {
+    createMaterial: async (data: { name: string; goldPurityPercent: string }): Promise<ApiResponse<MaterialDto>> => {
         return apiRequest.post<MaterialDto>("product/materials", data);
     },
 
     // 재질 수정
-    updateMaterial: async (id: string, data: { name: string; materialGoldPurityPercent: string }): Promise<ApiResponse<MaterialDto>> => {
+    updateMaterial: async (id: string, data: { name: string; goldPurityPercent: string }): Promise<ApiResponse<MaterialDto>> => {
         return apiRequest.patch<MaterialDto>(`product/materials/${id}`, data);
     },
 

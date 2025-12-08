@@ -15,11 +15,11 @@ export const assistantStoneApi = {
         return apiRequest.get<AssistantStoneResponse>(`api/assistant_stone/${id}`);
     },
 
-    createAssistantStone: async (data: AssistantStoneDto): Promise<ApiResponse<string>> => {
+    createAssistantStone: async (data: {assistantStoneName: string, assistantStoneNote?: string}): Promise<ApiResponse<string>> => {
         return apiRequest.post<string>("product/assistant_stones", data);
     },
 
-    updateAssistantStone: async (id: string, data: AssistantStoneDto): Promise<ApiResponse<string>> => {
+    updateAssistantStone: async (id: string, data: {assistantStoneName: string, assistantStoneNote?: string}): Promise<ApiResponse<string>> => {
         return apiRequest.patch<string>(`product/assistant_stones/${id}`, data);
     },
 

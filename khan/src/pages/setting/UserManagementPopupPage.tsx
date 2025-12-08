@@ -256,10 +256,10 @@ export default function UserManagementPopupPage(): JSX.Element {
 							</div>
 						</div>
 						<div className="create-form-footer">
-							<button className="cancel-btn" onClick={handleClosePasswordForm}>
+							<button className="reset-btn-common" onClick={handleClosePasswordForm}>
 								취소
 							</button>
-							<button className="submit-btn" onClick={handlePasswordSubmit}>
+							<button className="common-btn-common" onClick={handlePasswordSubmit}>
 								변경
 							</button>
 						</div>
@@ -322,13 +322,13 @@ export default function UserManagementPopupPage(): JSX.Element {
 							</div>
 						</div>
 						<div className="create-form-footer">
-							<button className="cancel-btn" onClick={handleCloseEdit}>
+							<button className="reset-btn-common" onClick={handleCloseEdit}>
 								닫기
 							</button>
-							<button className="delete-btn" onClick={handleDeleteSubmit}>
+							<button className="delete-btn-common" onClick={handleDeleteSubmit}>
 								삭제
 							</button>
-							<button className="submit-btn" onClick={handleUpdateSubmit}>
+							<button className="common-btn-common" onClick={handleUpdateSubmit}>
 								수정
 							</button>
 						</div>

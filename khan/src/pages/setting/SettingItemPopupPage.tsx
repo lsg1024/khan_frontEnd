@@ -214,7 +214,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					const { materialApi } = await import("../../../libs/api/material");
 					response = await materialApi.createMaterial({
 						name: createFormData.name,
-						materialGoldPurityPercent: createFormData.note || "",
+						goldPurityPercent: createFormData.note || "",
 					});
 					break;
 				}
@@ -280,8 +280,8 @@ export default function SettingItemPopupPage(): JSX.Element {
 						"../../../libs/api/assistantStone"
 					);
 					response = await assistantStoneApi.createAssistantStone({
-						assistantStoneId: 0,
 						assistantStoneName: createFormData.name,
+						assistantStoneNote: createFormData.note,
 					});
 					break;
 				}
@@ -326,7 +326,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					const { materialApi } = await import("../../../libs/api/material");
 					response = await materialApi.updateMaterial(id, {
 						name: editFormData.name,
-						materialGoldPurityPercent: editFormData.note || "",
+						goldPurityPercent: editFormData.note || "",
 					});
 					break;
 				}
@@ -392,8 +392,8 @@ export default function SettingItemPopupPage(): JSX.Element {
 						"../../../libs/api/assistantStone"
 					);
 					response = await assistantStoneApi.updateAssistantStone(id, {
-						assistantStoneId: Number(id),
 						assistantStoneName: editFormData.name,
+						assistantStoneNote: editFormData.note,
 					});
 					break;
 				}
@@ -577,10 +577,10 @@ export default function SettingItemPopupPage(): JSX.Element {
 							</div>
 						</div>
 						<div className="create-form-footer">
-							<button className="cancel-btn" onClick={handleCancelCreate}>
+							<button className="reset-btn-common" onClick={handleCancelCreate}>
 								취소
 							</button>
-							<button className="submit-btn" onClick={handleCreateSubmit}>
+							<button className="common-btn-common" onClick={handleCreateSubmit}>
 								생성
 							</button>
 						</div>
@@ -631,13 +631,13 @@ export default function SettingItemPopupPage(): JSX.Element {
 							</div>
 						</div>
 						<div className="create-form-footer">
-							<button className="cancel-btn" onClick={handleCloseEdit}>
+							<button className="reset-btn-common" onClick={handleCloseEdit}>
 								닫기
 							</button>
-							<button className="delete-btn" onClick={handleDeleteSubmit}>
+							<button className="delete-btn-common" onClick={handleDeleteSubmit}>
 								삭제
 							</button>
-							<button className="submit-btn" onClick={handleUpdateSubmit}>
+							<button className="common-btn-common" onClick={handleUpdateSubmit}>
 								수정
 							</button>
 						</div>
