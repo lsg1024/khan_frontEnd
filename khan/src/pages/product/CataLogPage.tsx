@@ -14,22 +14,49 @@ import type { FactorySearchDto } from "../../types/factory";
 import "../../styles/pages/product/CataLogPage.css";
 
 function CataLogPage() {
+	// sessionStorage에서 저장된 상태 가져오기
+	const getSavedState = () => {
+		try {
+			const savedFilters = sessionStorage.getItem("catalogFilters");
+			const savedPage = sessionStorage.getItem("catalogPage");
+			return {
+				filters: savedFilters
+					? JSON.parse(savedFilters)
+					: {
+							name: "",
+							factory: "",
+							classification: "",
+							setType: "",
+					  },
+				page: savedPage ? parseInt(savedPage, 10) : 1,
+			};
+		} catch (error) {
+			console.error("저장된 상태 로드 실패:", error);
+			return {
+				filters: {
+					name: "",
+					factory: "",
+					classification: "",
+					setType: "",
+				},
+				page: 1,
+			};
+		}
+	};
+
+	const savedState = getSavedState();
+
 	const [products, setProducts] = useState<ProductDto[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
-	const [currentPage, setCurrentPage] = useState(1);
+	const [currentPage, setCurrentPage] = useState(savedState.page);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 	const { handleError } = useErrorHandler();
 	const navigate = useNavigate();
 
-	// 검색 관련 상태
-	const [searchFilters, setSearchFilters] = useState({
-		name: "",
-		factory: "",
-		classification: "",
-		setType: "",
-	});
+	// 검색 관련 상태 (저장된 필터로 초기화)
+	const [searchFilters, setSearchFilters] = useState(savedState.filters);
 
 	// 드롭다운 데이터
 	const [factories, setFactories] = useState<FactorySearchDto[]>([]);
@@ -53,98 +80,26 @@ function CataLogPage() {
 		navigate(`/catalog/${productId}`);
 	};
 
-	// 이미지 로드 함수 (캐싱 적용)
+	// 이미지 로드 함수
 	const loadProductImages = useCallback(async (productList: ProductDto[]) => {
-		// 이미지 캐시 키 생성
-		const getImageCacheKey = (imageId: string, imagePath: string) => {
-			return `product_image_${imageId}_${imagePath}`;
-		};
-
-		// 세션 스토리지에서 이미지 가져오기
-		const getCachedImage = (
-			imageId: string,
-			imagePath: string
-		): string | null => {
-			try {
-				const cacheKey = getImageCacheKey(imageId, imagePath);
-				const cachedUrl = sessionStorage.getItem(cacheKey);
-
-				if (cachedUrl && cachedUrl.startsWith("blob:")) {
-					// blob URL이 유효한지 확인
-					try {
-						fetch(cachedUrl).catch(() => {
-							sessionStorage.removeItem(cacheKey);
-						});
-						return cachedUrl;
-					} catch {
-						sessionStorage.removeItem(cacheKey);
-						return null;
-					}
-				}
-
-				if (cachedUrl) {
-					sessionStorage.removeItem(cacheKey);
-				}
-
-				return null;
-			} catch (error) {
-				console.error("세션 스토리지 읽기 실패:", error);
-				return null;
-			}
-		};
-
-		// 세션 스토리지에 이미지 저장
-		const setCachedImage = (
-			imageId: string,
-			imagePath: string,
-			blobUrl: string
-		) => {
-			try {
-				const cacheKey = getImageCacheKey(imageId, imagePath);
-				sessionStorage.setItem(cacheKey, blobUrl);
-			} catch (error) {
-				console.error("세션 스토리지 저장 실패:", error);
-			}
-		};
-
-		// 세션 스토리지에서 이미지 삭제
-		const removeCachedImage = (imageId: string, imagePath: string) => {
-			try {
-				const cacheKey = getImageCacheKey(imageId, imagePath);
-				sessionStorage.removeItem(cacheKey);
-			} catch (error) {
-				console.error("세션 스토리지 삭제 실패:", error);
-			}
-		};
-
 		const newImageUrls: Record<string, string> = {};
 
 		for (const product of productList) {
 			if (product.image?.imageId && product.image?.imagePath) {
-				const { imageId, imagePath } = product.image;
+				const { imagePath } = product.image;
 
-				// 캐시된 이미지 확인
-				const cachedUrl = getCachedImage(imageId, imagePath);
-				if (cachedUrl) {
-					newImageUrls[product.productId] = cachedUrl;
-					continue;
-				}
-
-				// 캐시가 없으면 API 호출
+				// 항상 API를 통해 이미지 로드
 				try {
 					const blob = await productApi.getProductImageByPath(imagePath);
 					const blobUrl = URL.createObjectURL(blob);
 					newImageUrls[product.productId] = blobUrl;
-
-					// 세션 스토리지에 저장
-					setCachedImage(imageId, imagePath, blobUrl);
 				} catch (error) {
 					console.error(
 						`이미지 로드 실패 (productId: ${product.productId}):`,
 						error
 					);
-					// 로드 실패 시 캐시 삭제
-					removeCachedImage(imageId, imagePath);
+					// 로드 실패 시 기본 이미지 사용
+					newImageUrls[product.productId] = "/images/not_ready.png";
 				}
 			}
 		}
@@ -163,6 +118,8 @@ function CataLogPage() {
 					filters.factory || undefined,
 					filters.classification || undefined,
 					filters.setType || undefined,
+					filters.sortField || undefined,
+					filters.sort || undefined,
 					page
 				);
 
@@ -175,7 +132,12 @@ function CataLogPage() {
 					setTotalPages(pageData.totalPages || 1);
 					setTotalElements(pageData.totalElements || 0);
 
-					// 이미지 로드
+					// 현재 페이지 저장
+					try {
+						sessionStorage.setItem("catalogPage", page.toString());
+					} catch (error) {
+						console.error("페이지 저장 실패:", error);
+					} // 이미지 로드
 					if (content.length > 0) {
 						loadProductImages(content);
 					}
@@ -198,12 +160,28 @@ function CataLogPage() {
 		field: keyof typeof searchFilters,
 		value: string
 	) => {
-		setSearchFilters((prev) => ({ ...prev, [field]: value }));
+		setSearchFilters((prev: typeof searchFilters) => {
+			const newFilters = { ...prev, [field]: value };
+			// sessionStorage에 저장
+			try {
+				sessionStorage.setItem("catalogFilters", JSON.stringify(newFilters));
+			} catch (error) {
+				console.error("필터 저장 실패:", error);
+			}
+			return newFilters;
+		});
 	};
 
 	// 검색 실행
 	const handleSearch = () => {
 		setCurrentPage(1);
+		// 필터 저장
+		try {
+			sessionStorage.setItem("catalogFilters", JSON.stringify(searchFilters));
+			sessionStorage.setItem("catalogPage", "1");
+		} catch (error) {
+			console.error("검색 상태 저장 실패:", error);
+		}
 		loadProducts(searchFilters, 1);
 	};
 
@@ -214,9 +192,18 @@ function CataLogPage() {
 			factory: "",
 			classification: "",
 			setType: "",
+			sortField: "",
+			sort: "",
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
+		// sessionStorage 초기화
+		try {
+			sessionStorage.removeItem("catalogFilters");
+			sessionStorage.removeItem("catalogPage");
+		} catch (error) {
+			console.error("저장된 상태 삭제 실패:", error);
+		}
 		loadProducts(resetFilters, 1);
 	};
 
@@ -261,25 +248,28 @@ function CataLogPage() {
 			}
 		};
 
-		// 초기 로드 - 빈 필터로 전체 상품 로드
+		// 초기 로드 - 저장된 상태로 로드
 		const initialLoad = async () => {
 			setLoading(true);
 
+			const savedState = getSavedState();
+
 			try {
 				const response = await productApi.getProducts(
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					1
+					savedState.filters.name || undefined,
+					savedState.filters.factory || undefined,
+					savedState.filters.classification || undefined,
+					savedState.filters.setType || undefined,
+					savedState.filters.sortField || undefined,
+					savedState.filters.sort || undefined,
+					savedState.page
 				);
-
 				if (response.success && response.data) {
 					const pageData = response.data.page;
 					const content = response.data.content || [];
 
 					setProducts(content || []);
-					setCurrentPage(1);
+					setCurrentPage(savedState.page);
 					setTotalPages(pageData.totalPages || 1);
 					setTotalElements(pageData.totalElements || 0);
 
@@ -302,7 +292,8 @@ function CataLogPage() {
 
 		loadDropdowns();
 		initialLoad();
-	}, [loadProductImages]); // 빈 의존성 배열로 한 번만 실행
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []); // 컴포넌트 마운트 시 한 번만 실행
 
 	// 로딩 상태 렌더링
 	if (loading) {
@@ -318,11 +309,38 @@ function CataLogPage() {
 
 	return (
 		<div className="page catalog-page">
-
 			{/* 검색 영역 */}
 			<div className="search-section-common">
 				<div className="search-filters-common">
 					<div className="filter-row-common">
+						<div className="filter-group-common">
+							<select
+								id="sortField"
+								value={searchFilters.sortField}
+								onChange={(e) =>
+									handleFilterChange("sortField", e.target.value)
+								}
+								disabled={dropdownLoading}
+							>
+								<option value="">정렬 기준</option>
+								<option value="productName">상품명</option>
+								<option value="factory">제조사</option>
+								<option value="classification">분류</option>
+								<option value="setType">세트</option>
+							</select>
+						</div>
+						<div className="filter-group-common">
+							<select
+								id="sort"
+								value={searchFilters.sort}
+								onChange={(e) => handleFilterChange("sort", e.target.value)}
+								disabled={dropdownLoading}
+							>
+								<option value="">정렬 방식</option>
+								<option value="ASC">오름차순</option>
+								<option value="DESC">내림차순</option>
+							</select>
+						</div>
 						<div className="filter-group-common">
 							<select
 								id="factory"
@@ -382,6 +400,7 @@ function CataLogPage() {
 							placeholder="상품명을 입력하세요"
 							value={searchFilters.name}
 							onChange={(e) => handleFilterChange("name", e.target.value)}
+							onKeyDown={(e) => e.key === "Enter" && handleSearch()}
 						/>
 
 						<div className="search-buttons-common">

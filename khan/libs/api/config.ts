@@ -95,7 +95,6 @@ api.interceptors.request.use((config) => {
 			currentSubdomain &&
 			tokenTenantId !== currentSubdomain
 		) {
-
 			tokenUtils.removeToken();
 
 			const controller = new AbortController();
@@ -161,14 +160,21 @@ api.interceptors.response.use(
 			}
 
 			originalRequest._retry = true;
-			isRefreshing = true;
 
+			// 로그인, 회원가입, 재발급 요청은 인터셉터를 우회
 			if (
 				originalRequest.url?.includes("/login") ||
-				originalRequest.url?.includes("/auth/login")
+				originalRequest.url?.includes("/auth/login") ||
+				originalRequest.url?.includes("/join") ||
+				originalRequest.url?.includes("/auth/join") ||
+				originalRequest.url?.includes("/reissue") ||
+				originalRequest.url?.includes("/auth/reissue")
 			) {
+				isRefreshing = false;
 				return Promise.reject(err);
 			}
+
+			isRefreshing = true;
 
 			try {
 				// reissue 요청은 인터셉터를 우회하여 직접 fetch 사용
@@ -228,7 +234,7 @@ api.interceptors.response.use(
 			typeof responseData === "object" &&
 			"message" in responseData
 		) {
-			return Promise.reject(new Error(responseData.data as string));
+			return Promise.reject(new Error(responseData.message as string));
 		}
 
 		return Promise.reject(new Error(errorMessage));

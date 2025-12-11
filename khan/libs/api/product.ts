@@ -15,6 +15,8 @@ export const productApi = {
 		factory?: string,
 		classification?: string,
 		setType?: string,
+		sortField?: string,
+		sort?: string,
 		page: number = 1,
 		size?: number
 	): Promise<ApiResponse<ProductSearchResponse>> => {
@@ -24,6 +26,8 @@ export const productApi = {
 		if (factory) params.factory = factory;
 		if (classification) params.classification = classification;
 		if (setType) params.setType = setType;
+		if (sortField) params.sortField = sortField;
+		if (sort) params.sort = sort;
 		if (size) params.size = size;
 
 		return apiRequest.get<ProductSearchResponse>("product/products", {

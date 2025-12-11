@@ -74,6 +74,7 @@ function LoginPage() {
 		e.preventDefault();
 
 		if (userId === "" || password === "") {
+			alert("아이디와 비밀번호를 입력하세요.");
 			return;
 		}
 
@@ -83,8 +84,6 @@ function LoginPage() {
 		}
 
 		setIsLoggingIn(true);
-
-		let errorMessage = "";
 
 		try {
 			const data = await authApi.login({
@@ -99,10 +98,15 @@ function LoginPage() {
 				navigate("/", { replace: true });
 				return;
 			} else {
-				errorMessage = data?.message || "로그인에 실패했습니다.";
+				// 로그인 실패 시 명시적으로 에러 throw
+				throw new Error(data?.message || "로그인에 실패했습니다.");
 			}
 		} catch (error: unknown) {
-			if (error && typeof error === "object" && "response" in error) {
+			let errorMessage = "";
+			// 에러 메시지 추출
+			if (error instanceof Error) {
+				errorMessage = error.message;
+			} else if (error && typeof error === "object" && "response" in error) {
 				const axiosError = error as {
 					response?: {
 						status?: number;
@@ -125,15 +129,14 @@ function LoginPage() {
 			} else {
 				errorMessage = "로그인 요청 중 알 수 없는 오류가 발생했습니다.";
 			}
-		} finally {
-			setIsLoggingIn(false);
 
-			// 로딩 상태 해제 후 alert 표시
+			// 에러 메시지 표시
 			if (errorMessage) {
-				setTimeout(() => {
-					alert(errorMessage);
-				}, 100);
+				alert(errorMessage);
 			}
+		} finally {
+			// finally 블록에서 확실히 로딩 상태 해제
+			setIsLoggingIn(false);
 		}
 	};
 
