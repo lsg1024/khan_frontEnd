@@ -25,7 +25,7 @@ const FactoryList: React.FC<FactoryListProps> = ({
 							<span className="col-name">제조사명</span>
 							<span className="col-owner">대표자</span>
 							<span className="col-phone">연락처</span>
-							<span className="col-level">등급</span>
+							<span className="col-grade">등급</span>
 							<span className="col-harry">해리</span>
 							<span className="col-trade">거래방식</span>
 							<span className="col-action">선택</span>
@@ -42,15 +42,15 @@ const FactoryList: React.FC<FactoryListProps> = ({
 								</span>
 								<span className="col-owner">{factory.factoryOwnerName}</span>
 								<span className="col-phone">{factory.factoryPhoneNumber}</span>
-								<span className="col-level">
+								<span className="col-grade">
 									<span
-										className={`level-badge level-${factory.level.toLowerCase()}`}
+										className={`grade-badge grade-${factory.grade.toLowerCase()}`}
 									>
-										{factory.level === "1"
+										{factory.grade === "1"
 											? "1급"
-											: factory.level === "2"
+											: factory.grade === "2"
 											? "2급"
-											: factory.level === "3"
+											: factory.grade === "3"
 											? "3급"
 											: "4급"}
 									</span>

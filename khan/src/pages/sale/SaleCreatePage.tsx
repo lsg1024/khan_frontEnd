@@ -183,7 +183,7 @@ export const SaleCreatePage = () => {
 			...prev,
 			storeId: String(store.accountId || ""),
 			storeName: store.accountName,
-			grade: store.level || "",
+			grade: store.grade || "",
 			harry: store.goldHarryLoss || "",
 			moneyAmount: parseFloat(store.moneyAmount) || 0,
 			goldWeight: store.goldWeight || "",

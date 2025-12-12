@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { classificationApi } from "../../../libs/api/classification";
 import { productApi } from "../../../libs/api/product";
 import { setTypeApi } from "../../../libs/api/setType";
@@ -14,49 +13,30 @@ import type { FactorySearchDto } from "../../types/factory";
 import "../../styles/pages/product/CataLogPage.css";
 
 function CataLogPage() {
-	// sessionStorage에서 저장된 상태 가져오기
-	const getSavedState = () => {
-		try {
-			const savedFilters = sessionStorage.getItem("catalogFilters");
-			const savedPage = sessionStorage.getItem("catalogPage");
-			return {
-				filters: savedFilters
-					? JSON.parse(savedFilters)
-					: {
-							name: "",
-							factory: "",
-							classification: "",
-							setType: "",
-					  },
-				page: savedPage ? parseInt(savedPage, 10) : 1,
-			};
-		} catch (error) {
-			console.error("저장된 상태 로드 실패:", error);
-			return {
-				filters: {
-					name: "",
-					factory: "",
-					classification: "",
-					setType: "",
-				},
-				page: 1,
-			};
-		}
-	};
-
-	const savedState = getSavedState();
-
 	const [products, setProducts] = useState<ProductDto[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
-	const [currentPage, setCurrentPage] = useState(savedState.page);
+	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+	const [selectedProductId, setSelectedProductId] = useState<string | null>(
+		null
+	);
 	const { handleError } = useErrorHandler();
-	const navigate = useNavigate();
 
-	// 검색 관련 상태 (저장된 필터로 초기화)
-	const [searchFilters, setSearchFilters] = useState(savedState.filters);
+	// 검색 관련 상태
+	const [searchFilters, setSearchFilters] = useState({
+		name: "",
+		factory: "",
+		classification: "",
+		setType: "",
+	});
+
+	// 정렬 관련 상태
+	const [sortOptions, setSortOptions] = useState({
+		sortField: "",
+		sort: "",
+	});
 
 	// 드롭다운 데이터
 	const [factories, setFactories] = useState<FactorySearchDto[]>([]);
@@ -75,9 +55,39 @@ function CataLogPage() {
 		return productCost + stoneCost;
 	};
 
-	// 상품 상세 페이지로 이동
-	const handleProductClick = (productId: string) => {
-		navigate(`/catalog/${productId}`);
+	// 상품 상세보기 팝업 열기
+	const handleProductDetailOpen = (productId: string) => {
+		const url = `/catalog/detail/${productId}`;
+		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
+		window.open(url, "product_detail", features);
+	};
+
+	// 상품 수정 팝업 열기
+	const handleProductEditOpen = (productId: string) => {
+		const url = `/catalog/edit/${productId}`;
+		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
+		window.open(url, "product_edit", features);
+	};
+
+	// 상품 생성 팝업 열기
+	const handleProductCreateOpen = () => {
+		const url = `/catalog/create`;
+		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
+		window.open(url, "product_create", features);
+	};
+
+	// 체크박스 클릭 핸들러
+	const handleCheckboxChange = (productId: string) => {
+		setSelectedProductId((prev) => (prev === productId ? null : productId));
+	};
+
+	// 선택된 상품 수정 버튼
+	const handleEditSelected = () => {
+		if (!selectedProductId) {
+			alert("수정할 상품을 선택해주세요.");
+			return;
+		}
+		handleProductEditOpen(selectedProductId);
 	};
 
 	// 이미지 로드 함수
@@ -109,7 +119,11 @@ function CataLogPage() {
 
 	// 상품 데이터 로드 (검색 파라미터 포함)
 	const loadProducts = useCallback(
-		async (filters: typeof searchFilters, page: number = 1) => {
+		async (
+			filters: typeof searchFilters,
+			page: number = 1,
+			sortOpts: typeof sortOptions = sortOptions
+		) => {
 			setLoading(true);
 
 			try {
@@ -118,9 +132,11 @@ function CataLogPage() {
 					filters.factory || undefined,
 					filters.classification || undefined,
 					filters.setType || undefined,
-					filters.sortField || undefined,
-					filters.sort || undefined,
-					page
+					page,
+					undefined,
+					sortOpts.sortField || undefined,
+					sortOpts.sort || undefined,
+					undefined
 				);
 
 				if (response.success && response.data) {
@@ -132,12 +148,7 @@ function CataLogPage() {
 					setTotalPages(pageData.totalPages || 1);
 					setTotalElements(pageData.totalElements || 0);
 
-					// 현재 페이지 저장
-					try {
-						sessionStorage.setItem("catalogPage", page.toString());
-					} catch (error) {
-						console.error("페이지 저장 실패:", error);
-					} // 이미지 로드
+					// 이미지 로드
 					if (content.length > 0) {
 						loadProductImages(content);
 					}
@@ -160,29 +171,13 @@ function CataLogPage() {
 		field: keyof typeof searchFilters,
 		value: string
 	) => {
-		setSearchFilters((prev: typeof searchFilters) => {
-			const newFilters = { ...prev, [field]: value };
-			// sessionStorage에 저장
-			try {
-				sessionStorage.setItem("catalogFilters", JSON.stringify(newFilters));
-			} catch (error) {
-				console.error("필터 저장 실패:", error);
-			}
-			return newFilters;
-		});
+		setSearchFilters((prev) => ({ ...prev, [field]: value }));
 	};
 
 	// 검색 실행
 	const handleSearch = () => {
 		setCurrentPage(1);
-		// 필터 저장
-		try {
-			sessionStorage.setItem("catalogFilters", JSON.stringify(searchFilters));
-			sessionStorage.setItem("catalogPage", "1");
-		} catch (error) {
-			console.error("검색 상태 저장 실패:", error);
-		}
-		loadProducts(searchFilters, 1);
+		loadProducts(searchFilters, 1, sortOptions);
 	};
 
 	// 검색 초기화
@@ -192,23 +187,19 @@ function CataLogPage() {
 			factory: "",
 			classification: "",
 			setType: "",
+		};
+		const resetSort = {
 			sortField: "",
 			sort: "",
 		};
 		setSearchFilters(resetFilters);
+		setSortOptions(resetSort);
 		setCurrentPage(1);
-		// sessionStorage 초기화
-		try {
-			sessionStorage.removeItem("catalogFilters");
-			sessionStorage.removeItem("catalogPage");
-		} catch (error) {
-			console.error("저장된 상태 삭제 실패:", error);
-		}
-		loadProducts(resetFilters, 1);
+		loadProducts(resetFilters, 1, resetSort);
 	};
 
 	const handleCreate = () => {
-		navigate("/catalog/create");
+		handleProductCreateOpen();
 	};
 
 	const handleExcel = () => {
@@ -248,28 +239,25 @@ function CataLogPage() {
 			}
 		};
 
-		// 초기 로드 - 저장된 상태로 로드
+		// 초기 로드 - 빈 필터로 전체 상품 로드
 		const initialLoad = async () => {
 			setLoading(true);
 
-			const savedState = getSavedState();
-
 			try {
 				const response = await productApi.getProducts(
-					savedState.filters.name || undefined,
-					savedState.filters.factory || undefined,
-					savedState.filters.classification || undefined,
-					savedState.filters.setType || undefined,
-					savedState.filters.sortField || undefined,
-					savedState.filters.sort || undefined,
-					savedState.page
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					1
 				);
+
 				if (response.success && response.data) {
 					const pageData = response.data.page;
 					const content = response.data.content || [];
 
 					setProducts(content || []);
-					setCurrentPage(savedState.page);
+					setCurrentPage(1);
 					setTotalPages(pageData.totalPages || 1);
 					setTotalElements(pageData.totalElements || 0);
 
@@ -292,8 +280,7 @@ function CataLogPage() {
 
 		loadDropdowns();
 		initialLoad();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []); // 컴포넌트 마운트 시 한 번만 실행
+	}, [loadProductImages]); // 빈 의존성 배열로 마운트 시 한 번만 실행
 
 	// 로딩 상태 렌더링
 	if (loading) {
@@ -313,34 +300,6 @@ function CataLogPage() {
 			<div className="search-section-common">
 				<div className="search-filters-common">
 					<div className="filter-row-common">
-						<div className="filter-group-common">
-							<select
-								id="sortField"
-								value={searchFilters.sortField}
-								onChange={(e) =>
-									handleFilterChange("sortField", e.target.value)
-								}
-								disabled={dropdownLoading}
-							>
-								<option value="">정렬 기준</option>
-								<option value="productName">상품명</option>
-								<option value="factory">제조사</option>
-								<option value="classification">분류</option>
-								<option value="setType">세트</option>
-							</select>
-						</div>
-						<div className="filter-group-common">
-							<select
-								id="sort"
-								value={searchFilters.sort}
-								onChange={(e) => handleFilterChange("sort", e.target.value)}
-								disabled={dropdownLoading}
-							>
-								<option value="">정렬 방식</option>
-								<option value="ASC">오름차순</option>
-								<option value="DESC">내림차순</option>
-							</select>
-						</div>
 						<div className="filter-group-common">
 							<select
 								id="factory"
@@ -369,7 +328,7 @@ function CataLogPage() {
 								{classifications.map((classification) => (
 									<option
 										key={classification.classificationId}
-										value={classification.classificationName}
+										value={classification.classificationId}
 									>
 										{classification.classificationName}
 									</option>
@@ -385,7 +344,7 @@ function CataLogPage() {
 							>
 								<option value="">세트</option>
 								{setTypes.map((setType) => (
-									<option key={setType.setTypeId} value={setType.setTypeName}>
+									<option key={setType.setTypeId} value={setType.setTypeId}>
 										{setType.setTypeName}
 									</option>
 								))}
@@ -393,6 +352,40 @@ function CataLogPage() {
 						</div>
 					</div>
 					<div className="search-controls-common">
+						<div className="filter-group-common">
+							<select
+								id="sortField"
+								value={sortOptions.sortField}
+								onChange={(e) =>
+									setSortOptions((prev) => ({
+										...prev,
+										sortField: e.target.value,
+									}))
+								}
+								disabled={dropdownLoading}
+							>
+								<option value="">정렬 필드</option>
+								<option value="productName">상품명</option>
+								<option value="factory">제조사</option>
+								<option value="setType">세트</option>
+								<option value="classification">분류</option>
+							</select>
+						</div>
+						<div className="filter-group-common">
+							<select
+								id="sort"
+								value={sortOptions.sort}
+								onChange={(e) =>
+									setSortOptions((prev) => ({ ...prev, sort: e.target.value }))
+								}
+								disabled={dropdownLoading}
+							>
+								<option value="">정렬 방향</option>
+								<option value="asc">오름차순</option>
+								<option value="desc">내림차순</option>
+							</select>
+						</div>
+
 						<input
 							className="search-input-common"
 							id="productName"
@@ -400,7 +393,6 @@ function CataLogPage() {
 							placeholder="상품명을 입력하세요"
 							value={searchFilters.name}
 							onChange={(e) => handleFilterChange("name", e.target.value)}
-							onKeyDown={(e) => e.key === "Enter" && handleSearch()}
 						/>
 
 						<div className="search-buttons-common">
@@ -443,12 +435,16 @@ function CataLogPage() {
 					{products.map((product) => (
 						<div
 							key={product.productId}
-							className="product-card"
-							onClick={() => handleProductClick(product.productId)}
-							style={{ cursor: "pointer" }}
+							className={`product-card ${
+								selectedProductId === product.productId ? "selected" : ""
+							}`}
 						>
 							{/* 상품 이미지 */}
-							<div className="catalog-product-image">
+							<div
+								className="catalog-product-image"
+								onClick={() => handleProductDetailOpen(product.productId)}
+								style={{ cursor: "pointer" }}
+							>
 								<img
 									src={imageUrls[product.productId] || "/images/not_ready.png"}
 									alt={product.productName}
@@ -459,7 +455,22 @@ function CataLogPage() {
 							</div>{" "}
 							{/* 상품 정보 */}
 							<div className="product-info" data-product-id={product.productId}>
-								<h3 className="product-name">{product.productName}</h3>
+								<div className="product-name-row">
+									<input
+										type="checkbox"
+										className="product-checkbox"
+										checked={selectedProductId === product.productId}
+										onChange={() => handleCheckboxChange(product.productId)}
+										onClick={(e) => e.stopPropagation()}
+									/>
+									<h3
+										className="product-name"
+										onClick={() => handleProductDetailOpen(product.productId)}
+										style={{ cursor: "pointer" }}
+									>
+										{product.productName}
+									</h3>
+								</div>
 								<div className="product-details">
 									{/* 무게, 재질, 색상을 한 줄로 */}
 									<div className="detail-row">
@@ -531,7 +542,6 @@ function CataLogPage() {
 						</div>
 					))}
 				</div>
-
 				{/* 빈 상태 */}
 				{products.length === 0 && !loading && (
 					<div className="empty-state">
@@ -540,7 +550,23 @@ function CataLogPage() {
 						<p>등록된 상품이 없습니다.</p>
 					</div>
 				)}
-
+				{/* BulkAction 영역 */}
+				<div
+					className="bulk-action-bar"
+					style={{ borderTop: "1px solid #efefef" }}
+				>
+					<div className="bulk-action-buttons">
+						<button
+							className={`bulk-action-btn sales-register ${
+								!selectedProductId ? "disabled" : ""
+							}`}
+							onClick={handleEditSelected}
+							disabled={!selectedProductId}
+						>
+							수정
+						</button>
+					</div>
+				</div>{" "}
 				{/* 페이지네이션 */}
 				<Pagination
 					currentPage={currentPage}
@@ -549,7 +575,7 @@ function CataLogPage() {
 					loading={loading}
 					onPageChange={(page) => {
 						setCurrentPage(page);
-						loadProducts(searchFilters, page);
+						loadProducts(searchFilters, page, sortOptions);
 					}}
 					className="catalog"
 				/>

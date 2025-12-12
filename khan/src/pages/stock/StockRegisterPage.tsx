@@ -159,11 +159,10 @@ const StockRegisterPage: React.FC = () => {
 					store.accountId.toString()
 				);
 				if (gradeResponse.success && gradeResponse.data) {
-					// 3. 조회된 등급으로 해당 row의 grade 필드를 업데이트
 					onRowUpdate(selectedRowForStore, "grade", gradeResponse.data);
 				}
 			} catch (err) {
-				handleError(err)
+				handleError(err);
 				onRowUpdate(selectedRowForStore, "grade", ""); // 실패 시 등급 초기화
 			}
 		}
@@ -219,6 +218,36 @@ const StockRegisterPage: React.FC = () => {
 				"productLaborCost",
 				product.productLaborCost || 0
 			);
+
+			// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
+			if (product.productMaterial) {
+				const foundMaterial = materials.find(
+					(m) => m.materialName === product.productMaterial
+				);
+				if (foundMaterial) {
+					onRowUpdate(
+						selectedRowForProduct,
+						"materialId",
+						foundMaterial.materialId
+					);
+					onRowUpdate(
+						selectedRowForProduct,
+						"materialName",
+						foundMaterial.materialName
+					);
+				}
+			}
+
+			// productColor 값이 있으면 자동으로 드롭다운에서 선택
+			if (product.productColor) {
+				const foundColor = colors.find(
+					(c) => c.colorName === product.productColor
+				);
+				if (foundColor) {
+					onRowUpdate(selectedRowForProduct, "colorId", foundColor.colorId);
+					onRowUpdate(selectedRowForProduct, "colorName", foundColor.colorName);
+				}
+			}
 		}
 		setIsProductSearchOpen(false);
 		setSelectedRowForProduct("");
@@ -426,7 +455,7 @@ const StockRegisterPage: React.FC = () => {
 					setOrderRows(allRows);
 				}
 			} catch (err) {
-				handleError(err)
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}
@@ -507,7 +536,7 @@ const StockRegisterPage: React.FC = () => {
 
 			window.close();
 		} catch (err) {
-			handleError(err)
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -587,6 +616,9 @@ const StockRegisterPage: React.FC = () => {
 				<ProductSearch
 					onSelectProduct={handleProductSelect}
 					onClose={handleProductSearchClose}
+					grade={
+						stockRows.find((r) => r.id === selectedRowForProduct)?.grade || "1"
+					}
 				/>
 			)}
 		</div>

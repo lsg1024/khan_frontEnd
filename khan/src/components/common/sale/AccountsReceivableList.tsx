@@ -52,9 +52,9 @@ export const AccountsReceivableList = ({
 							<td className="store-name">{store.accountName}</td>
 							<td>
 								<span
-									className={`level-badge level-${store.level.toLowerCase()}`}
+									className={`level-badge level-${store.grade.toLowerCase()}`}
 								>
-									{store.level}급
+									{store.grade}급
 								</span>
 							</td>
 							<td>{store.goldHarryLoss}%</td>

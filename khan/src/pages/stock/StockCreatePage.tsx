@@ -437,7 +437,7 @@ export const StockCreatePage = () => {
 		if (storeModal.selectedRowId) {
 			const storeIdValue = store.accountId?.toString();
 			const rowId = storeModal.selectedRowId;
-			const newGrade = store.level || "1";
+			const newGrade = store.grade || "1";
 
 			updateStockRow(rowId, "storeId", storeIdValue);
 			updateStockRow(rowId, "storeName", store.accountName || "");
@@ -478,7 +478,9 @@ export const StockCreatePage = () => {
 		if (!validateSequence(rowId, "product")) {
 			return;
 		}
-		productModal.openModal(rowId);
+		const row = stockRows.find((r) => r.id === rowId);
+		const grade = row?.grade || "1";
+		productModal.openModal(rowId, { grade: grade });
 	};
 
 	const handleProductSelect = async (product: ProductDto) => {
@@ -661,6 +663,44 @@ export const StockCreatePage = () => {
 					"assistanceStoneCount",
 					assistanceStoneCount
 				);
+			}
+
+			// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
+			if (product.productMaterial) {
+				const foundMaterial = materials.find(
+					(m) => m.materialName === product.productMaterial
+				);
+				if (foundMaterial) {
+					updateStockRow(
+						productModal.selectedRowId,
+						"materialId",
+						foundMaterial.materialId
+					);
+					updateStockRow(
+						productModal.selectedRowId,
+						"materialName",
+						foundMaterial.materialName
+					);
+				}
+			}
+
+			// productColor 값이 있으면 자동으로 드롭다운에서 선택
+			if (product.productColor) {
+				const foundColor = colors.find(
+					(c) => c.colorName === product.productColor
+				);
+				if (foundColor) {
+					updateStockRow(
+						productModal.selectedRowId,
+						"colorId",
+						foundColor.colorId
+					);
+					updateStockRow(
+						productModal.selectedRowId,
+						"colorName",
+						foundColor.colorName
+					);
+				}
 			}
 		}
 		productModal.handleSelect();
@@ -1121,6 +1161,7 @@ export const StockCreatePage = () => {
 				<ProductSearch
 					onSelectProduct={handleProductSelect}
 					onClose={productModal.closeModal}
+					grade={productModal.additionalParams.grade || "1"}
 				/>
 			)}
 		</div>

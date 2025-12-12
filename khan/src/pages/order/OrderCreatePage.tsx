@@ -554,7 +554,7 @@ const OrderCreatePage = () => {
 			updateOrderRow(
 				storeModal.selectedRowId,
 				"storeGrade",
-				store.level || "1"
+				store.grade || "1"
 			);
 		}
 		storeModal.handleSelect();
@@ -587,7 +587,9 @@ const OrderCreatePage = () => {
 		if (!validateSequence(rowId, "product")) {
 			return;
 		}
-		productModal.openModal(rowId);
+		const row = orderRows.find((r) => r.id === rowId);
+		const grade = row?.storeGrade || "1";
+		productModal.openModal(rowId, { grade: grade });
 	};
 
 	// 상품 선택 처리
@@ -685,11 +687,47 @@ const OrderCreatePage = () => {
 				product.productStones.find((stone) => !stone.mainStone)
 					?.stoneQuantity || 0
 			);
+
+			// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
+			if (product.productMaterial) {
+				const foundMaterial = materials.find(
+					(m) => m.materialName === product.productMaterial
+				);
+				if (foundMaterial) {
+					updateOrderRow(
+						productModal.selectedRowId,
+						"materialId",
+						foundMaterial.materialId.toString()
+					);
+					updateOrderRow(
+						productModal.selectedRowId,
+						"materialName",
+						foundMaterial.materialName
+					);
+				}
+			}
+
+			// productColor 값이 있으면 자동으로 드롭다운에서 선택
+			if (product.productColor) {
+				const foundColor = colors.find(
+					(c) => c.colorName === product.productColor
+				);
+				if (foundColor) {
+					updateOrderRow(
+						productModal.selectedRowId,
+						"colorId",
+						foundColor.colorId.toString()
+					);
+					updateOrderRow(
+						productModal.selectedRowId,
+						"colorName",
+						foundColor.colorName
+					);
+				}
+			}
 		}
 		productModal.handleSelect();
-	};
-
-	// 스톤 정보 관리 모달 열기
+	}; // 스톤 정보 관리 모달 열기
 	const openStoneInfoManager = (rowId: string) => {
 		const url = `/orders/stone-info?rowId=${rowId}&origin=${window.location.origin}`;
 		const NAME = `stoneInfo_${rowId}`;
@@ -1080,10 +1118,10 @@ const OrderCreatePage = () => {
 				<ProductSearch
 					onSelectProduct={handleProductSelect}
 					onClose={productModal.closeModal}
+					grade={productModal.additionalParams.grade || "1"}
 				/>
 			)}
 		</div>
 	);
 };
-
 export default OrderCreatePage;

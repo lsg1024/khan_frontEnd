@@ -7,15 +7,23 @@ import { useState, useCallback } from "react";
 export const useSearchModal = () => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [selectedRowId, setSelectedRowId] = useState<string>("");
+	const [additionalParams, setAdditionalParams] = useState<
+		Record<string, string>
+	>({});
 
 	/**
 	 * 모달 열기
 	 * @param rowId - 대상 행의 ID
+	 * @param params - 추가 파라미터 (예: level)
 	 */
-	const openModal = useCallback((rowId: string) => {
-		setSelectedRowId(rowId);
-		setIsOpen(true);
-	}, []);
+	const openModal = useCallback(
+		(rowId: string, params?: Record<string, string>) => {
+			setSelectedRowId(rowId);
+			setAdditionalParams(params || {});
+			setIsOpen(true);
+		},
+		[]
+	);
 
 	/**
 	 * 모달 닫기
@@ -23,6 +31,7 @@ export const useSearchModal = () => {
 	const closeModal = useCallback(() => {
 		setIsOpen(false);
 		setSelectedRowId("");
+		setAdditionalParams({});
 	}, []);
 
 	/**
@@ -31,11 +40,13 @@ export const useSearchModal = () => {
 	const handleSelect = useCallback(() => {
 		setIsOpen(false);
 		setSelectedRowId("");
+		setAdditionalParams({});
 	}, []);
 
 	return {
 		isOpen,
 		selectedRowId,
+		additionalParams,
 		openModal,
 		closeModal,
 		handleSelect,

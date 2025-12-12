@@ -11,7 +11,7 @@ export interface FactorySearchDto {
 	factoryNote: string;
 	address: string;
 	tradeType: "WEIGHT" | "PIECE";
-	level: "1" | "2" | "3" | "4";
+	grade: "1" | "2" | "3" | "4";
 	goldHarryLoss: string;
 }
 

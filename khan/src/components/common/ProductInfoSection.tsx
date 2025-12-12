@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import type { Product } from "../../types/product";
 import type { ProductStoneDto } from "../../types/stone";
+import { productApi } from "../../../libs/api/product";
 import "../../styles/components/ProductInfoSection.css";
 
 interface ProductInfoSectionProps {
@@ -12,6 +13,41 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 	currentProductDetail,
 	title = "선택된 상품 정보",
 }) => {
+	const [imageUrl, setImageUrl] = useState<string>("/images/not_ready.png");
+
+	// 상품이 변경될 때마다 이미지 로드
+	useEffect(() => {
+		const loadImage = async () => {
+			if (
+				currentProductDetail?.productImageDtos &&
+				currentProductDetail.productImageDtos.length > 0 &&
+				currentProductDetail.productImageDtos[0].imagePath
+			) {
+				try {
+					const blob = await productApi.getProductImageByPath(
+						currentProductDetail.productImageDtos[0].imagePath
+					);
+					const blobUrl = URL.createObjectURL(blob);
+					setImageUrl(blobUrl);
+				} catch (error) {
+					console.error("이미지 로드 실패:", error);
+					setImageUrl("/images/not_ready.png");
+				}
+			} else {
+				setImageUrl("/images/not_ready.png");
+			}
+		};
+
+		loadImage();
+
+		// cleanup: 이전 blob URL 해제
+		return () => {
+			if (imageUrl.startsWith("blob:")) {
+				URL.revokeObjectURL(imageUrl);
+			}
+		};
+	}, [currentProductDetail]);
+
 	return (
 		<div className="product-info-section">
 			<h2>{title}</h2>
@@ -24,20 +60,14 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 					<div className="product-info-card">
 						<div className="product-info-header">
 							<div className="product-image-container">
-								{currentProductDetail.productImageDtos &&
-								currentProductDetail.productImageDtos.length > 0 ? (
-									<img
-										src={
-											currentProductDetail.productImageDtos[0].imagePath
-												? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${currentProductDetail.productImageDtos[0].imagePath}`
-												: "/images/not_ready.png"
-										}
-										alt={currentProductDetail.productName}
-										className="product-image"
-									/>
-								) : (
-									<div className="no-image-placeholder">이미지 없음</div>
-								)}
+								<img
+									src={imageUrl}
+									alt={currentProductDetail.productName}
+									className="product-image"
+									onError={(e) => {
+										e.currentTarget.src = "/images/not_ready.png";
+									}}
+								/>
 							</div>
 						</div>
 

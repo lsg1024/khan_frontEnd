@@ -15,6 +15,10 @@ const ProductSearchPage: React.FC = () => {
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+	const [searchParams] = useState(
+		() => new URLSearchParams(window.location.search)
+	);
+	const grade = searchParams.get("grade") || "1";
 
 	const size = 12;
 
@@ -29,10 +33,11 @@ const ProductSearchPage: React.FC = () => {
 				undefined,
 				undefined,
 				undefined,
-				undefined,
-				undefined,
 				page,
-				size
+				size,
+				undefined,
+				undefined,
+				grade
 			);
 
 			if (!isApiSuccess(response)) {

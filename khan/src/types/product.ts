@@ -122,6 +122,7 @@ export interface ProductDto {
 	productMaterial: string;
 	factoryId: string;
 	factoryName: string;
+	productColor: string;
 	productNote: string;
 	productPurchaseCost: string;
 	productLaborCost: string;

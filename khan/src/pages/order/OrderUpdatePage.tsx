@@ -290,7 +290,9 @@ const OrderUpdatePage: React.FC = () => {
 			productSearchPopupRef.current.close();
 		}
 
-		const url = `/product-search?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
+		const url = `/product-search?rowId=${rowId}&origin=${POPUP_ORIGIN}&grade=${
+			storeGrade || "1"
+		}`;
 		const NAME = `productSearch_${rowId}`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=600";
 
@@ -587,6 +589,44 @@ const OrderUpdatePage: React.FC = () => {
 				"factoryName",
 				product.factoryName || ""
 			);
+
+			// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
+			if (product.productMaterial) {
+				const foundMaterial = materials.find(
+					(m) => m.materialName === product.productMaterial
+				);
+				if (foundMaterial) {
+					updateOrderRow(
+						selectedRowForProduct,
+						"materialId",
+						foundMaterial.materialId.toString()
+					);
+					updateOrderRow(
+						selectedRowForProduct,
+						"materialName",
+						foundMaterial.materialName
+					);
+				}
+			}
+
+			// productColor 값이 있으면 자동으로 드롭다운에서 선택
+			if (product.productColor) {
+				const foundColor = colors.find(
+					(c) => c.colorName === product.productColor
+				);
+				if (foundColor) {
+					updateOrderRow(
+						selectedRowForProduct,
+						"colorId",
+						foundColor.colorId.toString()
+					);
+					updateOrderRow(
+						selectedRowForProduct,
+						"colorName",
+						foundColor.colorName
+					);
+				}
+			}
 		}
 		setIsProductSearchOpen(false);
 		setSelectedRowForProduct("");

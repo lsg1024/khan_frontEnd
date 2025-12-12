@@ -15,10 +15,11 @@ export const productApi = {
 		factory?: string,
 		classification?: string,
 		setType?: string,
+		page: number = 1,
+		size?: number,
 		sortField?: string,
 		sort?: string,
-		page: number = 1,
-		size?: number
+		grade?: string
 	): Promise<ApiResponse<ProductSearchResponse>> => {
 		const params: Record<string, string | number> = { page: page.toString() };
 
@@ -26,9 +27,10 @@ export const productApi = {
 		if (factory) params.factory = factory;
 		if (classification) params.classification = classification;
 		if (setType) params.setType = setType;
+		if (size) params.size = size;
 		if (sortField) params.sortField = sortField;
 		if (sort) params.sort = sort;
-		if (size) params.size = size;
+		if (grade) params.grade = grade;
 
 		return apiRequest.get<ProductSearchResponse>("product/products", {
 			params,

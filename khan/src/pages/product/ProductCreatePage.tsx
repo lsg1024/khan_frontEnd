@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
 import { productApi } from "../../../libs/api/product";
 import { useErrorHandler } from "../../utils/errorHandler";
@@ -91,7 +90,6 @@ const parseValidationErrors = (
 };
 
 const ProductCreatePage = () => {
-	const navigate = useNavigate();
 	const [product, setProduct] = useState<Product>(EMPTY_PRODUCT);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -282,7 +280,7 @@ const ProductCreatePage = () => {
 					setError("");
 					setImageFile(null);
 				} else {
-					navigate("/catalog");
+					window.close();
 				}
 			} else {
 				const ve = parseValidationErrors(res.data);
@@ -299,7 +297,7 @@ const ProductCreatePage = () => {
 		}
 	};
 
-	const handleGoBack = () => navigate("/catalog");
+	const handleGoBack = () => window.close();
 
 	useEffect(() => {}, []);
 

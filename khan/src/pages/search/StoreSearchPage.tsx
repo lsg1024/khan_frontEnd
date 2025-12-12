@@ -40,6 +40,7 @@ const StoreSearchPage: React.FC = () => {
 				if (useAttempt) {
 					// 미수 정보 API 호출
 					const res = await storeApi.getStoreAttempt(name, page, size);
+					console.log("🔍 StoreAttempt API 응답:", res);
 
 					if (!isApiSuccess(res)) {
 						setError(res.message || "거래처 데이터를 불러오지 못했습니다.");
@@ -54,6 +55,7 @@ const StoreSearchPage: React.FC = () => {
 					const content = data?.content ?? [];
 					const pageInfo = data?.page;
 
+					console.log("✅ 거래처 데이터:", content);
 					setStores(content);
 					const uiPage = (pageInfo?.number ?? page - 1) + 1;
 					setCurrentPage(uiPage);

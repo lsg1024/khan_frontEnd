@@ -13,6 +13,7 @@ import HomePage from "./pages/HomePage";
 import CataLogPage from "./pages/product/CataLogPage";
 import ProductCreatePage from "./pages/product/ProductCreatePage";
 import ProductDetailPage from "./pages/product/ProductDetailPage";
+import ProductEditPage from "./pages/product/ProductEditPage";
 import StonePage from "./pages/stone/StonePage";
 import StoneCreatePage from "./pages/stone/StoneCreatePage";
 import StoneEditPage from "./pages/stone/StoneEditPage";
@@ -102,6 +103,15 @@ function App() {
 					<Route
 						path="/user-management"
 						element={<UserManagementPopupPage />}
+					/>
+					<Route path="/catalog/create" element={<ProductCreatePage />} />
+					<Route
+						path="/catalog/detail/:productId"
+						element={<ProductDetailPage />}
+					/>
+					<Route
+						path="/catalog/edit/:productId"
+						element={<ProductEditPage />}
 					/>
 					<Route path="/stone/create" element={<StoneCreatePage />} />
 					<Route path="/stone/edit/:stoneId" element={<StoneEditPage />} />

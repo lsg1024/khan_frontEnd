@@ -5,11 +5,13 @@ import "../../../styles/components/productSearch.css";
 interface ProductSearchProps {
 	onSelectProduct: (product: ProductDto) => void;
 	onClose?: () => void;
+	grade?: string;
 }
 
 const ProductSearch: React.FC<ProductSearchProps> = ({
 	onSelectProduct,
 	onClose,
+	grade: grade = "1",
 }) => {
 	// 함수들을 ref로 저장하여 리렌더링 시에도 동일한 참조 유지
 	const onSelectProductRef = useRef(onSelectProduct);
@@ -25,7 +27,7 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
 	useEffect(() => {
 		// 팝업 창 열기
 		const popup = window.open(
-			"/product-search",
+			`/product-search?grade=${grade}`,
 			"productSearch",
 			"width=1200,height=750,scrollbars=yes,resizable=yes"
 		);

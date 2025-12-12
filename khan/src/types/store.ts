@@ -5,7 +5,7 @@ export interface StoreSearchDto {
 	accountId: number;
 	accountName: string;
 	tradeType: string;
-	level: string;
+	grade: string;
 	goldHarryLoss: string;
 	businessOwnerName: string;
 	businessOwnerNumber: string;

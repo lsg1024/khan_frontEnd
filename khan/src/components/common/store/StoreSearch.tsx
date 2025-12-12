@@ -29,11 +29,17 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 		const url = useAttemptApi
 			? "/store-search?useAttempt=true"
 			: "/store-search";
+		
+		// 새 팝업 열기 - 같은 이름으로 열면 기존 팝업이 자동으로 대체됨
 		const popup = window.open(
 			url,
 			"storeSearch",
 			"width=1000,height=450,scrollbars=yes,resizable=yes"
 		);
+
+		if (!popup) {
+			return;
+		}
 
 		// 팝업에서 거래처 선택 시 메시지 처리
 		const handleMessage = (event: MessageEvent) => {
