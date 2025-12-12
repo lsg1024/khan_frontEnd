@@ -63,12 +63,12 @@ const StoreList: React.FC<StoreListProps> = ({ stores, onSelectStore }) => {
 									</>
 								)}
 								<span className="col-level">
-								<span
-									className={`level-badge level-${store.grade.toLowerCase()}`}
-								>
-									{store.grade + "급"}
+									<span
+										className={`level-badge level-${store.grade.toLowerCase()}`}
+									>
+										{store.grade + "급"}
+									</span>
 								</span>
-							</span>
 								<span className="col-harry">{store.goldHarryLoss}%</span>
 								<span className="col-trade">{store.tradeType}</span>
 								{isStoreAttempt(store) && (

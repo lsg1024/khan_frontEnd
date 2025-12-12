@@ -6,7 +6,7 @@ import type {
 	StoreSearchDto,
 	StoreSearchResponse,
 	StoreAttemptResponse,
-	AccountInfoDto
+	AccountInfoDto,
 } from "../../types/store";
 import StoreList from "../../components/common/store/StoreList";
 import Pagination from "../../components/common/Pagination";
@@ -17,9 +17,7 @@ const StoreSearchPage: React.FC = () => {
 	const useAttempt = searchParams.get("useAttempt") === "true"; // URL 파라미터 확인
 
 	const [searchName, setSearchName] = useState("");
-	const [stores, setStores] = useState<(StoreSearchDto | AccountInfoDto)[]>(
-		[]
-	);
+	const [stores, setStores] = useState<(StoreSearchDto | AccountInfoDto)[]>([]);
 	const [loading, setLoading] = useState(false);
 
 	const [currentPage, setCurrentPage] = useState(1);
