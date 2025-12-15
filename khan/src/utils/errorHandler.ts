@@ -32,40 +32,11 @@ export function handleApiError(
 		};
 
 		const response = axiosError.response;
-		const statusCode = response?.status;
 		const responseData = response?.data;
 
-		if (statusCode === 400) {
-			// 400 에러: data 객체에 상세 오류 메시지가 있으면 사용, 없으면 message 사용
-			if (responseData?.data && typeof responseData.data === "object") {
-				const detailMessages = Object.entries(responseData.data)
-					.map(([, value]) => `${value}`)
-					.join("\n");
-				if (detailMessages) {
-					errorMessage = detailMessages;
-				} else {
-					errorMessage = responseData?.message || "잘못된 요청입니다.";
-				}
-			} else {
-				errorMessage = responseData?.message || "잘못된 요청입니다.";
-			}
-		} else if (statusCode === 403) {
-			// 403 에러: 토큰 관련 에러
-			errorMessage = "접근 권한이 없습니다. 다시 로그인해주세요.";
-		} else if (responseData && !responseData.success) {
-			// 기타 에러: data 객체에 상세 오류 메시지가 있으면 사용, 없으면 message 사용
-			if (responseData.data && typeof responseData.data === "object") {
-				const detailMessages = Object.entries(responseData.data)
-					.map(([, value]) => `${value}`)
-					.join("\n");
-				if (detailMessages) {
-					errorMessage = detailMessages;
-				} else {
-					errorMessage = responseData.message || defaultMessage;
-				}
-			} else {
-				errorMessage = responseData.message || defaultMessage;
-			}
+		// 서버 에러 응답: ApiResponse<T> 형식 { success: false, message: string, data: null }
+		if (responseData && typeof responseData === "object" && "message" in responseData) {
+			errorMessage = responseData.message || defaultMessage;
 		} else {
 			// 그 외의 경우: 기본 메시지
 			errorMessage = defaultMessage;

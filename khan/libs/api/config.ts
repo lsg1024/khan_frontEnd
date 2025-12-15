@@ -155,7 +155,7 @@ api.interceptors.response.use(
 						return api(originalRequest);
 					})
 					.catch((err) => {
-						return Promise.reject(err);
+						return Promise.reject(err.message);
 					});
 			}
 
@@ -224,17 +224,12 @@ api.interceptors.response.use(
 		}
 
 		const responseData = err.response?.data;
-		const errorMessage =
-			responseData?.message ||
-			err.message ||
-			`HTTP ${err.response?.status || ""} 오류가 발생했습니다.`;
+		let errorMessage = "알 수 없는 오류가 발생했습니다.";
 
-		if (
-			responseData &&
-			typeof responseData === "object" &&
-			"message" in responseData
-		) {
-			return Promise.reject(new Error(responseData.message as string));
+		if (responseData && typeof responseData === "object" && "message" in responseData) {
+			errorMessage = responseData.message as string;
+		} else if (err.message) {
+			errorMessage = err.message;
 		}
 
 		return Promise.reject(new Error(errorMessage));
