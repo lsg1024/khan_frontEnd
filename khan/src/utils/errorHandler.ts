@@ -35,7 +35,11 @@ export function handleApiError(
 		const responseData = response?.data;
 
 		// 서버 에러 응답: ApiResponse<T> 형식 { success: false, message: string, data: null }
-		if (responseData && typeof responseData === "object" && "message" in responseData) {
+		if (
+			responseData &&
+			typeof responseData === "object" &&
+			"message" in responseData
+		) {
 			errorMessage = responseData.message || defaultMessage;
 		} else {
 			// 그 외의 경우: 기본 메시지

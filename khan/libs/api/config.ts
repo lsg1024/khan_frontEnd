@@ -226,7 +226,11 @@ api.interceptors.response.use(
 		const responseData = err.response?.data;
 		let errorMessage = "알 수 없는 오류가 발생했습니다.";
 
-		if (responseData && typeof responseData === "object" && "message" in responseData) {
+		if (
+			responseData &&
+			typeof responseData === "object" &&
+			"message" in responseData
+		) {
 			errorMessage = responseData.message as string;
 		} else if (err.message) {
 			errorMessage = err.message;
