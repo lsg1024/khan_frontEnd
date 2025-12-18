@@ -45,8 +45,10 @@ export const saleApi = {
 	},
 
 	createPaymentSale: async (
-		saleData: SalePaymentRequest
+		saleData: SalePaymentRequest,
+		newSale: boolean
 	): Promise<ApiResponse<string>> => {
+		const params = { new: newSale };
 		const eventId = uuidv4();
 		const headers = {
 			"Idempotency-Key": eventId,
@@ -57,6 +59,7 @@ export const saleApi = {
 		};
 
 		return apiRequest.post<string>("order/sales/payment", requestBody, {
+			params,
 			headers,
 		});
 	},
@@ -82,10 +85,11 @@ export const saleApi = {
 	updateOrderToSale: async (
 		flowCode: string,
 		order_status: string,
-		orderData: StockRegisterRequest
+		orderData: StockRegisterRequest,
+		newSale: boolean
 	): Promise<ApiResponse<string>> => {
 		const eventId = uuidv4();
-		const params = { id: flowCode, order_status: order_status };
+		const params = { id: flowCode, order_status: order_status, new: newSale };
 
 		const headers = {
 			"Idempotency-Key": eventId,
@@ -102,10 +106,11 @@ export const saleApi = {
 	},
 	updateStockToSale: async (
 		flowCodes: string,
-		stockData: StockSaleRequest
+		stockData: StockSaleRequest,
+		newSale: boolean
 	): Promise<ApiResponse<string>> => {
 		const eventId = uuidv4();
-		const params = { id: flowCodes };
+		const params = { id: flowCodes, new: newSale };
 		const headers = {
 			"Idempotency-Key": eventId,
 		};

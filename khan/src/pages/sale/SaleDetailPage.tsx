@@ -866,7 +866,6 @@ const SaleDetailPage: React.FC = () => {
 					);
 				}
 			} else {
-				// 일반 모드인 경우 updateSale 호출
 				const updatePromises = saleRows.map((row) => {
 					const updateDto = {
 						productSize: row.productSize,

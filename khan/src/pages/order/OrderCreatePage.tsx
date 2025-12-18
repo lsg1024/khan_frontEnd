@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import { materialApi } from "../../../libs/api/material";
 import { colorApi } from "../../../libs/api/color";
@@ -47,6 +47,7 @@ const OrderCreatePage = () => {
 	const { mode } = useParams<{
 		mode: UpdateMode;
 	}>();
+	const [searchParams] = useSearchParams();
 
 	// 주문 행 데이터
 	const [orderRows, setOrderRows] = useState<OrderRowData[]>([]);
@@ -335,6 +336,39 @@ const OrderCreatePage = () => {
 			const storeGrade = targetRow.storeGrade || "1";
 			const policyGrade = `GRADE_${storeGrade}`;
 
+			// 상품 기본 정보 업데이트
+			updateOrderRow(rowId, "productId", productDetail.productId);
+			updateOrderRow(rowId, "productName", productDetail.productName);
+			updateOrderRow(
+				rowId,
+				"productFactoryName",
+				productDetail.productFactoryName || ""
+			);
+			updateOrderRow(rowId, "factoryId", productDetail.factoryId);
+			updateOrderRow(rowId, "factoryName", productDetail.factoryName);
+
+			updateOrderRow(
+				rowId,
+				"classificationId",
+				productDetail.classificationDto.classificationId || ""
+			);
+			updateOrderRow(
+				rowId,
+				"classificationName",
+				productDetail.classificationDto.classificationName || ""
+			);
+			updateOrderRow(
+				rowId,
+				"setTypeId",
+				productDetail.setTypeDto.setTypeId || ""
+			);
+			updateOrderRow(
+				rowId,
+				"setTypeName",
+				productDetail.setTypeDto.setTypeName || ""
+			);
+
+			// 스톤 정보 변환 및 업데이트
 			const transformedStoneInfos = productDetail.productStoneDtos.map(
 				(stone) => {
 					const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
@@ -360,26 +394,55 @@ const OrderCreatePage = () => {
 			);
 
 			updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
-			updateOrderRow(
-				rowId,
-				"classificationId",
-				productDetail.classificationDto.classificationId || ""
+
+			// 알 가격 및 개수 계산
+			const mainStone = productDetail.productStoneDtos.find(
+				(stone) => stone.mainStone
 			);
-			updateOrderRow(
-				rowId,
-				"classificationName",
-				productDetail.classificationDto.classificationName || ""
+			const assistanceStone = productDetail.productStoneDtos.find(
+				(stone) => !stone.mainStone
 			);
-			updateOrderRow(
-				rowId,
-				"setTypeId",
-				productDetail.setTypeDto.setTypeId || ""
+
+			const mainStoneInfo = transformedStoneInfos.find(
+				(stone) => stone.mainStone
 			);
-			updateOrderRow(
-				rowId,
-				"setTypeName",
-				productDetail.setTypeDto.setTypeName || ""
+			const assistanceStoneInfo = transformedStoneInfos.find(
+				(stone) => !stone.mainStone
 			);
+
+			const mainStonePrice = mainStoneInfo
+				? (mainStoneInfo.laborCost || 0) * (mainStoneInfo.quantity || 0)
+				: 0;
+			const mainStoneCount = mainStone?.stoneQuantity || 0;
+
+			const assistanceStonePrice = assistanceStoneInfo
+				? (assistanceStoneInfo.laborCost || 0) *
+				  (assistanceStoneInfo.quantity || 0)
+				: 0;
+			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
+
+			updateOrderRow(rowId, "mainStonePrice", mainStonePrice);
+			updateOrderRow(rowId, "mainStoneCount", mainStoneCount);
+			updateOrderRow(rowId, "assistanceStonePrice", assistanceStonePrice);
+			updateOrderRow(rowId, "assistanceStoneCount", assistanceStoneCount);
+
+			// 재질 자동 선택
+			if (productDetail.materialDto?.materialName) {
+				const foundMaterial = materials.find(
+					(m) => m.materialName === productDetail.materialDto?.materialName
+				);
+				if (foundMaterial) {
+					updateOrderRow(
+						rowId,
+						"materialId",
+						foundMaterial.materialId.toString()
+					);
+					updateOrderRow(rowId, "materialName", foundMaterial.materialName);
+				}
+			}
+
+			// 색상 자동 선택 (상품에 색상 정보가 있는 경우)
+			// Product 타입에 colorDto가 있다면 여기서 처리
 		}
 	};
 
@@ -816,16 +879,28 @@ const OrderCreatePage = () => {
 			try {
 				setLoading(true);
 
+				const productId = searchParams.get("productId");
+
 				// 기본 드롭다운 데이터만 로드
-				const [materialRes, colorRes, priorityRes, assistantStoneRes] =
-					await Promise.all([
-						materialApi.getMaterials(),
-						colorApi.getColors(),
-						priorityApi.getPriorities(),
-						assistantStoneApi.getAssistantStones(),
-					]);
+				const [
+					materialRes,
+					colorRes,
+					priorityRes,
+					assistantStoneRes,
+					productDetail,
+				] = await Promise.all([
+					materialApi.getMaterials(),
+					colorApi.getColors(),
+					priorityApi.getPriorities(),
+					assistantStoneApi.getAssistantStones(),
+					productId ? fetchProductDetail(productId) : Promise.resolve(null),
+				]);
+
+				let loadedMaterials: MaterialDto[] = [];
+				let loadedColors: ColorDto[] = [];
+
 				if (materialRes.success) {
-					const loadedMaterials = (materialRes.data || []).map((m) => ({
+					loadedMaterials = (materialRes.data || []).map((m) => ({
 						materialId: m.materialId?.toString() || "",
 						materialName: m.materialName,
 						materialGoldPurityPercent: m.materialGoldPurityPercent || "",
@@ -833,7 +908,7 @@ const OrderCreatePage = () => {
 					setMaterials(loadedMaterials);
 				}
 				if (colorRes.success) {
-					const loadedColors = (colorRes.data || []).map((c) => ({
+					loadedColors = (colorRes.data || []).map((c) => ({
 						colorId: c.colorId || "",
 						colorName: c.colorName,
 						colorNote: c.colorNote || "",
@@ -841,13 +916,12 @@ const OrderCreatePage = () => {
 					setColors(loadedColors);
 				}
 				if (assistantStoneRes.success) {
-					const loadedAssistantStones = (assistantStoneRes.data || []).map(
-						(a) => ({
+					setAssistantStones(
+						(assistantStoneRes.data || []).map((a) => ({
 							assistantStoneId: a.assistantStoneId,
 							assistantStoneName: a.assistantStoneName,
-						})
+						}))
 					);
-					setAssistantStones(loadedAssistantStones);
 				}
 
 				if (priorityRes.success && priorityRes.data) {
@@ -875,9 +949,17 @@ const OrderCreatePage = () => {
 					// 초기 10개 행 생성
 					const initialRowCount = 10; // 행 개수를 변수로 관리
 					const initialRows: OrderRowData[] = [];
+
+					if (productDetail) {
+						setCurrentProductDetail(productDetail);
+					}
+
 					for (let i = 0; i < initialRowCount; i++) {
-						const newRow: OrderRowData = {
-							id: `${Date.now()}-${i}`,
+						const rowId = `${Date.now()}-${i}`; // ID 생성
+
+						// 기본 빈 행 생성
+						let newRow: OrderRowData = {
+							id: rowId,
 							storeId: "",
 							storeName: "",
 							storeHarry: "",
@@ -891,7 +973,7 @@ const OrderCreatePage = () => {
 							setTypeName: "",
 							materialId: "",
 							materialName: "",
-							colorId: "",
+							colorId: "1", // 기본값
 							colorName: "",
 							factoryId: "",
 							factoryName: "",
@@ -899,22 +981,21 @@ const OrderCreatePage = () => {
 							productSize: "",
 							stoneWeight: 0,
 							isProductWeightSale: false,
-							priorityName: priorities[0]?.priorityName || "일반",
+							priorityName: defaultPriority.priorityName,
 							mainStoneNote: "",
 							assistanceStoneNote: "",
 							orderNote: "",
 							stoneInfos: [],
-							productLaborCost: 0, // 중심단가
-							productAddLaborCost: 0, // 추가단가
+							productLaborCost: 0,
+							productAddLaborCost: 0,
 							mainStonePrice: 0,
 							assistanceStonePrice: 0,
+							stoneAddLaborCost: 0,
 							mainStoneCount: 0,
 							assistanceStoneCount: 0,
-							stoneAddLaborCost: 0, // 추가 스톤 판매단가
 							stoneWeightTotal: 0,
 							createAt: currentDate,
 							shippingAt: defaultDeliveryDate,
-							// 보조석 관련 필드
 							assistantStone: false,
 							assistantStoneId:
 								defaultAssistantStone?.assistantStoneId.toString() || "1",
@@ -922,8 +1003,87 @@ const OrderCreatePage = () => {
 								defaultAssistantStone?.assistantStoneName || "",
 							assistantStoneCreateAt: "",
 						};
+
+						if (i === 0 && productDetail) {
+							const policyGrade = "GRADE_1"; // 기본 등급
+							const transformedStoneInfos = productDetail.productStoneDtos.map(
+								(stone) => {
+									const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
+										(p) => p.grade === policyGrade
+									);
+									const laborCost = matchingPolicy
+										? matchingPolicy.laborCost
+										: stone.stoneWorkGradePolicyDtos[0]?.laborCost || 0;
+									return {
+										stoneId: stone.stoneId,
+										stoneName: stone.stoneName,
+										stoneWeight: stone.stoneWeight,
+										purchaseCost: stone.stonePurchase,
+										laborCost: laborCost,
+										quantity: stone.stoneQuantity,
+										mainStone: stone.mainStone,
+										includeStone: stone.includeStone,
+										addLaborCost: 0,
+									};
+								}
+							);
+
+							// 스톤 가격 계산
+							const stoneCalcs = calculateStoneDetails(transformedStoneInfos);
+
+							// 재질 매칭
+							const matchedMaterial = loadedMaterials.find(
+								(m) =>
+									m.materialName === productDetail.materialDto?.materialName
+							);
+							// 색상 매칭 (ProductDto에 color 정보가 있다고 가정)
+							const matchedColor = productDetail
+								.productWorkGradePolicyGroupDto[0].colorName
+								? loadedColors.find(
+										(c) =>
+											c.colorName ===
+											productDetail.productWorkGradePolicyGroupDto[0].colorName
+								  )
+								: null;
+
+							newRow = {
+								...newRow,
+								productId: productDetail.productId,
+								productName: productDetail.productName,
+								productFactoryName: productDetail.productFactoryName || "",
+								factoryId: productDetail.factoryId.toString(),
+								factoryName: productDetail.factoryName,
+								classificationId:
+									productDetail.classificationDto.classificationId || "",
+								classificationName:
+									productDetail.classificationDto.classificationName || "",
+								setTypeId: productDetail.setTypeDto.setTypeId || "",
+								setTypeName: productDetail.setTypeDto.setTypeName || "",
+
+								// 스톤 관련
+								stoneInfos: transformedStoneInfos,
+								mainStonePrice: stoneCalcs.mainStonePrice,
+								assistanceStonePrice: stoneCalcs.assistanceStonePrice,
+								stoneAddLaborCost: stoneCalcs.stoneAddLaborCost,
+								mainStoneCount: stoneCalcs.mainStoneCount,
+								assistanceStoneCount: stoneCalcs.assistanceStoneCount,
+								stoneWeightTotal: stoneCalcs.stoneWeight,
+								stoneWeight: stoneCalcs.stoneWeight,
+
+								// 재질 & 색상
+								materialId: matchedMaterial ? matchedMaterial.materialId : "",
+								materialName: matchedMaterial
+									? matchedMaterial.materialName
+									: "",
+								colorId: matchedColor ? matchedColor.colorId : "1",
+								colorName: matchedColor ? matchedColor.colorName : "",
+							};
+						}
+
 						initialRows.push(newRow);
 					}
+
+					// 3. 완성된 전체 행 데이터를 상태에 저장
 					setOrderRows(initialRows);
 				}
 			} catch (err) {
@@ -932,7 +1092,6 @@ const OrderCreatePage = () => {
 				setLoading(false);
 			}
 		};
-
 		loadInitialData();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);

@@ -73,6 +73,7 @@ export interface OrderDto {
 	shippingAt: string;
 	flowCode: string;
 	storeName: string;
+	productId: string;
 	productName: string;
 	materialName: string;
 	colorName: string;

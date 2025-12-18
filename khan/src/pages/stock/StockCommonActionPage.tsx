@@ -340,6 +340,30 @@ const StockCommonActionPage: React.FC = () => {
 			let actionType = "";
 
 			if (action === "sale") {
+				// 오늘 등록된 판매장 확인
+				let newSale = false;
+				if (stockRows.length > 0 && stockRows[0].storeId) {
+					try {
+						const accountId = parseInt(stockRows[0].storeId);
+						if (accountId) {
+							const checkResponse = await saleApi.checkBeforeSale(accountId);
+
+							if (checkResponse.success && checkResponse.data) {
+								const existingSaleCode = checkResponse.data;
+
+								if (existingSaleCode) {
+									const shouldAdd = window.confirm(
+										`오늘 등록된 판매장이 있습니다.\n해당 판매장에 추가하시겠습니까?`
+									);
+									newSale = shouldAdd;
+								}
+							}
+						}
+					} catch (err) {
+						console.error("판매장 확인 실패:", err);
+					}
+				}
+
 				// 판매 등록
 				promises = stockRows.map((currentRow) => {
 					const calculatedStoneData = calculateStoneDetails(
@@ -376,7 +400,7 @@ const StockCommonActionPage: React.FC = () => {
 						stoneInfos: currentRow.stoneInfos || [],
 					};
 
-					return saleApi.updateStockToSale(currentRow.id, saleData);
+					return saleApi.updateStockToSale(currentRow.id, saleData, newSale);
 				});
 				successMessage = "판매 등록";
 				actionType = "판매 등록";

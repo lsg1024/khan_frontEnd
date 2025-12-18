@@ -6,6 +6,7 @@ interface AuthImageProps {
 	alt: string;
 	className?: string;
 	style?: React.CSSProperties;
+	onClick?: () => void;
 }
 
 /**
@@ -16,6 +17,7 @@ export const AuthImage: React.FC<AuthImageProps> = ({
 	alt,
 	className,
 	style,
+	onClick,
 }) => {
 	const { src, loading } = useAuthImage(imagePath);
 
@@ -32,7 +34,8 @@ export const AuthImage: React.FC<AuthImageProps> = ({
 			src={src}
 			alt={alt}
 			className={className}
-			style={style}
+			style={{ ...style, cursor: onClick ? "pointer" : undefined }}
+			onClick={onClick}
 			onError={(e) => {
 				e.currentTarget.src = "/images/not_ready.png";
 			}}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import type { ProductStoneDto } from "../../../types/stone";
+import type { ProductStoneDto, ProductInfo } from "../../../types/stone";
 import "../../../styles/components/StoneListTable.css";
 
 interface StoneListTableProps {
@@ -8,6 +8,7 @@ interface StoneListTableProps {
 	showTotalRow?: boolean;
 	currentPage?: number;
 	pageSize?: number;
+	onProductListClick?: (stoneId: string, productInfos: ProductInfo[]) => void;
 }
 
 const StoneListTable: React.FC<StoneListTableProps> = ({
@@ -15,6 +16,7 @@ const StoneListTable: React.FC<StoneListTableProps> = ({
 	showTitle = true,
 	currentPage = 1,
 	pageSize = 20,
+	onProductListClick,
 }) => {
 	// 툴팁 상태 관리
 	const [tooltip, setTooltip] = useState<{
@@ -166,6 +168,7 @@ const StoneListTable: React.FC<StoneListTableProps> = ({
 				<thead>
 					<tr>
 						<th>No</th>
+						<th>사용</th>
 						<th>스톤명</th>
 						<th>중량</th>
 						<th>구매 단가</th>
@@ -173,6 +176,7 @@ const StoneListTable: React.FC<StoneListTableProps> = ({
 						<th>비고</th>
 					</tr>
 					<tr>
+						<th></th>
 						<th></th>
 						<th></th>
 						<th></th>
@@ -199,7 +203,25 @@ const StoneListTable: React.FC<StoneListTableProps> = ({
 										{displayNumber}
 									</button>
 								</td>
-
+								{/* 사용 - 상품 개수 */}
+								<td className="stone-product-count-cell">
+									{stone.productCount && stone.productCount > 0 ? (
+										<button
+											className="product-count-btn"
+											onClick={() =>
+												onProductListClick?.(
+													stone.stoneId,
+													stone.productInfos || []
+												)
+											}
+											title="사용 중인 상품 목록 보기"
+										>
+											{stone.productCount}
+										</button>
+									) : (
+										<span>0</span>
+									)}
+								</td>
 								{/* 스톤명 */}
 								<td
 									className="stone-name-cell"

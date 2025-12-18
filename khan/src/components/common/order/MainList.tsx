@@ -1,5 +1,6 @@
 import type { OrderDto } from "../../../types/order";
 import { formatToLocalDate } from "../../../utils/dateUtils";
+import { AuthImage } from "../AuthImage";
 
 interface MainListProps {
 	dtos: OrderDto[];
@@ -10,6 +11,7 @@ interface MainListProps {
 	onClick?: (flowCode: string) => void;
 	onStatusChange: (flowCode: string, newStatus: string) => void;
 	onFactoryClick: (flowCode: string) => void;
+	onImageClick?: (productId: string) => void;
 }
 
 const MainList = ({
@@ -21,6 +23,7 @@ const MainList = ({
 	onClick,
 	onStatusChange,
 	onFactoryClick,
+	onImageClick,
 }: MainListProps) => {
 	if (dtos.length === 0) {
 		return (
@@ -96,17 +99,11 @@ const MainList = ({
 						<td className="order-status-cell">{dto.orderStatus}</td>
 						<td>{dto.storeName}</td>
 						<td className="info-cell">
-							<img
-								className="order-image"
-								src={
-									dto.imagePath
-										? `/@fs/C:/Users/zks14/Desktop/multi_module/product-service/src/main/resources${dto.imagePath}`
-										: "/images/not_ready.png"
-								}
+							<AuthImage
+								imagePath={dto.imagePath}
 								alt={dto.productName}
-								onError={(e) => {
-									e.currentTarget.src = "/images/not_ready.png";
-								}}
+								className="order-image"
+								onClick={() => onImageClick?.(dto.productId)}
 							/>
 						</td>
 						<td className="info-cell">

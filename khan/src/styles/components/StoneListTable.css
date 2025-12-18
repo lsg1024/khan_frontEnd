@@ -119,6 +119,11 @@
 	color: #000;
 }
 
+.stone-product-count-cell {
+	width: 40px;
+	min-width: 40px;
+}
+
 .stone-grade-cell {
 	width: 70px;
 	min-width: 70px;
@@ -201,6 +206,28 @@
 
 .stone-list-tooltip.show {
 	opacity: 1;
+}
+
+/* 상품 개수 버튼 스타일 */
+.product-count-btn {
+	background-color: #ff0000;
+	color: white;
+	border: none;
+	padding: 2px 8px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.9em;
+	font-weight: 600;
+	transition: all 0.2s ease;
+}
+
+.product-count-btn:hover {
+	background-color: #b30000;
+	transform: scale(1.05);
+}
+
+.product-count-btn:active {
+	transform: scale(0.95);
 }
 
 /* 데이터 없음 메시지 */

@@ -18,6 +18,13 @@ export interface StoneWorkGradePolicyDto {
 	laborCost: number;
 }
 
+// 스톤을 사용 중인 상품 정보
+export interface ProductInfo {
+	productId: number;
+	productName: string;
+	imagePath: string | null;
+}
+
 // 스톤 검색 API 응답 타입
 export interface StoneSearchDto {
 	stoneId: string;
@@ -26,6 +33,8 @@ export interface StoneSearchDto {
 	stoneWeight: string;
 	stonePurchasePrice: number;
 	stoneWorkGradePolicyDto: StoneWorkGradePolicyDto[];
+	productCount: number;
+	productInfos: ProductInfo[];
 }
 
 // 페이지네이션 정보
@@ -53,6 +62,8 @@ export interface ProductStoneDto {
 	stoneQuantity: number;
 	productStoneNote: string;
 	stoneWorkGradePolicyDtos: StoneWorkGradePolicyDto[];
+	productCount?: number;
+	productInfos?: ProductInfo[];
 }
 
 // 필드별 편집 권한 타입

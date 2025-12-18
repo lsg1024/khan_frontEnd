@@ -631,6 +631,12 @@ export const OrderPage = () => {
 						onClick={handleDetailClick}
 						onStatusChange={handleStatusChange}
 						onFactoryClick={handleFactoryClick}
+						onImageClick={(productId) => {
+							const url = `/catalog/detail/${productId}`;
+							const features =
+								"width=1400,height=900,resizable=yes,scrollbars=yes";
+							window.open(url, "product_detail", features);
+						}}
 					/>
 
 					{/* 대량 작업 바 */}

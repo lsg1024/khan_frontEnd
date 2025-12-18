@@ -51,6 +51,7 @@ export const SaleCreatePage = () => {
 	const [currentDisplayedPastOrders, setCurrentDisplayedPastOrders] = useState<
 		PastOrderDto[]
 	>([]);
+	const [isAppendSale, setIsAppendSale] = useState<boolean>(false);
 
 	// 판매 옵션 상태
 	const [saleOptions, setSaleOptions] = useState<SaleOptionData>({
@@ -154,31 +155,6 @@ export const SaleCreatePage = () => {
 			return;
 		}
 
-		// 오늘 동일한 거래처로 판매 등록된 데이터가 있는지 확인
-		try {
-			const accountId = store.accountId;
-			if (accountId) {
-				const checkResponse = await saleApi.checkBeforeSale(accountId);
-				
-				if (checkResponse.success && checkResponse.data) {
-					const existingSaleCode = checkResponse.data;
-					
-					if (existingSaleCode) {
-						const shouldAdd = window.confirm(
-							`오늘 동일한 거래처(${store.accountName})로 등록된 판매장(${existingSaleCode})이 있습니다.\n해당 판매장에 추가하시겠습니까?`
-						);
-						
-						if (!shouldAdd) {
-							return; // 사용자가 취소하면 거래처 선택 취소
-						}
-					}
-				}
-			}
-		} catch (err) {
-			console.error("판매 중복 확인 실패:", err);
-			// 에러가 발생해도 거래처 선택은 진행
-		}
-
 		setSaleOptions((prev) => ({
 			...prev,
 			storeId: String(store.accountId || ""),
@@ -197,11 +173,52 @@ export const SaleCreatePage = () => {
 		}));
 
 		setShowStoreSearch(false);
+
+		if (store.accountId) {
+			// 기존 함수 재사용
+			const shouldAppend = await checkAndConfirmExistingSale(
+				String(store.accountId)
+			);
+			setIsAppendSale(shouldAppend);
+
+			// UX: 이어쓰기 선택 시 알림 메시지 (선택 사항)
+			if (shouldAppend) {
+				console.log("기존 판매장에 이어쓰기로 설정되었습니다.");
+			}
+		}
 	};
 
 	// 거래처 검색 모달 닫기
 	const handleStoreSearchClose = () => {
 		setShowStoreSearch(false);
+	};
+
+	// 기존 판매장 확인 및 사용자 선택 처리
+	const checkAndConfirmExistingSale = async (
+		storeId: string
+	): Promise<boolean> => {
+		try {
+			const accountId = parseInt(storeId);
+			if (!accountId) {
+				return false;
+			}
+
+			const checkResponse = await saleApi.checkBeforeSale(accountId);
+
+			if (checkResponse.success && checkResponse.data) {
+				const existingSaleCode = checkResponse.data;
+
+				if (existingSaleCode) {
+					const shouldAdd = window.confirm(
+						`오늘 등록된 판매장이 있습니다.\n해당 판매장에 추가하시겠습니까?`
+					);
+					return shouldAdd;
+				}
+			}
+		} catch (err) {
+			console.error("판매장 확인 실패:", err);
+		}
+		return false;
 	};
 
 	// 시리얼(재고) 검색 모달 열기
@@ -600,7 +617,10 @@ export const SaleCreatePage = () => {
 									payAmount: row.productPrice || 0,
 								};
 
-								response = await saleApi.createPaymentSale(paymentData);
+								response = await saleApi.createPaymentSale(
+									paymentData,
+									isAppendSale
+								);
 							} else if (source === "order") {
 								// 주문에서 판매 등록 - StockRegisterRequest 타입 사용
 								const orderSaleData: StockRegisterRequest = {
@@ -632,7 +652,8 @@ export const SaleCreatePage = () => {
 								response = await saleApi.updateOrderToSale(
 									row.flowCode,
 									"SALES",
-									orderSaleData
+									orderSaleData,
+									isAppendSale
 								);
 							} else {
 								// 재고에서 판매 등록 - StockSaleRequest 타입 사용
@@ -654,7 +675,8 @@ export const SaleCreatePage = () => {
 
 								response = await saleApi.updateStockToSale(
 									row.flowCode,
-									stockSaleData
+									stockSaleData,
+									isAppendSale
 								);
 							}
 
@@ -726,7 +748,10 @@ export const SaleCreatePage = () => {
 							console.log("직접 판매 등록 데이터:", paymentData);
 							console.log("row 원본 데이터:", row);
 
-							const response = await saleApi.createPaymentSale(paymentData);
+							const response = await saleApi.createPaymentSale(
+								paymentData,
+								isAppendSale
+							);
 
 							return {
 								success: response.success,
@@ -913,6 +938,12 @@ export const SaleCreatePage = () => {
 						}));
 						setIsStoreLoadedFromApi(true);
 
+						// 거래처가 로드되면 판매장 확인
+						const shouldAppend = await checkAndConfirmExistingSale(
+							String(firstItem.storeId)
+						);
+						setIsAppendSale(shouldAppend);
+
 						// 거래처 미수 정보 조회하여 accountBalanceHistoryData에 반영
 						try {
 							const storeAttemptRes = await storeApi.getStoreAttemptById(
@@ -1015,6 +1046,12 @@ export const SaleCreatePage = () => {
 							harry: firstItem.storeHarry,
 						}));
 						setIsStoreLoadedFromApi(true);
+
+						// // 거래처가 로드되면 판매장 확인
+						const shouldAppend = await checkAndConfirmExistingSale(
+							String(firstItem.storeId)
+						);
+						setIsAppendSale(shouldAppend);
 
 						// 거래처 미수 정보 조회하여 accountBalanceHistoryData에 반영
 						try {

@@ -120,7 +120,7 @@ export interface ProductDto {
 	productFactoryName: string;
 	productWeight: string;
 	productMaterial: string;
-	factoryId: string;
+	factoryId: number;
 	factoryName: string;
 	productColor: string;
 	productNote: string;

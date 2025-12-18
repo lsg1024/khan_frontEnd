@@ -62,13 +62,6 @@ function CataLogPage() {
 		window.open(url, "product_detail", features);
 	};
 
-	// 상품 수정 팝업 열기
-	const handleProductEditOpen = (productId: string) => {
-		const url = `/catalog/edit/${productId}`;
-		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
-		window.open(url, "product_edit", features);
-	};
-
 	// 상품 생성 팝업 열기
 	const handleProductCreateOpen = () => {
 		const url = `/catalog/create`;
@@ -81,13 +74,37 @@ function CataLogPage() {
 		setSelectedProductId((prev) => (prev === productId ? null : productId));
 	};
 
-	// 선택된 상품 수정 버튼
-	const handleEditSelected = () => {
+	// 주문 등록 버튼
+	const handleOrderRegister = () => {
+		if (!selectedProductId) {
+			alert("주문 등록할 상품을 선택해주세요.");
+			return;
+		}
+		const url = `/orders/create/order?productId=${selectedProductId}`;
+		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
+		window.open(url, "order_create", features);
+	};
+
+	// 재고 등록 버튼
+	const handleStockRegister = () => {
+		if (!selectedProductId) {
+			alert("재고 등록할 상품을 선택해주세요.");
+			return;
+		}
+		const url = `/stocks/create/normal?productId=${selectedProductId}`;
+		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
+		window.open(url, "stock_create", features);
+	};
+
+	// 상품 수정 버튼
+	const handleProductEdit = () => {
 		if (!selectedProductId) {
 			alert("수정할 상품을 선택해주세요.");
 			return;
 		}
-		handleProductEditOpen(selectedProductId);
+		const url = `/catalog/edit/${selectedProductId}`;
+		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
+		window.open(url, "product_edit", features);
 	};
 
 	// 이미지 로드 함수
@@ -163,7 +180,7 @@ function CataLogPage() {
 				setLoading(false);
 			}
 		},
-		[handleError, loadProductImages]
+		[loadProductImages]
 	);
 
 	// 검색 필터 변경 핸들러
@@ -560,7 +577,25 @@ function CataLogPage() {
 							className={`bulk-action-btn sales-register ${
 								!selectedProductId ? "disabled" : ""
 							}`}
-							onClick={handleEditSelected}
+							onClick={handleOrderRegister}
+							disabled={!selectedProductId}
+						>
+							주문등록
+						</button>
+						<button
+							className={`bulk-action-btn stock-register ${
+								!selectedProductId ? "disabled" : ""
+							}`}
+							onClick={handleStockRegister}
+							disabled={!selectedProductId}
+						>
+							재고등록
+						</button>
+						<button
+							className={`bulk-action-btn return-register ${
+								!selectedProductId ? "disabled" : ""
+							}`}
+							onClick={handleProductEdit}
 							disabled={!selectedProductId}
 						>
 							수정

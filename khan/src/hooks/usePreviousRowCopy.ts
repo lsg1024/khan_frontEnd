@@ -39,7 +39,8 @@ export const usePreviousRowCopy = (rows: any[], updateRow: any) => {
 			if (
 				(fieldType === "store" && currentRow.storeId) ||
 				(fieldType === "product" && currentRow.productId) ||
-				(fieldType === "material" && currentRow.materialId)
+				(fieldType === "material" && currentRow.materialId) ||
+				(fieldType === "color" && currentRow.colorId)
 			) {
 				return;
 			}
@@ -150,6 +151,9 @@ export const usePreviousRowCopy = (rows: any[], updateRow: any) => {
 				} else if (fieldType === "material") {
 					updateRow(currentRowId, "materialId", prevValues.materialId);
 					updateRow(currentRowId, "materialName", prevValues.materialName);
+				} else if (fieldType === "color") {
+					updateRow(currentRowId, "colorId", prevValues.colorId);
+					updateRow(currentRowId, "colorName", prevValues.colorName);
 				}
 			}
 		},

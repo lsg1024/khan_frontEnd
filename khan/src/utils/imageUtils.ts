@@ -3,6 +3,7 @@
  */
 
 import { tokenUtils } from "./tokenUtils";
+import { productApi } from "../../libs/api/product";
 import { useState, useEffect } from "react";
 
 /**
@@ -33,9 +34,9 @@ export const getImageUrl = (imagePath: string | null | undefined): string => {
 
 /**
  * accessToken을 포함하여 이미지를 fetch하고 blob URL을 반환하는 함수
- * 로컬 개발 환경에서는 Vite의 @fs 프로토콜 사용
+ * productApi를 통해 이미지를 가져옴 (CataLogPage와 동일한 방식)
  * @param imagePath - 이미지 경로
- * @returns Promise<string> - 이미지 URL
+ * @returns Promise<string> - 이미지 blob URL
  */
 export const fetchImageWithAuth = async (
 	imagePath: string | null | undefined
@@ -44,32 +45,11 @@ export const fetchImageWithAuth = async (
 		return "/images/not_ready.png";
 	}
 
-	const imageUrl = getImageUrl(imagePath);
-
-	// 로컬 개발 환경에서는 Vite의 @fs 프로토콜 사용 (인증 불필요)
-	if (imageUrl.includes("/@fs/")) {
-		return imageUrl;
-	}
-
 	try {
-		const token = tokenUtils.getToken();
-
-		if (!token) {
-			return "/images/not_ready.png";
-		}
-
-		const response = await fetch(imageUrl, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		const blob = await response.blob();
-		return URL.createObjectURL(blob);
+		// productApi를 통해 이미지 로드 (CataLogPage와 동일)
+		const blob = await productApi.getProductImageByPath(imagePath);
+		const blobUrl = URL.createObjectURL(blob);
+		return blobUrl;
 	} catch (error) {
 		console.error("Failed to fetch image:", error);
 		return "/images/not_ready.png";

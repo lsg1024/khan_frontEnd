@@ -1,10 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { stoneApi } from "../../../libs/api/stone";
 import { isApiSuccess } from "../../../libs/api/config";
-import type { StoneSearchDto, ProductStoneDto } from "../../types/stone";
+import type {
+	StoneSearchDto,
+	ProductStoneDto,
+	ProductInfo,
+} from "../../types/stone";
 import type { PageInfo } from "../../types/page";
 import StoneListTable from "../../components/common/stone/StoneListTable";
 import Pagination from "../../components/common/Pagination";
+import { AuthImage } from "../../components/common/AuthImage";
 import { useErrorHandler } from "../../utils/errorHandler";
 import "../../styles/pages/stone/StonePage.css";
 
@@ -20,6 +25,8 @@ const convertToProductStone = (stone: StoneSearchDto): ProductStoneDto => {
 		stoneQuantity: 1, // 기본값
 		productStoneNote: stone.stoneNote || "",
 		stoneWorkGradePolicyDtos: stone.stoneWorkGradePolicyDto || [],
+		productCount: stone.productCount,
+		productInfos: stone.productInfos,
 	};
 };
 
@@ -35,6 +42,8 @@ export const StonePage = () => {
 		totalElements: 0,
 		totalPages: 0,
 	});
+	const [showProductModal, setShowProductModal] = useState<boolean>(false);
+	const [selectedProducts, setSelectedProducts] = useState<ProductInfo[]>([]);
 
 	const { handleError } = useErrorHandler();
 
@@ -90,6 +99,47 @@ export const StonePage = () => {
 	// 엑셀 다운로드 핸들러 (임시로 alert 사용)
 	const handleDownExcel = () => {
 		alert("엑셀 다운로드 기능은 아직 구현되지 않았습니다.");
+	};
+
+	// 상품 목록 팝업 열기
+	const handleProductListClick = (
+		stoneId: string,
+		productInfos: ProductInfo[]
+	) => {
+		const url = `/stone/${stoneId}/products`;
+		const NAME = `stone_products_${stoneId}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=600";
+
+		const popup = window.open(url, NAME, FEATURES);
+		if (popup) {
+			// 팝업에 데이터 전달
+			setTimeout(() => {
+				popup.postMessage(
+					{ type: "STONE_PRODUCTS_DATA", productInfos },
+					window.location.origin
+				);
+			}, 500);
+		} else {
+			alert("팝업 차단을 해제해주세요.");
+		}
+	};
+
+	// 모달 닫기
+	const handleCloseModal = () => {
+		setShowProductModal(false);
+		setSelectedProducts([]);
+	};
+
+	// 상품 상세 페이지 열기
+	const handleProductClick = (productId: number) => {
+		const url = `/product/detail/${productId}`;
+		const NAME = `product_detail_${productId}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
+
+		const popup = window.open(url, NAME, FEATURES);
+		if (!popup) {
+			alert("팝업 차단을 해제해주세요.");
+		}
 	};
 
 	// 페이지 변경 핸들러
@@ -210,6 +260,7 @@ export const StonePage = () => {
 							showTotalRow={true}
 							currentPage={currentPage}
 							pageSize={pageInfo.size}
+							onProductListClick={handleProductListClick}
 						/>
 
 						{/* 페이지네이션 */}
@@ -234,6 +285,62 @@ export const StonePage = () => {
 							전체 목록 보기
 						</button>
 					)}
+				</div>
+			)}
+
+			{/* 상품 목록 모달 */}
+			{showProductModal && (
+				<div className="modal-overlay" onClick={handleCloseModal}>
+					<div className="modal-content" onClick={(e) => e.stopPropagation()}>
+						<div className="modal-header">
+							<h2>스톤 사용 상품 목록</h2>
+							<button className="modal-close-btn" onClick={handleCloseModal}>
+								✕
+							</button>
+						</div>
+						<div className="modal-body">
+							{selectedProducts.length === 0 ? (
+								<div className="no-products">
+									<p>이 스톤을 사용하는 상품이 없습니다.</p>
+								</div>
+							) : (
+								<div className="products-grid">
+									{selectedProducts.map((product) => (
+										<div
+											key={product.productId}
+											className="product-card"
+											onClick={() => handleProductClick(product.productId)}
+										>
+											<div className="product-image-wrapper">
+												<AuthImage
+													imagePath={product.imagePath}
+													alt={product.productName}
+													className="product-image"
+												/>
+											</div>
+											<div className="product-info">
+												<h3
+													className="product-name"
+													title={product.productName}
+												>
+													{product.productName}
+												</h3>
+												<p className="product-id">ID: {product.productId}</p>
+											</div>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+						<div className="modal-footer">
+							<button
+								className="modal-close-footer-btn"
+								onClick={handleCloseModal}
+							>
+								닫기
+							</button>
+						</div>
+					</div>
 				</div>
 			)}
 		</div>
