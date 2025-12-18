@@ -617,7 +617,6 @@ const StoneInfoPage: React.FC = () => {
 						{/* 스톤 정보 합계 */}
 						{stoneInfos.length > 0 && (
 							<div className="stone-info-summary">
-								<h4>스톤 정보 합계</h4>
 								<div className="summary-grid">
 									<div className="summary-item">
 										<label>메인스톤 단가:</label>

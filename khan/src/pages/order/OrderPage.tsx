@@ -4,6 +4,7 @@ import Pagination from "../../components/common/Pagination";
 import BulkActionBar from "../../components/common/order/BulkActionBar";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useBulkActions } from "../../hooks/useBulkActions";
 import type { OrderDto } from "../../types/order";
 import type { FactorySearchDto } from "../../types/factory";
 import OrderSearch from "../../components/common/order/OrderSearch";
@@ -23,10 +24,6 @@ export const OrderPage = () => {
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
 	const [colors, setColors] = useState<string[]>([]);
-
-	// 출고일 변경 관련 상태
-	const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false);
-	const [newDeliveryDate, setNewDeliveryDate] = useState<Date>(new Date());
 
 	// 제조사 변경 관련 상태
 	const [isFactorySearchOpen, setIsFactorySearchOpen] = useState(false);
@@ -145,7 +142,7 @@ export const OrderPage = () => {
 
 		const url = `/orders/update/order/${flowCode}`;
 		const NAME = `orderUpdate_${flowCode}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=600";
 		const existingPopup = orderUpdatePopups.current.get(flowCode);
 
 		if (existingPopup && !existingPopup.closed) {
@@ -296,8 +293,6 @@ export const OrderPage = () => {
 					setCurrentPage(page);
 					setTotalPages(pageData.totalPages || 1);
 					setTotalElements(pageData.totalElements || 0);
-
-					return content;
 				}
 			} catch (err) {
 				handleError(err);
@@ -312,162 +307,27 @@ export const OrderPage = () => {
 		[handleError]
 	);
 
-	// 대량 작업 핸들러
-	const handleSaveDeliveryDate = async () => {
-		console.log("click");
-		if (selectedOrders.length === 0) return;
-
-		const isoDateString = newDeliveryDate.toISOString();
-		const confirmMessage = `선택된 ${selectedOrders.length}개 주문의 출고일을 ${
-			isoDateString.split("T")[0]
-		}(으)로 변경하시겠습니까?`;
-
-		if (window.confirm(confirmMessage)) {
-			try {
-				setLoading(true);
-				// 선택된 모든 주문의 출고일 변경
-				const promises = selectedOrders.map((orderId) =>
-					orderApi.updateDeliveryDate(orderId, isoDateString)
-				);
-				await Promise.all(promises);
-				alert(
-					`${selectedOrders.length}개 주문의 출고일이 성공적으로 변경되었습니다.`
-				);
-
-				// 데이터 새로고침
-				await loadOrders(searchFilters, currentPage);
-			} catch (err) {
-				handleError(err);
-			} finally {
-				setIsDatePickerOpen(false); // 날짜 선택창 닫기
-				setLoading(false);
-			}
-		}
-	};
-
-	const handleChangeDeliveryDate = () => {
-		if (selectedOrders.length !== 1) {
-			alert("출고일 변경은 주문을 1개만 선택해야 합니다.");
-			return;
-		}
-
-		const targetOrder = orders.find(
-			(order) => order.flowCode === selectedOrders[0]
-		);
-
-		if (targetOrder) {
-			const initialDate = targetOrder.shippingAt
-				? new Date(targetOrder.shippingAt)
-				: new Date();
-			setNewDeliveryDate(initialDate);
-		}
-		setIsDatePickerOpen(true);
-	};
-
-	const handleCloseDatePicker = () => {
-		setIsDatePickerOpen(false);
-	};
-
-	const stockRegisterPopups = useRef<Map<string, Window>>(new Map());
-
-	const handleStockRegister = () => {
-		if (selectedOrders.length === 0) {
-			alert("등록할 주문을 먼저 선택해주세요.");
-			return;
-		}
-
-		const ids = selectedOrders.join(",");
-		const stock = "STOCK";
-
-		const url = `/orders/register-stock?ids=${ids}&type=${stock}`;
-		const NAME = `stockRegisterBulk`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=350";
-
-		const existingPopup = stockRegisterPopups.current.get(NAME);
-
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.focus();
-		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
-			if (newPopup) {
-				stockRegisterPopups.current.set(NAME, newPopup);
-
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						stockRegisterPopups.current.delete(NAME);
-						clearInterval(checkClosed);
-						// 팝업 닫힘 시 자동 새로고침 제거 - 메시지 이벤트에서만 처리
-					}
-				}, 1000);
-			}
-		}
-	};
-
-	const handleSalesRegister = () => {
-		if (selectedOrders.length === 0) {
-			alert("등록할 주문을 먼저 선택해주세요.");
-			return;
-		}
-
-		const ids = selectedOrders.join(",");
-
-		const url = `/sales/create?source=order&ids=${ids}`;
-		const NAME = `salesRegisterBulk`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-
-		const existingPopup = stockRegisterPopups.current.get(NAME);
-
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.focus();
-		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
-			if (newPopup) {
-				stockRegisterPopups.current.set(NAME, newPopup);
-
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						stockRegisterPopups.current.delete(NAME);
-						clearInterval(checkClosed);
-						// 팝업 닫힘 시 자동 새로고침 제거 - 메시지 이벤트에서만 처리
-					}
-				}, 1000);
-			}
-		}
-	};
-
-	const handleBulkDelete = async () => {
-		if (selectedOrders.length === 0) {
-			alert("삭제할 값을 먼저 선택해주세요.");
-			return;
-		}
-
-		const confirmMessage = `선택된 ${selectedOrders.length}개 값을 삭제하시겠습니까?`;
-
-		if (window.confirm(confirmMessage)) {
-			try {
-				setLoading(true);
-
-				// 선택된 모든 주문 삭제 요청
-				const deletePromises = selectedOrders.map((flowCode) =>
-					orderApi.deleteOrder(flowCode)
-				);
-
-				await Promise.all(deletePromises);
-
-				alert(
-					`선택된 ${selectedOrders.length}개 값이 성공적으로 삭제되었습니다.`
-				);
-
-				// 선택 초기화 및 목록 새로고침
-				setSelectedOrders([]);
-				await loadOrders(searchFilters, currentPage);
-			} catch (err) {
-				handleError(err);
-			} finally {
-				setLoading(false);
-			}
-		}
-	};
+	// Bulk Actions Hook
+	const {
+		isDatePickerOpen,
+		newDeliveryDate,
+		setNewDeliveryDate,
+		handleChangeDeliveryDate,
+		handleSaveDeliveryDate,
+		handleCloseDatePicker,
+		handleStockRegister,
+		handleSalesRegister,
+		handleBulkDelete,
+		handleBulkActionMessage,
+		cleanupPopups,
+	} = useBulkActions({
+		selectedItems: selectedOrders,
+		setSelectedItems: setSelectedOrders,
+		items: orders,
+		searchFilters,
+		currentPage,
+		loadData: loadOrders,
+	});
 
 	const fetchDropdownData = async () => {
 		setDropdownLoading(true);
@@ -514,7 +374,6 @@ export const OrderPage = () => {
 
 		const creationPopupRef = orderCreationPopup;
 		const updatePopupsRef = orderUpdatePopups;
-		const stockRegisterPopupsRef = stockRegisterPopups;
 
 		initializeData();
 
@@ -526,21 +385,14 @@ export const OrderPage = () => {
 					setCurrentPage(1);
 				}
 			}
-
-			if (
-				event.data &&
-				(event.data.type === "STOCK_REGISTERED" ||
-					event.data.type === "SALES_REGISTERED")
-			) {
-				setSelectedOrders([]);
-				loadOrders(searchFilters, currentPage);
-			}
 		};
 
 		window.addEventListener("message", handleOrderCreated);
+		window.addEventListener("message", handleBulkActionMessage);
 
 		return () => {
 			window.removeEventListener("message", handleOrderCreated);
+			window.removeEventListener("message", handleBulkActionMessage);
 
 			if (creationPopupRef.current && !creationPopupRef.current.closed) {
 				creationPopupRef.current = null;
@@ -548,13 +400,7 @@ export const OrderPage = () => {
 
 			updatePopupsRef.current.clear();
 
-			// 재고등록 팝업들 정리
-			stockRegisterPopupsRef.current.forEach((popup) => {
-				if (popup && !popup.closed) {
-					// 팝업 참조만 제거 (실제 창은 닫지 않음)
-				}
-			});
-			stockRegisterPopupsRef.current.clear();
+			cleanupPopups();
 		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 

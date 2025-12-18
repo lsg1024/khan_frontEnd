@@ -34,7 +34,8 @@
 	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius);
 	font-size: 14px;
-	min-width: 200px;
+    min-width: 100px;
+    max-width: 150px;
 	background-color: white;
     color: #000;
 	transition: var(--transition-fast);

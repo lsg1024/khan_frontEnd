@@ -46,7 +46,7 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 				URL.revokeObjectURL(imageUrl);
 			}
 		};
-	}, [currentProductDetail]);
+	}, []);
 
 	return (
 		<div className="product-info-section">

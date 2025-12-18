@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import { materialApi } from "../../../libs/api/material";
@@ -6,7 +6,11 @@ import { colorApi } from "../../../libs/api/color";
 import { storeApi } from "../../../libs/api/store";
 import { priorityApi } from "../../../libs/api/priority";
 import { assistantStoneApi } from "../../../libs/api/assistantStone";
+import { isApiSuccess } from "../../../libs/api/config";
+import { productApi } from "../../../libs/api/product";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useSearchModal } from "../../hooks/useSearchModal";
+import { useStoneInfoManager } from "../../hooks/useStoneInfoManager";
 import {
 	addBusinessDays,
 	formatDateToString,
@@ -16,22 +20,22 @@ import {
 import type { MaterialDto } from "../../types/material";
 import type { ColorDto } from "../../types/color";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
+import type { Product } from "../../types/product";
 import type {
 	OrderRowData,
 	OrderResponseDetail,
 	OrderRequestDetail,
 } from "../../types/order";
-import type { StoneInfo } from "../../types/stone";
+import { calculateStoneDetails } from "../../utils/calculateStone";
 import OrderTable from "../../components/common/order/OrderTable";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
+import ProductInfoSection from "../../components/common/ProductInfoSection";
 import type { FactorySearchDto } from "../../types/factory";
 import type { StoreSearchDto, AccountInfoDto } from "../../types/store";
 import type { ProductDto } from "../../types/product";
 import "../../styles/pages/OrderCreatePage.css";
-
-const POPUP_ORIGIN = window.location.origin;
 
 type UpdateMode = "order" | "fix" | "expact";
 
@@ -40,44 +44,6 @@ const MODE_TO_STATUS = {
 	fix: "FIX",
 	expact: "EXPACT",
 } as const satisfies Record<UpdateMode, "ORDER" | "FIX" | "EXPACT">;
-
-// 스톤 계산
-const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
-	const details = {
-		mainStonePrice: 0,
-		assistanceStonePrice: 0,
-		stoneAddLaborCost: 0,
-		mainStoneCount: 0,
-		assistanceStoneCount: 0,
-		stoneWeightTotal: 0,
-	};
-
-	if (!stoneInfos || stoneInfos.length === 0) {
-		return details;
-	}
-
-	stoneInfos.forEach((stone) => {
-		const quantity = stone.quantity || 0;
-		const weight = stone.stoneWeight || 0;
-		const laborCost = stone.laborCost || 0;
-
-		if (stone.includeStone) {
-			details.stoneWeightTotal += Number(weight) * Number(quantity);
-			if (stone.mainStone) {
-				details.mainStoneCount += quantity;
-				details.mainStonePrice += laborCost * quantity;
-			} else {
-				details.assistanceStoneCount += quantity;
-				details.assistanceStonePrice += laborCost * quantity;
-			}
-		}
-	});
-	details.mainStonePrice = Math.round(details.mainStonePrice * 1000) / 1000;
-	details.assistanceStonePrice =
-		Math.round(details.assistanceStonePrice * 1000) / 1000;
-	details.stoneWeightTotal = Math.round(details.stoneWeightTotal * 1000) / 1000;
-	return details;
-};
 
 const OrderUpdatePage: React.FC = () => {
 	const { mode, flowCode } = useParams<{
@@ -89,29 +55,19 @@ const OrderUpdatePage: React.FC = () => {
 
 	const { handleError } = useErrorHandler();
 
-	// 팝업 참조를 저장하는 ref
-	const popupMapRef = useRef<{ [key: string]: Window }>({});
-	const storeSearchPopupRef = useRef<Window | null>(null);
-	const factorySearchPopupRef = useRef<Window | null>(null);
-	const productSearchPopupRef = useRef<Window | null>(null);
+	// 검색 모달 상태 - 커스텀 훅 사용
+	const storeModal = useSearchModal();
+	const factoryModal = useSearchModal();
+	const productModal = useSearchModal();
 
 	const [orderDetail, setOrderDetail] = useState<OrderResponseDetail | null>(
 		null
 	);
-	const [initialImagePath, setInitialImagePath] = useState<
-		string | undefined
-	>();
+	const [currentProductDetail, setCurrentProductDetail] =
+		useState<Product | null>(null);
+
 	const [orderRows, setOrderRows] = useState<OrderRowData[]>([]);
 	const [loading, setLoading] = useState(false);
-	// 검색 모달 상태
-	const [isStoreSearchOpen, setIsStoreSearchOpen] = useState(false);
-	const [selectedRowForStore, setSelectedRowForStore] = useState<string>("");
-	const [isFactoryModalOpen, setIsFactoryModalOpen] = useState(false);
-	const [selectedRowForFactory, setSelectedRowForFactory] =
-		useState<string>("");
-	const [isProductSearchOpen, setIsProductSearchOpen] = useState(false);
-	const [selectedRowForProduct, setSelectedRowForProduct] =
-		useState<string>("");
 	const [storeGrade, setStoreGrade] = useState<string>("");
 
 	// 드롭다운 데이터
@@ -155,7 +111,7 @@ const OrderUpdatePage: React.FC = () => {
 				(detail.assistantStoneId?.toString() ?? "")
 		);
 
-		const baseRowData: Omit<OrderRowData, keyof typeof calculatedStoneData> = {
+		const baseRowData: OrderRowData = {
 			id: detail.flowCode,
 			storeId: detail.storeId,
 			storeName: detail.storeName,
@@ -174,7 +130,6 @@ const OrderUpdatePage: React.FC = () => {
 			setTypeName: detail.setTypeName,
 			factoryId: detail.factoryId,
 			factoryName: detail.factoryName,
-			factoryHarry: detail.factoryHarry,
 			productSize: detail.productSize,
 			orderNote: detail.orderNote,
 			mainStoneNote: detail.mainStoneNote,
@@ -190,21 +145,21 @@ const OrderUpdatePage: React.FC = () => {
 				detail.assistantStoneName ||
 				"",
 			assistantStoneCreateAt: detail.assistantStoneCreateAt || "",
-
-			stoneWeight: 0,
+			stoneWeight: Number(detail.stoneWeight) || 0,
 			isProductWeightSale: false,
 			productLaborCost: detail.productLaborCost || 0,
 			productAddLaborCost: detail.productAddLaborCost || 0,
+			mainStonePrice: 0,
+			assistanceStonePrice: 0,
+			stoneAddLaborCost: 0,
+			mainStoneCount: 0,
+			assistanceStoneCount: 0,
+			stoneWeightTotal: 0,
 		};
 
 		return {
 			...baseRowData,
 			...calculatedStoneData,
-			// 서버에서 받은 stoneAddLaborCost 값이 있으면 사용, 없으면 계산된 값 사용
-			stoneAddLaborCost:
-				detail.stoneAddLaborCost !== undefined
-					? detail.stoneAddLaborCost
-					: calculatedStoneData.stoneAddLaborCost,
 		};
 	};
 
@@ -238,257 +193,34 @@ const OrderUpdatePage: React.FC = () => {
 		}
 	};
 
-	// 검색 모달 핸들러들
+	// 거래처 검색 모달 열기
 	const handleStoreSearchOpen = (rowId: string) => {
-		// 기존 팝업이 있으면 닫기
-		if (storeSearchPopupRef.current && !storeSearchPopupRef.current.closed) {
-			storeSearchPopupRef.current.close();
-		}
-
-		const url = `/store-search?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
-		const NAME = `storeSearch_${rowId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=600";
-
-		const popup = window.open(url, NAME, FEATURES);
-		if (popup) {
-			storeSearchPopupRef.current = popup;
-
-			// 팝업에서 거래처 선택 시 처리
-			const handleMessage = (event: MessageEvent) => {
-				if (
-					event.data.type === "STORE_SELECTED" &&
-					event.data.rowId === rowId
-				) {
-					const store = event.data.store as StoreSearchDto;
-					handleStoreSelectWithRowId(store, rowId);
-				}
-			};
-
-			window.addEventListener("message", handleMessage);
-
-			// 팝업이 닫힐 때 이벤트 리스너 제거
-			const checkClosed = setInterval(() => {
-				if (popup.closed) {
-					window.removeEventListener("message", handleMessage);
-					clearInterval(checkClosed);
-					storeSearchPopupRef.current = null;
-				}
-			}, 1000);
-		} else {
-			// 팝업 방식이 실패하면 기존 모달 방식 사용
-			setSelectedRowForStore(rowId);
-			setIsStoreSearchOpen(true);
-		}
+		storeModal.openModal(rowId);
 	};
 
+	// 상품 검색 모달 열기
 	const handleProductSearchOpen = (rowId: string) => {
-		// 기존 팝업이 있으면 닫기
-		if (
-			productSearchPopupRef.current &&
-			!productSearchPopupRef.current.closed
-		) {
-			productSearchPopupRef.current.close();
-		}
-
-		const url = `/product-search?rowId=${rowId}&origin=${POPUP_ORIGIN}&grade=${
-			storeGrade || "1"
-		}`;
-		const NAME = `productSearch_${rowId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=600";
-
-		const popup = window.open(url, NAME, FEATURES);
-		if (popup) {
-			productSearchPopupRef.current = popup;
-
-			// 팝업에서 상품 선택 시 처리
-			const handleMessage = (event: MessageEvent) => {
-				if (
-					event.data.type === "PRODUCT_SELECTED" &&
-					event.data.rowId === rowId
-				) {
-					const product = event.data.product as ProductDto;
-					handleProductSelectWithRowId(product, rowId);
-				}
-			};
-
-			window.addEventListener("message", handleMessage);
-
-			// 팝업이 닫힐 때 이벤트 리스너 제거
-			const checkClosed = setInterval(() => {
-				if (popup.closed) {
-					window.removeEventListener("message", handleMessage);
-					clearInterval(checkClosed);
-					productSearchPopupRef.current = null;
-				}
-			}, 1000);
-		} else {
-			// 팝업 방식이 실패하면 기존 모달 방식 사용
-			setSelectedRowForProduct(rowId);
-			setIsProductSearchOpen(true);
-		}
+		const row = orderRows.find((r) => r.id === rowId);
+		const grade = row?.storeGrade || "1";
+		productModal.openModal(rowId, { grade: grade });
 	};
 
+	// 제조사 검색 모달 열기
 	const handleFactorySearchOpen = (rowId: string) => {
-		// 기존 팝업이 있으면 닫기
-		if (
-			factorySearchPopupRef.current &&
-			!factorySearchPopupRef.current.closed
-		) {
-			factorySearchPopupRef.current.close();
-		}
-
-		const url = `/factory-search?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
-		const NAME = `factorySearch_${rowId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=600";
-
-		const popup = window.open(url, NAME, FEATURES);
-		if (popup) {
-			factorySearchPopupRef.current = popup;
-
-			// 팝업에서 제조사 선택 시 처리
-			const handleMessage = (event: MessageEvent) => {
-				if (
-					event.data.type === "FACTORY_SELECTED" &&
-					event.data.rowId === rowId
-				) {
-					const factory = event.data.factory as FactorySearchDto;
-					handleFactorySelectWithRowId(factory, rowId);
-				}
-			};
-
-			window.addEventListener("message", handleMessage);
-
-			// 팝업이 닫힐 때 이벤트 리스너 제거
-			const checkClosed = setInterval(() => {
-				if (popup.closed) {
-					window.removeEventListener("message", handleMessage);
-					clearInterval(checkClosed);
-					factorySearchPopupRef.current = null;
-				}
-			}, 1000);
-		} else {
-			// 팝업 방식이 실패하면 기존 모달 방식 사용
-			setSelectedRowForFactory(rowId);
-			setIsFactoryModalOpen(true);
-		}
+		factoryModal.openModal(rowId);
 	};
 
-	// 스톤 정보 관리 모달 열기
-	const openStoneInfoManager = (rowId: string) => {
-		// 기존 해당 rowId의 팝업이 있으면 닫기
-		const existingPopup = popupMapRef.current[rowId];
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.close();
-		}
+	// 스톤 정보 관리 - 커스텀 훅 사용
+	const { openStoneInfoManager } = useStoneInfoManager({
+		orderRows,
+		updateOrderRow,
+	});
 
-		const url = `/orders/stone-info?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
-		const NAME = `stoneInfo_${rowId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=400";
+	const isInitialMount = useRef(true);
 
-		const popup = window.open(url, NAME, FEATURES);
-		if (popup) {
-			popupMapRef.current[rowId] = popup; // ref에 팝업 참조 저장
-			popup.focus();
-		} else {
-			alert("팝업이 차단되었습니다. 브라우저 설정을 확인해주세요.");
-		}
-	};
-
-	useEffect(() => {
-		const handleMessageFromPopup = (event: MessageEvent) => {
-			if (event.origin !== POPUP_ORIGIN) {
-				return;
-			}
-
-			const { type, rowId, stoneInfos } = event.data;
-
-			switch (type) {
-				case "REQUEST_STONE_INFO": {
-					setOrderRows((currentRows) => {
-						const targetRow = currentRows.find((row) => row.id === rowId);
-						const popup = popupMapRef.current[rowId];
-
-						if (targetRow && popup && !popup.closed) {
-							popup.postMessage(
-								{
-									type: "STONE_INFO_DATA",
-									stoneInfos: targetRow.stoneInfos,
-								},
-								POPUP_ORIGIN
-							);
-						}
-						return currentRows;
-					});
-					break;
-				}
-				case "REQUEST_STORE_GRADE": {
-					const popup = popupMapRef.current[rowId];
-					if (popup && !popup.closed) {
-						popup.postMessage(
-							{
-								type: "STORE_GRADE_DATA",
-								storeGrade: storeGrade,
-							},
-							POPUP_ORIGIN
-						);
-					}
-					break;
-				}
-				case "STONE_INFO_SAVE": {
-					// orderDetail의 stoneInfos 업데이트
-					setOrderDetail((currentDetail) => {
-						if (currentDetail) {
-							const updatedOrderDetail = {
-								...currentDetail,
-								stoneInfos: stoneInfos,
-							};
-							return updatedOrderDetail;
-						}
-						return currentDetail;
-					});
-
-					// orderRows도 직접 업데이트 (즉시 반영을 위해)
-					updateOrderRow(rowId, "stoneInfos", stoneInfos);
-
-					// 스톤 정보 변경 시 알 단가 등 자동 재계산
-					const calculated = calculateStoneDetails(stoneInfos);
-					updateOrderRow(rowId, "mainStonePrice", calculated.mainStonePrice);
-					updateOrderRow(
-						rowId,
-						"assistanceStonePrice",
-						calculated.assistanceStonePrice
-					);
-					updateOrderRow(
-						rowId,
-						"stoneAddLaborCost",
-						calculated.stoneAddLaborCost
-					);
-					updateOrderRow(rowId, "mainStoneCount", calculated.mainStoneCount);
-					updateOrderRow(
-						rowId,
-						"assistanceStoneCount",
-						calculated.assistanceStoneCount
-					);
-					updateOrderRow(
-						rowId,
-						"stoneWeightTotal",
-						calculated.stoneWeightTotal
-					);
-					break;
-				}
-			}
-		};
-
-		window.addEventListener("message", handleMessageFromPopup);
-
-		return () => {
-			window.removeEventListener("message", handleMessageFromPopup);
-		};
-	}, [storeGrade]);
-
-	// orderDetail이 변경될 때마다 orderRows 재계산
 	useEffect(() => {
 		if (
+			isInitialMount.current &&
 			orderDetail &&
 			materials.length > 0 &&
 			colors.length > 0 &&
@@ -501,70 +233,52 @@ const OrderUpdatePage: React.FC = () => {
 				assistantStones
 			);
 			setOrderRows([rowData]);
+			isInitialMount.current = false;
 		}
-	}, [orderDetail, priorities, storeGrade, assistantStones]); // eslint-disable-line react-hooks/exhaustive-deps
-	// 검색 결과 선택 핸들러들 (팝업용)
-	const handleStoreSelectWithRowId = (store: StoreSearchDto, rowId: string) => {
-		if (store.accountId === undefined || store.accountId === null) {
-			alert("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.");
-			return;
-		}
+	}, [orderDetail, materials, colors, priorities, assistantStones, storeGrade]); // eslint-disable-line react-hooks/exhaustive-deps
 
-		updateOrderRow(rowId, "storeId", store.accountId.toString());
-		updateOrderRow(rowId, "storeName", store.accountName || "");
-	};
-
-	// 검색 결과 선택 핸들러들 (모달용)
-	const handleStoreSelect = (store: StoreSearchDto | AccountInfoDto) => {
-		if (selectedRowForStore) {
+	// 거래처 선택 처리
+	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
+		if (storeModal.selectedRowId) {
 			if (store.accountId === undefined || store.accountId === null) {
 				alert("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.");
 				return;
 			}
 
 			updateOrderRow(
-				selectedRowForStore,
+				storeModal.selectedRowId,
 				"storeId",
 				store.accountId.toString()
 			);
-			updateOrderRow(selectedRowForStore, "storeName", store.accountName || "");
+			updateOrderRow(
+				storeModal.selectedRowId,
+				"storeName",
+				store.accountName || ""
+			);
+
+			// 거래처 변경 시 storeGrade 재조회
+			try {
+				const storeGradeRes = await storeApi.getStoreGrade(
+					store.accountId.toString()
+				);
+				if (storeGradeRes.success && storeGradeRes.data) {
+					setStoreGrade(storeGradeRes.data);
+					updateOrderRow(
+						storeModal.selectedRowId,
+						"storeGrade",
+						storeGradeRes.data
+					);
+				}
+			} catch (err) {
+				handleError(err);
+			}
 		}
-		setIsStoreSearchOpen(false);
-		setSelectedRowForStore("");
+		storeModal.handleSelect();
 	};
 
-	// 거래처 검색 팝업 닫기 핸들러
-	const handleStoreSearchClose = useCallback(() => {
-		setIsStoreSearchOpen(false);
-		setSelectedRowForStore("");
-	}, []);
-
-	const handleProductSelectWithRowId = (product: ProductDto, rowId: string) => {
-		if (!product.productId) {
-			alert("상품 ID가 누락되었습니다. 다른 상품을 선택해주세요.");
-			return;
-		}
-
-		if (!product.factoryId) {
-			alert("제조사 ID가 누락되었습니다. 다른 상품을 선택해주세요.");
-			return;
-		}
-
-		const productIdValue = product.productId;
-		const factoryIdValue = product.factoryId;
-		updateOrderRow(rowId, "productId", productIdValue);
-		updateOrderRow(rowId, "productName", product.productName || "");
-		updateOrderRow(
-			rowId,
-			"productFactoryName",
-			product.productFactoryName || ""
-		);
-		updateOrderRow(rowId, "factoryId", factoryIdValue);
-		updateOrderRow(rowId, "factoryName", product.factoryName || "");
-	};
-
+	// 상품 선택 처리
 	const handleProductSelect = (product: ProductDto) => {
-		if (selectedRowForProduct) {
+		if (productModal.selectedRowId) {
 			if (!product.productId) {
 				alert("상품 ID가 누락되었습니다. 다른 상품을 선택해주세요.");
 				return;
@@ -577,17 +291,94 @@ const OrderUpdatePage: React.FC = () => {
 
 			const productIdValue = product.productId;
 			const factoryIdValue = product.factoryId;
-			updateOrderRow(selectedRowForProduct, "productId", productIdValue);
+			updateOrderRow(productModal.selectedRowId, "productId", productIdValue);
 			updateOrderRow(
-				selectedRowForProduct,
+				productModal.selectedRowId,
 				"productName",
 				product.productName || ""
 			);
-			updateOrderRow(selectedRowForProduct, "factoryId", factoryIdValue);
 			updateOrderRow(
-				selectedRowForProduct,
+				productModal.selectedRowId,
+				"productFactoryName",
+				product.productFactoryName || ""
+			);
+			updateOrderRow(
+				productModal.selectedRowId,
+				"classificationName",
+				currentProductDetail?.classificationDto.classificationName || ""
+			);
+			updateOrderRow(
+				productModal.selectedRowId,
+				"setTypeId",
+				currentProductDetail?.setTypeDto.setTypeId || ""
+			);
+			updateOrderRow(
+				productModal.selectedRowId,
+				"setTypeName",
+				currentProductDetail?.setTypeDto.setTypeName || ""
+			);
+			updateOrderRow(productModal.selectedRowId, "factoryId", factoryIdValue);
+			updateOrderRow(
+				productModal.selectedRowId,
 				"factoryName",
 				product.factoryName || ""
+			);
+			updateOrderRow(
+				productModal.selectedRowId,
+				"productLaborCost",
+				product.productLaborCost || 0
+			);
+
+			const mainStone = product.productStones.find((stone) => stone.mainStone);
+
+			const mainStonePrice = mainStone
+				? (mainStone.laborCost || 0) * (mainStone.stoneQuantity || 0)
+				: 0;
+			const mainStoneCount = mainStone?.stoneQuantity || 0;
+
+			updateOrderRow(
+				productModal.selectedRowId,
+				"mainStonePrice",
+				mainStonePrice
+			);
+			updateOrderRow(
+				productModal.selectedRowId,
+				"mainStoneCount",
+				mainStoneCount
+			);
+
+			const assistanceStone = product.productStones.find(
+				(stone) => !stone.mainStone
+			);
+
+			const assistanceStonePrice = assistanceStone
+				? (assistanceStone.laborCost || 0) *
+				  (assistanceStone.stoneQuantity || 0)
+				: 0;
+			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
+
+			updateOrderRow(
+				productModal.selectedRowId,
+				"assistanceStonePrice",
+				assistanceStonePrice
+			);
+			updateOrderRow(
+				productModal.selectedRowId,
+				"assistanceStoneCount",
+				assistanceStoneCount
+			);
+
+			updateOrderRow(
+				productModal.selectedRowId,
+				"mainStoneCount",
+				product.productStones.find((stone) => stone.mainStone)?.stoneQuantity ||
+					0
+			);
+			updateOrderRow(
+				productModal.selectedRowId,
+				"assistanceStoneCount",
+				product.productStones.find((stone) => !stone.mainStone)
+					?.stoneQuantity || 0
 			);
 
 			// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
@@ -597,12 +388,12 @@ const OrderUpdatePage: React.FC = () => {
 				);
 				if (foundMaterial) {
 					updateOrderRow(
-						selectedRowForProduct,
+						productModal.selectedRowId,
 						"materialId",
 						foundMaterial.materialId.toString()
 					);
 					updateOrderRow(
-						selectedRowForProduct,
+						productModal.selectedRowId,
 						"materialName",
 						foundMaterial.materialName
 					);
@@ -616,75 +407,44 @@ const OrderUpdatePage: React.FC = () => {
 				);
 				if (foundColor) {
 					updateOrderRow(
-						selectedRowForProduct,
+						productModal.selectedRowId,
 						"colorId",
 						foundColor.colorId.toString()
 					);
 					updateOrderRow(
-						selectedRowForProduct,
+						productModal.selectedRowId,
 						"colorName",
 						foundColor.colorName
 					);
 				}
 			}
 		}
-		setIsProductSearchOpen(false);
-		setSelectedRowForProduct("");
+		productModal.handleSelect();
 	};
 
-	// 상품 검색 팝업 닫기 핸들러
-	const handleProductSearchClose = useCallback(() => {
-		setIsProductSearchOpen(false);
-		setSelectedRowForProduct("");
-	}, []);
-
-	const handleFactorySelectWithRowId = (
-		factory: FactorySearchDto,
-		rowId: string
-	) => {
-		if (factory.factoryId === undefined || factory.factoryId === null) {
-			alert("제조사 ID가 누락되었습니다. 다른 제조사를 선택해주세요.");
-			return;
-		}
-
-		const factoryIdValue = factory.factoryId.toString();
-		updateOrderRow(rowId, "factoryId", factoryIdValue);
-		updateOrderRow(rowId, "factoryName", factory.factoryName || "");
-	};
-
+	// 제조사 선택 처리
 	const handleFactorySelect = (factory: FactorySearchDto) => {
-		if (selectedRowForFactory) {
+		if (factoryModal.selectedRowId) {
 			if (factory.factoryId === undefined || factory.factoryId === null) {
 				alert("제조사 ID가 누락되었습니다. 다른 제조사를 선택해주세요.");
 				return;
 			}
 
 			const factoryIdValue = factory.factoryId.toString();
-			updateOrderRow(selectedRowForFactory, "factoryId", factoryIdValue);
+			updateOrderRow(factoryModal.selectedRowId, "factoryId", factoryIdValue);
 			updateOrderRow(
-				selectedRowForFactory,
+				factoryModal.selectedRowId,
 				"factoryName",
 				factory.factoryName || ""
 			);
 		}
-		setIsFactoryModalOpen(false);
-		setSelectedRowForFactory("");
+		factoryModal.handleSelect();
 	};
-
-	// 제조사 검색 팝업 닫기 핸들러
-	const handleFactorySearchClose = useCallback(() => {
-		setIsFactoryModalOpen(false);
-		setSelectedRowForFactory("");
-	}, []);
 
 	// 초기 데이터 로드
 	useEffect(() => {
 		const loadInitialData = async () => {
 			try {
-				const tempImagePath = sessionStorage.getItem("tempImagePath");
-				if (tempImagePath) {
-					setInitialImagePath(tempImagePath);
-				}
 				setLoading(true);
 
 				// 주문 상세 정보와 드롭다운 데이터를 병렬로 로드
@@ -755,6 +515,46 @@ const OrderUpdatePage: React.FC = () => {
 						setStoreGrade(grade);
 					}
 
+					// 상품 상세 정보 로드
+					if (detail.productId) {
+						try {
+							const response = await productApi.getProduct(detail.productId);
+							if (isApiSuccess(response) && response.data) {
+								const transformedData: Product = {
+									...response.data,
+									productWorkGradePolicyGroupDto:
+										response.data.productWorkGradePolicyGroupDto.map(
+											(group: {
+												productGroupId: string;
+												productPurchasePrice: number;
+												colorId: string;
+												colorName: string;
+												note: string;
+												gradePolicyDtos?: unknown;
+												policyDtos?: unknown;
+											}) => ({
+												productGroupId: group.productGroupId,
+												productPurchasePrice: group.productPurchasePrice,
+												colorId: group.colorId,
+												colorName: group.colorName,
+												note: group.note,
+												policyDtos: (group.gradePolicyDtos ||
+													group.policyDtos ||
+													[]) as {
+													workGradePolicyId: string;
+													grade: string;
+													laborCost: number;
+													groupId: number;
+												}[],
+											})
+										),
+								};
+								setCurrentProductDetail(transformedData);
+							}
+						} catch (err) {
+							handleError(err);
+						}
+					}
 					// OrderRowData로 변환하여 설정 (드롭다운 데이터 포함)
 					const rowData = convertToOrderRowData(
 						detail,
@@ -864,31 +664,11 @@ const OrderUpdatePage: React.FC = () => {
 
 	return (
 		<div className="order-update-page">
-			{/* 주문 상세 정보 카드 */}
-			<div className="order-detail-card">
-				<img src={initialImagePath} alt="Product" />
-				<h3>{stockMode ? "재고 등록" : "주문 정보"}</h3>
-				<div className="detail-grid">
-					<div className="detail-item">
-						<label>주문코드:</label>
-						<span>{orderDetail?.flowCode}</span>
-					</div>
-					<div className="detail-item">
-						<label>주문일:</label>
-						<span>
-							{orderDetail?.createAt
-								? formatToLocalDate(orderDetail.createAt)
-								: "-"}
-						</span>
-					</div>
-					<div className="detail-item">
-						<label>주문 상태:</label>
-						<span>{orderDetail?.orderStatus}</span>
-					</div>
-				</div>
-			</div>
-
-			{/* 주문 테이블 */}
+			{/* 상품 정보 섹션 */}
+			<ProductInfoSection
+				currentProductDetail={currentProductDetail}
+				title={stockMode ? "재고 등록 상품 정보" : "주문 상품 정보"}
+			/>
 			<OrderTable
 				mode="update"
 				orderRows={orderRows}
@@ -928,25 +708,26 @@ const OrderUpdatePage: React.FC = () => {
 				</button>
 			</div>
 
-			{/* 검색 컴포넌트들 - 팝업 방식 */}
-			{isStoreSearchOpen && (
+			{/* 검색 컴포넌트들 - 모달 방식 */}
+			{storeModal.isOpen && (
 				<StoreSearch
 					onSelectStore={handleStoreSelect}
-					onClose={handleStoreSearchClose}
+					onClose={storeModal.closeModal}
 				/>
 			)}
 
-			{isFactoryModalOpen && (
+			{factoryModal.isOpen && (
 				<FactorySearch
 					onSelectFactory={handleFactorySelect}
-					onClose={handleFactorySearchClose}
+					onClose={factoryModal.closeModal}
 				/>
 			)}
 
-			{isProductSearchOpen && (
+			{productModal.isOpen && (
 				<ProductSearch
+					grade={productModal.additionalParams.grade}
 					onSelectProduct={handleProductSelect}
-					onClose={handleProductSearchClose}
+					onClose={productModal.closeModal}
 				/>
 			)}
 		</div>

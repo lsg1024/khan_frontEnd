@@ -17,13 +17,11 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
 	const onSelectProductRef = useRef(onSelectProduct);
 	const onCloseRef = useRef(onClose);
 
-	// ref 업데이트
 	useEffect(() => {
 		onSelectProductRef.current = onSelectProduct;
 		onCloseRef.current = onClose;
 	});
 
-	// 컴포넌트가 마운트되면 자동으로 팝업 열기
 	useEffect(() => {
 		// 팝업 창 열기
 		const popup = window.open(

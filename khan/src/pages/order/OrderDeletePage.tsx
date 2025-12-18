@@ -250,6 +250,12 @@ export const OrderDeletedPage = () => {
 						onSelect={handleSelectDeleted}
 						onStatusChange={handleStatusChange}
 						onFactoryClick={handleFactoryClick}
+						onImageClick={(productId) => {
+							const url = `/catalog/detail/${productId}`;
+							const features =
+								"width=1400,height=900,resizable=yes,scrollbars=yes";
+							window.open(url, "product_detail", features);
+						}}
 					/>{" "}
 					{/* 페이지네이션 */}
 					<Pagination

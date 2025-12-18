@@ -2,41 +2,47 @@ import type { PageInfo } from "./page";
 import type { StoneInfo } from "./stone";
 
 export interface OrderResponseDetail {
-	createAt: string;
-	shippingAt: string;
-	flowCode: string;
-	storeId: string;
-	storeName: string;
-	storeGrade: string; // 서버에서 제공하는 storeGrade
-	storeHarry: string; // 서버에서 제공하는 storeHarry
-	factoryId: string; // 서버에서 제공하는 factoryId
-	factoryName: string;
-	factoryHarry: string; // 서버에서 제공하는 factoryHarry
-	productId: string;
-	productName: string;
+    createAt: string;
+    shippingAt: string;
+    flowCode: string;
+    storeId: string;
+    storeName: string;
+	storeHarry: string;
+    storeGrade: string;
+    factoryId: string;
+    factoryName: string;
+    productId: string;
+    productName: string;
 	productFactoryName: string;
-	classificationId: string;
-	classificationName: string;
-	materialId: string;
-	materialName: string;
-	colorId: string;
-	colorName: string;
-	setTypeId: string;
-	setTypeName: string;
-	productSize: string;
-	orderNote: string;
-	mainStoneNote: string;
-	assistanceStoneNote: string;
-	priority: string;
-	orderStatus: string;
-	assistantStoneId: string;
-	assistantStone: boolean;
-	assistantStoneName: string | null;
-	assistantStoneCreateAt: string | null;
-	stoneInfos: StoneInfo[];
-	stoneAddLaborCost?: number; // 추가 스톤 판매단가
-	productLaborCost: number; // 기본 판매단가
-	productAddLaborCost: number; // 추가 판매단가
+    productSize: string;
+    productLaborCost: number; 
+    productAddLaborCost: number;
+    goldWeight: string;
+    stoneWeight: string;
+    productStatus: string; 
+    classificationId: string;
+    classificationName: string;
+    materialId: string;
+    materialName: string;
+    colorId: string;
+    colorName: string;
+    setTypeId: string;
+    setTypeName: string;
+    orderNote: string;
+    mainStoneNote: string;
+    assistanceStoneNote: string;
+    priority: string;
+    orderStatus: string;
+
+    // 보조석 관련 필드
+    assistantStone: boolean;
+    assistantStoneId: string;
+    assistantStoneName: string;
+    assistantStoneCreateAt: string | null; 
+
+    // 스톤 관련
+    stoneInfos: StoneInfo[];
+    stoneAddLaborCost: string; 
 }
 
 export interface OrderRequestDetail {

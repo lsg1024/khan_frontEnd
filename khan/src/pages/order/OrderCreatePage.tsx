@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import { materialApi } from "../../../libs/api/material";
@@ -9,6 +9,7 @@ import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { useSearchModal } from "../../hooks/useSearchModal";
 import { usePreviousRowCopy } from "../../hooks/usePreviousRowCopy";
+import { useStoneInfoManager } from "../../hooks/useStoneInfoManager";
 import {
 	addBusinessDays,
 	getLocalDate,
@@ -218,48 +219,44 @@ const OrderCreatePage = () => {
 	};
 
 	// 주문 행 데이터 업데이트
-	const updateOrderRow = async (
-		id: string,
-		field: keyof OrderRowData,
-		value: unknown
-	) => {
-		setOrderRows((prevRows) => {
-			const updatedRows = prevRows.map((row) => {
-				if (row.id === id) {
-					const updatedRow = { ...row, [field]: value };
+	const updateOrderRow = useCallback(
+		(id: string, field: keyof OrderRowData, value: unknown) => {
+			setOrderRows((prevRows) => {
+				return prevRows.map((row) => {
+					if (row.id === id) {
+						// 1. 업데이트 전 기존 값 보관
+						const {
+							storeId: prevStore,
+							productId: prevProduct,
+							materialName: prevMaterial,
+						} = row;
 
-					// 독립적인 체크를 위해 별도 실행
-					setTimeout(() => {
-						// 3개 필수 데이터가 모두 완성되면 과거 주문 데이터 가져오기
-						if (
-							updatedRow.storeId &&
-							updatedRow.productId &&
-							updatedRow.materialName
-						) {
-							updatePastOrders(
-								updatedRow.storeId,
-								updatedRow.productId,
-								updatedRow.materialName
-							);
+						const updatedRow = { ...row, [field]: value };
+
+						const {
+							storeId: nextStore,
+							productId: nextProduct,
+							materialName: nextMaterial,
+						} = updatedRow;
+
+						const isAllPresent = nextStore && nextProduct && nextMaterial;
+						const isChanged =
+							prevStore !== nextStore ||
+							prevProduct !== nextProduct ||
+							prevMaterial !== nextMaterial;
+
+						if (isAllPresent && isChanged) {
+							fetchPastOrders(nextStore, nextProduct, nextMaterial);
 						}
 
-						// productId 필드가 변경될 때만 상품 상세 정보 가져오기
-						if (field === "productId") {
-							if (updatedRow.productId) {
-								updateProductDetail(updatedRow.productId, updatedRow.id);
-							} else {
-								setCurrentProductDetail(null);
-							}
-						}
-					}, 0);
-
-					return updatedRow;
-				}
-				return row;
+						return updatedRow;
+					}
+					return row;
+				});
 			});
-			return updatedRows;
-		});
-	};
+		},
+		[pastOrdersCache]
+	); // fetchPastOrders도 useCallback 처리가 되어있어야 안전합니다.
 
 	// 이전 행 복사 기능 - 커스텀 훅 사용
 	const { handleRequiredFieldClick } = usePreviousRowCopy(
@@ -267,38 +264,38 @@ const OrderCreatePage = () => {
 		updateOrderRow
 	);
 
+	// 스톤 정보 관리 - 커스텀 훅 사용
+	const { openStoneInfoManager } = useStoneInfoManager({
+		orderRows,
+		updateOrderRow,
+	});
+
 	// 과거 주문 데이터 가져오기
 	const fetchPastOrders = async (
 		storeId: string,
 		productId: string,
 		materialName: string
-	): Promise<PastOrderDto[]> => {
+	) => {
+		const cacheKey = `${storeId}-${productId}-${materialName}`;
+		if (pastOrdersCache.has(cacheKey)) {
+			setCurrentDisplayedPastOrders(pastOrdersCache.get(cacheKey) || []);
+			return;
+		}
+
 		try {
-			const cacheKey = `${storeId}-${productId}-${materialName}`;
-
-			// 캐시에 데이터가 있으면 캐시에서 반환
-			if (pastOrdersCache.has(cacheKey)) {
-				return pastOrdersCache.get(cacheKey) || [];
-			}
-
 			const response = await orderApi.getPastOrders(
 				parseInt(storeId),
 				parseInt(productId),
 				materialName
 			);
-
 			if (response.success && response.data) {
-				// 캐시에 저장
-				const newCache = new Map(pastOrdersCache);
-				newCache.set(cacheKey, response.data);
-				setPastOrdersCache(newCache);
-
-				return response.data;
+				setPastOrdersCache((prev) =>
+					new Map(prev).set(cacheKey, response.data!)
+				);
+				setCurrentDisplayedPastOrders(response.data);
 			}
-
-			return [];
-		} catch {
-			return [];
+		} catch (err) {
+			handleError(err);
 		}
 	};
 
@@ -319,179 +316,28 @@ const OrderCreatePage = () => {
 		}
 	};
 
-	// productId가 있을 때 상품 상세 정보 업데이트
-	const updateProductDetail = async (productId?: string, rowId?: string) => {
-		if (!productId) {
-			setCurrentProductDetail(null);
-			return;
-		}
-
-		const productDetail = await fetchProductDetail(productId);
-		setCurrentProductDetail(productDetail);
-
-		if (productDetail && rowId) {
-			const targetRow = orderRows.find((row) => row.id === rowId);
-			if (!targetRow) return;
-
-			const storeGrade = targetRow.storeGrade || "1";
-			const policyGrade = `GRADE_${storeGrade}`;
-
-			// 상품 기본 정보 업데이트
-			updateOrderRow(rowId, "productId", productDetail.productId);
-			updateOrderRow(rowId, "productName", productDetail.productName);
-			updateOrderRow(
-				rowId,
-				"productFactoryName",
-				productDetail.productFactoryName || ""
-			);
-			updateOrderRow(rowId, "factoryId", productDetail.factoryId);
-			updateOrderRow(rowId, "factoryName", productDetail.factoryName);
-
-			updateOrderRow(
-				rowId,
-				"classificationId",
-				productDetail.classificationDto.classificationId || ""
-			);
-			updateOrderRow(
-				rowId,
-				"classificationName",
-				productDetail.classificationDto.classificationName || ""
-			);
-			updateOrderRow(
-				rowId,
-				"setTypeId",
-				productDetail.setTypeDto.setTypeId || ""
-			);
-			updateOrderRow(
-				rowId,
-				"setTypeName",
-				productDetail.setTypeDto.setTypeName || ""
-			);
-
-			// 스톤 정보 변환 및 업데이트
-			const transformedStoneInfos = productDetail.productStoneDtos.map(
-				(stone) => {
-					const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
-						(policy) => policy.grade === policyGrade
-					);
-
-					const laborCost = matchingPolicy
-						? matchingPolicy.laborCost
-						: stone.stoneWorkGradePolicyDtos[0]?.laborCost || 0;
-
-					return {
-						stoneId: stone.stoneId,
-						stoneName: stone.stoneName,
-						stoneWeight: stone.stoneWeight,
-						purchaseCost: stone.stonePurchase,
-						laborCost: laborCost,
-						quantity: stone.stoneQuantity,
-						mainStone: stone.mainStone,
-						includeStone: stone.includeStone,
-						addLaborCost: 0,
-					};
-				}
-			);
-
-			updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
-
-			// 알 가격 및 개수 계산
-			const mainStone = productDetail.productStoneDtos.find(
-				(stone) => stone.mainStone
-			);
-			const assistanceStone = productDetail.productStoneDtos.find(
-				(stone) => !stone.mainStone
-			);
-
-			const mainStoneInfo = transformedStoneInfos.find(
-				(stone) => stone.mainStone
-			);
-			const assistanceStoneInfo = transformedStoneInfos.find(
-				(stone) => !stone.mainStone
-			);
-
-			const mainStonePrice = mainStoneInfo
-				? (mainStoneInfo.laborCost || 0) * (mainStoneInfo.quantity || 0)
-				: 0;
-			const mainStoneCount = mainStone?.stoneQuantity || 0;
-
-			const assistanceStonePrice = assistanceStoneInfo
-				? (assistanceStoneInfo.laborCost || 0) *
-				  (assistanceStoneInfo.quantity || 0)
-				: 0;
-			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
-
-			updateOrderRow(rowId, "mainStonePrice", mainStonePrice);
-			updateOrderRow(rowId, "mainStoneCount", mainStoneCount);
-			updateOrderRow(rowId, "assistanceStonePrice", assistanceStonePrice);
-			updateOrderRow(rowId, "assistanceStoneCount", assistanceStoneCount);
-
-			// 재질 자동 선택
-			if (productDetail.materialDto?.materialName) {
-				const foundMaterial = materials.find(
-					(m) => m.materialName === productDetail.materialDto?.materialName
-				);
-				if (foundMaterial) {
-					updateOrderRow(
-						rowId,
-						"materialId",
-						foundMaterial.materialId.toString()
-					);
-					updateOrderRow(rowId, "materialName", foundMaterial.materialName);
-				}
-			}
-
-			// 색상 자동 선택 (상품에 색상 정보가 있는 경우)
-			// Product 타입에 colorDto가 있다면 여기서 처리
-		}
-	};
-
-	// 3개 필수값이 모두 있을 때 과거 주문 데이터 업데이트
-	const updatePastOrders = async (
-		storeId: string,
-		productId: string,
-		materialName: string
-	) => {
-		const pastOrders = await fetchPastOrders(storeId, productId, materialName);
-		setCurrentDisplayedPastOrders(pastOrders);
-	};
-
-	// 행에 포커스가 활성화될 때 과거 주문 데이터와 상품 상세 정보 표시
 	const handleRowFocus = async (rowId: string) => {
 		const row = orderRows.find((r) => r.id === rowId);
-		if (!row) {
-			setCurrentDisplayedPastOrders([]);
-			setCurrentProductDetail(null);
-			return;
-		}
+		if (!row) return;
 
-		// 3개 필수값이 모두 있으면 과거 주문 데이터 처리
-		if (row.storeId && row.productId && row.materialName) {
-			// 캐시에서 데이터 가져오기
-			const cacheKey = `${row.storeId}-${row.productId}-${row.materialName}`;
-			const cachedData = pastOrdersCache.get(cacheKey);
-
-			if (cachedData) {
-				setCurrentDisplayedPastOrders(cachedData);
-			} else {
-				// 캐시에 없으면 새로 가져오기
-				await updatePastOrders(row.storeId, row.productId, row.materialName);
-			}
-		} else {
-			setCurrentDisplayedPastOrders([]);
-		}
-
-		// productId가 있고, 현재 표시된 상품과 다른 경우에만 상품 상세 정보 처리
 		if (row.productId) {
-			// 현재 표시된 상품과 동일한지 확인
 			if (
 				!currentProductDetail ||
 				currentProductDetail.productId !== row.productId
 			) {
-				await updateProductDetail(row.productId, row.id);
+				productApi.getProduct(row.productId).then((res) => {
+					if (res.success) setCurrentProductDetail(res.data);
+				});
 			}
 		} else {
 			setCurrentProductDetail(null);
+		}
+
+		if (row.storeId && row.productId && row.materialName) {
+			const cacheKey = `${row.storeId}-${row.productId}-${row.materialName}`;
+			setCurrentDisplayedPastOrders(pastOrdersCache.get(cacheKey) || []);
+		} else {
+			setCurrentDisplayedPastOrders([]);
 		}
 	};
 
@@ -656,10 +502,20 @@ const OrderCreatePage = () => {
 	};
 
 	// 상품 선택 처리
-	const handleProductSelect = (product: ProductDto) => {
+	const handleProductSelect = async (product: ProductDto) => {
 		if (productModal.selectedRowId) {
 			const productIdValue = product.productId;
 			const factoryIdValue = product.factoryId;
+
+			const currentProductDetail = await fetchProductDetail(productIdValue);
+			setCurrentProductDetail(currentProductDetail);
+
+			// 현재 행의 storeGrade 가져오기
+			const currentRow = orderRows.find(
+				(r) => r.id === productModal.selectedRowId
+			);
+			const storeGrade = currentRow?.storeGrade || "1";
+			const policyGrade = `GRADE_${storeGrade}`;
 
 			updateOrderRow(productModal.selectedRowId, "productId", productIdValue);
 			updateOrderRow(
@@ -671,6 +527,11 @@ const OrderCreatePage = () => {
 				productModal.selectedRowId,
 				"productFactoryName",
 				product.productFactoryName || ""
+			);
+			updateOrderRow(
+				productModal.selectedRowId,
+				"classificationId",
+				currentProductDetail?.classificationDto.classificationId || ""
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
@@ -699,57 +560,79 @@ const OrderCreatePage = () => {
 				product.productLaborCost || 0
 			);
 
-			const mainStone = product.productStones.find((stone) => stone.mainStone);
+			// 스톤 정보 변환 및 업데이트
+			if (currentProductDetail?.productStoneDtos) {
+				const transformedStoneInfos = currentProductDetail.productStoneDtos.map(
+					(stone) => {
+						const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
+							(policy) => policy.grade === policyGrade
+						);
 
-			const mainStonePrice = mainStone
-				? (mainStone.laborCost || 0) * (mainStone.stoneQuantity || 0)
-				: 0;
-			const mainStoneCount = mainStone?.stoneQuantity || 0;
+						const laborCost = matchingPolicy
+							? matchingPolicy.laborCost
+							: stone.stoneWorkGradePolicyDtos[0]?.laborCost || 0;
 
-			updateOrderRow(
-				productModal.selectedRowId,
-				"mainStonePrice",
-				mainStonePrice
-			);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"mainStoneCount",
-				mainStoneCount
-			);
+						return {
+							stoneId: stone.stoneId,
+							stoneName: stone.stoneName,
+							stoneWeight: stone.stoneWeight,
+							purchaseCost: stone.stonePurchase,
+							laborCost: laborCost,
+							quantity: stone.stoneQuantity,
+							mainStone: stone.mainStone,
+							includeStone: stone.includeStone,
+							addLaborCost: 0,
+						};
+					}
+				);
 
-			const assistanceStone = product.productStones.find(
-				(stone) => !stone.mainStone
-			);
+				updateOrderRow(
+					productModal.selectedRowId,
+					"stoneInfos",
+					transformedStoneInfos
+				);
 
-			const assistanceStonePrice = assistanceStone
-				? (assistanceStone.laborCost || 0) *
-				  (assistanceStone.stoneQuantity || 0)
-				: 0;
-			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
+				// 알 가격 및 개수 계산
+				const calculatedStoneData = calculateStoneDetails(
+					transformedStoneInfos
+				);
 
-			updateOrderRow(
-				productModal.selectedRowId,
-				"assistanceStonePrice",
-				assistanceStonePrice
-			);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"assistanceStoneCount",
-				assistanceStoneCount
-			);
-
-			updateOrderRow(
-				productModal.selectedRowId,
-				"mainStoneCount",
-				product.productStones.find((stone) => stone.mainStone)?.stoneQuantity ||
-					0
-			);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"assistanceStoneCount",
-				product.productStones.find((stone) => !stone.mainStone)
-					?.stoneQuantity || 0
-			);
+				updateOrderRow(
+					productModal.selectedRowId,
+					"mainStonePrice",
+					calculatedStoneData.mainStonePrice
+				);
+				updateOrderRow(
+					productModal.selectedRowId,
+					"assistanceStonePrice",
+					calculatedStoneData.assistanceStonePrice
+				);
+				updateOrderRow(
+					productModal.selectedRowId,
+					"stoneAddLaborCost",
+					calculatedStoneData.stoneAddLaborCost
+				);
+				updateOrderRow(
+					productModal.selectedRowId,
+					"mainStoneCount",
+					calculatedStoneData.mainStoneCount
+				);
+				updateOrderRow(
+					productModal.selectedRowId,
+					"assistanceStoneCount",
+					calculatedStoneData.assistanceStoneCount
+				);
+				updateOrderRow(
+					productModal.selectedRowId,
+					"stoneWeight",
+					calculatedStoneData.stoneWeight
+				);
+				updateOrderRow(
+					productModal.selectedRowId,
+					"stoneWeightTotal",
+					calculatedStoneData.stoneWeight
+				);
+			}
 
 			// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
 			if (product.productMaterial) {
@@ -790,87 +673,6 @@ const OrderCreatePage = () => {
 			}
 		}
 		productModal.handleSelect();
-	}; // 스톤 정보 관리 모달 열기
-	const openStoneInfoManager = (rowId: string) => {
-		const url = `/orders/stone-info?rowId=${rowId}&origin=${window.location.origin}`;
-		const NAME = `stoneInfo_${rowId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=800";
-
-		const popup = window.open(url, NAME, FEATURES);
-		if (popup) {
-			// 팝업에서 스톤 정보 요청 시 응답
-			const handleMessage = (event: MessageEvent) => {
-				if (
-					event.data.type === "REQUEST_STONE_INFO" &&
-					event.data.rowId === rowId
-				) {
-					const row = orderRows.find((r) => r.id === rowId);
-					popup.postMessage(
-						{
-							type: "STONE_INFO_DATA",
-							stoneInfos: row?.stoneInfos || [],
-						},
-						window.location.origin
-					);
-				} else if (
-					event.data.type === "STONE_INFO_SAVE" &&
-					event.data.rowId === rowId
-				) {
-					// 스톤 정보 업데이트
-					updateOrderRow(rowId, "stoneInfos", event.data.stoneInfos);
-
-					// 스톤 정보 변경 시 알 단가 자동 계산
-					const calculatedStoneData = calculateStoneDetails(
-						event.data.stoneInfos
-					);
-					updateOrderRow(
-						rowId,
-						"mainStonePrice",
-						calculatedStoneData.mainStonePrice
-					);
-					updateOrderRow(
-						rowId,
-						"assistanceStonePrice",
-						calculatedStoneData.assistanceStonePrice
-					);
-					updateOrderRow(
-						rowId,
-						"stoneAddLaborCost",
-						calculatedStoneData.stoneAddLaborCost
-					);
-					updateOrderRow(
-						rowId,
-						"mainStoneCount",
-						calculatedStoneData.mainStoneCount
-					);
-					updateOrderRow(
-						rowId,
-						"assistanceStoneCount",
-						calculatedStoneData.assistanceStoneCount
-					);
-					updateOrderRow(
-						rowId,
-						"stoneWeightTotal",
-						calculatedStoneData.stoneWeight
-					);
-					updateOrderRow(
-						rowId,
-						"stoneWeight",
-						calculatedStoneData.stoneWeight.toString()
-					);
-				}
-			};
-
-			window.addEventListener("message", handleMessage);
-
-			// 팝업이 닫힐 때 이벤트 리스너 제거
-			const checkClosed = setInterval(() => {
-				if (popup.closed) {
-					window.removeEventListener("message", handleMessage);
-					clearInterval(checkClosed);
-				}
-			}, 1000);
-		}
 	};
 
 	// 초기 데이터 로드

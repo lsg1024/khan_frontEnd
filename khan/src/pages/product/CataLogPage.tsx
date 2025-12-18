@@ -55,6 +55,15 @@ function CataLogPage() {
 		return productCost + stoneCost;
 	};
 
+	// 총 매입가 계산 (상품 매입가 + 스톤 매입가)
+	const calculateTotalPurchaseCost = (product: ProductDto): number => {
+		const productCost = parseInt(product.productPurchaseCost) || 0;
+		const stoneCost = product.productStones.reduce((sum, stone) => {
+			return sum + stone.purchasePrice * stone.stoneQuantity;
+		}, 0);
+		return productCost + stoneCost;
+	};
+
 	// 상품 상세보기 팝업 열기
 	const handleProductDetailOpen = (productId: string) => {
 		const url = `/catalog/detail/${productId}`;
@@ -469,7 +478,7 @@ function CataLogPage() {
 										e.currentTarget.src = "/images/not_ready.png";
 									}}
 								/>
-							</div>{" "}
+							</div>
 							{/* 상품 정보 */}
 							<div className="product-info" data-product-id={product.productId}>
 								<div className="product-name-row">
@@ -527,6 +536,21 @@ function CataLogPage() {
 										)}
 									{/* 매입가와 판매가를 한 줄로 */}
 									<div className="detail-row combined price-row-combined">
+										<div>
+											<span className="price-label">매입가:</span>
+											<span className="labor-cost">
+												{calculateTotalPurchaseCost(product).toLocaleString()}원
+											</span>
+										</div>
+									</div>
+
+									<div className="detail-row combined price-row-combined">
+										<div>
+											<span className="price-label">판매가:</span>
+											<span className="selling-price">
+												{calculateTotalLaborCost(product).toLocaleString()}원
+											</span>
+										</div>
 										{/* 스톤 총 개수 */}
 										{product.productStones &&
 											product.productStones.length > 0 && (
@@ -540,14 +564,7 @@ function CataLogPage() {
 													</span>
 												</div>
 											)}
-										<div>
-											<span className="price-label">판매가:</span>
-											<span className="selling-price">
-												{calculateTotalLaborCost(product).toLocaleString()}원
-											</span>
-										</div>
 									</div>
-
 									{/* 메모 */}
 									{product.productNote && (
 										<div className="detail-row note">
@@ -601,7 +618,7 @@ function CataLogPage() {
 							수정
 						</button>
 					</div>
-				</div>{" "}
+				</div>
 				{/* 페이지네이션 */}
 				<Pagination
 					currentPage={currentPage}
