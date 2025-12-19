@@ -71,7 +71,7 @@ const SaleDetailPage: React.FC = () => {
 		goldWeight: "",
 	});
 
-	// bulk 모드 체크 (쿼리 파라미터로 여러 항목 전달되었는지)
+	// bulk 모드 체크 
 	const isBulkMode = searchParams.has("flowCode");
 
 	useEffect(() => {
@@ -214,7 +214,9 @@ const SaleDetailPage: React.FC = () => {
 
 					setSaleRows(loadedRows);
 
-					// 거래처 미수 데이터 조회 (쿼리 파라미터에서 받은 storeId 사용)
+					console.log("Loaded Rows in Bulk Mode:", storeId);
+
+					// 거래처 미수 데이터 조회 
 					if (storeId) {
 						try {
 							const storeIdNum = parseInt(storeId);
@@ -939,7 +941,7 @@ const SaleDetailPage: React.FC = () => {
 	}
 
 	return (
-		<div className="sale-detail-page">
+		<div className="order-update-page">
 			<div className="page-header">
 				<h3>판매 상세보기</h3>
 			</div>

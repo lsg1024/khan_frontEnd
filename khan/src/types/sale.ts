@@ -53,6 +53,7 @@ export interface SaleDetailResponse {
 	flowCode: string;
 	createAt: string;
 	saleType: string;
+	id: string;
 	name: string;
 	grade: string;
 	harry: number;

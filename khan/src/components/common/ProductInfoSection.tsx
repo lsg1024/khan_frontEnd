@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import type { Product } from "../../types/product";
 import type { ProductStoneDto } from "../../types/stone";
 import { productApi } from "../../../libs/api/product";
+import { AuthImage } from "../../components/common/AuthImage";
 import "../../styles/components/ProductInfoSection.css";
 
 interface ProductInfoSectionProps {
@@ -58,18 +59,12 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 			) : (
 				<div className="single-product-info">
 					<div className="product-info-card">
-						<div className="product-info-header">
-							<div className="product-image-container">
-								<img
-									src={imageUrl}
-									alt={currentProductDetail.productName}
-									className="product-image"
-									onError={(e) => {
-										e.currentTarget.src = "/images/not_ready.png";
-									}}
-								/>
-							</div>
-						</div>
+						<AuthImage
+							imagePath={currentProductDetail.productImageDtos[0].imagePath}
+							alt={currentProductDetail.productName}
+							className="info-image"
+							onClick={() => {}}
+						/>
 
 						<div className="basic-info-section">
 							<div className="info-grid">

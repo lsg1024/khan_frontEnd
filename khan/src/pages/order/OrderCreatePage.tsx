@@ -224,7 +224,7 @@ const OrderCreatePage = () => {
 			setOrderRows((prevRows) => {
 				return prevRows.map((row) => {
 					if (row.id === id) {
-						// 1. 업데이트 전 기존 값 보관
+					
 						const {
 							storeId: prevStore,
 							productId: prevProduct,

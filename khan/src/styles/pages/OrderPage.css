@@ -57,6 +57,14 @@
 	border: 1px solid #ddd;
 }
 
+.info-image {
+	object-fit: contain;
+	border-radius: 4px;
+	padding: 10px;
+	max-width: 250px;
+	max-height: 250px;
+}
+
 /* 상품명 스타일 */
 .product-name-order {
 	max-width: 200px;

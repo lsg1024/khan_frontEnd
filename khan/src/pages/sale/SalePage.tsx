@@ -60,36 +60,43 @@ export const SalePage = () => {
 		return typeMap[saleType] || saleType;
 	};
 
-	// 체크박스 선택 핸들러 (동일 거래처만 중복 선택 가능)
-	const handleSelect = (saleCode: string, checked: boolean) => {
+	// 체크박스 선택 핸들러 (동일 거래처 + 동일 거래번호만 중복 선택 가능)
+	const handleSelect = (
+		flowCode: string,
+		checked: boolean
+	) => {
 		if (checked) {
-			// 첫 선택이거나 동일 거래처인 경우만 추가
-			const selectedSale = sales.find((sale) => sale.saleCode === saleCode);
-			if (!selectedSale) return;
+			// 첫 선택이거나 동일 거래처 + 동일 거래번호인 경우만 추가
+			const selectedSale = sales.find((sale) => sale.flowCode === flowCode);
+			if (!selectedSale) {
+				return;
+			}
 
 			if (selected.length === 0) {
 				// 첫 선택
-				setSelected([saleCode]);
+				setSelected([flowCode]);
 			} else {
-				// 기존 선택된 항목의 거래처 확인
+				// 기존 선택된 항목의 거래처 및 거래번호 확인
 				const firstSelectedSale = sales.find(
-					(sale) => sale.saleCode === selected[0]
+					(sale) => sale.flowCode === selected[0]
 				);
+
 				if (
 					firstSelectedSale &&
-					selectedSale.storeName === firstSelectedSale.storeName
+					selectedSale.storeName === firstSelectedSale.storeName &&
+					selectedSale.saleCode === firstSelectedSale.saleCode
 				) {
-					// 동일 거래처
-					setSelected((prev) => [...prev, saleCode]);
+					// 동일 거래처 + 동일 거래번호
+					setSelected((prev) => [...prev, flowCode]);
 				} else {
-					// 다른 거래처
+					// 다른 거래처 또는 다른 거래번호
 					alert(
-						`동일한 거래처(${firstSelectedSale?.storeName})의 항목만 선택할 수 있습니다.`
+						`동일한 거래처(${firstSelectedSale?.storeName})와 거래번호(${firstSelectedSale?.saleCode})의 항목만 선택할 수 있습니다.`
 					);
 				}
 			}
 		} else {
-			setSelected((prev) => prev.filter((code) => code !== saleCode));
+			setSelected((prev) => prev.filter((code) => code !== flowCode));
 		}
 	};
 
@@ -176,6 +183,17 @@ export const SalePage = () => {
 		}
 	};
 
+	// 시세 추가 처리
+	const handleAddMarketPrice = () => {
+		if (selected.length === 0) {
+			alert("시세를 추가할 판매 항목을 선택해주세요.");
+			return;
+		}
+
+		// TODO: 시세 추가 로직 구현
+		alert(`${selected.length}개 항목에 시세 추가 기능은 준비 중입니다.`);
+	};
+
 	// 반품 처리 - SaleDetailPage 팝업으로 열기
 	const handleReturn = () => {
 		if (selected.length === 0) {
@@ -185,7 +203,7 @@ export const SalePage = () => {
 
 		// 선택된 판매 항목들의 flowCode, saleType, storeId 가져오기
 		const selectedSales = sales.filter((sale) =>
-			selected.includes(sale.saleCode)
+			selected.includes(sale.flowCode)
 		);
 
 		// 선택된 항목들의 정보를 URL 파라미터로 변환
@@ -338,6 +356,7 @@ export const SalePage = () => {
 					<SaleBulkActionBar
 						selectedCount={selected.length}
 						onReturn={handleReturn}
+						onAddMarketPrice={handleAddMarketPrice}
 					/>
 
 					{/* 페이지네이션 */}

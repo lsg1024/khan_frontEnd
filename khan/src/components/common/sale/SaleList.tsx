@@ -6,7 +6,7 @@ interface SaleListProps {
 	currentPage: number;
 	loading: boolean;
 	selected: string[];
-	onSelect: (saleCode: string, checked: boolean) => void;
+	onSelect: (flowCode: string, checked: boolean) => void;
 	onNoClick?: (flowCode: string, orderStatus: string) => void;
 }
 
@@ -86,6 +86,7 @@ export const SaleList = ({
 			<tbody>
 				{sales.map((sale, index) => {
 					const rowNumber = (currentPage - 1) * PAGE_SIZE + index + 1;
+					const uniqueKey = `${sale.saleCode}-${index}`;
 
 					// saleType에 따른 클래스 결정
 					let rowClass = "sale-row";
@@ -103,14 +104,17 @@ export const SaleList = ({
 					// SALE인 경우 기본 흰색 (추가 클래스 없음)
 
 					return (
-						<tr key={sale.saleCode} className={rowClass}>
+						<tr key={uniqueKey} className={rowClass}>
 							<td className="no-cell">
 								<input
 									type="checkbox"
-									checked={selected.includes(sale.saleCode)}
+									checked={selected.includes(sale.flowCode.toString())}
 									onChange={(e) => {
 										e.stopPropagation();
-										onSelect(sale.saleCode, e.target.checked);
+										onSelect(
+											sale.flowCode.toString(),
+											e.target.checked
+										);
 									}}
 								/>
 							</td>

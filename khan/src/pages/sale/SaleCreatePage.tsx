@@ -175,16 +175,10 @@ export const SaleCreatePage = () => {
 		setShowStoreSearch(false);
 
 		if (store.accountId) {
-			// 기존 함수 재사용
 			const shouldAppend = await checkAndConfirmExistingSale(
 				String(store.accountId)
 			);
 			setIsAppendSale(shouldAppend);
-
-			// UX: 이어쓰기 선택 시 알림 메시지 (선택 사항)
-			if (shouldAppend) {
-				console.log("기존 판매장에 이어쓰기로 설정되었습니다.");
-			}
 		}
 	};
 
@@ -212,7 +206,7 @@ export const SaleCreatePage = () => {
 					const shouldAdd = window.confirm(
 						`오늘 등록된 판매장이 있습니다.\n해당 판매장에 추가하시겠습니까?`
 					);
-					return shouldAdd;
+					return !shouldAdd;
 				}
 			}
 		} catch (err) {
@@ -938,13 +932,11 @@ export const SaleCreatePage = () => {
 						}));
 						setIsStoreLoadedFromApi(true);
 
-						// 거래처가 로드되면 판매장 확인
 						const shouldAppend = await checkAndConfirmExistingSale(
 							String(firstItem.storeId)
 						);
 						setIsAppendSale(shouldAppend);
 
-						// 거래처 미수 정보 조회하여 accountBalanceHistoryData에 반영
 						try {
 							const storeAttemptRes = await storeApi.getStoreAttemptById(
 								parseInt(String(firstItem.storeId))

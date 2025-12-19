@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { orderApi } from "../../../libs/api/order";
 import { stockApi } from "../../../libs/api/stock";
@@ -91,99 +91,71 @@ export const StockCreatePage = () => {
 		storeId: string,
 		productId: string,
 		materialName: string
-	): Promise<PastOrderDto[]> => {
+	) => {
 		const cacheKey = `${storeId}-${productId}-${materialName}`;
+		if (pastOrdersCache.has(cacheKey)) {
+			setCurrentDisplayedPastOrders(pastOrdersCache.get(cacheKey) || []);
+			return;
+		}
 
 		try {
-			// 캐시에 데이터가 있으면 캐시에서 반환
-			if (pastOrdersCache.has(cacheKey)) {
-				return pastOrdersCache.get(cacheKey) || [];
-			}
-
-			// 이미 진행 중인 요청이 있으면 중복 호출 방지
-			if (pendingRequests.has(cacheKey)) {
-				return [];
-			}
-
-			// 진행 중인 요청으로 등록 (동기적으로)
-			pendingRequests.add(cacheKey);
-			setPendingRequests(new Set(pendingRequests));
-
 			const response = await orderApi.getPastOrders(
 				parseInt(storeId),
 				parseInt(productId),
 				materialName
 			);
-
 			if (response.success && response.data) {
-				// 캐시에 저장
-				const newCache = new Map(pastOrdersCache);
-				newCache.set(cacheKey, response.data);
-				setPastOrdersCache(newCache);
-
-				return response.data;
+				setPastOrdersCache((prev) =>
+					new Map(prev).set(cacheKey, response.data!)
+				);
+				setCurrentDisplayedPastOrders(response.data);
 			}
-
-			return [];
-		} catch {
-			return [];
+		} catch (err) {
+			handleError(err);
 		} finally {
-			// 진행 중인 요청에서 제거 (성공/실패 모두)
 			pendingRequests.delete(cacheKey);
 			setPendingRequests(new Set(pendingRequests));
 		}
 	};
 
 	// 재고 행 데이터 업데이트
-	const updateStockRow = async (
-		id: string,
-		field: keyof StockOrderRows,
-		value: unknown
-	) => {
-		setStockRows((prevRows) => {
-			const updatedRows = prevRows.map((row) => {
-				if (row.id === id) {
-					const updatedRow = { ...row, [field]: value };
+	const updateStockRow = useCallback(
+		(id: string, field: keyof StockOrderRows, value: unknown) => {
+			setStockRows((prevRows) => {
+				return prevRows.map((row) => {
+					if (row.id === id) {
+						const {
+							storeId: prevStore,
+							productId: prevProduct,
+							materialName: prevMaterial,
+						} = row;
 
-					// 독립적인 체크를 위해 별도 실행
-					setTimeout(() => {
-						// 거래처, 모델번호, 재질 중 하나라도 변경되면 과거 주문 조회 시도
-						// (3개 필드가 모두 완성되어야 실제 API 호출)
-						if (
-							field === "storeId" ||
-							field === "productId" ||
-							field === "materialId"
-						) {
-							// 3개 필수 필드가 모두 있는지 확인
-							if (
-								updatedRow.storeId &&
-								updatedRow.productId &&
-								updatedRow.materialName
-							) {
-								const cacheKey = `${updatedRow.storeId}-${updatedRow.productId}-${updatedRow.materialName}`;
+						const updatedRow = { ...row, [field]: value };
 
-								// 캐시에 없고, 진행 중인 요청도 없을 때만 조회
-								if (
-									!pastOrdersCache.has(cacheKey) &&
-									!pendingRequests.has(cacheKey)
-								) {
-									updatePastOrders(
-										updatedRow.storeId,
-										updatedRow.productId,
-										updatedRow.materialName
-									);
-								}
-							}
+						const {
+							storeId: nextStore,
+							productId: nextProduct,
+							materialName: nextMaterial,
+						} = updatedRow;
+
+						const isAllPresent = nextStore && nextProduct && nextMaterial;
+						const isChanged =
+							prevStore !== nextStore ||
+							prevProduct !== nextProduct ||
+							prevMaterial !== nextMaterial;
+
+						if (isAllPresent && isChanged) {
+							fetchPastOrders(nextStore, nextProduct, nextMaterial);
 						}
-					}, 0);
 
-					return updatedRow;
-				}
-				return row;
+						return updatedRow;
+					}
+					return row;
+				});
 			});
-			return updatedRows;
-		});
-	};
+		},
+		[pastOrdersCache]
+	); // fetchPastOrders도 useCallback 처리가 되어있어야 안전합니다.
 
 	// 이전 행 복사 기능 - 커스텀 훅 사용
 	const { handleRequiredFieldClick } = usePreviousRowCopy(
@@ -426,52 +398,29 @@ export const StockCreatePage = () => {
 		}
 	};
 
-	// 3개 필수값이 모두 있을 때 과거 주문 데이터 업데이트
-	const updatePastOrders = async (
-		storeId: string,
-		productId: string,
-		materialName: string
-	) => {
-		const pastOrders = await fetchPastOrders(storeId, productId, materialName);
-		setCurrentDisplayedPastOrders(pastOrders);
-	};
-
 	// 행에 포커스가 활성화될 때 과거 주문 데이터와 상품 상세 정보 표시
 	const handleRowFocus = async (rowId: string) => {
 		const row = stockRows.find((r) => r.id === rowId);
-		if (!row) {
-			setCurrentDisplayedPastOrders([]);
-			setCurrentProductDetail(null);
-			return;
-		}
+		if (!row) return;
 
-		// 3개 필수값이 모두 있으면 과거 주문 데이터 처리
-		if (row.storeId && row.productId && row.materialName) {
-			// 캐시에서 데이터 가져오기
-			const cacheKey = `${row.storeId}-${row.productId}-${row.materialName}`;
-			const cachedData = pastOrdersCache.get(cacheKey);
-
-			if (cachedData) {
-				setCurrentDisplayedPastOrders(cachedData);
-			} else {
-				// 캐시에 없으면 새로 가져오기
-				await updatePastOrders(row.storeId, row.productId, row.materialName);
-			}
-		} else {
-			setCurrentDisplayedPastOrders([]);
-		}
-
-		// productId가 있고, 현재 표시된 상품과 다른 경우에만 상품 상세 정보 처리
 		if (row.productId) {
-			// 현재 표시된 상품과 동일한지 확인
 			if (
 				!currentProductDetail ||
 				currentProductDetail.productId !== row.productId
 			) {
-				await updateProductDetail(row.productId, row.id);
+				productApi.getProduct(row.productId).then((res) => {
+					if (res.success) setCurrentProductDetail(res.data);
+				});
 			}
 		} else {
 			setCurrentProductDetail(null);
+		}
+
+		if (row.storeId && row.productId && row.materialName) {
+			const cacheKey = `${row.storeId}-${row.productId}-${row.materialName}`;
+			setCurrentDisplayedPastOrders(pastOrdersCache.get(cacheKey) || []);
+		} else {
+			setCurrentDisplayedPastOrders([]);
 		}
 	};
 
@@ -536,10 +485,8 @@ export const StockCreatePage = () => {
 			const factoryIdValue = product.factoryId;
 
 			// 상품 상세 정보를 먼저 가져오기
-			const productDetail = await fetchProductDetail(productIdValue);
-
-			// 상품 상세 정보를 currentProductDetail에 설정
-			setCurrentProductDetail(productDetail);
+			const currentProductDetail = await fetchProductDetail(productIdValue);
+			setCurrentProductDetail(currentProductDetail);
 
 			// 기본 상품 정보 업데이트
 			updateStockRow(productModal.selectedRowId, "productId", productIdValue);
@@ -571,26 +518,26 @@ export const StockCreatePage = () => {
 			);
 
 			// classification과 setType 정보 설정
-			if (productDetail) {
+			if (currentProductDetail) {
 				updateStockRow(
 					productModal.selectedRowId,
 					"classificationId",
-					productDetail.classificationDto?.classificationId || ""
+					currentProductDetail.classificationDto?.classificationId || ""
 				);
 				updateStockRow(
 					productModal.selectedRowId,
 					"classificationName",
-					productDetail.classificationDto?.classificationName || ""
+					currentProductDetail.classificationDto?.classificationName || ""
 				);
 				updateStockRow(
 					productModal.selectedRowId,
 					"setTypeId",
-					productDetail.setTypeDto?.setTypeId || ""
+					currentProductDetail.setTypeDto?.setTypeId || ""
 				);
 				updateStockRow(
 					productModal.selectedRowId,
 					"setTypeName",
-					productDetail.setTypeDto?.setTypeName || ""
+					currentProductDetail.setTypeDto?.setTypeName || ""
 				);
 
 				// stoneInfos 설정 (등급에 맞는 단가 적용)
@@ -600,7 +547,7 @@ export const StockCreatePage = () => {
 				const storeGrade = currentRow?.grade || "1";
 				const policyGrade = `GRADE_${storeGrade}`;
 
-				const transformedStoneInfos = productDetail.productStoneDtos.map(
+				const transformedStoneInfos = currentProductDetail.productStoneDtos.map(
 					(stone) => {
 						const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
 							(policy) => policy.grade === policyGrade
