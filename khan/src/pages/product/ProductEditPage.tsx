@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useProductImageUpload } from "../../hooks/useProductImageUpload";
 import StoneTable from "../../components/common/stone/StoneTable";
 import PriceTable from "../../components/common/product/PriceTable";
 import ProductInfo from "../../components/common/product/BasicInfo";
@@ -21,6 +22,13 @@ function ProductEditPage() {
 	const [error, setError] = useState<string>("");
 	const [imageFile, setImageFile] = useState<File | null>(null);
 	const { handleError } = useErrorHandler();
+
+	// 이미지 업로드 훅 사용
+	const { uploadImage, uploading } = useProductImageUpload({
+		onError: (errorMsg) => {
+			alert(`이미지 업로드에 실패했습니다: ${errorMsg}`);
+		},
+	});
 
 	// 공장 선택 핸들러
 	const handleFactorySelect = (factoryId: number, factoryName: string) => {
@@ -322,19 +330,11 @@ function ProductEditPage() {
 			);
 
 			if (isApiSuccess(response)) {
-				if (imageFile) {
-					try {
-						const imageResponse = await productApi.uploadProductImage(
-							product.productId,
-							imageFile
-						);
-						alert(
-							imageResponse.data || "상품 이미지가 성공적으로 업로드되었습니다."
-						);
-					} catch (imageError) {
-						handleError(imageError);
-					}
+				// 이미지 업로드 (이미지 파일이 있을 경우)
+				if (imageFile && product.productId) {
+					await uploadImage(product.productId, imageFile);
 				}
+
 				alert(response.data || "상품 정보가 성공적으로 저장되었습니다.");
 				setImageFile(null);
 				loadProductDetail();
@@ -422,9 +422,7 @@ function ProductEditPage() {
 	return (
 		<div className="product-detail-page">
 			<div className="detail-content">
-				{/* 상단 섹션: 기본정보와 이미지 */}
 				<div className="top-section">
-					{/* 기본 정보 섹션 */}
 					<ProductInfo
 						product={product}
 						showTitle={true}
@@ -482,9 +480,9 @@ function ProductEditPage() {
 					<button
 						onClick={handleSaveProduct}
 						className="common-btn-common"
-						disabled={loading}
+						disabled={loading || uploading}
 					>
-						{loading ? "저장 중..." : "수정"}
+						{loading || uploading ? "저장 중..." : "수정"}
 					</button>
 					<button
 						onClick={handleDeleteProduct}

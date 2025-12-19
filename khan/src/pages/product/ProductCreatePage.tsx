@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { isApiSuccess } from "../../../libs/api/config";
 import { productApi } from "../../../libs/api/product";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useProductImageUpload } from "../../hooks/useProductImageUpload";
 import ProductInfo from "../../components/common/product/BasicInfo";
 import PriceTable from "../../components/common/product/PriceTable";
 import StoneTable from "../../components/common/stone/StoneTable";
@@ -68,27 +69,6 @@ const EMPTY_PRODUCT: Product = {
 	productImageDtos: [],
 };
 
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-	typeof v === "object" && v !== null && !Array.isArray(v);
-
-const parseValidationErrors = (
-	data: unknown
-): Record<string, string> | null => {
-	if (!isPlainObject(data)) return null;
-	const out: Record<string, string> = {};
-	let any = false;
-	for (const [k, val] of Object.entries(data)) {
-		if (typeof val === "string") {
-			out[k] = val;
-			any = true;
-		} else if (Array.isArray(val) && val.every((v) => typeof v === "string")) {
-			out[k] = (val as string[]).join(", ");
-			any = true;
-		}
-	}
-	return any ? out : null;
-};
-
 const ProductCreatePage = () => {
 	const [product, setProduct] = useState<Product>(EMPTY_PRODUCT);
 	const [loading, setLoading] = useState(false);
@@ -98,6 +78,13 @@ const ProductCreatePage = () => {
 	>({});
 	const [imageFile, setImageFile] = useState<File | null>(null);
 	const { handleError } = useErrorHandler();
+
+	// 이미지 업로드 훅 사용
+	const { uploadImage, uploading } = useProductImageUpload({
+		onError: (errorMsg) => {
+			alert(`상품은 생성되었으나 이미지 업로드에 실패했습니다: ${errorMsg}`);
+		},
+	});
 
 	const validateProduct = (): boolean => {
 		const errors: Record<string, string> = {};
@@ -140,9 +127,6 @@ const ProductCreatePage = () => {
 		setValidationErrors(errors);
 		return Object.keys(errors).length === 0;
 	};
-
-	const handleServerValidationError = (serverErrors: Record<string, string>) =>
-		setValidationErrors(serverErrors);
 
 	const handleFactorySelect = (factoryId: number, factoryName: string) =>
 		setProduct((prev) => ({ ...prev, factoryId, factoryName }));
@@ -247,27 +231,9 @@ const ProductCreatePage = () => {
 			const res = await productApi.createProduct(payload);
 
 			if (isApiSuccess(res)) {
-				let createdProductId: string | null = null;
-				if (
-					res.data &&
-					typeof res.data === "object" &&
-					"productId" in res.data
-				) {
-					createdProductId = (res.data as { productId: string }).productId;
-				}
-
+				const createdProductId = String(res.data);
 				if (imageFile && createdProductId) {
-					try {
-						const uploadRes = await productApi.uploadProductImage(
-							createdProductId,
-							imageFile
-						);
-						alert(
-							uploadRes.data || "상품 이미지가 성공적으로 업로드되었습니다."
-						);
-					} catch (uploadErr) {
-						handleError(uploadErr);
-					}
+					await uploadImage(createdProductId, imageFile);
 				}
 
 				const { factoryId, factoryName } = product;
@@ -280,17 +246,16 @@ const ProductCreatePage = () => {
 					setError("");
 					setImageFile(null);
 				} else {
+					if (window.opener && !window.opener.closed) {
+						window.opener.postMessage(
+							{ type: "PRODUCT_CREATED" },
+							window.location.origin
+						);
+					}
 					window.close();
 				}
-			} else {
-				const ve = parseValidationErrors(res.data);
-				if (ve) handleServerValidationError(ve);
-				else
-					setError(
-						typeof res.data === "string" ? res.data : "생성에 실패했습니다."
-					);
 			}
-		} catch (err: unknown) {
+		} catch (err) {
 			handleError(err);
 		} finally {
 			setLoading(false);
@@ -361,9 +326,9 @@ const ProductCreatePage = () => {
 					<button
 						onClick={handleCreateProduct}
 						className="save-button"
-						disabled={loading}
+						disabled={loading || uploading}
 					>
-						{loading ? "생성 중..." : "생성"}
+						{loading || uploading ? "생성 중..." : "생성"}
 					</button>
 				</div>
 			</div>

@@ -436,7 +436,7 @@
 /* 가격 스타일 */
 .labor-cost {
 	color: var(--info-color);
-	font-weight: var(--font-weight-medium);
+	font-weight: var(--font-weight-bold);
 	font-size: 12px;
 }
 

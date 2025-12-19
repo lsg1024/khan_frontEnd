@@ -232,6 +232,21 @@ function CataLogPage() {
 		alert("엑셀 다운로드 기능은 아직 구현되지 않았습니다.");
 	};
 
+	useEffect(() => {
+		const handleMessage = (event: MessageEvent) => {
+			if (event.origin !== window.location.origin) return;
+
+			if (event.data?.type === "PRODUCT_CREATED") {
+				loadProducts(searchFilters, currentPage, sortOptions);
+			}
+		};
+
+		window.addEventListener("message", handleMessage);
+		return () => {
+			window.removeEventListener("message", handleMessage);
+		};
+	}, [loadProducts, searchFilters, currentPage, sortOptions]);
+
 	// 컴포넌트 마운트시 초기 데이터 로드
 	useEffect(() => {
 		setCurrentPage(1);

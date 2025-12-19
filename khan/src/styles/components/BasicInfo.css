@@ -360,6 +360,7 @@
 
 .factory-search-btn {
 	padding: 4px 8px;
+	margin-right: 4px;
 	background-color: #007bff;
 	color: white;
 	border: none;

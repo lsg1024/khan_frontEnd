@@ -69,60 +69,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 		setIsFactoryModalOpen(true);
 	};
 
-	// API를 통해 이미지 로드하여 blob URL 생성 (캐싱 적용)
-	const loadImageFromPath = async (
-		imageId: string,
-		imagePath: string
-	): Promise<string> => {
-		// 캐시 키 생성
-		const cacheKey = `product_image_${imageId}_${imagePath}`;
-
-		// 세션 스토리지에서 캐시 확인
-		try {
-			const cachedUrl = sessionStorage.getItem(cacheKey);
-			if (cachedUrl && cachedUrl.startsWith("blob:")) {
-				// blob URL 유효성 검사
-				try {
-					await fetch(cachedUrl, { method: "HEAD" });
-					return cachedUrl;
-				} catch {
-					// 유효하지 않은 blob URL이면 캐시 삭제하고 재로드
-					sessionStorage.removeItem(cacheKey);
-				}
-			} else if (cachedUrl) {
-				// blob: 형식이 아니면 잘못된 캐시이므로 삭제
-				sessionStorage.removeItem(cacheKey);
-			}
-		} catch (error) {
-			console.error("세션 스토리지 읽기 실패:", error);
-		}
-
-		// 캐시가 없거나 유효하지 않으면 API 호출
-		try {
-			const blob = await productApi.getProductImageByPath(imagePath);
-			const blobUrl = URL.createObjectURL(blob);
-
-			// 세션 스토리지에 저장
-			try {
-				sessionStorage.setItem(cacheKey, blobUrl);
-			} catch (error) {
-				console.error("세션 스토리지 저장 실패:", error);
-			}
-
-			return blobUrl;
-		} catch (error) {
-			console.error("이미지 로드 실패:", error);
-			// API 호출 실패 시에도 캐시 삭제
-			try {
-				sessionStorage.removeItem(cacheKey);
-			} catch {
-				// 무시
-			}
-			throw error;
-		}
-	};
-
-	// 상품 데이터에서 이미지 로드
+	// 상품 데이터에서 이미지 로드 (세션 캐싱 제거)
 	useEffect(() => {
 		let blobUrl: string | null = null;
 
@@ -131,10 +78,10 @@ const BasicInfo: React.FC<ProductInfo> = ({
 				const firstImage = product.productImageDtos[0];
 				if (firstImage.imageId && firstImage.imagePath) {
 					try {
-						blobUrl = await loadImageFromPath(
-							firstImage.imageId,
+						const blob = await productApi.getProductImageByPath(
 							firstImage.imagePath
 						);
+						blobUrl = URL.createObjectURL(blob);
 						setImagePreview(blobUrl);
 						setCurrentImageId(parseInt(firstImage.imageId));
 					} catch {
@@ -149,7 +96,12 @@ const BasicInfo: React.FC<ProductInfo> = ({
 
 		loadImage();
 
-		// cleanup: blob URL은 세션 스토리지에 저장되므로 해제하지 않음
+		// cleanup: 컴포넌트 언마운트 시 blob URL 해제
+		return () => {
+			if (blobUrl) {
+				URL.revokeObjectURL(blobUrl);
+			}
+		};
 	}, [product.productImageDtos]);
 
 	// 이미지 파일 선택 핸들러
@@ -219,23 +171,6 @@ const BasicInfo: React.FC<ProductInfo> = ({
 
 		setImageLoading(true);
 		try {
-			// 세션 스토리지에서 캐시 제거
-			if (product.productImageDtos && product.productImageDtos.length > 0) {
-				const firstImage = product.productImageDtos[0];
-				if (firstImage.imageId && firstImage.imagePath) {
-					const cacheKey = `product_image_${firstImage.imageId}_${firstImage.imagePath}`;
-					try {
-						const cachedUrl = sessionStorage.getItem(cacheKey);
-						if (cachedUrl) {
-							URL.revokeObjectURL(cachedUrl);
-							sessionStorage.removeItem(cacheKey);
-						}
-					} catch (error) {
-						console.error("세션 스토리지 제거 실패:", error);
-					}
-				}
-			}
-
 			// API를 통해 이미지 삭제
 			const response = await productApi.deleteProductImage(
 				currentImageId.toString()
@@ -249,8 +184,12 @@ const BasicInfo: React.FC<ProductInfo> = ({
 				if (onImageChange) {
 					onImageChange(null);
 				}
-				// 부모 컴포넌트에서 상품 데이터를 다시 불러와야 함
-				window.location.reload();
+				// 부모 창이 있으면 새로고침
+				if (window.opener && !window.opener.closed) {
+					window.opener.location.reload();
+				}
+			} else {
+				alert(response.message || "이미지 삭제에 실패했습니다.");
 			}
 		} catch (error) {
 			console.error("이미지 삭제 실패:", error);
