@@ -4,7 +4,10 @@ import { productApi } from "../../../libs/api/product";
 import { setTypeApi } from "../../../libs/api/setType";
 import { factoryApi } from "../../../libs/api/factory";
 import { useErrorHandler } from "../../utils/errorHandler";
-import { calculatePureGoldWeightWithHarry, getGoldDonFromWeight } from "../../utils/goldUtils";
+import {
+	calculatePureGoldWeightWithHarry,
+	getGoldDonFromWeight,
+} from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";
 import type { ProductDto } from "../../types/product";
 import type { SetTypeDto } from "../../types/setType";
@@ -62,7 +65,9 @@ function CataLogPage() {
 			product.productMaterial
 		);
 
-		const goldCost = Math.ceil(pureGoldWeight * (product.productGoldPrice || 0));
+		const goldCost = Math.ceil(
+			pureGoldWeight * (product.productGoldPrice || 0)
+		);
 		return goldCost;
 	};
 
@@ -436,6 +441,7 @@ function CataLogPage() {
 							placeholder="상품명을 입력하세요"
 							value={searchFilters.name}
 							onChange={(e) => handleFilterChange("name", e.target.value)}
+							onKeyDown={(e) => e.key === "Enter" && handleSearch()}
 						/>
 
 						<div className="search-buttons-common">
@@ -523,10 +529,7 @@ function CataLogPage() {
 										</div>
 										<div className="catalog-detail-item">
 											<div className="gold-content">
-												{getGoldDonFromWeight(
-													product.productWeight
-												)}
-												돈
+												{getGoldDonFromWeight(product.productWeight)}돈
 											</div>
 										</div>
 										<div className="catalog-detail-item">
@@ -559,7 +562,10 @@ function CataLogPage() {
 										<div>
 											<span className="price-label">시세가:</span>
 											<span className="labor-cost">
-												{(calculateTotalGoldPrice(product) + calculateTotalLaborCost(product)).toLocaleString()}
+												{(
+													calculateTotalGoldPrice(product) +
+													calculateTotalLaborCost(product)
+												).toLocaleString()}
 												원
 											</span>
 										</div>
