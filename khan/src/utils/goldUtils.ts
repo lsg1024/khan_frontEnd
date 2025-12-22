@@ -31,6 +31,21 @@ export const calculatePureGoldWeight = (
 };
 
 /**
+ * 금 중량을 돈으로 계산하는 함수
+ * @param weight - 금 중량 (문자열 또는 숫자)
+ * @returns 금 중량에 해당하는 돈 (숫자) 또는 0
+ */
+export const getGoldDonFromWeight = (
+	weight: string | number
+): number => {
+	const weightNum = typeof weight === "string" ? parseFloat(weight) : weight;
+	if (isNaN(weightNum)) return 0;
+
+	const don = weightNum / 3.75;
+	return parseFloat(don.toFixed(3));
+};
+
+/**
  * 전체 무게를 돈으로 계산
  * @param weight
  * @returns
@@ -70,7 +85,7 @@ export const getGoldTransferWeight = (
 export const calculatePureGoldWeightWithHarry = (
 	goldWeight: string | number,
 	material: string,
-	harry: string | number = 1.0
+	harry: string | number = 1.1
 ): number => {
 	const goldWeightNum =
 		typeof goldWeight === "string" ? parseFloat(goldWeight) : goldWeight;

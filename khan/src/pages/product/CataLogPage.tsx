@@ -4,7 +4,7 @@ import { productApi } from "../../../libs/api/product";
 import { setTypeApi } from "../../../libs/api/setType";
 import { factoryApi } from "../../../libs/api/factory";
 import { useErrorHandler } from "../../utils/errorHandler";
-import { getGoldTransferWeight, calculatePureGoldWeight } from "../../utils/goldUtils";
+import { calculatePureGoldWeightWithHarry, getGoldDonFromWeight } from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";
 import type { ProductDto } from "../../types/product";
 import type { SetTypeDto } from "../../types/setType";
@@ -55,19 +55,15 @@ function CataLogPage() {
 		return productCost + stoneCost;
 	};
 
-	// 총 시세가 계산 (순금 무게 * 금 시세 + 상품 매입가 + 스톤 매입가)
+	// 총 시세가 계산 (순금 무게 * 금 시세)
 	const calculateTotalGoldPrice = (product: ProductDto): number => {
-		// 재질에 따라 순금으로 환산
-		const pureGoldWeight = calculatePureGoldWeight(
+		const pureGoldWeight = calculatePureGoldWeightWithHarry(
 			product.productWeight,
 			product.productMaterial
 		);
 
-		console.log("Pure Gold Weight:", pureGoldWeight);
-		console.log("Product Gold Price:", product.productGoldPrice);
-
-		const goldCost = pureGoldWeight * (product.productGoldPrice || 0);
-		return Math.ceil(goldCost);
+		const goldCost = Math.ceil(pureGoldWeight * (product.productGoldPrice || 0));
+		return goldCost;
 	};
 
 	// 상품 상세보기 팝업 열기
@@ -527,9 +523,8 @@ function CataLogPage() {
 										</div>
 										<div className="catalog-detail-item">
 											<div className="gold-content">
-												{getGoldTransferWeight(
-													product.productWeight,
-													product.productMaterial
+												{getGoldDonFromWeight(
+													product.productWeight
 												)}
 												돈
 											</div>
