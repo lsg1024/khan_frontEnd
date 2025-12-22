@@ -53,6 +53,7 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/setting/SettingsPage";
 import SettingItemPopupPage from "./pages/setting/SettingItemPopupPage";
 import UserManagementPopupPage from "./pages/setting/UserManagementPopupPage";
+import GoldPricePopupPage from "./pages/setting/GoldPricePopupPage";
 
 import Layout from "./components/layout/Layout";
 
@@ -105,6 +106,7 @@ function App() {
 						path="/user-management"
 						element={<UserManagementPopupPage />}
 					/>
+					<Route path="/gold-price-setting" element={<GoldPricePopupPage />} />
 					<Route path="/catalog/create" element={<ProductCreatePage />} />
 					<Route
 						path="/catalog/detail/:productId"

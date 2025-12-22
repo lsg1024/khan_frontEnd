@@ -1,0 +1,226 @@
+.gold-price-popup {
+	width: 100%;
+	height: 100vh;
+	background-color: #f5f5f5;
+	display: flex;
+	flex-direction: column;
+}
+
+.gold-price-popup .popup-header {
+	background-color: #fff;
+	padding: 20px 24px;
+	border-bottom: 1px solid #e0e0e0;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.gold-price-popup .popup-header h2 {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 600;
+	color: #333;
+}
+
+.gold-price-popup .popup-content {
+	flex: 1;
+	padding: 32px 24px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	max-width: 600px;
+	margin: 0 auto;
+	width: 100%;
+}
+
+/* 현재 금 시세 섹션 */
+.gold-price-popup .current-price-section {
+	background-color: #fff;
+	border-radius: 8px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.gold-price-popup .section-title {
+	font-size: 14px;
+	font-weight: 500;
+	color: #666;
+	margin-bottom: 12px;
+}
+
+.gold-price-popup .price-display {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+}
+
+.gold-price-popup .price-value {
+	font-size: 36px;
+	font-weight: 700;
+	color: #d4af37;
+	font-variant-numeric: tabular-nums;
+}
+
+.gold-price-popup .price-unit {
+	font-size: 18px;
+	font-weight: 500;
+	color: #666;
+}
+
+.gold-price-popup .loading-text {
+	font-size: 18px;
+	color: #999;
+}
+
+/* 새 금 시세 입력 섹션 */
+.gold-price-popup .new-price-section {
+	background-color: #fff;
+	border-radius: 8px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.gold-price-popup .input-with-button {
+	display: flex;
+	gap: 12px;
+	align-items: stretch;
+}
+
+.gold-price-popup .input-group {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border: 2px solid #e0e0e0;
+	border-radius: 6px;
+	padding: 0 16px;
+	background-color: #fff;
+	transition: border-color 0.2s;
+}
+
+.gold-price-popup .input-group:focus-within {
+	border-color: #d4af37;
+}
+
+.gold-price-popup .btn-confirm {
+	padding: 0 24px;
+	border-radius: 6px;
+	font-size: 15px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+	border: none;
+	background-color: #d4af37;
+	color: #fff;
+	white-space: nowrap;
+	min-width: 70px;
+}
+
+.gold-price-popup .btn-confirm:hover:not(:disabled) {
+	background-color: #c19f2f;
+	box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.gold-price-popup .btn-confirm:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.gold-price-popup .price-input {
+	flex: 1;
+	border: none;
+	padding: 14px 0;
+	font-size: 18px;
+	font-weight: 500;
+	outline: none;
+	font-variant-numeric: tabular-nums;
+}
+
+.gold-price-popup .price-input:disabled {
+	background-color: transparent;
+	color: #999;
+}
+
+.gold-price-popup .price-input::placeholder {
+	color: #bbb;
+	font-weight: 400;
+}
+
+.gold-price-popup .input-unit {
+	font-size: 16px;
+	font-weight: 500;
+	color: #666;
+	white-space: nowrap;
+}
+
+/* 안내 메시지 */
+.gold-price-popup .info-message {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 16px;
+	background-color: #e8f4f8;
+	border-left: 4px solid #2196f3;
+	border-radius: 4px;
+	font-size: 14px;
+	color: #555;
+}
+
+.gold-price-popup .info-icon {
+	font-size: 18px;
+	flex-shrink: 0;
+}
+
+/* 버튼 영역 */
+.gold-price-popup .button-group {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+	margin-top: auto;
+	padding-top: 24px;
+}
+
+.gold-price-popup .button-group button {
+	padding: 12px 32px;
+	border-radius: 6px;
+	font-size: 15px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+	border: none;
+}
+
+.gold-price-popup .btn-cancel {
+	background-color: #f5f5f5;
+	color: #666;
+}
+
+.gold-price-popup .btn-cancel:hover:not(:disabled) {
+	background-color: #e0e0e0;
+}
+
+.gold-price-popup .btn-save {
+	background-color: #d4af37;
+	color: #fff;
+}
+
+.gold-price-popup .btn-save:hover:not(:disabled) {
+	background-color: #c19f2f;
+	box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.gold-price-popup .button-group button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* 숫자 입력 필드의 화살표 제거 (Chrome, Safari, Edge) */
+.gold-price-popup .price-input::-webkit-outer-spin-button,
+.gold-price-popup .price-input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* 숫자 입력 필드의 화살표 제거 (Firefox) */
+.gold-price-popup .price-input[type="number"] {
+	-moz-appearance: textfield;
+}

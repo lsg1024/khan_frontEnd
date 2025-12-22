@@ -25,6 +25,7 @@ export interface ProductInfo {
 	product: ProductData;
 	showTitle?: boolean;
 	editable?: boolean;
+	imageFile?: File | null;
 	onProductChange?: (updatedProduct: Partial<ProductData>) => void;
 	onFactorySelect?: (factoryId: number, factoryName: string) => void;
 	onImageChange?: (file: File | null) => void;
@@ -126,6 +127,7 @@ export interface ProductDto {
 	productNote: string;
 	productPurchaseCost: string;
 	productLaborCost: string;
+	productGoldPrice?: number;
 	image: {
 		imageId: string;
 		imagePath: string;

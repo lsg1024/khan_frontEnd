@@ -7,17 +7,39 @@ import type {
 	FactoryCreateRequest,
 	FactoryUpdateRequest,
 } from "../../src/types/AccountDto";
+import type { TransactionPageResponse } from "../../src/types/store";
 
 export const factoryApi = {
 	// 제조사 검색 (페이징 지원)
 	getFactories: async (
 		name?: string,
 		page: number = 1,
-		un_page? : boolean, 
+		un_page?: boolean,
 		size: number = 12
 	): Promise<ApiResponse<FactorySearchResponse>> => {
 		return apiRequest.get<FactorySearchResponse>("account/factories", {
 			params: { search: name || "", page: page, un_page: un_page, size: size },
+		});
+	},
+
+	// 제조사 매입 미수금 조회
+	getFactoryPurchase: async (
+		start: string,
+		end: string,
+		accountType?: string,
+		accountName?: string,
+		page: number = 1,
+		size: number = 20
+	): Promise<ApiResponse<TransactionPageResponse>> => {
+		return apiRequest.get<TransactionPageResponse>("account/purchase/factory", {
+			params: {
+				start,
+				end,
+				accountType: accountType || undefined,
+				accountName: accountName || undefined,
+				page,
+				size,
+			},
 		});
 	},
 

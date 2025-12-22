@@ -282,6 +282,7 @@ const ProductCreatePage = () => {
 						product={product}
 						showTitle
 						editable
+						imageFile={imageFile}
 						onProductChange={handleProductChange}
 						onFactorySelect={handleFactorySelect}
 						onImageChange={handleImageChange}

@@ -2,13 +2,14 @@ import { useState, type JSX } from "react";
 import BarcodePrinterSettings from "../../components/setting/BarcodePrinterSettings";
 import "../../styles/pages/settingsPage.css";
 
-type SettingCategory = "상품" | "주문" | "재고" | "스톤" | "사용자 관리";
+type SettingCategory = "상품" | "주문" | "스톤" | "기타" | "사용자 관리";
 
 interface SettingItem {
 	id: string;
 	label: string;
 	category: SettingCategory;
 	modalType?:
+		| "goldPrice"
 		| "material"
 		| "harry"
 		| "classification"
@@ -25,6 +26,12 @@ interface SettingItem {
 
 const settingItems: SettingItem[] = [
 	// 상품
+	{
+		id: "gold-price",
+		label: "금 시세",
+		category: "상품",
+		modalType: "goldPrice",
+	},
 	{
 		id: "material",
 		label: "재질",
@@ -54,9 +61,6 @@ const settingItems: SettingItem[] = [
 		modalType: "priority",
 	},
 
-	// 재고 관련
-	{ id: "barcode-printer", label: "바코드 프린터 설정", category: "재고" },
-
 	// 스톤
 	{
 		id: "stone-type",
@@ -77,6 +81,9 @@ const settingItems: SettingItem[] = [
 		modalType: "assistantStone",
 	},
 
+	// 기타 관련
+	{ id: "barcode-printer", label: "바코드 프린터 설정", category: "기타" },
+
 	// 회원관리
 	{
 		id: "user",
@@ -89,8 +96,8 @@ const settingItems: SettingItem[] = [
 const categories: SettingCategory[] = [
 	"상품",
 	"주문",
-	"재고",
 	"스톤",
+	"기타",
 	"사용자 관리",
 ];
 
@@ -110,6 +117,18 @@ export default function SettingsPage(): JSX.Element {
 			window.open(
 				`/user-management`,
 				`user_management_popup`,
+				`width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+			);
+		} else if (item.id === "gold-price") {
+			// 금 시세는 별도 팝업
+			const width = 550;
+			const height = 500;
+			const left = window.screenX + (window.outerWidth - width) / 2;
+			const top = window.screenY + (window.outerHeight - height) / 2;
+
+			window.open(
+				`/gold-price-setting`,
+				`gold_price_popup`,
 				`width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
 			);
 		} else if (item.modalType) {

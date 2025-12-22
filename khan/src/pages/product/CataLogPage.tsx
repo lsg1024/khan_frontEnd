@@ -4,7 +4,7 @@ import { productApi } from "../../../libs/api/product";
 import { setTypeApi } from "../../../libs/api/setType";
 import { factoryApi } from "../../../libs/api/factory";
 import { useErrorHandler } from "../../utils/errorHandler";
-import { getGoldTransferWeight } from "../../utils/goldUtils";
+import { getGoldTransferWeight, calculatePureGoldWeight } from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";
 import type { ProductDto } from "../../types/product";
 import type { SetTypeDto } from "../../types/setType";
@@ -55,13 +55,19 @@ function CataLogPage() {
 		return productCost + stoneCost;
 	};
 
-	// 총 매입가 계산 (상품 매입가 + 스톤 매입가)
-	const calculateTotalPurchaseCost = (product: ProductDto): number => {
-		const productCost = parseInt(product.productPurchaseCost) || 0;
-		const stoneCost = product.productStones.reduce((sum, stone) => {
-			return sum + stone.purchasePrice * stone.stoneQuantity;
-		}, 0);
-		return productCost + stoneCost;
+	// 총 시세가 계산 (순금 무게 * 금 시세 + 상품 매입가 + 스톤 매입가)
+	const calculateTotalGoldPrice = (product: ProductDto): number => {
+		// 재질에 따라 순금으로 환산
+		const pureGoldWeight = calculatePureGoldWeight(
+			product.productWeight,
+			product.productMaterial
+		);
+
+		console.log("Pure Gold Weight:", pureGoldWeight);
+		console.log("Product Gold Price:", product.productGoldPrice);
+
+		const goldCost = pureGoldWeight * (product.productGoldPrice || 0);
+		return Math.ceil(goldCost);
 	};
 
 	// 상품 상세보기 팝업 열기
@@ -521,7 +527,11 @@ function CataLogPage() {
 										</div>
 										<div className="catalog-detail-item">
 											<div className="gold-content">
-												{getGoldTransferWeight(product.productWeight)}돈
+												{getGoldTransferWeight(
+													product.productWeight,
+													product.productMaterial
+												)}
+												돈
 											</div>
 										</div>
 										<div className="catalog-detail-item">
@@ -549,12 +559,13 @@ function CataLogPage() {
 												})}
 											</div>
 										)}
-									{/* 매입가와 판매가를 한 줄로 */}
+									{/* 시세가와 판매가를 한 줄로 */}
 									<div className="detail-row combined price-row-combined">
 										<div>
-											<span className="price-label">매입가:</span>
+											<span className="price-label">시세가:</span>
 											<span className="labor-cost">
-												{calculateTotalPurchaseCost(product).toLocaleString()}원
+												{(calculateTotalGoldPrice(product) + calculateTotalLaborCost(product)).toLocaleString()}
+												원
 											</span>
 										</div>
 									</div>

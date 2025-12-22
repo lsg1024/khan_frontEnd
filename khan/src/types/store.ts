@@ -16,7 +16,6 @@ export interface StoreSearchDto {
 	address: string;
 }
 
-
 // 상점 검색 API 응답
 export interface StoreSearchResponse {
 	content: StoreSearchDto[];
@@ -32,5 +31,20 @@ export interface AccountInfoDto extends StoreSearchDto {
 
 export interface StoreAttemptResponse {
 	content: AccountInfoDto[];
+	page: PageInfo;
+}
+
+// 거래 내역 페이지 (매입/판매 미수금)
+export interface TransactionPage {
+	accountId: string;
+	accountName: string;
+	createDate: string;
+	goldAmount: string;
+	moneyAmount: string;
+	tradeType: string;
+}
+
+export interface TransactionPageResponse {
+	content: TransactionPage[];
 	page: PageInfo;
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { productApi } from "../../../libs/api/product";
 import { isApiSuccess } from "../../../libs/api/config";
-import { getGoldTransferWeight } from "../../utils/goldUtils";
+import { calculatePureGoldWeight } from "../../utils/goldUtils";
 import type { ProductDto } from "../../types/product";
 import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/ProductSearchPage.css";
@@ -224,7 +224,7 @@ const ProductSearchPage: React.FC = () => {
 												</div>
 												<div className="detail-item">
 													<div className="gold-content">
-														{getGoldTransferWeight(product.productWeight)}돈
+														{calculatePureGoldWeight(product.productWeight, product.productMaterial)}돈
 													</div>
 												</div>
 												<div className="detail-item">
