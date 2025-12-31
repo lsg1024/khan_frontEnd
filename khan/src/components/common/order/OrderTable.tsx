@@ -523,11 +523,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								{/* 보조석 필드들 */}
 								<td className="order-create-table-type-cell">
 									<select
-										value={
-											row.assistantStoneId === "1" && !row.assistantStoneName
-												? ""
-												: row.assistantStoneId
-										}
+										value={row.assistantStoneId || "1"}
 										onChange={(e) => {
 											if (!safeValidateSequence(row.id, "other")) {
 												return;
@@ -535,11 +531,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											const selectedAssistantStone = assistantStones.find(
 												(a) => a.assistantStoneId === Number(e.target.value)
 											);
-											onRowUpdate(
-												row.id,
-												"assistantStoneId",
-												e.target.value
-											);
+											onRowUpdate(row.id, "assistantStoneId", e.target.value);
 											onRowUpdate(
 												row.id,
 												"assistantStoneName",
@@ -569,7 +561,6 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 													: "pointer",
 										}}
 									>
-										<option value="">선택</option>
 										{assistantStones.map((stone) => (
 											<option
 												key={stone.assistantStoneId}
@@ -714,8 +705,8 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 									<input
 										type="text"
 										value={row.stoneAddLaborCost.toLocaleString()}
-										onChange={(e) => {		
-											if (isStockStatus) return;									
+										onChange={(e) => {
+											if (isStockStatus) return;
 											handleIntegerChange(
 												row.id,
 												"stoneAddLaborCost",

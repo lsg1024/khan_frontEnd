@@ -148,6 +148,22 @@ export const usePreviousRowCopy = (rows: any[], updateRow: any) => {
 					if (prevValues.setTypeName) {
 						updateRow(currentRowId, "setTypeName", prevValues.setTypeName);
 					}
+
+					// 재질 정보 자동 복사 (상품 복사 시)
+					if (prevValues.materialId) {
+						updateRow(currentRowId, "materialId", prevValues.materialId);
+					}
+					if (prevValues.materialName) {
+						updateRow(currentRowId, "materialName", prevValues.materialName);
+					}
+
+					// 색상 정보 자동 복사 (상품 복사 시)
+					if (prevValues.colorId) {
+						updateRow(currentRowId, "colorId", prevValues.colorId);
+					}
+					if (prevValues.colorName) {
+						updateRow(currentRowId, "colorName", prevValues.colorName);
+					}
 				} else if (fieldType === "material") {
 					updateRow(currentRowId, "materialId", prevValues.materialId);
 					updateRow(currentRowId, "materialName", prevValues.materialName);

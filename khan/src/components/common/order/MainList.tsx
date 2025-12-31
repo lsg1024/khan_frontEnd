@@ -63,6 +63,7 @@ const MainList = ({
 							${selected.includes(dto.flowCode) ? "selected-row" : ""}
 							${dto.orderStatus === "DELETED" ? "disabled-row" : ""}
 							${dto.orderStatus === "재고" ? "stock-row" : ""} 
+							${dto.productStatus === "대기" ? "waiting-row" : ""}
 							`}
 					>
 						<td>

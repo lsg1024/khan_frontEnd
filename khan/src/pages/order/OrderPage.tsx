@@ -329,6 +329,43 @@ export const OrderPage = () => {
 		loadData: loadOrders,
 	});
 
+	// 대기 상태 체크 함수
+	const checkWaitingStatus = (): boolean => {
+		const selectedOrdersData = orders.filter((order) =>
+			selectedOrders.includes(order.flowCode)
+		);
+		const hasWaitingOrder = selectedOrdersData.some(
+			(order) => order.productStatus === "대기"
+		);
+
+		if (hasWaitingOrder) {
+			alert("상품 상태를 변경해주세요");
+			return true;
+		}
+		return false;
+	};
+
+	// Bulk Action 래퍼 함수들
+	const handleChangeDeliveryDateWrapper = () => {
+		if (checkWaitingStatus()) return;
+		handleChangeDeliveryDate();
+	};
+
+	const handleStockRegisterWrapper = () => {
+		if (checkWaitingStatus()) return;
+		handleStockRegister();
+	};
+
+	const handleSalesRegisterWrapper = () => {
+		if (checkWaitingStatus()) return;
+		handleSalesRegister();
+	};
+
+	const handleBulkDeleteWrapper = () => {
+		if (checkWaitingStatus()) return;
+		handleBulkDelete();
+	};
+
 	const fetchDropdownData = async () => {
 		setDropdownLoading(true);
 		try {
@@ -387,11 +424,20 @@ export const OrderPage = () => {
 			}
 		};
 
+		const handleOrderUpdated = (event: MessageEvent) => {
+			if (event.data && event.data.type === "ORDER_UPDATED") {
+				// 주문 목록 새로고침 (현재 페이지 유지)
+				loadOrders(searchFilters, currentPage);
+			}
+		};
+
 		window.addEventListener("message", handleOrderCreated);
+		window.addEventListener("message", handleOrderUpdated);
 		window.addEventListener("message", handleBulkActionMessage);
 
 		return () => {
 			window.removeEventListener("message", handleOrderCreated);
+			window.removeEventListener("message", handleOrderUpdated);
 			window.removeEventListener("message", handleBulkActionMessage);
 
 			if (creationPopupRef.current && !creationPopupRef.current.closed) {
@@ -488,10 +534,10 @@ export const OrderPage = () => {
 					{/* 대량 작업 바 */}
 					<BulkActionBar
 						selectedCount={selectedOrders.length}
-						onChangeDeliveryDate={handleChangeDeliveryDate}
-						onStockRegister={handleStockRegister}
-						onSalesRegister={handleSalesRegister}
-						onDelete={handleBulkDelete}
+						onChangeDeliveryDate={handleChangeDeliveryDateWrapper}
+						onStockRegister={handleStockRegisterWrapper}
+						onSalesRegister={handleSalesRegisterWrapper}
+						onDelete={handleBulkDeleteWrapper}
 						className="order"
 					/>
 

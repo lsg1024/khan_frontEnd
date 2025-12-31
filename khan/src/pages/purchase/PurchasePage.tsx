@@ -5,6 +5,7 @@ import type {
 	TransactionPage,
 	TransactionPageResponse,
 } from "../../types/store";
+import { getLocalDate } from "../../utils/dateUtils";
 import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/AccountsReceivablePage.css";
 
@@ -23,8 +24,8 @@ export const PurchasePage = () => {
 	const [searchFilters, setSearchFilters] = useState({
 		accountName: "",
 		accountType: "",
-		startDate: "",
-		endDate: "",
+		startDate: getLocalDate(),
+		endDate: getLocalDate(),
 	});
 
 	const size = 20;
@@ -32,12 +33,6 @@ export const PurchasePage = () => {
 	// 검색 필터 변경 핸들러
 	const handleFilterChange = (field: string, value: string) => {
 		setSearchFilters((prev) => ({ ...prev, [field]: value }));
-	};
-
-	// 오늘 날짜를 YYYY-MM-DD 형식으로 반환
-	const getTodayDate = () => {
-		const today = new Date();
-		return today.toISOString().split("T")[0];
 	};
 
 	const handleInputStartClick = () => {
@@ -56,14 +51,10 @@ export const PurchasePage = () => {
 		setLoading(true);
 		setError("");
 
-		// 날짜가 비어있으면 오늘 날짜 사용
-		const start = filters.startDate || getTodayDate();
-		const end = filters.endDate || getTodayDate();
-
 		try {
 			const res = await factoryApi.getFactoryPurchase(
-				start,
-				end,
+				filters.startDate,
+				filters.endDate,
 				filters.accountType || undefined,
 				filters.accountName || undefined,
 				page,
@@ -102,7 +93,7 @@ export const PurchasePage = () => {
 
 	// 초기 데이터 로드
 	useEffect(() => {
-		const today = getTodayDate();
+		const today = getLocalDate();
 		const initialFilters = {
 			...searchFilters,
 			startDate: today,
@@ -120,7 +111,7 @@ export const PurchasePage = () => {
 
 	// 검색 초기화
 	const handleReset = () => {
-		const today = getTodayDate();
+		const today = getLocalDate();
 		const resetFilters = {
 			accountName: "",
 			accountType: "",
@@ -196,8 +187,12 @@ export const PurchasePage = () => {
 								}
 							>
 								<option value="">거래 구분</option>
-								<option value="매입">매입</option>
 								<option value="판매">판매</option>
+								<option value="반품">반품</option>
+								<option value="결제">결제</option>
+								<option value="DC">DC</option>
+								<option value="통장">통장</option>
+								<option value="WG">WG</option>
 							</select>
 						</div>
 					</div>

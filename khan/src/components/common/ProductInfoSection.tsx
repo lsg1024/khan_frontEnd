@@ -18,6 +18,8 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 
 	// 상품이 변경될 때마다 이미지 로드
 	useEffect(() => {
+		let blobUrl: string | null = null;
+
 		const loadImage = async () => {
 			if (
 				currentProductDetail?.productImageDtos &&
@@ -28,7 +30,7 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 					const blob = await productApi.getProductImageByPath(
 						currentProductDetail.productImageDtos[0].imagePath
 					);
-					const blobUrl = URL.createObjectURL(blob);
+					blobUrl = URL.createObjectURL(blob);
 					setImageUrl(blobUrl);
 				} catch (error) {
 					console.error("이미지 로드 실패:", error);
@@ -43,11 +45,11 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 
 		// cleanup: 이전 blob URL 해제
 		return () => {
-			if (imageUrl.startsWith("blob:")) {
-				URL.revokeObjectURL(imageUrl);
+			if (blobUrl && blobUrl.startsWith("blob:")) {
+				URL.revokeObjectURL(blobUrl);
 			}
 		};
-	}, []);
+	}, [currentProductDetail]);
 
 	return (
 		<div className="product-info-section">
@@ -60,7 +62,12 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 				<div className="single-product-info">
 					<div className="product-info-card">
 						<AuthImage
-							imagePath={currentProductDetail.productImageDtos[0].imagePath}
+							imagePath={
+								currentProductDetail.productImageDtos &&
+								currentProductDetail.productImageDtos.length > 0
+									? currentProductDetail.productImageDtos[0].imagePath
+									: ""
+							}
 							alt={currentProductDetail.productName}
 							className="info-image"
 							onClick={() => {}}

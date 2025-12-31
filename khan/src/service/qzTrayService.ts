@@ -117,31 +117,32 @@ const findPrinters = async (): Promise<string[]> => {
  * @param data 인쇄할 Raw 데이터 (예: EPL, ZPL 명령어)
  */
 const printRaw = async (
-	printerName: string,
-	data: string
+    printerName: string,
+    data: string,
+    isBase64: boolean = false
 ): Promise<boolean> => {
-	if (typeof qz === "undefined" || !qz.websocket.isActive()) {
-		console.error("QZ Tray에 연결되어 있지 않습니다.");
-		return false;
-	}
+    if (typeof qz === "undefined" || !qz.websocket.isActive()) {
+        console.error("QZ Tray에 연결되어 있지 않습니다.");
+        return false;
+    }
 
-	try {
-		const config = qz.configs.create(printerName, { encoding: "EUC-KR" });
-		
-		const printData = [
-			{
-				type: "raw" as const,
-				format: "command" as const,
-				data: data,
-			},
-		];
+    try {
+        const config = qz.configs.create(printerName); // 인코딩 설정 불필요 (Base64는 바이너리이므로)
 
-		await qz.print(config, printData);
-		return true;
-	} catch (error) {
-		console.error("인쇄 작업에 실패했습니다:", error);
-		return false;
-	}
+        const printData = [
+            {
+                type: "raw" as const,
+                format: isBase64 ? ("base64" as const) : ("command" as const),
+                data: data,
+            },
+        ];
+
+        await qz.print(config, printData);
+        return true;
+    } catch (error) {
+        console.error("인쇄 작업에 실패했습니다:", error);
+        return false;
+    }
 };
 
 const getPrinterStatus = async (

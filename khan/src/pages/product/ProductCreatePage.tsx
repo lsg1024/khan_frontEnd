@@ -124,6 +124,20 @@ const ProductCreatePage = () => {
 				}
 			);
 		}
+
+		const emptyStoneIndex = product.productStoneDtos.findIndex(
+			(stone) => !stone.stoneId || stone.stoneId.trim() === ""
+		);
+
+		if (emptyStoneIndex !== -1) {
+			alert(
+				`[No.${
+					emptyStoneIndex + 1
+				}] 스톤이 선택되지 않았습니다.\n\n스톤을 선택하거나, 해당 행을 삭제한 후 다시 시도해주세요.`
+			);
+			return false; // 유효성 검사 실패 -> 저장 중단
+		}
+
 		setValidationErrors(errors);
 		return Object.keys(errors).length === 0;
 	};

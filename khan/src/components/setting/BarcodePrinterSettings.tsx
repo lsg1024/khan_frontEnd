@@ -15,6 +15,9 @@ export default function BarcodePrinterSettings({
 	const [selectedPrinter, setSelectedPrinter] = useState<string | null>(null);
 	const [printStatus, setPrintStatus] = useState<string>("");
 
+	// 로컬 스토리지 키 이름 정의
+	const STORAGE_KEY = "preferred_printer_name";
+
 	useEffect(() => {
 		const startQz = async () => {
 			qzTrayService.initialize();
@@ -24,9 +27,19 @@ export default function BarcodePrinterSettings({
 				setStatus("✅ 연결 성공");
 				const foundPrinters = await qzTrayService.findPrinters();
 				setPrinters(foundPrinters);
-				if (foundPrinters.length > 0) {
-					setSelectedPrinter(foundPrinters[0]);
-					onPrinterChange?.(foundPrinters[0]);
+
+				console.log("Found Printers:", foundPrinters);
+				const savedPrinter = localStorage.getItem(STORAGE_KEY);
+
+				if (savedPrinter && foundPrinters.includes(savedPrinter)) {
+					setSelectedPrinter(savedPrinter);
+					onPrinterChange?.(savedPrinter);
+				} else if (foundPrinters.length > 0) {
+					const defaultPrinterName = foundPrinters.find((p) =>
+						p.includes("Argox OS-214 plus series PPLB")
+					);
+					setSelectedPrinter(defaultPrinterName ?? foundPrinters[0]);
+					onPrinterChange?.(defaultPrinterName ?? foundPrinters[0]);
 				}
 			} else {
 				setStatus("❌ 연결 실패");
@@ -39,9 +52,111 @@ export default function BarcodePrinterSettings({
 		startQz();
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+	const stringToBytes = (str: string): Uint8Array => {
+		const bytes = new Uint8Array(str.length);
+		for (let i = 0; i < str.length; i++) {
+			bytes[i] = str.charCodeAt(i);
+		}
+		return bytes;
+	};
+
+	const uint8ArrayToBase64 = (buffer: Uint8Array): string => {
+		let binary = "";
+		const len = buffer.byteLength;
+		for (let i = 0; i < len; i++) {
+			binary += String.fromCharCode(buffer[i]);
+		}
+		return window.btoa(binary);
+	};
+
+	const createTextGwCommandBytes = (
+		text: string,
+		x: number,
+		y: number,
+		fontSize: number = 16, // [변경] 기본 크기를 22 -> 16으로 축소
+		fontFamily: string = "Malgun Gothic"
+	): Promise<Uint8Array> => {
+		return new Promise((resolve) => {
+			const canvas = document.createElement("canvas");
+			const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+			if (!ctx) return resolve(new Uint8Array(0));
+
+			// 1. 텍스트 크기 계산 (여백 최소화)
+			ctx.font = `bold ${fontSize}px ${fontFamily}`;
+			const textMetrics = ctx.measureText(text);
+
+			const width = Math.ceil(textMetrics.width);
+			const widthBytes = Math.ceil(width / 8);
+			const finalWidth = widthBytes * 8;
+			const height = Math.ceil(fontSize * 1.2); // [변경] 높이 여백을 1.4 -> 1.2로 줄임
+
+			canvas.width = finalWidth;
+			canvas.height = height;
+
+			// 2. 텍스트 그리기
+			// 배경: 흰색, 글자: 검은색
+			ctx.fillStyle = "white";
+			ctx.fillRect(0, 0, finalWidth, height);
+
+			ctx.fillStyle = "black";
+			ctx.font = `bold ${fontSize}px ${fontFamily}`;
+			ctx.textBaseline = "top";
+			ctx.fillText(text, 0, 0);
+
+			const imageData = ctx.getImageData(0, 0, finalWidth, height);
+			const data = imageData.data;
+
+			// 3. GW 명령어 헤더
+			const headerStr = `GW${x},${y},${widthBytes},${height}\n`;
+			const headerBytes = stringToBytes(headerStr);
+
+			// 4. 비트맵 데이터 생성
+			const imageBytes = new Uint8Array(widthBytes * height);
+
+			for (let row = 0; row < height; row++) {
+				for (let colByte = 0; colByte < widthBytes; colByte++) {
+					let byte = 0;
+					for (let bit = 0; bit < 8; bit++) {
+						const xPos = colByte * 8 + bit;
+						const pixelIndex = (row * finalWidth + xPos) * 4;
+
+						// [핵심 수정] 색상 로직 반전
+						// 픽셀이 밝으면(흰색이면) 1로 설정, 어두우면(검은색/글자) 0으로 설정
+						// Argox PPLB GW는 보통 1=White(여백), 0=Black(인쇄) 인 경우가 많음 (User 상황 반영)
+						const r = data[pixelIndex];
+						const g = data[pixelIndex + 1];
+						const b = data[pixelIndex + 2];
+
+						// 밝기 계산 (평균값이 128 이상이면 흰색으로 간주)
+						const isWhite = (r + g + b) / 3 > 128;
+
+						if (isWhite) {
+							byte |= 1 << (7 - bit); // 흰색이면 비트를 1로 켬 (배경)
+						}
+						// 검은색(글자)이면 비트를 0으로 둠 (인쇄)
+					}
+					imageBytes[row * widthBytes + colByte] = byte;
+				}
+			}
+
+			const newLine = stringToBytes("\n");
+			const merged = new Uint8Array(
+				headerBytes.length + imageBytes.length + newLine.length
+			);
+
+			merged.set(headerBytes, 0);
+			merged.set(imageBytes, headerBytes.length);
+			merged.set(newLine, headerBytes.length + imageBytes.length);
+
+			resolve(merged);
+		});
+	};
 	const handlePrinterChange = (printer: string) => {
 		setSelectedPrinter(printer);
 		onPrinterChange?.(printer);
+
+		localStorage.setItem(STORAGE_KEY, printer);
 	};
 
 	const handleTestPrint = async () => {
@@ -50,39 +165,147 @@ export default function BarcodePrinterSettings({
 			return;
 		}
 
-		setPrintStatus("인쇄 작업 전송 중...");
+		setPrintStatus("데이터 생성 중...");
 
-		const pplbBarcodeData = `N
+		try {
+			// 1. "로고" 이미지
+			const imageKan = await createTextGwCommandBytes(
+				"칸",
+				10,
+				10, 
+				18
+			);
+
+			// 2. "제품 이름" 이미지
+			const imageRandom = await createTextGwCommandBytes(
+				"ㄴㅇㄴㅁㄴㅇㄹ",
+				10,
+				90 , 
+				18
+			);
+
+			// 3. 명령어 문자열
+			const part1 = `N
 q144
 Q144,16
 JFJ
+`;
 
-A10,10,0,1,1,1,N,"GOLDPEN"
-B10,28,0,1,2,2,25,N,"10000201" 
-A10,58,0,1,1,1,N,"10000201"
+			// Part 2: 바코드 및 첫 번째 숫자
+			const part2 = `B10,${38},0,1,1,2,25,N,"10000201" 
+A10,${58}"
+`;
 
-A10,90,0,1,1,1,N,"GOLDPEN"
-A10,105,0,1,1,1,N,"10000201"
-A10,120,0,1,1,1,N,"W:271,000"
-
+			// Part 3: 하단 텍스트 및 가격
+			const part3 = `A10,${105},0,1,1,1,N,"10000201"
+A10,${120},0,1,1,1,N,"W:271,000"
 P1
 `;
 
-		try {
-			const result = await qzTrayService.printRaw(
-				selectedPrinter,
-				pplbBarcodeData
-			);
-			if (result) {
-				setPrintStatus("✅ 인쇄 작업이 성공적으로 전송되었습니다.");
-			} else {
-				setPrintStatus("❌ 인쇄 작업 전송에 실패했습니다.");
-			}
+			// --- 이하 데이터 병합 및 전송 로직은 동일 ---
+
+			const bPart1 = stringToBytes(part1);
+			const bPart2 = stringToBytes(part2);
+			const bPart3 = stringToBytes(part3);
+
+			const totalSize =
+				bPart1.length +
+				imageKan.length +
+				bPart2.length +
+				imageRandom.length +
+				bPart3.length;
+			const finalData = new Uint8Array(totalSize);
+
+			let offset = 0;
+			finalData.set(bPart1, offset);
+			offset += bPart1.length;
+			finalData.set(imageKan, offset);
+			offset += imageKan.length;
+			finalData.set(bPart2, offset);
+			offset += bPart2.length;
+			finalData.set(imageRandom, offset);
+			offset += imageRandom.length;
+			finalData.set(bPart3, offset);
+
+			const base64Data = uint8ArrayToBase64(finalData);
+
+			setPrintStatus("인쇄 작업 전송 중...");
+
+			await qzTrayService.printRaw(selectedPrinter, base64Data, true);
+
+			setPrintStatus("✅ 인쇄 작업이 성공적으로 전송되었습니다.");
 		} catch (err) {
 			console.error(err);
 			setPrintStatus("❌ 인쇄 중 오류가 발생했습니다.");
 		}
 	};
+
+	// 	const handleTestPrint = async () => {
+	// 		if (!selectedPrinter) {
+	// 			alert("프린터를 선택해주세요.");
+	// 			return;
+	// 		}
+
+	// 		setPrintStatus("인쇄 작업 전송 중...");
+
+	// 		const textKanCommand = await createTextGwCommandBytes("칸", 10, 10, 25);
+
+	// 		// 2. "ㄴㅇㄴㅁㄴㅇㄹ" 이미지 명령어 생성 (기존 두 번째 GOLDPEN 위치: 10, 90)
+	// 		const textRandomCommand = await createTextGwCommandBytes(
+	// 			"ㄴㅇㄴㅁㄴㅇㄹ",
+	// 			10,
+	// 			90,
+	// 			25
+	// 		);
+
+	// 		const pplbBarcodeData = `
+	// N
+	// q144
+	// Q144,16
+	// JFJ
+
+	// ${textKanCommand}
+	// B10,28,0,1,2,2,25,N,"10000201"
+	// A10,58,0,1,1,1,N,"10000201"
+
+	// ${textRandomCommand}
+	// A10,105,0,1,1,1,N,"10000201"
+	// A10,120,0,1,1,1,N,"W:271,000"
+
+	// P1
+	// `;
+
+	//         const pplbBarcodeData = `N
+	// q144
+	// Q144,16
+	// JFJ
+
+	// A10,10,0,1,1,1,N,"GOLDPEN"
+	// B10,28,0,1,2,2,25,N,"10000201"
+	// A10,58,0,1,1,1,N,"10000201"
+
+	// A10,90,0,1,1,1,N,"GOLDPEN"
+	// A10,105,0,1,1,1,N,"10000201"
+	// A10,120,0,1,1,1,N,"W:271,000"
+
+	// P1
+	// `;
+
+	// 		try {
+	// 			const result = await qzTrayService.printRaw(
+	// 				selectedPrinter,
+	// 				pplbBarcodeData
+	// 			);
+	// 			if (result) {
+	// 				setPrintStatus("✅ 인쇄 작업이 성공적으로 전송되었습니다.");
+	// 			} else {
+	// 				setPrintStatus("❌ 인쇄 작업 전송에 실패했습니다.");
+	// 			}
+	// 		} catch (err) {
+	// 			console.error(err);
+	// 			setPrintStatus("❌ 인쇄 중 오류가 발생했습니다.");
+	// 		}
+	// 	};
 
 	return (
 		<div className="barcode-printer-settings">

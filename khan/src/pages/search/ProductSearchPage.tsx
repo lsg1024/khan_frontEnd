@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { productApi } from "../../../libs/api/product";
 import { isApiSuccess } from "../../../libs/api/config";
-import { calculatePureGoldWeight } from "../../utils/goldUtils";
+import {
+	calculatePureGoldWeight,
+	calculatePureGoldWeightWithHarry,
+} from "../../utils/goldUtils";
 import type { ProductDto } from "../../types/product";
 import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/ProductSearchPage.css";
@@ -138,6 +141,19 @@ const ProductSearchPage: React.FC = () => {
 		return productCost + stoneCost;
 	};
 
+	// 총 시세가 계산 (순금 무게 * 금 시세)
+	const calculateTotalGoldPrice = (product: ProductDto): number => {
+		const pureGoldWeight = calculatePureGoldWeightWithHarry(
+			product.productWeight,
+			product.productMaterial
+		);
+
+		const goldCost = Math.ceil(
+			pureGoldWeight * (product.productGoldPrice || 0)
+		);
+		return goldCost;
+	};
+
 	return (
 		<div className="account-search-page">
 			<div className="account-search-container">
@@ -224,7 +240,11 @@ const ProductSearchPage: React.FC = () => {
 												</div>
 												<div className="detail-item">
 													<div className="gold-content">
-														{calculatePureGoldWeight(product.productWeight, product.productMaterial)}돈
+														{calculatePureGoldWeight(
+															product.productWeight,
+															product.productMaterial
+														).toFixed(3)}
+														돈
 													</div>
 												</div>
 												<div className="detail-item">
@@ -253,6 +273,18 @@ const ProductSearchPage: React.FC = () => {
 												)}
 
 											{/* 가격 정보 */}
+											<div className="search-detail-row combined price-row-combined">
+												<div className="search-detail-item">
+													<span className="search-price-label">시세가:</span>
+													<span className="search-labor-cost">
+														{(
+															calculateTotalGoldPrice(product) +
+															calculateTotalLaborCost(product)
+														).toLocaleString()}
+														원
+													</span>
+												</div>
+											</div>
 											<div className="search-detail-row combined price-row-combined">
 												<div className="search-detail-item">
 													<span className="search-price-label">매입:</span>

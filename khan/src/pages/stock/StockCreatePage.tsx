@@ -1064,16 +1064,29 @@ export const StockCreatePage = () => {
 			(row) => row.storeId && row.productId && row.materialId
 		);
 
+		// 필터링된 행 정보 출력
+		const filteredOutRows = stockRows.filter(
+			(row) => !row.storeId || !row.productId || !row.materialId || !row.colorId
+		);
+
 		if (validRows.length === 0) {
-			alert("등록할 재고를 추가해주세요. (거래처, 상품, 재질은 필수입니다)");
+			alert(
+				"주문할 상품을 추가해주세요. (거래처, 모델번호, 재질, 색상은 필수입니다)"
+			);
 			return;
+		}
+
+		if (filteredOutRows.length > 0) {
+			const confirmMsg = `${validRows.length}개의 재고가 저장됩니다.`;
+			if (!confirm(confirmMsg)) {
+				return;
+			}
 		}
 
 		try {
 			setLoading(true);
 
 			const promises = validRows.map((row) => {
-				// assistantStoneName이 비어있으면 assistantStoneId로 이름 찾기
 				let assistantStoneName = row.assistantStoneName;
 				if (!assistantStoneName && row.assistantStoneId) {
 					const foundStone = assistantStones.find(

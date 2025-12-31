@@ -20,6 +20,9 @@ function ProductEditPage() {
 	const [product, setProduct] = useState<Product | null>(null);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string>("");
+	const [validationErrors, setValidationErrors] = useState<
+		Record<string, string>
+	>({});
 	const [imageFile, setImageFile] = useState<File | null>(null);
 	const { handleError } = useErrorHandler();
 
@@ -253,9 +256,66 @@ function ProductEditPage() {
 		}
 	};
 
+	const validateProduct = (): boolean => {
+		const errors: Record<string, string> = {};
+		if (!product!.productName.trim())
+			errors.productName = "상품명은 필수 입력값입니다.";
+		if (!product!.factoryId || product!.factoryId === 0)
+			errors.factoryId = "제조사는 필수 선택값입니다.";
+		if (!product!.productFactoryName.trim())
+			errors.productFactoryName = "제조사 품명은 필수 입력값입니다.";
+
+		const groups = product!.productWorkGradePolicyGroupDto || [];
+		if (groups.length === 0) {
+			errors["productWorkGradePolicyGroupDto[0]"] =
+				"기본 공임 행을 1개 이상 등록하세요.";
+		} else {
+			const base = groups[0];
+			if (!base.colorId || base.colorId === "0") {
+				errors["productWorkGradePolicyGroupDto[0].colorId"] =
+					"색상은 필수 선택값입니다.";
+			}
+			if (base.productPurchasePrice == null || base.productPurchasePrice <= 0) {
+				errors["productWorkGradePolicyGroupDto[0].productPurchasePrice"] =
+					"구매 공임을 입력하세요.";
+			}
+			const policies = base.policyDtos || [];
+			(["GRADE_1", "GRADE_2", "GRADE_3", "GRADE_4"] as const).forEach(
+				(g, order) => {
+					const idx = policies.findIndex((p) => p.grade === g);
+					const item = idx >= 0 ? policies[idx] : undefined;
+					if (!item || item.laborCost == null || item.laborCost <= 0) {
+						const key =
+							idx >= 0
+								? `productWorkGradePolicyGroupDto[0].policyDtos[${idx}].laborCost`
+								: `productWorkGradePolicyGroupDto[0].policyDtos[${order}].laborCost`;
+						errors[key] = `${g.replace("GRADE_", "")}등급 공임을 입력하세요.`;
+					}
+				}
+			);
+		}
+
+		const emptyStoneIndex = product!.productStoneDtos.findIndex(
+			(stone) => !stone.stoneId || stone.stoneId.trim() === ""
+		);
+
+		if (emptyStoneIndex !== -1) {
+			alert(
+				`[No.${
+					emptyStoneIndex + 1
+				}] 스톤이 선택되지 않았습니다.\n\n스톤을 선택하거나, 해당 행을 삭제한 후 다시 시도해주세요.`
+			);
+			return false; // 유효성 검사 실패 -> 저장 중단
+		}
+
+		setValidationErrors(errors);
+		return Object.keys(errors).length === 0;
+	};
+
 	// 상품 정보 저장
 	const handleSaveProduct = async () => {
 		if (!product) return;
+		if (!validateProduct()) return;
 
 		// 유효성 검사
 		if (!product.productName.trim()) {
@@ -430,6 +490,7 @@ function ProductEditPage() {
 						onProductChange={handleProductChange}
 						onFactorySelect={handleFactorySelect}
 						onImageChange={handleImageChange}
+						validationErrors={validationErrors}
 					/>
 				</div>
 
@@ -447,6 +508,7 @@ function ProductEditPage() {
 							};
 						});
 					}}
+					validationErrors={validationErrors}
 				/>
 
 				{/* 스톤 정보 섹션 */}

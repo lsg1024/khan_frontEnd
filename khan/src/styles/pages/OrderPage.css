@@ -123,6 +123,14 @@
 	background-color: #ffe0e0 !important; /* 선택되어도 동일한 재고 배경색 유지 */
 }
 
+.waiting-row {
+	background-color: #fff9c4 !important; /* 노란색 배경 */
+}
+
+.waiting-row.selected-row {
+	background-color: #fff9c4 !important; /* 선택되어도 동일한 대기 배경색 유지 */
+}
+
 /* 배지 스타일 */
 .priority-badge-order,
 .status-badge-order {

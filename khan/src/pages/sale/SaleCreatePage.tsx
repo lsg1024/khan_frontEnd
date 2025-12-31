@@ -709,18 +709,29 @@ export const SaleCreatePage = () => {
 					setError(`일부 항목의 판매 등록에 실패했습니다: ${failedCodes}`);
 				}
 			} else {
-				// 직접 판매 생성하는 경우 - createPaymentSale 사용
-				// 유효한 행이 있는지 확인 (재질과 금중량이 입력된 행)
 				const validRows = saleRows.filter(
 					(row) =>
 						row.materialName && // 재질이 있어야 함
 						(row.goldWeight > 0 || row.productPrice > 0) // 금중량 또는 금액이 있어야 함
 				);
-				console.log("직접 판매 생성 유효한 행:", validRows);
+
+				// 필터링된 행 정보 출력
+				const filteredOutRows = saleRows.filter(
+					(row) =>
+						!row.materialName || (row.goldWeight <= 0 && row.productPrice <= 0)
+				);
 
 				if (validRows.length === 0) {
 					setError("재질과 금중량이 입력된 판매 항목이 없습니다.");
 					return;
+				}
+
+				// 사용자에게 저장될 행 수 확인
+				if (filteredOutRows.length > 0) {
+					const confirmMsg = `${validRows.length}개의 행이 저장됩니다.\n${filteredOutRows.length}개의 행은 재질 또는 금중량/금액이 입력되지 않아 제외됩니다.\n\n계속하시겠습니까?`;
+					if (!confirm(confirmMsg)) {
+						return;
+					}
 				}
 
 				// 각 행을 개별적으로 API 호출
@@ -762,10 +773,11 @@ export const SaleCreatePage = () => {
 				);
 
 				// 결과 확인
+				const successCount = results.filter((r) => r.success).length;
 				const failedItems = results.filter((r) => !r.success);
 
 				if (failedItems.length === 0) {
-					alert("판매 등록이 완료되었습니다.");
+					alert(`${successCount}개의 판매가 성공적으로 등록되었습니다.`);
 					console.log("모든 판매 등록 성공:", results);
 
 					// 초기화
@@ -784,6 +796,9 @@ export const SaleCreatePage = () => {
 					const failedNames = failedItems
 						.map((item) => item.productName)
 						.join(", ");
+					alert(
+						`${successCount}개는 성공했으나, 일부 항목의 판매 등록에 실패했습니다:\n${failedNames}`
+					);
 					setError(`일부 항목의 판매 등록에 실패했습니다: ${failedNames}`);
 				}
 			}
@@ -1177,13 +1192,23 @@ export const SaleCreatePage = () => {
 			.filter((row) => row.status === "결제" || row.status === "결통")
 			.reduce((acc, row) => acc + row.pureGoldWeight, 0);
 
+		// WG: 입력된 금액을 시세로 나눠서 중량 계산
 		const wgTotalMoney = saleRows
 			.filter((row) => row.status === "WG")
-			.reduce(
-				(acc, row) => acc + row.pureGoldWeight * saleOptions.marketPrice,
-				0
-			);
+			.reduce((acc, row) => acc + row.productPrice, 0);
 
+		// WG 중량: 입력된 금액 / 시세
+		const wgTotalGold =
+			saleOptions.marketPrice > 0
+				? saleRows
+						.filter((row) => row.status === "WG")
+						.reduce(
+							(acc, row) => acc + row.productPrice / saleOptions.marketPrice,
+							0
+						)
+				: 0;
+				
+		// 금 거래 내역 상태 업데이트
 		setAccountBalanceHistory((prev) => ({
 			...prev,
 			salesGoldBalance: salesTotalGold,
@@ -1201,7 +1226,8 @@ export const SaleCreatePage = () => {
 				salesTotalGold -
 				returnsTotalGold -
 				dcTotalGold -
-				paymentTotalGold,
+				paymentTotalGold -
+				wgTotalGold,
 			afterMoneyBalance:
 				prev.previousMoneyBalance +
 				salesTotalMoney -

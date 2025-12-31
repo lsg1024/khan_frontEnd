@@ -1,7 +1,6 @@
 import React from "react";
 import type { StockOrderRows } from "../../../types/stock";
-import "../../../styles/components/stock/StockTable.css"
-
+import "../../../styles/components/stock/StockTable.css";
 
 interface BaseStockTableProps {
 	stockRows: StockOrderRows[];
@@ -158,7 +157,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 		if ("isRowInputEnabled" in props && props.isRowInputEnabled) {
 			return props.isRowInputEnabled(currentIndex);
 		}
-		return true; 
+		return true;
 	};
 
 	const safeOnRequiredFieldClick = (
@@ -268,20 +267,14 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 						const isSaleMode = mode === "sales";
 
 						return (
-							<tr
-								key={row.id}
-								onClick={() => safeOnRowFocus(row.id)}
-							>
+							<tr key={row.id} onClick={() => safeOnRowFocus(row.id)}>
 								<td className="no-cell">{index + 1}</td>
 								<td className="no-cell">
 									<button
 										className="btn-delete-row"
 										onClick={() => safeOnRowDelete(row.id)}
 										disabled={
-											loading ||
-											isReadOnlyMode ||
-											isDetailMode ||
-											isSaleMode
+											loading || isReadOnlyMode || isDetailMode || isSaleMode
 										}
 									>
 										🗑️
@@ -302,8 +295,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												isSaleMode
 											}
 											style={{
-												backgroundColor:
-													isCreateMode ? "white" : "#f5f5f5",
+												backgroundColor: isCreateMode ? "white" : "#f5f5f5",
 											}}
 											onClick={() => {
 												if (
@@ -315,10 +307,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												}
 											}}
 											onFocus={() => {
-												if (
-													mode === "create" &&
-													safeIsRowInputEnabled(index)
-												) {
+												if (mode === "create" && safeIsRowInputEnabled(index)) {
 													safeOnRowFocus(row.id);
 												}
 											}}
@@ -327,23 +316,17 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											<span
 												className="search-icon"
 												onClick={() => {
-													if (
-														safeIsRowInputEnabled(index)
-													) {
+													if (safeIsRowInputEnabled(index)) {
 														safeOnStoreSearchOpen(row.id);
 													} else {
 														alert("이전 주문장을 완성해 주세요.");
 													}
 												}}
 												style={{
-													opacity:
-														!safeIsRowInputEnabled(index) 
-															? 0.5
-															: 1,
-													cursor:
-														!safeIsRowInputEnabled(index)
-															? "not-allowed"
-															: "pointer",
+													opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+													cursor: !safeIsRowInputEnabled(index)
+														? "not-allowed"
+														: "pointer",
 												}}
 											>
 												🔍
@@ -366,8 +349,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												isSaleMode
 											}
 											style={{
-												backgroundColor:
-													isCreateMode ? "white" : "#f5f5f5",
+												backgroundColor: isCreateMode ? "white" : "#f5f5f5",
 											}}
 											onClick={() => {
 												if (
@@ -379,10 +361,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												}
 											}}
 											onFocus={() => {
-												if (
-													mode === "create" &&
-													safeIsRowInputEnabled(index)
-												) {
+												if (mode === "create" && safeIsRowInputEnabled(index)) {
 													safeOnRowFocus(row.id);
 												}
 											}}
@@ -391,23 +370,17 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											<span
 												className="search-icon"
 												onClick={() => {
-													if (
-														safeIsRowInputEnabled(index)
-													) {
+													if (safeIsRowInputEnabled(index)) {
 														safeOnProductSearchOpen(row.id);
 													} else {
 														alert("이전 주문장을 완성해 주세요.");
 													}
 												}}
 												style={{
-													opacity:
-														!safeIsRowInputEnabled(index)
-															? 0.5
-															: 1,
-													cursor:
-														!safeIsRowInputEnabled(index)
-															? "not-allowed"
-															: "pointer",
+													opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+													cursor: !safeIsRowInputEnabled(index)
+														? "not-allowed"
+														: "pointer",
 												}}
 											>
 												🔍
@@ -422,34 +395,26 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											value={row.factoryName}
 											readOnly
 											placeholder="제조사"
-											disabled={
-												isReadOnlyMode || isDetailMode || isSaleMode
-											}
+											disabled={isReadOnlyMode || isDetailMode || isSaleMode}
 											style={{
-												backgroundColor:
-													isCreateMode ? "white" : "#f5f5f5",
+												backgroundColor: isCreateMode ? "white" : "#f5f5f5",
 											}}
 										/>
 										{isCreateMode && (
 											<span
 												className="search-icon"
 												onClick={() => {
-													if (
-														safeIsRowInputEnabled(index)
-													) {
+													if (safeIsRowInputEnabled(index)) {
 														safeOnFactorySearchOpen(row.id);
 													} else {
 														alert("이전 주문장을 완성해 주세요.");
 													}
 												}}
 												style={{
-													opacity:
-														!safeIsRowInputEnabled(index)															? 0.5
-															: 1,
-													cursor:
-														!safeIsRowInputEnabled(index)
-															? "not-allowed"
-															: "pointer",
+													opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+													cursor: !safeIsRowInputEnabled(index)
+														? "not-allowed"
+														: "pointer",
 												}}
 											>
 												🔍
@@ -460,9 +425,13 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="drop-down-cell">
 									<select
 										value={row.materialId}
+										onFocus={() => {
+											if (!isReadOnlyMode && !isDetailMode && !isSaleMode) {
+												safeOnRequiredFieldClick(row.id, "material");
+											}
+										}}
 										onChange={(e) => {
-											if (isReadOnlyMode || isDetailMode || isSaleMode)
-												return;
+											if (isReadOnlyMode || isDetailMode || isSaleMode) return;
 											const selectedMaterial = materials.find(
 												(m) => m.materialId === e.target.value
 											);
@@ -475,7 +444,8 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										}}
 										disabled={isReadOnlyMode || isDetailMode || isSaleMode}
 										style={{
-											opacity: isReadOnlyMode || isDetailMode || isSaleMode ? 0.6 : 1,
+											opacity:
+												isReadOnlyMode || isDetailMode || isSaleMode ? 0.6 : 1,
 											cursor:
 												isReadOnlyMode || isDetailMode || isSaleMode
 													? "not-allowed"
@@ -496,9 +466,13 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="drop-down-cell2">
 									<select
 										value={row.colorId}
+										onFocus={() => {
+											if (!isReadOnlyMode && !isDetailMode && !isSaleMode) {
+												safeOnRequiredFieldClick(row.id, "color");
+											}
+										}}
 										onChange={(e) => {
-											if (isReadOnlyMode || isDetailMode || isSaleMode)
-												return; // 재고 상태 또는 상세보기 모드일 때 변경 방지
+											if (isReadOnlyMode || isDetailMode || isSaleMode) return; // 재고 상태 또는 상세보기 모드일 때 변경 방지
 											const selectedColor = colors.find(
 												(c) => c.colorId === e.target.value
 											);
@@ -511,7 +485,8 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										}}
 										disabled={isReadOnlyMode || isDetailMode || isSaleMode}
 										style={{
-											opacity: isReadOnlyMode || isDetailMode || isSaleMode ? 0.6 : 1,
+											opacity:
+												isReadOnlyMode || isDetailMode || isSaleMode ? 0.6 : 1,
 											cursor:
 												isReadOnlyMode || isDetailMode || isSaleMode
 													? "not-allowed"
@@ -548,11 +523,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										}}
 										disabled={isReadOnlyMode}
 										style={{
-											backgroundColor:
-												isReadOnlyMode ? "#f5f5f5" : "white",
+											backgroundColor: isReadOnlyMode ? "#f5f5f5" : "white",
 										}}
 									>
-										<option value="">선택</option>
 										{assistantStones.map((stone) => (
 											<option
 												key={stone.assistantStoneId}
@@ -575,8 +548,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										}}
 										disabled={isReadOnlyMode}
 										style={{
-											backgroundColor:
-												isReadOnlyMode ? "#f5f5f5" : "white",
+											backgroundColor: isReadOnlyMode ? "#f5f5f5" : "white",
 										}}
 									>
 										<option value="N">N</option>
@@ -596,9 +568,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											);
 										}}
 										disabled={
-											loading ||
-											row.assistantStone === false ||
-											isReadOnlyMode
+											loading || row.assistantStone === false || isReadOnlyMode
 										}
 										readOnly
 										style={{
@@ -864,13 +834,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										}}
 										disabled={loading || isReadOnlyMode}
 										style={{
-											backgroundColor:
-												isReadOnlyMode ? "#f5f5f5" : "white",
+											backgroundColor: isReadOnlyMode ? "#f5f5f5" : "white",
 											opacity: isReadOnlyMode ? 0.6 : 1,
-											cursor:
-												isReadOnlyMode
-													? "not-allowed"
-													: "pointer",
+											cursor: isReadOnlyMode ? "not-allowed" : "pointer",
 										}}
 									>
 										<option value="">헤리</option>

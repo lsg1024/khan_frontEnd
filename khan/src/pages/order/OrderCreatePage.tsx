@@ -224,7 +224,6 @@ const OrderCreatePage = () => {
 			setOrderRows((prevRows) => {
 				return prevRows.map((row) => {
 					if (row.id === id) {
-					
 						const {
 							storeId: prevStore,
 							productId: prevProduct,
@@ -838,6 +837,7 @@ const OrderCreatePage = () => {
 								(m) =>
 									m.materialName === productDetail.materialDto?.materialName
 							);
+							
 							// 색상 매칭 (ProductDto에 color 정보가 있다고 가정)
 							const matchedColor = productDetail
 								.productWorkGradePolicyGroupDto[0].colorName
@@ -904,11 +904,24 @@ const OrderCreatePage = () => {
 			(row) => row.storeId && row.productId && row.materialId && row.colorId
 		);
 
+		// 필터링된 행 정보 출력
+		const filteredOutRows = orderRows.filter(
+			(row) => !row.storeId || !row.productId || !row.materialId || !row.colorId
+		);
+
 		if (validRows.length === 0) {
 			alert(
 				"주문할 상품을 추가해주세요. (거래처, 모델번호, 재질, 색상은 필수입니다)"
 			);
 			return;
+		}
+
+		// 사용자에게 저장될 행 수 확인
+		if (filteredOutRows.length > 0) {
+			const confirmMsg = `${validRows.length}개의 주문이 저장됩니다.`;
+			if (!confirm(confirmMsg)) {
+				return;
+			}
 		}
 
 		try {

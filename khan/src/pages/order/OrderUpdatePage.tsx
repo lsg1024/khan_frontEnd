@@ -503,7 +503,7 @@ const OrderUpdatePage: React.FC = () => {
 					setAssistantStones(assistantStonesData);
 				}
 
-				// 주문 상세 정보를 OrderRowData로 변환 (드롭다운 데이터와 함께)
+				// 주문 상세 정보를 OrderRowData로 변환
 				if (orderRes.success && orderRes.data) {
 					const detail = orderRes.data as OrderResponseDetail;
 					setOrderDetail(detail);
@@ -632,6 +632,13 @@ const OrderUpdatePage: React.FC = () => {
 			if (response.success) {
 				alert("주문이 성공적으로 업데이트되었습니다.");
 
+				// 부모 창에 업데이트 완료 메시지 전송
+				if (window.opener && !window.opener.closed) {
+					window.opener.postMessage(
+						{ type: "ORDER_UPDATED" },
+						window.location.origin
+					);
+				}
 				window.close();
 			} else {
 				throw new Error(response.message || "주문 업데이트에 실패했습니다.");
