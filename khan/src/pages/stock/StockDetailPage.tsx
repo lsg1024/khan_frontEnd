@@ -7,6 +7,10 @@ import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { goldHarryApi } from "../../../libs/api/goldHarry";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { StockOrderRows } from "../../types/stock";
+import type { MaterialDto } from "../../types/material";
+import type { ColorDto } from "../../types/color";
+import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
+import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarry";
 import StockTable from "../../components/common/stock/StockTable";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 
@@ -19,16 +23,16 @@ const StockDetailPage: React.FC = () => {
 	const [error, setError] = useState("");
 
 	const [materials, setMaterials] = useState<
-		{ materialId: string; materialName: string }[]
+		MaterialDto[]
 	>([]);
 	const [colors, setColors] = useState<
-		{ colorId: string; colorName: string }[]
+		ColorDto[]
 	>([]);
 	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: string; assistantStoneName: string }[]
+		AssistantStoneDto[]
 	>([]);
 	const [goldHarries, setGoldHarries] = useState<
-		{ goldHarryId: string; goldHarry: string }[]
+		GoldHarryDto[]
 	>([]);
 
 	useEffect(() => {
@@ -68,7 +72,7 @@ const StockDetailPage: React.FC = () => {
 					: [];
 				const loadedAssistantStones = assistantStoneRes.success
 					? (assistantStoneRes.data || []).map((a) => ({
-							assistantStoneId: a.assistantStoneId?.toString() || "",
+							assistantStoneId: a.assistantStoneId,
 							assistantStoneName: a.assistantStoneName,
 					  }))
 					: [];
@@ -135,8 +139,8 @@ const StockDetailPage: React.FC = () => {
 						stoneWeightTotal: calculatedStoneData.stoneWeight,
 						assistantStone: response.assistantStone || false,
 						assistantStoneId:
-							response.assistantStoneId ||
-							foundAssistantStone?.assistantStoneId ||
+							response.assistantStoneId.toString() ||
+							foundAssistantStone?.assistantStoneId.toString() ||
 							"",
 						assistantStoneName: response.assistantStoneName || "",
 						assistantStoneCreateAt: response.assistantStoneCreateAt || "",

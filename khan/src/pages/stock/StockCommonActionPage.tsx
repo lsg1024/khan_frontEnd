@@ -8,6 +8,10 @@ import { assistantStoneApi } from "../../../libs/api/assistantStone";
 import { goldHarryApi } from "../../../libs/api/goldHarry";
 import { formatToLocalDate, getLocalDate } from "../../utils/dateUtils";
 import { calculateStoneDetails } from "../../utils/calculateStone";
+import type { MaterialDto } from "../../types/material";
+import type { ColorDto } from "../../types/color";
+import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
+import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarry";
 import type { ResponseDetail, StockOrderRows } from "../../types/stock";
 import StockTable from "../../components/common/stock/StockTable";
 import "../../styles/pages/stock/StockUpdatePage.css";
@@ -25,19 +29,10 @@ const StockCommonActionPage: React.FC = () => {
 	const [flowCodes, setFlowCodes] = useState<string[]>([]);
 
 	// 드롭다운 데이터
-	const [materials, setMaterials] = useState<
-		{ materialId: string; materialName: string }[]
-	>([]);
-	const [colors, setColors] = useState<
-		{ colorId: string; colorName: string }[]
-	>([]);
-	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: string; assistantStoneName: string }[]
-	>([]);
-	const [goldHarries, setGoldHarries] = useState<
-		{ goldHarryId: string; goldHarry: string }[]
-	>([]);
-
+	const [materials, setMaterials] = useState<MaterialDto[]>([]);
+	const [colors, setColors] = useState<ColorDto[]>([]);
+	const [assistantStones, setAssistantStones] = useState<AssistantStoneDto[]>([]);
+	const [goldHarries, setGoldHarries] = useState<GoldHarryDto[]>([]);
 	// 액션 타입에 따른 타이틀
 	const getTitle = () => {
 		switch (action) {
@@ -170,12 +165,8 @@ const StockCommonActionPage: React.FC = () => {
 						goldHarryApi.getGoldHarry(),
 					]);
 
-				// 드롭다운 데이터 설정
-				let materialsData: { materialId: string; materialName: string }[] = [];
-				let colorsData: { colorId: string; colorName: string }[] = [];
-
 				if (materialRes.success) {
-					materialsData = (materialRes.data || []).map((m) => ({
+					const materialsData = (materialRes.data || []).map((m) => ({
 						materialId: m.materialId?.toString() || "",
 						materialName: m.materialName,
 					}));
@@ -183,20 +174,16 @@ const StockCommonActionPage: React.FC = () => {
 				}
 
 				if (colorRes.success) {
-					colorsData = (colorRes.data || []).map((c) => ({
+					const colorsData = (colorRes.data || []).map((c) => ({
 						colorId: c.colorId?.toString() || "",
 						colorName: c.colorName,
 					}));
 					setColors(colorsData);
 				}
 
-				let assistantStonesData: {
-					assistantStoneId: string;
-					assistantStoneName: string;
-				}[] = [];
 				if (assistantStoneRes.success) {
-					assistantStonesData = (assistantStoneRes.data || []).map((a) => ({
-						assistantStoneId: a.assistantStoneId.toString(),
+					const assistantStonesData = (assistantStoneRes.data || []).map((a) => ({
+						assistantStoneId: a.assistantStoneId,
 						assistantStoneName: a.assistantStoneName,
 					}));
 					setAssistantStones(assistantStonesData);
@@ -234,18 +221,18 @@ const StockCommonActionPage: React.FC = () => {
 						);
 
 						// materialId와 colorId 찾기
-						const foundMaterial = materialsData.find(
+						const foundMaterial = materials.find(
 							(m) => m.materialName === detail.materialName
 						);
-						const foundColor = colorsData.find(
+						const foundColor = colors.find(
 							(c) => c.colorName === detail.colorName
 						);
 
 						// assistantStoneName이 비어있으면 ID로 찾기
 						let assistantStoneName = detail.assistantStoneName || "";
 						if (!assistantStoneName && detail.assistantStoneId) {
-							const foundAssistantStone = assistantStonesData.find(
-								(a) => a.assistantStoneId === detail.assistantStoneId
+							const foundAssistantStone = assistantStones.find(
+								(a) => a.assistantStoneId.toString() === detail.assistantStoneId
 							);
 							assistantStoneName =
 								foundAssistantStone?.assistantStoneName || "";
@@ -374,7 +361,7 @@ const StockCommonActionPage: React.FC = () => {
 					let assistantStoneName = currentRow.assistantStoneName;
 					if (!assistantStoneName && currentRow.assistantStoneId) {
 						const foundStone = assistantStones.find(
-							(s) => s.assistantStoneId === currentRow.assistantStoneId
+							(s) => s.assistantStoneId.toString() === currentRow.assistantStoneId
 						);
 						assistantStoneName = foundStone?.assistantStoneName || "";
 					}
@@ -411,7 +398,7 @@ const StockCommonActionPage: React.FC = () => {
 					let assistantStoneName = currentRow.assistantStoneName;
 					if (!assistantStoneName && currentRow.assistantStoneId) {
 						const foundStone = assistantStones.find(
-							(s) => s.assistantStoneId === currentRow.assistantStoneId
+							(s) => s.assistantStoneId.toString() === currentRow.assistantStoneId
 						);
 						assistantStoneName = foundStone?.assistantStoneName || "";
 					}

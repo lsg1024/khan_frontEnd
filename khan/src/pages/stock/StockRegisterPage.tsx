@@ -8,6 +8,10 @@ import { goldHarryApi } from "../../../libs/api/goldHarry";
 import { storeApi } from "../../../libs/api/store";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { getLocalDate } from "../../utils/dateUtils";
+import type { MaterialDto } from "../../types/material";
+import type { ColorDto } from "../../types/color";
+import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
+import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarry";
 import type {
 	StockOrderRows,
 	StockRegisterRequest,
@@ -27,9 +31,9 @@ const POPUP_ORIGIN = window.location.origin;
 const convertToStockOrderRowData = (
 	response: ResponseDetail,
 	grade: string,
-	materials: { materialId: string; materialName: string }[],
-	colors: { colorId: string; colorName: string }[],
-	assistantStones: { assistantStoneId: string; assistantStoneName: string }[]
+	materials: MaterialDto[],
+	colors: ColorDto[],
+	assistantStones: AssistantStoneDto[]
 ): StockOrderRows => {
 	const calculatedStoneData = calculateStoneDetails(response.stoneInfos);
 
@@ -72,12 +76,12 @@ const convertToStockOrderRowData = (
 		assistanceStonePrice: calculatedStoneData.assistanceStonePrice,
 		mainStoneCount: calculatedStoneData.mainStoneCount,
 		assistanceStoneCount: calculatedStoneData.assistanceStoneCount,
-		// 서버에서 받은 stoneAddLaborCost 값 사용 (undefined이면 0)
+		
 		stoneAddLaborCost: response.stoneAddLaborCost || 0,
 		stoneWeightTotal: calculatedStoneData.stoneWeight, // 계산된 알중량 합계
 		// 보조석 관련 필드
 		assistantStone: response.assistantStone || false,
-		assistantStoneId: foundAssistantStone?.assistantStoneId || "",
+		assistantStoneId: foundAssistantStone?.assistantStoneId.toString() || "",
 		assistantStoneName: response.assistantStoneName || "",
 		assistantStoneCreateAt: response.assistantStoneCreateAt || "",
 		totalWeight: (
@@ -104,16 +108,16 @@ const StockRegisterPage: React.FC = () => {
 
 	// 드롭다운 데이터 (한 번만 로드하면 됨)
 	const [materials, setMaterials] = useState<
-		{ materialId: string; materialName: string }[]
+		MaterialDto[]
 	>([]);
 	const [colors, setColors] = useState<
-		{ colorId: string; colorName: string }[]
+		ColorDto[]
 	>([]);
 	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: string; assistantStoneName: string }[]
+		AssistantStoneDto[]
 	>([]);
 	const [goldHarries, setGoldHarries] = useState<
-		{ goldHarryId: string; goldHarry: string }[]
+		GoldHarryDto[]
 	>([]);
 
 	const [isStoreSearchOpen, setIsStoreSearchOpen] = useState(false);
@@ -415,7 +419,7 @@ const StockRegisterPage: React.FC = () => {
 					: [];
 				const loadedAssistantStones = assistantStoneRes.success
 					? (assistantStoneRes.data || []).map((a) => ({
-							assistantStoneId: a.assistantStoneId?.toString() || "",
+							assistantStoneId: a.assistantStoneId,
 							assistantStoneName: a.assistantStoneName,
 					  }))
 					: [];

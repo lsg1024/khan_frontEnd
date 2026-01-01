@@ -160,6 +160,7 @@ export const StockHistoryPage = () => {
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
 		loadStocks(resetFilters, 1);
+		fetchDropdownData();
 	};
 
 	const handleExcelDownload = async () => {

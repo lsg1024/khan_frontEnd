@@ -104,6 +104,7 @@ export const TotalRentalListPage = () => {
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
 		loadStocks(resetFilters, 1);
+		fetchDropdownData();
 	};
 
 	const handleExcelDownload = async () => {
@@ -182,7 +183,7 @@ export const TotalRentalListPage = () => {
 					return content;
 				}
 			} catch (err) {
-				handleError(err)
+				handleError(err);
 				setStocks([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -234,7 +235,7 @@ export const TotalRentalListPage = () => {
 				setColors(colorResponse.data);
 			}
 		} catch (err) {
-			handleError(err)
+			handleError(err);
 		} finally {
 			setDropdownLoading(false);
 		}

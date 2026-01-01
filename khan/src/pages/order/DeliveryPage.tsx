@@ -13,7 +13,10 @@ import type { OrderDto } from "../../types/order";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
 import { useTenant } from "../../tenant/UserTenant";
-import { printDeliveryBarcode, printProductBarcode } from "../../service/barcodePrintService";
+import {
+	printDeliveryBarcode,
+	printProductBarcode,
+} from "../../service/barcodePrintService";
 import "../../styles/pages/OrderPage.css";
 
 export const ExpactPage = () => {
@@ -67,13 +70,13 @@ export const ExpactPage = () => {
 	const prevEnd = () => searchFilters.end;
 
 	// 검색 실행
-	const handleSearch = () => {
+	const handleSearch = async () => {
 		setCurrentPage(1);
-		loadExpacts(searchFilters, 1);
+		await Promise.all([loadExpacts(searchFilters, 1), fetchDropdownData()]);
 	};
 
 	// 검색 초기화
-	const handleReset = () => {
+	const handleReset = async () => {
 		const resetFilters: SearchFilters = {
 			search: "",
 			start: getLocalDate(),
@@ -87,7 +90,7 @@ export const ExpactPage = () => {
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
-		loadExpacts(resetFilters, 1);
+		await Promise.all([loadExpacts(resetFilters, 1), fetchDropdownData()]);
 	};
 
 	// 체크박스 관련 핸들러 (다중 선택)
@@ -266,7 +269,7 @@ export const ExpactPage = () => {
 
 		try {
 			for (const flowCode of selectedExpact) {
-				const expact = expacts.find(e => e.flowCode === flowCode);
+				const expact = expacts.find((e) => e.flowCode === flowCode);
 				if (!expact) continue;
 
 				await printDeliveryBarcode(printerName, {
@@ -304,7 +307,7 @@ export const ExpactPage = () => {
 				await printProductBarcode(printerName, {
 					subdomain: tenant || "",
 					productName: "",
-					serialNumber: flowCode
+					serialNumber: flowCode,
 				});
 			}
 			alert(`${selectedExpact.length}개의 제품 바코드 출력이 완료되었습니다.`);
@@ -476,20 +479,20 @@ export const ExpactPage = () => {
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}
 						onDelete={handleBulkDelete}
-					onPrintProductBarcode={handlePrintProductBarcode}
-					onPrintDeliveryBarcode={handlePrintDeliveryBarcode}
-					className="order"
-				/>
+						onPrintProductBarcode={handlePrintProductBarcode}
+						onPrintDeliveryBarcode={handlePrintDeliveryBarcode}
+						className="order"
+					/>
 
-				{/* 페이지네이션 */}
-				<Pagination
-					currentPage={currentPage}
-					totalPages={totalPages}
-					totalElements={totalElements}
-					onPageChange={(page) => {
-						setCurrentPage(page);
-						loadExpacts(searchFilters, page);
-					}}
+					{/* 페이지네이션 */}
+					<Pagination
+						currentPage={currentPage}
+						totalPages={totalPages}
+						totalElements={totalElements}
+						onPageChange={(page) => {
+							setCurrentPage(page);
+							loadExpacts(searchFilters, page);
+						}}
 					/>
 				</div>
 

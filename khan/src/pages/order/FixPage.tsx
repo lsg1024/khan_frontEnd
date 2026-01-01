@@ -13,7 +13,10 @@ import type { OrderDto } from "../../types/order";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
 import { useTenant } from "../../tenant/UserTenant";
-import { printDeliveryBarcode, printProductBarcode } from "../../service/barcodePrintService";
+import {
+	printDeliveryBarcode,
+	printProductBarcode,
+} from "../../service/barcodePrintService";
 import "../../styles/pages/OrderPage.css";
 
 export const FixPage = () => {
@@ -69,13 +72,13 @@ export const FixPage = () => {
 	const prevEnd = () => searchFilters.end;
 
 	// 검색 실행
-	const handleSearch = () => {
+	const handleSearch = async () => {
 		setCurrentPage(1);
-		loadFixes(searchFilters, 1);
+		await Promise.all([loadFixes(searchFilters, 1), fetchDropdownData()]);
 	};
 
 	// 검색 초기화
-	const handleReset = () => {
+	const handleReset = async () => {
 		const resetFilters: SearchFilters = {
 			search: "",
 			start: getLocalDate(),
@@ -89,7 +92,7 @@ export const FixPage = () => {
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
-		loadFixes(resetFilters, 1);
+		await Promise.all([loadFixes(resetFilters, 1), fetchDropdownData()]);
 	};
 
 	// 주문 데이터 로드 함수
@@ -166,7 +169,7 @@ export const FixPage = () => {
 
 		try {
 			for (const flowCode of selectedFix) {
-				const fix = fixes.find(f => f.flowCode === flowCode);
+				const fix = fixes.find((f) => f.flowCode === flowCode);
 				if (!fix) continue;
 
 				await printDeliveryBarcode(printerName, {
@@ -204,7 +207,7 @@ export const FixPage = () => {
 				await printProductBarcode(printerName, {
 					subdomain: tenant || "",
 					productName: "",
-					serialNumber: flowCode
+					serialNumber: flowCode,
 				});
 			}
 			alert(`${selectedFix.length}개의 제품 바코드 출력이 완료되었습니다.`);
@@ -460,33 +463,32 @@ export const FixPage = () => {
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}
 						onDelete={handleBulkDelete}
-					onPrintProductBarcode={handlePrintProductBarcode}
-					onPrintDeliveryBarcode={handlePrintDeliveryBarcode}
-					className="order"
-				/>
+						onPrintProductBarcode={handlePrintProductBarcode}
+						onPrintDeliveryBarcode={handlePrintDeliveryBarcode}
+						className="order"
+					/>
 
-				{/* 페이지네이션 */}
-				<Pagination
-					currentPage={currentPage}
-					totalPages={totalPages}
-					totalElements={totalElements}
-					onPageChange={(page) => {
-						setCurrentPage(page);
-						loadFixes(searchFilters, page);
-					}}
-				/>
+					{/* 페이지네이션 */}
+					<Pagination
+						currentPage={currentPage}
+						totalPages={totalPages}
+						totalElements={totalElements}
+						onPageChange={(page) => {
+							setCurrentPage(page);
+							loadFixes(searchFilters, page);
+						}}
+					/>
 				</div>
 
-			{/* 제조사 검색 팝업 */}
-			{isFactorySearchOpen && (
-				<FactorySearch
-					onSelectFactory={handleFactorySelect}
-					onClose={handleFactorySearchClose}
-				/>
-			)}
+				{/* 제조사 검색 팝업 */}
+				{isFactorySearchOpen && (
+					<FactorySearch
+						onSelectFactory={handleFactorySelect}
+						onClose={handleFactorySearchClose}
+					/>
+				)}
 			</div>
 		</>
 	);
-
 };
 export default FixPage;

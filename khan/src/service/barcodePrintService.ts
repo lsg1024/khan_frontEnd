@@ -239,5 +239,6 @@ export const printProductBarcode = async (
     printerName: string,
     data: ProductBarcodeData
 ): Promise<void> => {
+    console.log("제품 바코드 출력 데이터:", printerName, data);
     alert("제품 바코드 출력 기능은 준비 중입니다.");
 };

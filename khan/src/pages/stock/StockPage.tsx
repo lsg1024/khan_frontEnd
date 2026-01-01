@@ -165,6 +165,7 @@ export const StockPage = () => {
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
 		loadStocks(resetFilters, 1);
+		fetchDropdownData();
 	};
 
 	const handleStockCreate = () => {

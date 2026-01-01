@@ -246,13 +246,13 @@ export const OrderPage = () => {
 	};
 
 	// 검색 실행
-	const handleSearch = () => {
+	const handleSearch = async () => {
 		setCurrentPage(1);
-		loadOrders(searchFilters, 1);
+		await Promise.all([loadOrders(searchFilters, 1), fetchDropdownData()]);
 	};
 
 	// 검색 초기화
-	const handleReset = () => {
+	const handleReset = async () => {
 		const resetFilters: SearchFilters = {
 			search: "",
 			start: getLocalDate(),
@@ -266,7 +266,7 @@ export const OrderPage = () => {
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
-		loadOrders(resetFilters, 1);
+		await Promise.all([loadOrders(resetFilters, 1), fetchDropdownData()]);
 	};
 
 	// 주문 데이터 로드 함수

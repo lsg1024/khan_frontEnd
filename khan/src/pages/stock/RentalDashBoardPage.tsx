@@ -166,6 +166,7 @@ export const RentalDashBoardPage = () => {
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
 		loadStocks(resetFilters, 1);
+		fetchDropdownData();
 	};
 
 	// 반납 처리 핸들러

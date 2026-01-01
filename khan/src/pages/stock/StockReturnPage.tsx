@@ -115,6 +115,7 @@ export const StockReturnPage = () => {
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
 		loadStocks(resetFilters, 1);
+		fetchDropdownData();
 	};
 
 	const handleBulkRollBack = async () => {
@@ -141,7 +142,7 @@ export const StockReturnPage = () => {
 			await loadStocks(searchFilters, currentPage);
 			setSelectedStocks([]);
 		} catch (err) {
-			handleError(err)
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -225,7 +226,7 @@ export const StockReturnPage = () => {
 					return content;
 				}
 			} catch (err) {
-				handleError(err)
+				handleError(err);
 				setStocks([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -277,7 +278,7 @@ export const StockReturnPage = () => {
 				setColors(colorResponse.data);
 			}
 		} catch (err) {
-			handleError(err)
+			handleError(err);
 		} finally {
 			setDropdownLoading(false);
 		}

@@ -116,6 +116,7 @@ export const StockDeletePage = () => {
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
 		loadStocks(resetFilters, 1);
+		fetchDropdownData();
 	};
 
 	const handleBulkRollBack = async () => {
@@ -142,7 +143,7 @@ export const StockDeletePage = () => {
 			await loadStocks(searchFilters, currentPage);
 			setSelectedStocks([]);
 		} catch (err) {
-			handleError(err)
+			handleError(err);
 			alert("복구 처리 중 오류가 발생했습니다.");
 		} finally {
 			setLoading(false);
