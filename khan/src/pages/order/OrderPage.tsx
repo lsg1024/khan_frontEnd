@@ -11,6 +11,11 @@ import OrderSearch from "../../components/common/order/OrderSearch";
 import type { SearchFilters } from "../../components/common/order/OrderSearch";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
+import { useTenant } from "../../tenant/UserTenant";
+import {
+	printDeliveryBarcode,
+	printProductBarcode,
+} from "../../service/barcodePrintService";
 import "../../styles/pages/OrderPage.css";
 
 export const OrderPage = () => {
@@ -34,6 +39,7 @@ export const OrderPage = () => {
 	const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
 	const { handleError } = useErrorHandler();
+	const { tenant } = useTenant();
 
 	const orderCreationPopup = useRef<Window | null>(null);
 	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
@@ -366,6 +372,69 @@ export const OrderPage = () => {
 		handleBulkDelete();
 	};
 
+	// 바코드 출력 핸들러
+	const handlePrintDeliveryBarcode = async () => {
+		if (selectedOrders.length === 0) {
+			alert("출고 바코드를 출력할 항목을 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selectedOrders) {
+				const order = orders.find((o) => o.flowCode === flowCode);
+				if (!order) continue;
+
+				await printDeliveryBarcode(printerName, {
+					subdomain: tenant || "",
+					productName: order.productName || "",
+					material: order.materialName || "",
+					color: order.colorName || "",
+					weight: order.productWeight?.toString() || "",
+					size: order.productSize || "",
+					mainStoneMemo: order.mainStoneNote || "",
+					assistantStoneMemo: order.assistanceStoneNote || "",
+					assistantStoneName: "",
+					serialNumber: order.flowCode || "",
+				});
+			}
+			alert(`${selectedOrders.length}개의 출고 바코드 출력이 완료되었습니다.`);
+		} catch {
+			alert("바코드 출력 중 오류가 발생했습니다.");
+		}
+	};
+
+	const handlePrintProductBarcode = async () => {
+		if (selectedOrders.length === 0) {
+			alert("제품 바코드를 출력할 항목을 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selectedOrders) {
+				await printProductBarcode(printerName, {
+					subdomain: tenant || "",
+					productName: "",
+					serialNumber: flowCode,
+				});
+			}
+			alert(`${selectedOrders.length}개의 제품 바코드 출력이 완료되었습니다.`);
+		} catch {
+			alert("제품 바코드 출력 기능은 준비 중입니다.");
+		}
+	};
+
 	const fetchDropdownData = async () => {
 		setDropdownLoading(true);
 		try {
@@ -538,6 +607,8 @@ export const OrderPage = () => {
 						onStockRegister={handleStockRegisterWrapper}
 						onSalesRegister={handleSalesRegisterWrapper}
 						onDelete={handleBulkDeleteWrapper}
+						onPrintProductBarcode={handlePrintProductBarcode}
+						onPrintDeliveryBarcode={handlePrintDeliveryBarcode}
 						className="order"
 					/>
 
@@ -546,12 +617,10 @@ export const OrderPage = () => {
 						currentPage={currentPage}
 						totalPages={totalPages}
 						totalElements={totalElements}
-						loading={loading}
 						onPageChange={(page) => {
 							setCurrentPage(page);
 							loadOrders(searchFilters, page);
 						}}
-						className="order"
 					/>
 				</div>
 

@@ -60,6 +60,7 @@ import Layout from "./components/layout/Layout";
 import "./App.css";
 import "./styles/index.css";
 import { tokenUtils } from "./utils/tokenUtils";
+import { qzTrayService } from "./service/qzTrayService";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -70,6 +71,15 @@ function App() {
 	const handleLogout = () => {
 		setIsAuthenticated(false);
 	};
+
+	// QZ Tray 자동 초기화 및 프린터 연결
+	useEffect(() => {
+		if (isAuthenticated) {
+			qzTrayService.autoInitializeAndConnect().catch(err => {
+				console.error("QZ Tray 자동 초기화 실패:", err);
+			});
+		}
+	}, [isAuthenticated]);
 
 	useEffect(() => {
 		const handleTokenChange = () => {

@@ -1,14 +1,18 @@
 import React from "react";
+import type { MaterialDto } from "../../../types/material";
+import type { ColorDto } from "../../../types/color";
+import type { AssistantStoneDto } from "../../../types/AssistantStoneDto";
+import type { goldHarryResponse as goldHarryDto } from "../../../types/goldHarry";
 import type { StockOrderRows } from "../../../types/stock";
 import "../../../styles/components/stock/StockTable.css";
 
 interface BaseStockTableProps {
 	stockRows: StockOrderRows[];
 	loading: boolean;
-	materials: { materialId: string; materialName: string }[];
-	colors: { colorId: string; colorName: string }[];
-	assistantStones: { assistantStoneId: string; assistantStoneName: string }[];
-	goldHarries: { goldHarryId: string; goldHarry: string }[];
+	materials: MaterialDto[];
+	colors: ColorDto[];
+	assistantStones: AssistantStoneDto[];
+	goldHarries: goldHarryDto[];
 	onRowUpdate: (
 		id: string,
 		field: keyof StockOrderRows,
@@ -19,8 +23,8 @@ interface BaseStockTableProps {
 
 interface CreateModeProps extends BaseStockTableProps {
 	mode: "create";
-	materials: { materialId: string; materialName: string }[];
-	colors: { colorId: string; colorName: string }[];
+	materials: MaterialDto[];
+	colors: ColorDto[];
 	// Create 모드에서 필수
 	onRowDelete: (id: string) => void;
 	onAddStockRow: () => void;
@@ -512,7 +516,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										onChange={(e) => {
 											if (isReadOnlyMode) return; // 재고 상태 또는 readonly 모드일 때 변경 방지
 											const selectedStone = assistantStones.find(
-												(s) => s.assistantStoneId === e.target.value
+												(s) => s.assistantStoneId.toString() === e.target.value
 											);
 											onRowUpdate(row.id, "assistantStoneId", e.target.value);
 											onRowUpdate(

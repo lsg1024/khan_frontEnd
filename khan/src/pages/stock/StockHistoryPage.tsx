@@ -8,6 +8,11 @@ import StockList from "../../components/common/stock/StockList";
 import Pagination from "../../components/common/Pagination";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
+import {
+	printDeliveryBarcode,
+	type ProductBarcodeData,
+} from "../../service/barcodePrintService";
+import { useTenant } from "../../tenant/UserTenant";
 
 export const StockHistoryPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -23,6 +28,7 @@ export const StockHistoryPage = () => {
 	const [orderStatus] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+	const { tenant } = useTenant();
 
 	const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
 
@@ -86,6 +92,46 @@ export const StockHistoryPage = () => {
 					}
 				}, 1000);
 			}
+		}
+	};
+
+	// 시리얼번호 클릭 시 바코드 출력 확인
+	const handleSerialClick = async (flowCode: string) => {
+		if (!confirm("바코드를 출력하시겠습니까?")) {
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			const stock = stocks.find((s) => s.flowCode === flowCode);
+			if (!stock) {
+				alert("재고 정보를 찾을 수 없습니다.");
+				return;
+			}
+
+			const barcodeData: ProductBarcodeData = {
+				subdomain: tenant || "",
+				productName: "",
+				material: stock.materialName || "",
+				color: stock.colorName || "",
+				weight: stock.goldWeight?.toString() || "",
+				size: stock.productSize || "",
+				assistantStoneName: stock.assistantStoneName || "",
+				mainStoneMemo: stock.mainStoneNote || "",
+				assistantStoneMemo: stock.assistanceStoneNote || "",
+				serialNumber: stock.flowCode || "",
+			};
+
+			await printDeliveryBarcode(printerName, barcodeData);
+			alert("바코드가 출력되었습니다.");
+		} catch (error) {
+			console.error("바코드 출력 실패:", error);
+			alert("바코드 출력에 실패했습니다.");
 		}
 	};
 
@@ -194,7 +240,7 @@ export const StockHistoryPage = () => {
 					return content;
 				}
 			} catch (err) {
-				handleError(err)
+				handleError(err);
 				setStocks([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -246,7 +292,7 @@ export const StockHistoryPage = () => {
 				setColors(colorResponse.data);
 			}
 		} catch (err) {
-			handleError(err)
+			handleError(err);
 		} finally {
 			setDropdownLoading(false);
 		}
@@ -316,6 +362,7 @@ export const StockHistoryPage = () => {
 						selected={selectedStocks}
 						onSelect={handleSelectStock}
 						onNoClick={handleStockNoClick}
+						onSerialClick={handleSerialClick}
 						showShippingAt={true}
 					/>
 

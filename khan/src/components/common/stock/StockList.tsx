@@ -8,6 +8,7 @@ interface StockListProps {
 	selected: string[];
 	onSelect: (flowCode: string, checked: boolean) => void;
 	onNoClick?: (flowCode: string) => void;
+	onSerialClick?: (flowCode: string) => void; // 시리얼 번호 클릭 핸들러
 	showShippingAt?: boolean; // 변경일 표시 여부
 	disableRentalCheckbox?: boolean; // 대여 상태 체크박스 비활성화 여부
 }
@@ -19,6 +20,7 @@ export const StockList = ({
 	selected,
 	onSelect,
 	onNoClick,
+	onSerialClick,
 	showShippingAt = false,
 	disableRentalCheckbox = true, // 기본값: 대여 상태 체크박스 비활성화
 }: StockListProps) => {
@@ -142,7 +144,15 @@ export const StockList = ({
 								</button>
 							</td>
 							<td className="serial-cell" title={stock.flowCode}>
-								{stock.flowCode}
+								<button
+									className="serial-btn"
+									onClick={(e) => {
+										e.stopPropagation();
+										onSerialClick?.(stock.flowCode);
+									}}
+								>
+									{stock.flowCode}
+								</button>
 							</td>
 							<td className="serial-cell" title={stock.storeName}>
 								{stock.storeName}

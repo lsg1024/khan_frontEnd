@@ -8,6 +8,7 @@ interface SaleListProps {
 	selected: string[];
 	onSelect: (flowCode: string, checked: boolean) => void;
 	onNoClick?: (flowCode: string, orderStatus: string) => void;
+	onSerialClick?: (flowCode: string) => void; // 시리얼 번호 클릭 핸들러
 }
 
 export const SaleList = ({
@@ -17,6 +18,7 @@ export const SaleList = ({
 	selected,
 	onSelect,
 	onNoClick,
+	onSerialClick,
 }: SaleListProps) => {
 	const PAGE_SIZE = 20;
 
@@ -111,10 +113,7 @@ export const SaleList = ({
 									checked={selected.includes(sale.flowCode.toString())}
 									onChange={(e) => {
 										e.stopPropagation();
-										onSelect(
-											sale.flowCode.toString(),
-											e.target.checked
-										);
+										onSelect(sale.flowCode.toString(), e.target.checked);
 									}}
 								/>
 							</td>
@@ -162,16 +161,16 @@ export const SaleList = ({
 								</a>
 							</td>
 							<td className="flow-code-cell" title={sale.flowCode.toString()}>
-								<a
-									href="#"
-									className="flow-code-link"
+								<button
+									className="serial-btn"
 									onClick={(e) => {
 										e.preventDefault();
-										// TODO: 시리얼 링크 기능 구현
+										e.stopPropagation();
+										onSerialClick?.(sale.flowCode);
 									}}
 								>
 									{sale.flowCode}
-								</a>
+								</button>
 							</td>
 							<td className="product-cell" title={sale.productName}>
 								{sale.productName}

@@ -274,6 +274,95 @@ const printImageBase64 = async (
 	}
 };
 
+/**
+ * 앱 시작 시 자동으로 QZ Tray를 초기화하고 바코드 프린터에 연결합니다.
+ * 
+ * 동작 순서:
+ * 1. localStorage에서 preferred_printer_name 확인
+ * 2. QZ Tray 초기화 및 연결
+ * 3. 저장된 프린터가 있으면 해당 프린터 사용
+ * 4. 없으면 "Argox OS-214 plus series PPLB" 자동 검색 및 설정
+ * 
+ * @returns Promise<boolean> 성공 여부
+ */
+const autoInitializeAndConnect = async (): Promise<boolean> => {
+	try {
+		console.log("🔄 QZ Tray 자동 초기화 시작...");
+
+		// 1. QZ Tray 초기화
+		initialize();
+
+		// 2. QZ Tray 연결
+		const isConnected = await connect();
+		if (!isConnected) {
+			console.warn("⚠️ QZ Tray 연결 실패 - QZ Tray가 실행 중인지 확인하세요.");
+			return false;
+		}
+
+		// 3. localStorage에서 저장된 프린터 확인
+		const savedPrinter = localStorage.getItem("preferred_printer_name");
+		
+		if (savedPrinter) {
+			console.log(`✅ 저장된 프린터 사용: ${savedPrinter}`);
+			// 프린터가 실제로 존재하는지 확인
+			const printers = await findPrinters();
+			if (printers.includes(savedPrinter)) {
+				console.log(`✅ 프린터 [${savedPrinter}] 연결 준비 완료`);
+				return true;
+			} else {
+				console.warn(`⚠️ 저장된 프린터 [${savedPrinter}]를 찾을 수 없습니다. 기본 프린터를 검색합니다.`);
+				localStorage.removeItem("preferred_printer_name");
+			}
+		}
+
+		// 4. 기본 프린터 자동 검색 및 설정
+		const defaultPrinterName = "Argox OS-214 plus series PPLB";
+		console.log(`🔍 기본 프린터 검색 중: ${defaultPrinterName}`);
+		
+		const printers = await findPrinters();
+		console.log(`📋 사용 가능한 프린터 목록:`, printers);
+
+		// 대소문자 구분 없이 부분 일치 검색
+		const foundPrinter = printers.find(printer => 
+			printer.toLowerCase().includes("argox") && 
+			printer.toLowerCase().includes("os-214")
+		);
+
+		if (foundPrinter) {
+			console.log(`✅ 기본 프린터 발견: ${foundPrinter}`);
+			localStorage.setItem("preferred_printer_name", foundPrinter);
+			console.log(`💾 프린터가 자동으로 저장되었습니다: ${foundPrinter}`);
+			return true;
+		} else {
+			console.warn(`⚠️ 기본 프린터 [${defaultPrinterName}]를 찾을 수 없습니다.`);
+			console.log("ℹ️ 설정 > 바코드 프린터 설정에서 수동으로 프린터를 선택해주세요.");
+			return false;
+		}
+
+	} catch (error) {
+		console.error("❌ QZ Tray 자동 초기화 중 오류 발생:", error);
+		return false;
+	}
+};
+
+/**
+ * QZ Tray 웹소켓 연결을 해제합니다.
+ */
+const disconnect = async (): Promise<void> => {
+	if (typeof qz === "undefined") {
+		return;
+	}
+
+	if (qz.websocket.isActive()) {
+		try {
+			await qz.websocket.disconnect();
+			console.log("QZ Tray 연결이 해제되었습니다.");
+		} catch (error) {
+			console.error("QZ Tray 연결 해제 중 오류:", error);
+		}
+	}
+};
+
 // 4. 서비스 객체로 묶어서 내보냅니다.
 export const qzTrayService = {
 	initialize,
@@ -282,4 +371,6 @@ export const qzTrayService = {
 	printRaw,
 	printImageBase64,
 	getPrinterStatus,
+	autoInitializeAndConnect,
+	disconnect,
 };

@@ -124,7 +124,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 							break;
 						case "harry":
 							id = (anyItem.goldHarryId as number) || "";
-							name = (anyItem.goldHarryLoss as number)?.toString() || "";
+							name = (anyItem.goldHarry as number)?.toString() || "";
 							break;
 						case "classification":
 							id = (anyItem.classificationId as string) || "";
@@ -364,8 +364,12 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "harry": {
-					alert("해리 항목은 수정할 수 없습니다.");
-					return;
+					const { goldHarryApi } = await import("../../../libs/api/goldHarry");
+					response = await goldHarryApi.updateGoldHarry(
+						id,
+						editFormData.name
+					);
+					break;
 				}
 				case "classification": {
 					const { classificationApi } = await import(

@@ -124,12 +124,12 @@ const MainList = ({
 						<td className="info-cell">
 							<div className="info-row-order">
 								<span className="info-value-stone-note">
-									{dto.orderMainStoneNote}
+									{dto.mainStoneNote}
 								</span>
 							</div>
 							<div className="info-row-order">
 								<span className="info-value-stone-note">
-									{dto.orderAssistanceStoneNote}
+									{dto.assistanceStoneNote}
 								</span>
 							</div>
 						</td>

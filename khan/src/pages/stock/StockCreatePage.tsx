@@ -25,6 +25,8 @@ import ProductInfoSection from "../../components/common/ProductInfoSection";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 import type { MaterialDto } from "../../types/material";
 import type { ColorDto } from "../../types/color";
+import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
+import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarry";
 import "../../styles/pages/stock/StockCreatePage.css";
 
 type UpdateMode = "normal" | "return" | "expact";
@@ -53,16 +55,16 @@ export const StockCreatePage = () => {
 
 	// 드롭다운 데이터
 	const [materials, setMaterials] = useState<
-		{ materialId: string; materialName: string }[]
+		MaterialDto[]
 	>([]);
 	const [colors, setColors] = useState<
-		{ colorId: string; colorName: string }[]
+		ColorDto[]
 	>([]);
 	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: string; assistantStoneName: string }[]
+		AssistantStoneDto[]
 	>([]);
 	const [goldHarries, setGoldHarries] = useState<
-		{ goldHarryId: string; goldHarry: string }[]
+		GoldHarryDto[]
 	>([]);
 
 	// 상품 상세 정보 관련 state
@@ -795,7 +797,7 @@ export const StockCreatePage = () => {
 		if (window.confirm("초기화하시겠습니까?")) {
 			// assistantStoneId가 "1"인 보조석 찾기
 			const defaultAssistantStone =
-				assistantStones.find((a) => a.assistantStoneId === "1") ||
+				assistantStones.find((a) => a.assistantStoneId.toString() === "1") ||
 				assistantStones[0] ||
 				null;
 
@@ -834,7 +836,7 @@ export const StockCreatePage = () => {
 							additionalStonePrice: 0,
 							stoneWeightTotal: 0,
 							assistantStone: false,
-							assistantStoneId: defaultAssistantStone?.assistantStoneId || "1",
+							assistantStoneId: defaultAssistantStone?.assistantStoneId.toString() || "1",
 							assistantStoneName:
 								defaultAssistantStone?.assistantStoneName || "",
 							assistantStoneCreateAt: "",
@@ -874,17 +876,9 @@ export const StockCreatePage = () => {
 					productId ? fetchProductDetail(productId) : Promise.resolve(null),
 				]);
 
-				let loadedMaterials: MaterialDto[] = [];
-				let loadedColors: ColorDto[] = [];
-				let loadedAssistantStones: {
-					assistantStoneId: string;
-					assistantStoneName: string;
-				}[] = [];
-				let loadedGoldHarries: { goldHarryId: string; goldHarry: string }[] =
-					[];
 
 				if (materialRes.success) {
-					loadedMaterials = (materialRes.data || []).map((m) => ({
+					const loadedMaterials = (materialRes.data || []).map((m) => ({
 						materialId: m.materialId?.toString() || "",
 						materialName: m.materialName,
 						materialGoldPurityPercent: m.materialGoldPurityPercent || "",
@@ -892,7 +886,7 @@ export const StockCreatePage = () => {
 					setMaterials(loadedMaterials);
 				}
 				if (colorRes.success) {
-					loadedColors = (colorRes.data || []).map((c) => ({
+					const loadedColors = (colorRes.data || []).map((c) => ({
 						colorId: c.colorId || "",
 						colorName: c.colorName,
 						colorNote: c.colorNote || "",
@@ -900,14 +894,14 @@ export const StockCreatePage = () => {
 					setColors(loadedColors);
 				}
 				if (assistantStoneRes.success) {
-					loadedAssistantStones = (assistantStoneRes.data || []).map((a) => ({
-						assistantStoneId: a.assistantStoneId.toString(),
+					const loadedAssistantStones = (assistantStoneRes.data || []).map((a) => ({
+						assistantStoneId: a.assistantStoneId,
 						assistantStoneName: a.assistantStoneName,
 					}));
 					setAssistantStones(loadedAssistantStones);
 				}
 				if (goldHarryRes.success) {
-					loadedGoldHarries = (goldHarryRes.data || []).map((g) => ({
+					const loadedGoldHarries = (goldHarryRes.data || []).map((g) => ({
 						goldHarryId: g.goldHarryId?.toString() || "",
 						goldHarry: g.goldHarry,
 					}));
@@ -916,8 +910,8 @@ export const StockCreatePage = () => {
 
 				// assistantStoneId가 "1"인 보조석 찾기
 				const defaultAssistantStone =
-					loadedAssistantStones.find((a) => a.assistantStoneId === "1") ||
-					loadedAssistantStones[0] ||
+					assistantStones.find((a) => a.assistantStoneId.toString() === "1") ||
+					assistantStones[0] ||
 					null;
 
 				// 초기 5개 행 생성
@@ -961,7 +955,7 @@ export const StockCreatePage = () => {
 						assistanceStoneCount: 0,
 						stoneAddLaborCost: 0,
 						stoneWeightTotal: 0,
-						assistantStoneId: defaultAssistantStone?.assistantStoneId || "1",
+						assistantStoneId: defaultAssistantStone?.assistantStoneId.toString() || "1",
 						assistantStone: false,
 						assistantStoneName: defaultAssistantStone?.assistantStoneName || "",
 						assistantStoneCreateAt: "",
@@ -1001,13 +995,13 @@ export const StockCreatePage = () => {
 						const stoneCalcs = calculateStoneDetails(transformedStoneInfos);
 
 						// 재질 매칭
-						const matchedMaterial = loadedMaterials.find(
+						const matchedMaterial = materials.find(
 							(m) => m.materialName === productDetail.materialDto?.materialName
 						);
 						// 색상 매칭 (ProductDto에 color 정보가 있다고 가정)
 						const matchedColor = productDetail.productWorkGradePolicyGroupDto[0]
 							.colorName
-							? loadedColors.find(
+							? colors.find(
 									(c) =>
 										c.colorName ===
 										productDetail.productWorkGradePolicyGroupDto[0].colorName
@@ -1090,7 +1084,7 @@ export const StockCreatePage = () => {
 				let assistantStoneName = row.assistantStoneName;
 				if (!assistantStoneName && row.assistantStoneId) {
 					const foundStone = assistantStones.find(
-						(s) => s.assistantStoneId === row.assistantStoneId
+						(s) => s.assistantStoneId.toString() === row.assistantStoneId
 					);
 					assistantStoneName = foundStone?.assistantStoneName || "";
 				}

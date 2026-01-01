@@ -180,6 +180,7 @@ export interface StockResponse {
 	originStatus: string;
 	currentStatus: string;
 	storeName: string;
+	productName: string;
 	productSize: string;
 	stockNote: string;
 	materialName: string;

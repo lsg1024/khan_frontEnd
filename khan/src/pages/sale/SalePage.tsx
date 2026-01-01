@@ -9,6 +9,12 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import type { SaleSearchFilters } from "../../components/common/sale/SaleSearch";
 import SaleBulkActionBar from "../../components/common/sale/SaleBulkActionBar";
 import "../../styles/pages/sale/SalePage.css";
+import {
+	printDeliveryBarcode,
+	printProductBarcode,
+	type ProductBarcodeData,
+} from "../../service/barcodePrintService";
+import { useTenant } from "../../tenant/UserTenant";
 
 export const SalePage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -20,6 +26,7 @@ export const SalePage = () => {
 	const [selected, setSelected] = useState<string[]>([]);
 	const saleCreatePopup = useRef<Window | null>(null);
 	const { handleError } = useErrorHandler();
+	const { tenant } = useTenant();
 
 	const saleDetailPopups = useRef<Map<string, Window>>(new Map());
 
@@ -61,10 +68,7 @@ export const SalePage = () => {
 	};
 
 	// 체크박스 선택 핸들러 (동일 거래처 + 동일 거래번호만 중복 선택 가능)
-	const handleSelect = (
-		flowCode: string,
-		checked: boolean
-	) => {
+	const handleSelect = (flowCode: string, checked: boolean) => {
 		if (checked) {
 			// 첫 선택이거나 동일 거래처 + 동일 거래번호인 경우만 추가
 			const selectedSale = sales.find((sale) => sale.flowCode === flowCode);
@@ -192,6 +196,116 @@ export const SalePage = () => {
 
 		// TODO: 시세 추가 로직 구현
 		alert(`${selected.length}개 항목에 시세 추가 기능은 준비 중입니다.`);
+	};
+
+	// 시리얼번호 클릭 시 바코드 출력 확인
+	const handleSerialClick = async (flowCode: string) => {
+		if (!confirm("바코드를 출력하시겠습니까?")) {
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			const sale = sales.find((s) => s.flowCode === flowCode);
+			if (!sale) {
+				alert("판매 정보를 찾을 수 없습니다.");
+				return;
+			}
+
+			const barcodeData: ProductBarcodeData = {
+				subdomain: tenant || "",
+				productName: sale.productName || "",
+				material: sale.materialName || "",
+				color: sale.colorName || "",
+				weight: sale.goldWeight?.toString() || "",
+				size: "",
+				assistantStoneName: sale.assistantName || "",
+				mainStoneMemo: "",
+				assistantStoneMemo: "",
+				serialNumber: sale.flowCode || "",
+			};
+
+			await printDeliveryBarcode(printerName, barcodeData);
+			alert("바코드가 출력되었습니다.");
+		} catch (error) {
+			console.error("바코드 출력 실패:", error);
+			alert("바코드 출력에 실패했습니다.");
+		}
+	};
+
+	// 바코드 출력 핸들러
+	const handlePrintDeliveryBarcode = async () => {
+		if (selected.length === 0) {
+			alert("바코드를 출력할 판매를 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selected) {
+				const sale = sales.find((s) => s.flowCode.toString() === flowCode);
+				if (!sale) continue;
+
+				const barcodeData: ProductBarcodeData = {
+					subdomain: tenant || "",
+					productName: sale.productName || "",
+					material: sale.materialName || "",
+					color: sale.colorName || "",
+					weight: sale.goldWeight?.toString() || "",
+					size: "",
+					assistantStoneName: sale.assistantName || "",
+					mainStoneMemo: "",
+					assistantStoneMemo: "",
+					serialNumber: sale.flowCode || "",
+				};
+
+				await printDeliveryBarcode(printerName, barcodeData);
+			}
+			alert(`${selected.length}개의 바코드가 출력되었습니다.`);
+		} catch (error) {
+			console.error("바코드 출력 실패:", error);
+			alert("바코드 출력에 실패했습니다.");
+		}
+	};
+
+	const handlePrintProductBarcode = async () => {
+		if (selected.length === 0) {
+			alert("바코드를 출력할 판매를 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selected) {
+				const sale = sales.find((s) => s.flowCode.toString() === flowCode);
+				if (!sale) continue;
+
+				const barcodeData: ProductBarcodeData = {
+					subdomain: tenant,
+					productName: sale.productName || "",
+					serialNumber: sale.flowCode || "",
+				};
+
+				await printProductBarcode(printerName, barcodeData);
+			}
+		} catch (error) {
+			console.error("바코드 출력 실패:", error);
+		}
 	};
 
 	// 반품 처리 - SaleDetailPage 팝업으로 열기
@@ -351,12 +465,15 @@ export const SalePage = () => {
 						selected={selected}
 						onSelect={handleSelect}
 						onNoClick={handleSaleNoClick}
+						onSerialClick={handleSerialClick}
 					/>
 
 					<SaleBulkActionBar
 						selectedCount={selected.length}
 						onReturn={handleReturn}
 						onAddMarketPrice={handleAddMarketPrice}
+						onPrintProductBarcode={handlePrintProductBarcode}
+						onPrintDeliveryBarcode={handlePrintDeliveryBarcode}
 					/>
 
 					{/* 페이지네이션 */}

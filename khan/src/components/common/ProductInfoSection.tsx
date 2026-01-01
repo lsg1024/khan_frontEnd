@@ -14,7 +14,7 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 	currentProductDetail,
 	title = "선택된 상품 정보",
 }) => {
-	const [imageUrl, setImageUrl] = useState<string>("/images/not_ready.png");
+	const [, setImageUrl] = useState<string>("/images/not_ready.png");
 
 	// 상품이 변경될 때마다 이미지 로드
 	useEffect(() => {

@@ -12,6 +12,8 @@ import type { FactorySearchDto } from "../../types/factory";
 import type { OrderDto } from "../../types/order";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
+import { useTenant } from "../../tenant/UserTenant";
+import { printDeliveryBarcode, printProductBarcode } from "../../service/barcodePrintService";
 import "../../styles/pages/OrderPage.css";
 
 export const ExpactPage = () => {
@@ -27,6 +29,7 @@ export const ExpactPage = () => {
 	const [colors, setColors] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+	const { tenant } = useTenant();
 
 	// 제조사 변경 관련 상태
 	const [isFactorySearchOpen, setIsFactorySearchOpen] = useState(false);
@@ -248,6 +251,68 @@ export const ExpactPage = () => {
 		loadData: loadExpacts,
 	});
 
+	// 바코드 출력 핸들러
+	const handlePrintDeliveryBarcode = async () => {
+		if (selectedExpact.length === 0) {
+			alert("출고 바코드를 출력할 항목을 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selectedExpact) {
+				const expact = expacts.find(e => e.flowCode === flowCode);
+				if (!expact) continue;
+
+				await printDeliveryBarcode(printerName, {
+					subdomain: tenant || "",
+					productName: expact.productName || "",
+					material: expact.materialName || "",
+					color: expact.colorName || "",
+					weight: expact.productWeight?.toString() || "",
+					size: expact.productSize || "",
+					mainStoneMemo: expact.mainStoneNote || "",
+					assistantStoneMemo: expact.assistanceStoneNote || "",
+					serialNumber: expact.flowCode || "",
+				});
+			}
+			alert(`${selectedExpact.length}개의 출고 바코드 출력이 완료되었습니다.`);
+		} catch {
+			alert("바코드 출력 중 오류가 발생했습니다.");
+		}
+	};
+
+	const handlePrintProductBarcode = async () => {
+		if (selectedExpact.length === 0) {
+			alert("제품 바코드를 출력할 항목을 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selectedExpact) {
+				await printProductBarcode(printerName, {
+					subdomain: tenant || "",
+					productName: "",
+					serialNumber: flowCode
+				});
+			}
+			alert(`${selectedExpact.length}개의 제품 바코드 출력이 완료되었습니다.`);
+		} catch {
+			alert("제품 바코드 출력 기능은 준비 중입니다.");
+		}
+	};
+
 	const fetchDropdownData = async () => {
 		setDropdownLoading(true);
 		try {
@@ -411,20 +476,20 @@ export const ExpactPage = () => {
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}
 						onDelete={handleBulkDelete}
-						className="order"
-					/>
+					onPrintProductBarcode={handlePrintProductBarcode}
+					onPrintDeliveryBarcode={handlePrintDeliveryBarcode}
+					className="order"
+				/>
 
-					{/* 페이지네이션 */}
-					<Pagination
-						currentPage={currentPage}
-						totalPages={totalPages}
-						totalElements={totalElements}
-						loading={loading}
-						onPageChange={(page) => {
-							setCurrentPage(page);
-							loadExpacts(searchFilters, page);
-						}}
-						className="order"
+				{/* 페이지네이션 */}
+				<Pagination
+					currentPage={currentPage}
+					totalPages={totalPages}
+					totalElements={totalElements}
+					onPageChange={(page) => {
+						setCurrentPage(page);
+						loadExpacts(searchFilters, page);
+					}}
 					/>
 				</div>
 

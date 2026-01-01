@@ -9,6 +9,12 @@ import Pagination from "../../components/common/Pagination";
 import StockBulkActionBar from "../../components/common/stock/StockBulkActionBar";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
+import {
+	printDeliveryBarcode,
+	printProductBarcode,
+	type ProductBarcodeData,
+} from "../../service/barcodePrintService";
+import { useTenant } from "../../tenant/UserTenant";
 
 export const StockPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -24,6 +30,7 @@ export const StockPage = () => {
 	const [orderStatus] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+	const { tenant } = useTenant();
 
 	// 체크박스 선택 관련 상태 (다중 선택 허용)
 	const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
@@ -90,6 +97,46 @@ export const StockPage = () => {
 					}
 				}, 1000);
 			}
+		}
+	};
+
+	// 시리얼번호 클릭 시 바코드 출력 확인
+	const handleSerialClick = async (flowCode: string) => {
+		if (!confirm("바코드를 출력하시겠습니까?")) {
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			const stock = stocks.find((s) => s.flowCode === flowCode);
+			if (!stock) {
+				alert("재고 정보를 찾을 수 없습니다.");
+				return;
+			}
+
+			const barcodeData: ProductBarcodeData = {
+				subdomain: tenant || "",
+				productName: stock.productName || "",
+				material: stock.materialName || "",
+				color: stock.colorName || "",
+				weight: stock.goldWeight?.toString() || "",
+				size: stock.productSize || "",
+				assistantStoneName: stock.assistantStoneName || "",
+				mainStoneMemo: stock.mainStoneNote || "",
+				assistantStoneMemo: stock.assistanceStoneNote || "",
+				serialNumber: stock.flowCode || "",
+			};
+
+			await printDeliveryBarcode(printerName, barcodeData);
+			alert("바코드가 출력되었습니다.");
+		} catch (error) {
+			console.error("바코드 출력 실패:", error);
+			alert("바코드 출력에 실패했습니다.");
 		}
 	};
 
@@ -227,7 +274,7 @@ export const StockPage = () => {
 			await loadStocks(searchFilters, currentPage);
 			setSelectedStocks([]);
 		} catch (err) {
-			handleError(err)
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -277,6 +324,76 @@ export const StockPage = () => {
 		}
 	};
 
+	// 바코드 출력 핸들러
+	const handlePrintDeliveryBarcode = async () => {
+		if (selectedStocks.length === 0) {
+			alert("바코드를 출력할 재고를 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selectedStocks) {
+				const stock = stocks.find((s) => s.flowCode === flowCode);
+				if (!stock) continue;
+
+				const barcodeData: ProductBarcodeData = {
+					subdomain: tenant || "",
+					productName: stock.productName || "",
+					material: stock.materialName || "",
+					color: stock.colorName || "",
+					weight: stock.goldWeight?.toString() || "",
+					size: stock.productSize || "",
+					assistantStoneName: stock.assistantStoneName || "",
+					mainStoneMemo: stock.mainStoneNote || "",
+					assistantStoneMemo: stock.assistanceStoneNote || "",
+					serialNumber: stock.flowCode || "",
+				};
+
+				await printDeliveryBarcode(printerName, barcodeData);
+			}
+			alert(`${selectedStocks.length}개의 바코드가 출력되었습니다.`);
+		} catch (error) {
+			console.error("바코드 출력 실패:", error);
+			alert("바코드 출력에 실패했습니다.");
+		}
+	};
+
+	const handlePrintProductBarcode = async () => {
+		if (selectedStocks.length === 0) {
+			alert("바코드를 출력할 재고를 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selectedStocks) {
+				const stock = stocks.find((s) => s.flowCode === flowCode);
+				if (!stock) continue;
+
+				const barcodeData: ProductBarcodeData = {
+					subdomain: tenant || "",
+					productName: stock.productName || "",
+					serialNumber: stock.flowCode || "",
+				};
+
+				await printProductBarcode(printerName, barcodeData);
+			}
+		} catch (error) {
+			console.error("바코드 출력 실패:", error);
+		}
+	};
+
 	// 재고 데이터 로드 함수
 	const loadStocks = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
@@ -310,7 +427,7 @@ export const StockPage = () => {
 					return content;
 				}
 			} catch (err) {
-				handleError(err)
+				handleError(err);
 				setStocks([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -362,7 +479,7 @@ export const StockPage = () => {
 				setColors(colorResponse.data);
 			}
 		} catch (err) {
-			handleError(err)
+			handleError(err);
 		} finally {
 			setDropdownLoading(false);
 		}
@@ -452,6 +569,7 @@ export const StockPage = () => {
 						selected={selectedStocks}
 						onSelect={handleSelectStock}
 						onNoClick={handleStockNoClick}
+						onSerialClick={handleSerialClick}
 					/>
 					{/* 벌크 액션 바 */}
 					<StockBulkActionBar
@@ -459,7 +577,9 @@ export const StockPage = () => {
 						onSalesRegister={handleSalesRegister}
 						onRentalRegister={handleRentalRegister}
 						onDelete={handleBulkDelete}
-					/>{" "}
+						onPrintProductBarcode={handlePrintProductBarcode}
+						onPrintDeliveryBarcode={handlePrintDeliveryBarcode}
+					/>
 					{/* 페이지네이션 */}
 					<Pagination
 						currentPage={currentPage}

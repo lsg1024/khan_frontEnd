@@ -8,6 +8,8 @@ interface StockBulkActionBarProps {
 	onReturnRegister?: () => void;
 	onDelete?: () => void;
 	onRollBack?: () => void;
+	onPrintProductBarcode?: () => void;
+	onPrintDeliveryBarcode?: () => void;
 	className?: string;
 }
 
@@ -18,6 +20,8 @@ const StockBulkActionBar: React.FC<StockBulkActionBarProps> = ({
 	onReturnRegister,
 	onDelete,
 	onRollBack,
+	onPrintProductBarcode,
+	onPrintDeliveryBarcode,
 	className = "",
 }) => {
 	return (
@@ -101,6 +105,38 @@ const StockBulkActionBar: React.FC<StockBulkActionBarProps> = ({
 						}}
 					>
 						삭제
+					</a>
+				)}
+				{onPrintProductBarcode && (
+					<a
+						href="#"
+						className={`bulk-action-btn print-product-barcode ${
+							selectedCount === 0 ? "disabled" : ""
+						}`}
+						onClick={(e) => {
+							e.preventDefault();
+							if (selectedCount > 0) {
+								onPrintProductBarcode();
+							}
+						}}
+					>
+						제품 바코드
+					</a>
+				)}
+				{onPrintDeliveryBarcode && (
+					<a
+						href="#"
+						className={`bulk-action-btn print-delivery-barcode ${
+							selectedCount === 0 ? "disabled" : ""
+						}`}
+						onClick={(e) => {
+							e.preventDefault();
+							if (selectedCount > 0) {
+								onPrintDeliveryBarcode();
+							}
+						}}
+					>
+						출고 바코드
 					</a>
 				)}
 			</div>

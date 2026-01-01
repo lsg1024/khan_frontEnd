@@ -54,7 +54,6 @@
 	position: relative;
 }
 
-
 /* 헤더 마지막 셀에는 오른쪽 테두리 제거 */
 .stock-table th:last-child {
 	border-right: none;
@@ -298,6 +297,22 @@
 
 .stock-row-repair-stock {
 	background-color: #fff3cd !important; /* 수리 + 재고 = 노란색 */
+}
+
+/* 시리얼번호 버튼 스타일 */
+.serial-btn {
+	background: none;
+	border: none;
+	color: #007bff;
+	text-decoration: underline;
+	cursor: pointer;
+	padding: 0;
+	font-size: inherit;
+	font-family: inherit;
+}
+
+.serial-btn:hover {
+	color: #0056b3;
 }
 
 @media (max-width: 768px) {

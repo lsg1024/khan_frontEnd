@@ -121,9 +121,6 @@ export default function BarcodePrinterSettings({
 						const xPos = colByte * 8 + bit;
 						const pixelIndex = (row * finalWidth + xPos) * 4;
 
-						// [핵심 수정] 색상 로직 반전
-						// 픽셀이 밝으면(흰색이면) 1로 설정, 어두우면(검은색/글자) 0으로 설정
-						// Argox PPLB GW는 보통 1=White(여백), 0=Black(인쇄) 인 경우가 많음 (User 상황 반영)
 						const r = data[pixelIndex];
 						const g = data[pixelIndex + 1];
 						const b = data[pixelIndex + 2];
@@ -169,7 +166,7 @@ export default function BarcodePrinterSettings({
 
 		try {
 			// 1. "로고" 이미지
-			const imageKan = await createTextGwCommandBytes(
+			const imageLogo = await createTextGwCommandBytes(
 				"칸",
 				10,
 				10, 
@@ -177,7 +174,7 @@ export default function BarcodePrinterSettings({
 			);
 
 			// 2. "제품 이름" 이미지
-			const imageRandom = await createTextGwCommandBytes(
+			const imageProductName = await createTextGwCommandBytes(
 				"ㄴㅇㄴㅁㄴㅇㄹ",
 				10,
 				90 , 
@@ -203,28 +200,27 @@ P1
 `;
 
 			// --- 이하 데이터 병합 및 전송 로직은 동일 ---
-
 			const bPart1 = stringToBytes(part1);
 			const bPart2 = stringToBytes(part2);
 			const bPart3 = stringToBytes(part3);
 
 			const totalSize =
 				bPart1.length +
-				imageKan.length +
+				imageLogo.length +
 				bPart2.length +
-				imageRandom.length +
+				imageProductName.length +
 				bPart3.length;
 			const finalData = new Uint8Array(totalSize);
 
 			let offset = 0;
 			finalData.set(bPart1, offset);
 			offset += bPart1.length;
-			finalData.set(imageKan, offset);
-			offset += imageKan.length;
+			finalData.set(imageLogo, offset);
+			offset += imageLogo.length;
 			finalData.set(bPart2, offset);
 			offset += bPart2.length;
-			finalData.set(imageRandom, offset);
-			offset += imageRandom.length;
+			finalData.set(imageProductName, offset);
+			offset += imageProductName.length;
 			finalData.set(bPart3, offset);
 
 			const base64Data = uint8ArrayToBase64(finalData);
@@ -239,73 +235,6 @@ P1
 			setPrintStatus("❌ 인쇄 중 오류가 발생했습니다.");
 		}
 	};
-
-	// 	const handleTestPrint = async () => {
-	// 		if (!selectedPrinter) {
-	// 			alert("프린터를 선택해주세요.");
-	// 			return;
-	// 		}
-
-	// 		setPrintStatus("인쇄 작업 전송 중...");
-
-	// 		const textKanCommand = await createTextGwCommandBytes("칸", 10, 10, 25);
-
-	// 		// 2. "ㄴㅇㄴㅁㄴㅇㄹ" 이미지 명령어 생성 (기존 두 번째 GOLDPEN 위치: 10, 90)
-	// 		const textRandomCommand = await createTextGwCommandBytes(
-	// 			"ㄴㅇㄴㅁㄴㅇㄹ",
-	// 			10,
-	// 			90,
-	// 			25
-	// 		);
-
-	// 		const pplbBarcodeData = `
-	// N
-	// q144
-	// Q144,16
-	// JFJ
-
-	// ${textKanCommand}
-	// B10,28,0,1,2,2,25,N,"10000201"
-	// A10,58,0,1,1,1,N,"10000201"
-
-	// ${textRandomCommand}
-	// A10,105,0,1,1,1,N,"10000201"
-	// A10,120,0,1,1,1,N,"W:271,000"
-
-	// P1
-	// `;
-
-	//         const pplbBarcodeData = `N
-	// q144
-	// Q144,16
-	// JFJ
-
-	// A10,10,0,1,1,1,N,"GOLDPEN"
-	// B10,28,0,1,2,2,25,N,"10000201"
-	// A10,58,0,1,1,1,N,"10000201"
-
-	// A10,90,0,1,1,1,N,"GOLDPEN"
-	// A10,105,0,1,1,1,N,"10000201"
-	// A10,120,0,1,1,1,N,"W:271,000"
-
-	// P1
-	// `;
-
-	// 		try {
-	// 			const result = await qzTrayService.printRaw(
-	// 				selectedPrinter,
-	// 				pplbBarcodeData
-	// 			);
-	// 			if (result) {
-	// 				setPrintStatus("✅ 인쇄 작업이 성공적으로 전송되었습니다.");
-	// 			} else {
-	// 				setPrintStatus("❌ 인쇄 작업 전송에 실패했습니다.");
-	// 			}
-	// 		} catch (err) {
-	// 			console.error(err);
-	// 			setPrintStatus("❌ 인쇄 중 오류가 발생했습니다.");
-	// 		}
-	// 	};
 
 	return (
 		<div className="barcode-printer-settings">

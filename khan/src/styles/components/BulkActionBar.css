@@ -125,6 +125,30 @@
 	border-color: #bd2130;
 }
 
+/* 제품 바코드 버튼 - 회색 계열 */
+.bulk-action-btn.print-product-barcode {
+	background-color: #6c757d;
+	color: white;
+	border-color: #6c757d;
+}
+
+.bulk-action-btn.print-product-barcode:hover:not(.disabled) {
+	background-color: #5a6268;
+	border-color: #545b62;
+}
+
+/* 출고 바코드 버튼 - 진한 회색 계열 */
+.bulk-action-btn.print-delivery-barcode {
+	background-color: #495057;
+	color: white;
+	border-color: #495057;
+}
+
+.bulk-action-btn.print-delivery-barcode:hover:not(.disabled) {
+	background-color: #343a40;
+	border-color: #23272b;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
 	.bulk-action-bar {

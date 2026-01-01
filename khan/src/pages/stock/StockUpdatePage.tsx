@@ -8,6 +8,10 @@ import { goldHarryApi } from "../../../libs/api/goldHarry";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { formatToLocalDate, getLocalDate } from "../../utils/dateUtils";
 import { calculateStoneDetails } from "../../utils/calculateStone";
+import type { MaterialDto } from "../../types/material";
+import type { ColorDto } from "../../types/color";
+import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
+import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarry";
 import type {
 	ResponseDetail,
 	StockOrderRows,
@@ -27,18 +31,12 @@ const StockUpdatePage: React.FC = () => {
 	const [flowCodes, setFlowCodes] = useState<string[]>([]);
 
 	// 드롭다운 데이터
-	const [materials, setMaterials] = useState<
-		{ materialId: string; materialName: string }[]
-	>([]);
-	const [colors, setColors] = useState<
-		{ colorId: string; colorName: string }[]
-	>([]);
-	const [assistantStones, setAssistantStones] = useState<
-		{ assistantStoneId: string; assistantStoneName: string }[]
-	>([]);
-	const [goldHarries, setGoldHarries] = useState<
-		{ goldHarryId: string; goldHarry: string }[]
-	>([]);
+	const [materials, setMaterials] = useState<MaterialDto[]>([]);
+	const [colors, setColors] = useState<ColorDto[]>([]);
+	const [assistantStones, setAssistantStones] = useState<AssistantStoneDto[]>(
+		[]
+	);
+	const [goldHarries, setGoldHarries] = useState<GoldHarryDto[]>([]);
 
 	// 재고 행 업데이트
 	const handleRowUpdate = (
@@ -158,8 +156,9 @@ const StockUpdatePage: React.FC = () => {
 					]);
 
 				// 드롭다운 데이터 설정
-				let materialsData: { materialId: string; materialName: string }[] = [];
-				let colorsData: { colorId: string; colorName: string }[] = [];
+				let materialsData: MaterialDto[] = [];
+				let colorsData: ColorDto[] = [];
+				let loadedGoldHarries: GoldHarryDto[] = [];
 
 				if (materialRes.success) {
 					materialsData = (materialRes.data || []).map((m) => ({
@@ -180,7 +179,7 @@ const StockUpdatePage: React.FC = () => {
 				if (assistantStoneRes.success) {
 					const assistantStonesData = (assistantStoneRes.data || []).map(
 						(a) => ({
-							assistantStoneId: a.assistantStoneId.toString(),
+							assistantStoneId: a.assistantStoneId,
 							assistantStoneName: a.assistantStoneName,
 						})
 					);
@@ -188,7 +187,7 @@ const StockUpdatePage: React.FC = () => {
 				}
 
 				if (goldHarryRes.success) {
-					const loadedGoldHarries = (goldHarryRes.data || []).map((g) => ({
+					loadedGoldHarries = (goldHarryRes.data || []).map((g) => ({
 						goldHarryId: g.goldHarryId.toString(),
 						goldHarry: g.goldHarry,
 					}));
@@ -218,7 +217,7 @@ const StockUpdatePage: React.FC = () => {
 							detail.stoneInfos || []
 						);
 
-						// materialId와 colorId 찾기
+						// materialId, colorId, goldHarryId 찾기
 						const foundMaterial = materialsData.find(
 							(m) => m.materialName === detail.materialName
 						);
@@ -231,28 +230,29 @@ const StockUpdatePage: React.FC = () => {
 							id: detail.flowCode,
 							createAt: formatToLocalDate(detail.createAt),
 							shippingAt: "",
-							storeId: "",
+							storeId: detail.storeId || "",
 							storeName: detail.storeName,
-							grade: "",
-							productId: "",
+							storeHarry: detail.storeHarry || "",
+							grade: detail.storeGrade || "",
+							productId: detail.productId || "",
 							productName: detail.productName,
 							productFactoryName: "",
 							materialId: foundMaterial?.materialId || "",
 							materialName: detail.materialName,
 							colorId: foundColor?.colorId || "",
 							colorName: detail.colorName,
-							factoryId: "",
+							factoryId: detail.factoryId || "",
 							factoryName: detail.factoryName,
 							productSize: detail.productSize,
 							productPurchaseCost: detail.productPurchaseCost,
 							goldWeight: detail.goldWeight,
 							stoneWeight: detail.stoneWeight,
-							isProductWeightSale: false,
+							isProductWeightSale: detail.isProductWeightSale || false,
 							mainStoneNote: detail.mainStoneNote,
 							assistanceStoneNote: detail.assistanceStoneNote,
 							orderNote: detail.note,
 							stoneInfos: detail.stoneInfos || [],
-							productLaborCost: detail.productLaborCost,
+							productLaborCost: detail.productLaborCost || 0,
 							productAddLaborCost: detail.productAddLaborCost,
 							mainStonePrice: calculatedStoneData.mainStonePrice,
 							assistanceStonePrice: calculatedStoneData.assistanceStonePrice,
@@ -266,7 +266,6 @@ const StockUpdatePage: React.FC = () => {
 							totalWeight:
 								parseFloat(detail.goldWeight) + parseFloat(detail.stoneWeight),
 							stoneWeightTotal: calculatedStoneData.stoneWeight,
-							storeHarry: detail.storeHarry || "",
 							classificationId: "",
 							classificationName: "",
 							setTypeId: "",
@@ -280,7 +279,7 @@ const StockUpdatePage: React.FC = () => {
 
 				setStockRows(allStockRows);
 			} catch (err) {
-				handleError(err)
+				handleError(err);
 			} finally {
 				setLoading(false);
 			}
@@ -362,7 +361,7 @@ const StockUpdatePage: React.FC = () => {
 
 			handleClose();
 		} catch (err) {
-			handleError(err)
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}

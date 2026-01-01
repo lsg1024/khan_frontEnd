@@ -8,17 +8,17 @@ export const goldHarryApi = {
 	},
 
 	createGoldHarry: async (
-		goldHarryLoss: string
+		goldHarry: string
 	): Promise<ApiResponse<string>> => {
-		const data = { goldHarryLoss: goldHarryLoss };
+		const data = { goldHarry: goldHarry };
 		return apiRequest.post<string>("account/gold-harry", data);
 	},
 
-	updateGoldHarryLoss: async (
+	updateGoldHarry: async (
 		id: string,
-		lossAmount: string
+		goldHarry: string
 	): Promise<ApiResponse<string>> => {
-		const data = { lossAmount: lossAmount };
+		const data = { goldHarry: goldHarry };
 		return apiRequest.patch<string>(`account/gold-harry/${id}`, data);
 	},
 

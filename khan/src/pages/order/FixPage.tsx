@@ -12,6 +12,8 @@ import type { FactorySearchDto } from "../../types/factory";
 import type { OrderDto } from "../../types/order";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
+import { useTenant } from "../../tenant/UserTenant";
+import { printDeliveryBarcode, printProductBarcode } from "../../service/barcodePrintService";
 import "../../styles/pages/OrderPage.css";
 
 export const FixPage = () => {
@@ -27,6 +29,7 @@ export const FixPage = () => {
 	const [colors, setColors] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+	const { tenant } = useTenant();
 
 	// 제조사 변경 관련 상태
 	const [isFactorySearchOpen, setIsFactorySearchOpen] = useState(false);
@@ -147,6 +150,68 @@ export const FixPage = () => {
 		currentPage,
 		loadData: loadFixes,
 	});
+
+	// 바코드 출력 핸들러
+	const handlePrintDeliveryBarcode = async () => {
+		if (selectedFix.length === 0) {
+			alert("출고 바코드를 출력할 항목을 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selectedFix) {
+				const fix = fixes.find(f => f.flowCode === flowCode);
+				if (!fix) continue;
+
+				await printDeliveryBarcode(printerName, {
+					subdomain: tenant || "",
+					productName: fix.productName || "",
+					material: fix.materialName || "",
+					color: fix.colorName || "",
+					weight: fix.productWeight?.toString() || "",
+					size: fix.productSize || "",
+					mainStoneMemo: fix.mainStoneNote || "",
+					assistantStoneMemo: fix.assistanceStoneNote || "",
+					serialNumber: fix.flowCode || "",
+				});
+			}
+			alert(`${selectedFix.length}개의 출고 바코드 출력이 완료되었습니다.`);
+		} catch {
+			alert("바코드 출력 중 오류가 발생했습니다.");
+		}
+	};
+
+	const handlePrintProductBarcode = async () => {
+		if (selectedFix.length === 0) {
+			alert("제품 바코드를 출력할 항목을 선택해주세요.");
+			return;
+		}
+
+		const printerName = localStorage.getItem("preferred_printer_name");
+		if (!printerName) {
+			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			return;
+		}
+
+		try {
+			for (const flowCode of selectedFix) {
+				await printProductBarcode(printerName, {
+					subdomain: tenant || "",
+					productName: "",
+					serialNumber: flowCode
+				});
+			}
+			alert(`${selectedFix.length}개의 제품 바코드 출력이 완료되었습니다.`);
+		} catch {
+			alert("제품 바코드 출력 기능은 준비 중입니다.");
+		}
+	};
 
 	const handleFixCreate = () => {
 		// 수리 생성 팝업 - order_type=FIX 파라미터로 수리 주문 생성
@@ -395,33 +460,33 @@ export const FixPage = () => {
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}
 						onDelete={handleBulkDelete}
-						className="order"
-					/>
+					onPrintProductBarcode={handlePrintProductBarcode}
+					onPrintDeliveryBarcode={handlePrintDeliveryBarcode}
+					className="order"
+				/>
 
-					{/* 페이지네이션 */}
-					<Pagination
-						currentPage={currentPage}
-						totalPages={totalPages}
-						totalElements={totalElements}
-						loading={loading}
-						onPageChange={(page) => {
-							setCurrentPage(page);
-							loadFixes(searchFilters, page);
-						}}
-						className="order"
-					/>
+				{/* 페이지네이션 */}
+				<Pagination
+					currentPage={currentPage}
+					totalPages={totalPages}
+					totalElements={totalElements}
+					onPageChange={(page) => {
+						setCurrentPage(page);
+						loadFixes(searchFilters, page);
+					}}
+				/>
 				</div>
 
-				{/* 제조사 검색 팝업 */}
-				{isFactorySearchOpen && (
-					<FactorySearch
-						onSelectFactory={handleFactorySelect}
-						onClose={handleFactorySearchClose}
-					/>
-				)}
+			{/* 제조사 검색 팝업 */}
+			{isFactorySearchOpen && (
+				<FactorySearch
+					onSelectFactory={handleFactorySelect}
+					onClose={handleFactorySearchClose}
+				/>
+			)}
 			</div>
 		</>
 	);
-};
 
+};
 export default FixPage;
