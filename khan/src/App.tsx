@@ -75,7 +75,7 @@ function App() {
 	// QZ Tray 자동 초기화 및 프린터 연결
 	useEffect(() => {
 		if (isAuthenticated) {
-			qzTrayService.autoInitializeAndConnect().catch(err => {
+			qzTrayService.autoInitializeAndConnect().catch((err) => {
 				console.error("QZ Tray 자동 초기화 실패:", err);
 			});
 		}
