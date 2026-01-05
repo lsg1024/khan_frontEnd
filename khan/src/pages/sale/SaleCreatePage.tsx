@@ -27,6 +27,7 @@ import {
 	calculatePureGoldWeight,
 	calculatePureGoldWeightWithHarry,
 } from "../../utils/goldUtils";
+import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import "../../styles/pages/sale/SaleCreatePage.css";
 import { saleApi } from "../../../libs/api/sale";
 
@@ -217,7 +218,19 @@ export const SaleCreatePage = () => {
 
 	// 시리얼(재고) 검색 모달 열기
 	const handleFlowCodeSearch = (rowId: string) => {
-		console.log("시리얼 검색 모달 열기", rowId);
+		// 거래처가 선택되지 않았으면 경고
+		if (!saleOptions.storeId || !saleOptions.storeName) {
+			alert("거래처를 먼저 선택해주세요.");
+			return;
+		}
+
+		const url = `/sales/stock-search?storeName=${encodeURIComponent(
+			saleOptions.storeName
+		)}&rowId=${rowId}&origin=${window.location.origin}`;
+		const NAME = `stockSearch_${rowId}`;
+		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=700";
+
+		window.open(url, NAME, FEATURES);
 	};
 
 	// 스톤 정보 관리 모달 열기
@@ -468,8 +481,8 @@ export const SaleCreatePage = () => {
 				row.id === id
 					? {
 							...row,
-							hasAssistantStone: value === "Y",
-							assistantStoneArrivalDate: value === "Y" ? getLocalDate() : "",
+							assistantStone: value === "Y",
+							assistantStoneCreateAt: value === "Y" ? getLocalDate() : "",
 					  }
 					: row
 			)
@@ -573,50 +586,33 @@ export const SaleCreatePage = () => {
 			const source = searchParams.get("source");
 			console.log("source:", source);
 
-			// 재고/주문에서 판매 처리하는 경우 - flowCode 필수
-			if (source === "order" || source === "stock") {
-				const validRows = saleRows.filter((row) => row.flowCode);
-				console.log("flowCode가 있는 유효한 행:", validRows);
-
-				if (validRows.length === 0) {
-					setError("시리얼이 입력된 판매 항목이 없습니다.");
-					return;
+			// 유효한 행 필터링: 재질과 (금중량 또는 금액)이 있어야 함
+			const validRows = saleRows.filter((row) => {
+				// "판매" 상태는 flowCode 필수
+				if (row.status === "판매") {
+					return row.flowCode && row.materialName;
 				}
+				// 그 외 상태는 재질과 (금중량 또는 금액) 필요
+				return row.materialName && (row.goldWeight > 0 || row.productPrice > 0);
+			});
 
-				// 각 행을 개별적으로 API 호출
-				const results = await Promise.all(
-					validRows.map(async (row) => {
-						try {
-							let response;
+			console.log("유효한 행:", validRows);
 
-							console.log(
-								"판매 등록 데이터 준비:",
-								row,
-								row.status,
-								saleOptions,
-								source
-							);
+			if (validRows.length === 0) {
+				setError("처리할 유효한 판매 항목이 없습니다.");
+				return;
+			}
 
-							// 결제, DC, WG, 결통 상태인 경우 결제 처리
-							if (["결제", "DC", "WG", "결통"].includes(row.status)) {
-								const paymentData = {
-									id: parseInt(row.flowCode) || 0,
-									name: saleOptions.storeName,
-									harry: saleOptions.harry,
-									grade: saleOptions.grade,
-									orderStatus: row.status,
-									material: row.materialName,
-									note: row.note,
-									goldWeight: row.goldWeight.toString(),
-									payAmount: row.productPrice || 0,
-								};
+			// 각 행을 status에 따라 개별 API 호출
+			const results = await Promise.all(
+				validRows.map(async (row) => {
+					try {
+						let response;
 
-								response = await saleApi.createPaymentSale(
-									paymentData,
-									isAppendSale
-								);
-							} else if (source === "order") {
-								// 주문에서 판매 등록 - StockRegisterRequest 타입 사용
+						// 1. "판매" 상태: flowCode 기반 판매 등록
+						if (row.status === "판매") {
+							if (source === "order") {
+								// 주문에서 판매 등록
 								const orderSaleData: StockRegisterRequest = {
 									createAt: saleOptions.tradeDate,
 									flowCode: row.flowCode,
@@ -650,7 +646,7 @@ export const SaleCreatePage = () => {
 									isAppendSale
 								);
 							} else {
-								// 재고에서 판매 등록 - StockSaleRequest 타입 사용
+								// 재고에서 판매 등록 (기본값)
 								const stockSaleData: StockSaleRequest = {
 									productSize: row.productSize,
 									isProductWeightSale: false,
@@ -661,6 +657,7 @@ export const SaleCreatePage = () => {
 									stockNote: row.note,
 									assistantStone: row.assistantStone,
 									assistantStoneId: row.assistantStoneId,
+									assistantStoneName: row.assistantStoneName,
 									assistantStoneCreateAt: row.assistantStoneCreateAt || "",
 									goldWeight: row.goldWeight.toString(),
 									stoneWeight: row.stoneWeight.toString(),
@@ -673,71 +670,30 @@ export const SaleCreatePage = () => {
 									isAppendSale
 								);
 							}
-
-							return { success: response.success, flowCode: row.flowCode };
-						} catch (error) {
-							console.error(`판매 등록 실패 (${row.flowCode}):`, error);
-							return { success: false, flowCode: row.flowCode };
 						}
-					})
-				);
+						// 2. 결제, DC, WG, 결통 상태: 결제 처리
+						else if (["결제", "DC", "WG", "결통"].includes(row.status)) {
+							const paymentData: SalePaymentRequest = {
+								id: row.flowCode
+									? parseInt(row.flowCode) || 0
+									: parseInt(saleOptions.storeId) || 0,
+								name: saleOptions.storeName,
+								harry: saleOptions.harry,
+								grade: saleOptions.grade,
+								orderStatus: row.status,
+								material: row.materialName,
+								note: row.note,
+								goldWeight: Math.abs(row.goldWeight).toString(),
+								payAmount: Math.abs(row.productPrice),
+							};
 
-				// 결과 확인
-				const failedItems = results.filter((r) => !r.success);
-
-				if (failedItems.length === 0) {
-					alert("판매 등록이 완료되었습니다.");
-
-					console.log("모든 판매 등록 성공:", results);
-
-					// 초기화
-					resetForm();
-
-					// 부모 창으로 판매 등록 완료 메시지 전송
-					if (window.opener) {
-						window.opener.postMessage(
-							{ type: "SALES_REGISTERED", success: true },
-							window.location.origin
-						);
-					}
-
-					window.close();
-				} else {
-					const failedCodes = failedItems
-						.map((item) => item.flowCode)
-						.join(", ");
-					setError(`일부 항목의 판매 등록에 실패했습니다: ${failedCodes}`);
-				}
-			} else {
-				const validRows = saleRows.filter(
-					(row) =>
-						row.materialName && // 재질이 있어야 함
-						(row.goldWeight > 0 || row.productPrice > 0) // 금중량 또는 금액이 있어야 함
-				);
-
-				// 필터링된 행 정보 출력
-				const filteredOutRows = saleRows.filter(
-					(row) =>
-						!row.materialName || (row.goldWeight <= 0 && row.productPrice <= 0)
-				);
-
-				if (validRows.length === 0) {
-					setError("재질과 금중량이 입력된 판매 항목이 없습니다.");
-					return;
-				}
-
-				// 사용자에게 저장될 행 수 확인
-				if (filteredOutRows.length > 0) {
-					const confirmMsg = `${validRows.length}개의 행이 저장됩니다.\n${filteredOutRows.length}개의 행은 재질 또는 금중량/금액이 입력되지 않아 제외됩니다.\n\n계속하시겠습니까?`;
-					if (!confirm(confirmMsg)) {
-						return;
-					}
-				}
-
-				// 각 행을 개별적으로 API 호출
-				const results = await Promise.all(
-					validRows.map(async (row) => {
-						try {
+							response = await saleApi.createPaymentSale(
+								paymentData,
+								isAppendSale
+							);
+						}
+						// 3. 반품 등 기타 상태
+						else {
 							const paymentData: SalePaymentRequest = {
 								id: parseInt(saleOptions.storeId) || 0,
 								name: saleOptions.storeName,
@@ -750,58 +706,44 @@ export const SaleCreatePage = () => {
 								payAmount: Math.abs(row.productPrice),
 							};
 
-							console.log("직접 판매 등록 데이터:", paymentData);
-							console.log("row 원본 데이터:", row);
-
-							const response = await saleApi.createPaymentSale(
+							response = await saleApi.createPaymentSale(
 								paymentData,
 								isAppendSale
 							);
-
-							return {
-								success: response.success,
-								productName: row.productName || `행 ${row.id}`,
-							};
-						} catch (error) {
-							console.error(`판매 등록 실패 (행 ${row.id}):`, error);
-							return {
-								success: false,
-								productName: row.productName || `행 ${row.id}`,
-							};
 						}
-					})
-				);
 
-				// 결과 확인
-				const successCount = results.filter((r) => r.success).length;
-				const failedItems = results.filter((r) => !r.success);
-
-				if (failedItems.length === 0) {
-					alert(`${successCount}개의 판매가 성공적으로 등록되었습니다.`);
-					console.log("모든 판매 등록 성공:", results);
-
-					// 초기화
-					resetForm();
-
-					// 부모 창으로 판매 등록 완료 메시지 전송
-					if (window.opener) {
-						window.opener.postMessage(
-							{ type: "SALES_REGISTERED", success: true },
-							window.location.origin
-						);
+						return {
+							success: response.success,
+							identifier: row.flowCode || row.productName || `행 ${row.id}`,
+						};
+					} catch (error) {
+						console.error(`판매 등록 실패 (${row.flowCode || row.id}):`, error);
+						return {
+							success: false,
+							identifier: row.flowCode || row.productName || `행 ${row.id}`,
+						};
 					}
+				})
+			);
 
-					window.close();
-				} else {
-					const failedNames = failedItems
-						.map((item) => item.productName)
-						.join(", ");
-					alert(
-						`${successCount}개는 성공했으나, 일부 항목의 판매 등록에 실패했습니다:\n${failedNames}`
-					);
-					setError(`일부 항목의 판매 등록에 실패했습니다: ${failedNames}`);
-				}
-			}
+			// API 응답을 ApiResponse 형식으로 변환
+			const apiResponses = results.map((r) => ({
+				success: r.success,
+				message: r.success ? "OK" : "Failed",
+				data: r.identifier,
+			}));
+
+			await handleApiSubmit({
+				promises: apiResponses.map((r) => Promise.resolve(r)),
+				successMessage: `${validRows.length}개의 판매가 성공적으로 등록되었습니다.`,
+				failureMessage: "일부 항목의 판매 등록에 실패했습니다.",
+				parentMessageType: "SALES_REGISTERED",
+				parentMessageData: { success: true },
+				logMessage: "판매 등록",
+			});
+
+			// 초기화
+			resetForm();
 		} catch (err) {
 			handleError(err);
 		} finally {
@@ -917,6 +859,99 @@ export const SaleCreatePage = () => {
 		if (source && ids) {
 			loadSaleData(source, ids);
 		}
+
+		// 재고 선택 메시지 리스너 추가
+		const handleMessage = (event: MessageEvent) => {
+			if (event.origin !== window.location.origin) return;
+
+			// 재고 검색 팝업에서 재고 선택 시
+			if (event.data.type === "STOCK_SELECTED") {
+				const { rowId, stockData } = event.data;
+
+				// 현재 saleRows 상태를 직접 참조하여 중복 체크
+				setSaleRows((currentRows) => {
+					const isDuplicate = currentRows.some(
+						(row) => row.id !== rowId && row.flowCode === stockData.flowCode
+					);
+
+					if (isDuplicate) {
+						alert("이미 선택된 재고 상품입니다.");
+						// 중복이어도 팝업은 닫기
+						if (event.source && "postMessage" in event.source) {
+							(event.source as Window).postMessage(
+								{ type: "CLOSE_POPUP" },
+								window.location.origin
+							);
+						}
+						return currentRows; // 데이터 반영하지 않음
+					}
+
+					// 재고 데이터를 판매 행에 직접 채우기
+					const updatedRows = currentRows.map((row) => {
+						if (row.id !== rowId) return row;
+
+						// 금중량, 알중량 계산
+						const goldWeight = parseFloat(stockData.goldWeight || "0");
+						const stoneWeight = parseFloat(stockData.stoneWeight || "0");
+						const totalWeight = goldWeight + stoneWeight;
+
+						// 순금 중량 계산 (판매이므로 해리 적용)
+						const pureGoldWeight = calculatePureGoldWeightWithHarry(
+							goldWeight,
+							stockData.materialName || "",
+							saleOptions.harry
+						);
+
+						return {
+							...row,
+							flowCode: stockData.flowCode,
+							storeId: saleOptions.storeId,
+							productId: stockData.productId?.toString() || "",
+							productName: stockData.productName || "",
+							materialId: stockData.materialId?.toString() || "",
+							materialName: stockData.materialName || "",
+							colorId: stockData.colorId?.toString() || "",
+							colorName: stockData.colorName || "",
+							productSize: stockData.productSize || "",
+							goldWeight: goldWeight,
+							stoneWeight: stoneWeight,
+							totalWeight: totalWeight,
+							pureGoldWeight: pureGoldWeight,
+							mainStoneNote: stockData.mainStoneNote || "",
+							assistanceStoneNote: stockData.assistanceStoneNote || "",
+							assistantStoneId: stockData.assistantStoneId?.toString() || "",
+							assistantStoneName: stockData.assistantStoneName || "",
+							assistantStone: stockData.assistantStone || false,
+							assistantStoneCreateAt: stockData.assistantStoneCreateAt || "",
+							productPrice: stockData.productLaborCost || 0,
+							additionalProductPrice: stockData.productAddLaborCost || 0,
+							mainStonePrice: stockData.mainStoneLaborCost || 0,
+							assistanceStonePrice: stockData.assistanceStoneLaborCost || 0,
+							stoneAddLaborCost: stockData.stoneAddLaborCost || 0,
+							stoneWeightTotal: stoneWeight,
+							stoneInfos: stockData.stoneInfos || [],
+							mainStoneCount: stockData.mainStoneQuantity || 0,
+							assistanceStoneCount: stockData.assistanceStoneQuantity || 0,
+						};
+					});
+
+					// 성공 시 팝업 닫기
+					if (event.source && "postMessage" in event.source) {
+						(event.source as Window).postMessage(
+							{ type: "CLOSE_POPUP" },
+							window.location.origin
+						);
+					}
+
+					return updatedRows;
+				});
+			}
+		};
+
+		window.addEventListener("message", handleMessage);
+		return () => {
+			window.removeEventListener("message", handleMessage);
+		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [searchParams]);
 
@@ -1207,7 +1242,7 @@ export const SaleCreatePage = () => {
 							0
 						)
 				: 0;
-				
+
 		// 금 거래 내역 상태 업데이트
 		setAccountBalanceHistory((prev) => ({
 			...prev,

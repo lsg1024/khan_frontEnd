@@ -27,6 +27,7 @@ import type {
 	OrderRequestDetail,
 } from "../../types/order";
 import { calculateStoneDetails } from "../../utils/calculateStone";
+import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import OrderTable from "../../components/common/order/OrderTable";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
@@ -623,6 +624,7 @@ const OrderUpdatePage: React.FC = () => {
 				alert("상품 정보가 누락되었습니다.");
 				return;
 			}
+
 			const response = await orderApi.orderUpdate(
 				flowCode!,
 				orderStatus!,
@@ -630,16 +632,12 @@ const OrderUpdatePage: React.FC = () => {
 			);
 
 			if (response.success) {
-				alert("주문이 성공적으로 업데이트되었습니다.");
-
-				// 부모 창에 업데이트 완료 메시지 전송
-				if (window.opener && !window.opener.closed) {
-					window.opener.postMessage(
-						{ type: "ORDER_UPDATED" },
-						window.location.origin
-					);
-				}
-				window.close();
+				await handleApiSubmit({
+					promises: [Promise.resolve(response)],
+					successMessage: "주문이 성공적으로 업데이트되었습니다.",
+					parentMessageType: "ORDER_UPDATED",
+					logMessage: "주문 수정",
+				});
 			} else {
 				throw new Error(response.message || "주문 업데이트에 실패했습니다.");
 			}

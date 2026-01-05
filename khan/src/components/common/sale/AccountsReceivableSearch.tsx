@@ -2,14 +2,15 @@ import React from "react";
 
 export interface AccountsReceivableSearchFilters {
 	search: string;
-	accountType: string; // "판매처" 또는 "매입처"
+	sortField: string;
+	sortOrder: "ASC" | "DESC" | "";
 }
 
 interface AccountsReceivableSearchProps {
 	searchFilters: AccountsReceivableSearchFilters;
 	onFilterChange: (
 		field: keyof AccountsReceivableSearchFilters,
-		value: string
+		value: string | "ASC" | "DESC" | ""
 	) => void;
 	onSearch: () => void;
 	onReset: () => void;
@@ -29,21 +30,35 @@ const AccountsReceivableSearch: React.FC<AccountsReceivableSearchProps> = ({
 		<>
 			<div className="search-section-common">
 				<div className="search-filters-common">
-					<div className="filter-row-common">
+					<div className="search-controls-common">
 						<div className="filter-group-common">
 							<select
-								id="accountType"
-								value={searchFilters.accountType}
-								onChange={(e) => onFilterChange("accountType", e.target.value)}
+								id="sortField"
+								value={searchFilters.sortField}
+								onChange={(e) => onFilterChange("sortField", e.target.value)}
 							>
-								<option value="">전체</option>
-								<option value="판매처">판매처</option>
-								<option value="매입처">매입처</option>
+								<option value="">정렬 기준</option>
+								<option value="accountName">거래처명</option>
+								<option value="accountOwnerName">대표자</option>
+								<option value="grade">등급</option>
+								<option value="gold">미수(금)</option>
+								<option value="money">미수(금액)</option>
 							</select>
 						</div>
-					</div>
-
-					<div className="search-controls-common">
+						<div className="filter-group-common">
+							<select
+								id="sortOrder"
+								value={searchFilters.sortOrder}
+								onChange={(e) =>
+									onFilterChange("sortOrder", e.target.value as "ASC" | "DESC")
+								}
+								disabled={loading}
+							>
+								<option value="">정렬 방식</option>
+								<option value="ASC">오름차순</option>
+								<option value="DESC">내림차순</option>
+							</select>
+						</div>
 						<input
 							type="text"
 							placeholder="거래처명 검색..."

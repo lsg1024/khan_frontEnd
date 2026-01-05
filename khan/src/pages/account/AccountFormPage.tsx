@@ -6,6 +6,7 @@ import { goldHarryApi } from "../../../libs/api/goldHarry";
 import { materialApi } from "../../../libs/api/material";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { isApiSuccess } from "../../../libs/api/config";
+import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import type { AccountSingleResponse } from "../../types/AccountDto";
 import type { goldHarryResponse } from "../../types/goldHarry";
 import type { MaterialDto } from "../../types/material";
@@ -256,20 +257,16 @@ export const AccountFormPage = () => {
 				return;
 			}
 
-			alert(`${mode === "create" ? "등록" : "수정"}이 완료되었습니다.`);
-
-			if (window.opener) {
-				window.opener.postMessage(
-					{
-						type: mode === "create" ? "ACCOUNT_CREATED" : "ACCOUNT_UPDATED",
-						accountType,
-					},
-					window.location.origin
-				);
-			}
-
-			// 팝업 창 닫기
-			window.close();
+			await handleApiSubmit({
+				promises: [Promise.resolve(res)],
+				successMessage: `${
+					mode === "create" ? "등록" : "수정"
+				}이 완료되었습니다.`,
+				parentMessageType:
+					mode === "create" ? "ACCOUNT_CREATED" : "ACCOUNT_UPDATED",
+				parentMessageData: { accountType },
+				logMessage: `거래처/제조사 ${mode === "create" ? "등록" : "수정"}`,
+			});
 		} catch (err) {
 			handleError(err);
 		} finally {

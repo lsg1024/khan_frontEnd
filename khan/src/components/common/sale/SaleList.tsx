@@ -219,9 +219,9 @@ export const SaleList = ({
 							</td>
 							<td
 								className="gold-weight-cell"
-								title={sale.goldWeight?.toString() || "-"}
+								title={sale.pureGoldWeight?.toString() || "-"}
 							>
-								{sale.goldWeight || "-"}
+								{sale.pureGoldWeight || "-"}
 							</td>
 							<td
 								className="total-product-labor-cost-cell"

@@ -23,7 +23,7 @@ const sidebarItems: SidebarItem[] = [
 		children: [
 			{ path: "/orders", label: "주문 목록"},
 			{ path: "/fix", label: "수리 목록"},
-			{ path: "/expact", label: "출고 목록"},
+			{ path: "/expect", label: "출고 목록"},
 			{ path: "/order-deleted", label: "삭제 목록"},
 		],
 	},

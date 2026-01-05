@@ -33,6 +33,7 @@ import OrderTable from "../../components/common/order/OrderTable";
 import PastOrderHistory from "../../components/common/PastOrderHistory";
 import ProductInfoSection from "../../components/common/ProductInfoSection";
 import { calculateStoneDetails } from "../../utils/calculateStone";
+import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import "../../styles/pages/OrderCreatePage.css";
 
 type UpdateMode = "order" | "fix" | "expact";
@@ -837,7 +838,7 @@ const OrderCreatePage = () => {
 								(m) =>
 									m.materialName === productDetail.materialDto?.materialName
 							);
-							
+
 							// 색상 매칭 (ProductDto에 color 정보가 있다고 가정)
 							const matchedColor = productDetail
 								.productWorkGradePolicyGroupDto[0].colorName
@@ -973,25 +974,17 @@ const OrderCreatePage = () => {
 
 				return orderApi.createOrder(orderStatus, orderData);
 			});
-			const responses = await Promise.all(promises);
-			const createdFlowCodes = responses.map((res) => res.data).filter(Boolean);
 
-			// 팝업창에서 먼저 alert 표시
-			alert(`${createdFlowCodes.length}개의 주문이 성공적으로 생성되었습니다.`);
-
-			// 부모창에 메시지 전송
-			if (window.opener) {
-				window.opener.postMessage(
-					{
-						type: "ORDER_CREATED",
-						flowCodes: createdFlowCodes,
-					},
-					window.location.origin
-				);
-			}
-
-			// 팝업창 닫기
-			window.close();
+			await handleApiSubmit({
+				promises,
+				successMessage: `${validRows.length}개의 주문이 성공적으로 생성되었습니다.`,
+				parentMessageType: "ORDER_CREATED",
+				parentMessageData: {
+					success: true,
+				},
+				logMessage: "주문 생성",
+				closeDelay: 0, // 서버 응답 직후 바로 창 닫기
+			});
 		} catch (err) {
 			handleError(err);
 		} finally {

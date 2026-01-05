@@ -24,8 +24,8 @@ export const ExpactPage = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
-	const [expacts, setExpacts] = useState<OrderDto[]>([]);
-	const [selectedExpact, setSelectedExpact] = useState<string[]>([]);
+	const [expects, setExpects] = useState<OrderDto[]>([]);
+	const [selectedExpect, setSelectedExpect] = useState<string[]>([]);
 	const [factories, setFactories] = useState<string[]>([]);
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
@@ -97,21 +97,21 @@ export const ExpactPage = () => {
 	const handleSelectExpact = (flowCode: string, checked: boolean) => {
 		if (checked) {
 			// 선택 추가
-			setSelectedExpact((prev) => [...prev, flowCode]);
+			setSelectedExpect((prev) => [...prev, flowCode]);
 		} else {
 			// 선택 해제
-			setSelectedExpact((prev) => prev.filter((id) => id !== flowCode));
+			setSelectedExpect((prev) => prev.filter((id) => id !== flowCode));
 		}
 	};
 
 	const handleExpactClick = (flowCode: string) => {
-		const expactData = expacts.find((expact) => expact.flowCode === flowCode);
+		const expactData = expects.find((expect) => expect.flowCode === flowCode);
 
 		if (expactData?.imagePath) {
 			sessionStorage.setItem("tempImagePath", expactData.imagePath);
 		}
 
-		const url = `/orders/update/expact/${flowCode}`;
+		const url = `/orders/update/expect/${flowCode}`;
 		const NAME = `expactUpdate_${flowCode}`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=400";
 		const existingPopup = orderUpdatePopups.current.get(flowCode);
@@ -197,12 +197,12 @@ export const ExpactPage = () => {
 		async (filters: typeof searchFilters, page: number = 1) => {
 			setLoading(true);
 
-			setSelectedExpact([]);
+			setSelectedExpect([]);
 			try {
 				const response = await deliveryApi.getExpacts(
 					filters.start,
 					filters.end,
-					"EXPACT",
+					"EXPECT",
 					filters.search,
 					filters.factory,
 					filters.store,
@@ -214,14 +214,14 @@ export const ExpactPage = () => {
 					const pageData = response.data.page;
 					const content = response.data.content || [];
 
-					setExpacts(content || []);
+					setExpects(content || []);
 					setCurrentPage(page);
 					setTotalPages(pageData.totalPages || 1);
 					setTotalElements(pageData.totalElements || 0);
 				}
 			} catch (err) {
 				handleError(err);
-				setExpacts([]);
+				setExpects([]);
 				setCurrentPage(1);
 				setTotalPages(0);
 				setTotalElements(0);
@@ -246,9 +246,9 @@ export const ExpactPage = () => {
 		handleBulkActionMessage,
 		cleanupPopups,
 	} = useBulkActions({
-		selectedItems: selectedExpact,
-		setSelectedItems: setSelectedExpact,
-		items: expacts,
+		selectedItems: selectedExpect,
+		setSelectedItems: setSelectedExpect,
+		items: expects,
 		searchFilters,
 		currentPage,
 		loadData: loadExpacts,
@@ -256,7 +256,7 @@ export const ExpactPage = () => {
 
 	// 바코드 출력 핸들러
 	const handlePrintDeliveryBarcode = async () => {
-		if (selectedExpact.length === 0) {
+		if (selectedExpect.length === 0) {
 			alert("출고 바코드를 출력할 항목을 선택해주세요.");
 			return;
 		}
@@ -268,30 +268,30 @@ export const ExpactPage = () => {
 		}
 
 		try {
-			for (const flowCode of selectedExpact) {
-				const expact = expacts.find((e) => e.flowCode === flowCode);
-				if (!expact) continue;
+			for (const flowCode of selectedExpect) {
+				const expect = expects.find((e) => e.flowCode === flowCode);
+				if (!expect) continue;
 
 				await printDeliveryBarcode(printerName, {
 					subdomain: tenant || "",
-					productName: expact.productName || "",
-					material: expact.materialName || "",
-					color: expact.colorName || "",
-					weight: expact.productWeight?.toString() || "",
-					size: expact.productSize || "",
-					mainStoneMemo: expact.mainStoneNote || "",
-					assistantStoneMemo: expact.assistanceStoneNote || "",
-					serialNumber: expact.flowCode || "",
+					productName: expect.productName || "",
+					material: expect.materialName || "",
+					color: expect.colorName || "",
+					weight: expect.productWeight?.toString() || "",
+					size: expect.productSize || "",
+					mainStoneMemo: expect.mainStoneNote || "",
+					assistantStoneMemo: expect.assistanceStoneNote || "",
+					serialNumber: expect.flowCode || "",
 				});
 			}
-			alert(`${selectedExpact.length}개의 출고 바코드 출력이 완료되었습니다.`);
+			alert(`${selectedExpect.length}개의 출고 바코드 출력이 완료되었습니다.`);
 		} catch {
 			alert("바코드 출력 중 오류가 발생했습니다.");
 		}
 	};
 
 	const handlePrintProductBarcode = async () => {
-		if (selectedExpact.length === 0) {
+		if (selectedExpect.length === 0) {
 			alert("제품 바코드를 출력할 항목을 선택해주세요.");
 			return;
 		}
@@ -303,14 +303,14 @@ export const ExpactPage = () => {
 		}
 
 		try {
-			for (const flowCode of selectedExpact) {
+			for (const flowCode of selectedExpect) {
 				await printProductBarcode(printerName, {
 					subdomain: tenant || "",
 					productName: "",
 					serialNumber: flowCode,
 				});
 			}
-			alert(`${selectedExpact.length}개의 제품 바코드 출력이 완료되었습니다.`);
+			alert(`${selectedExpect.length}개의 제품 바코드 출력이 완료되었습니다.`);
 		} catch {
 			alert("제품 바코드 출력 기능은 준비 중입니다.");
 		}
@@ -323,7 +323,7 @@ export const ExpactPage = () => {
 			const factoryResponse = await orderApi.getFilterFactories(
 				searchFilters.start,
 				searchFilters.end,
-				"EXPACT"
+				"EXPECT"
 			);
 			setFactories(factoryResponse.data || []);
 
@@ -331,7 +331,7 @@ export const ExpactPage = () => {
 			const storeResponse = await orderApi.getFilterStores(
 				searchFilters.start,
 				searchFilters.end,
-				"EXPACT"
+				"EXPECT"
 			);
 			setStores(storeResponse.data || []);
 
@@ -339,14 +339,14 @@ export const ExpactPage = () => {
 			const setTypeResponse = await orderApi.getFilterSetTypes(
 				searchFilters.start,
 				searchFilters.end,
-				"EXPACT"
+				"EXPECT"
 			);
 			setSetTypes(setTypeResponse.data || []);
 			// 색상 데이터 가져오기
 			const colorResponse = await orderApi.getFilterColors(
 				searchFilters.start,
 				searchFilters.end,
-				"EXPACT"
+				"EXPECT"
 			);
 			setColors(colorResponse.data || []);
 		} catch (err) {
@@ -372,11 +372,11 @@ export const ExpactPage = () => {
 			// 기존 메시지 타입 처리
 			if (event.data?.type === "STOCK_REGISTER_COMPLETED") {
 				alert("재고등록이 완료되었습니다.");
-				setSelectedExpact([]);
+				setSelectedExpect([]);
 				loadExpacts(searchFilters, currentPage);
 			} else if (event.data?.type === "SALES_REGISTER_COMPLETED") {
 				alert("판매등록이 완료되었습니다.");
-				setSelectedExpact([]);
+				setSelectedExpect([]);
 				loadExpacts(searchFilters, currentPage);
 			}
 		};
@@ -413,7 +413,7 @@ export const ExpactPage = () => {
 					<div className="date-picker-modal-overlay">
 						<div className="date-picker-modal">
 							<h3>출고일 변경</h3>
-							<p>주문번호: {selectedExpact}</p>
+							<p>주문번호: {selectedExpect}</p>
 							<input
 								type="date"
 								value={newDeliveryDate.toISOString().split("T")[0]}
@@ -456,8 +456,8 @@ export const ExpactPage = () => {
 				{/* 수리 목록 */}
 				<div className="list">
 					<MainList
-						dtos={expacts}
-						selected={selectedExpact}
+						dtos={expects}
+						selected={selectedExpect}
 						currentPage={currentPage}
 						loading={loading}
 						onSelect={handleSelectExpact}
@@ -474,7 +474,7 @@ export const ExpactPage = () => {
 
 					{/* 하단 액션 바 */}
 					<BulkActionBar
-						selectedCount={selectedExpact.length}
+						selectedCount={selectedExpect.length}
 						onChangeDeliveryDate={handleChangeDeliveryDate}
 						onStockRegister={handleStockRegister}
 						onSalesRegister={handleSalesRegister}

@@ -38,10 +38,13 @@ export interface StoreAttemptResponse {
 export interface TransactionPage {
 	accountId: string;
 	accountName: string;
+	accountHarry: string;
 	createDate: string;
+	material: string;
 	goldAmount: string;
 	moneyAmount: string;
 	tradeType: string;
+	transactionNote: string;
 }
 
 export interface TransactionPageResponse {

@@ -84,7 +84,6 @@ export const OrderPage = () => {
 			if (newPopup) {
 				orderCreationPopup.current = newPopup;
 
-				// 팝업 닫힘 감지를 위한 인터벌 설정 (참조 정리만 수행)
 				const checkClosed = setInterval(() => {
 					if (newPopup.closed) {
 						clearInterval(checkClosed);
@@ -485,11 +484,10 @@ export const OrderPage = () => {
 
 		const handleOrderCreated = (event: MessageEvent) => {
 			if (event.data && event.data.type === "ORDER_CREATED") {
-				if (event.data.flowCodes && event.data.flowCodes.length > 0) {
-					// 주문 목록 새로고침
-					loadOrders(searchFilters, 1);
-					setCurrentPage(1);
-				}
+				// 주문 목록 새로고침
+				console.log("ORDER_CREATED 메시지 수신됨, 주문 목록 새로고침 수행");
+				loadOrders(searchFilters, 1);
+				setCurrentPage(1);
 			}
 		};
 

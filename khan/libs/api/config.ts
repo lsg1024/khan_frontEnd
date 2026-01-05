@@ -5,6 +5,7 @@ import { extractSubdomain } from "../domain";
 import { tokenUtils } from "../../src/utils/tokenUtils";
 
 const API_BASE_URL = "https://api.kkhan.co.kr";
+// const API_LOCAL_URL = "http://localhost:8080";
 
 export function getApiBaseUrl(): string {
 	return API_BASE_URL;

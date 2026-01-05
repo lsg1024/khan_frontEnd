@@ -20,7 +20,7 @@ import StoneEditPage from "./pages/stone/StoneEditPage";
 import StoneProductsPage from "./pages/stone/StoneProductsPage";
 import OrderPage from "./pages/order/OrderPage";
 import FixPage from "./pages/order/FixPage";
-import ExpactPage from "./pages/order/DeliveryPage";
+import ExpectPage from "./pages/order/DeliveryPage";
 import OrderCreatePage from "./pages/order/OrderCreatePage";
 import OrderUpdatePage from "./pages/order/OrderUpdatePage";
 import StockRegisterPage from "./pages/stock/StockRegisterPage";
@@ -47,6 +47,7 @@ import AccountReceivablePage from "./pages/sale/AccountsReceivablePage";
 import SalePage from "./pages/sale/SalePage";
 import SaleCreatePage from "./pages/sale/SaleCreatePage";
 import SaleDetailPage from "./pages/sale/SaleDetailPage";
+import StockSearchPopup from "./pages/sale/StockSearchPopup";
 import GoldMoneyPage from "./pages/gold_money/GoldMoneyPage";
 import PurchasePage from "./pages/purchase/PurchasePage";
 import ProfilePage from "./pages/ProfilePage";
@@ -72,8 +73,14 @@ function App() {
 		setIsAuthenticated(false);
 	};
 
-	// QZ Tray 자동 초기화 및 프린터 연결
+	// QZ Tray 자동 초기화 및 프린터 연결 (메인 창에서만)
 	useEffect(() => {
+		// 팝업 창인 경우 QZ Tray 초기화를 건너뜀
+		if (window.opener) {
+			console.log("⏭️ 팝업 창이므로 QZ Tray 초기화를 건너뜁니다.");
+			return;
+		}
+
 		if (isAuthenticated) {
 			qzTrayService.autoInitializeAndConnect().catch((err) => {
 				console.error("QZ Tray 자동 초기화 실패:", err);
@@ -161,6 +168,7 @@ function App() {
 						element={<StockCommonActionPage />}
 					/>
 					<Route path="/sales/create" element={<SaleCreatePage />} />
+					<Route path="/sales/stock-search" element={<StockSearchPopup />} />
 					<Route
 						path="/sales/detail/:orderStatus/:flowCode"
 						element={<SaleDetailPage />}
@@ -187,7 +195,7 @@ function App() {
 						<Route path="/stone/create" element={<StoneCreatePage />} />
 						<Route path="/orders" element={<OrderPage />} />
 						<Route path="/fix" element={<FixPage />} />
-						<Route path="/expact" element={<ExpactPage />} />
+						<Route path="/expect" element={<ExpectPage />} />
 						<Route path="/order-deleted" element={<OrderDeletedPage />} />
 						<Route path="/stocks" element={<StockPage />} />
 						<Route path="/stocks/history" element={<StockHistoryPage />} />

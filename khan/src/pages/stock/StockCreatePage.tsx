@@ -23,6 +23,7 @@ import ProductSearch from "../../components/common/product/ProductSearch";
 import PastOrderHistory from "../../components/common/PastOrderHistory";
 import ProductInfoSection from "../../components/common/ProductInfoSection";
 import { calculateStoneDetails } from "../../utils/calculateStone";
+import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import type { MaterialDto } from "../../types/material";
 import type { ColorDto } from "../../types/color";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
@@ -54,18 +55,12 @@ export const StockCreatePage = () => {
 	const productModal = useSearchModal();
 
 	// 드롭다운 데이터
-	const [materials, setMaterials] = useState<
-		MaterialDto[]
-	>([]);
-	const [colors, setColors] = useState<
-		ColorDto[]
-	>([]);
-	const [assistantStones, setAssistantStones] = useState<
-		AssistantStoneDto[]
-	>([]);
-	const [goldHarries, setGoldHarries] = useState<
-		GoldHarryDto[]
-	>([]);
+	const [materials, setMaterials] = useState<MaterialDto[]>([]);
+	const [colors, setColors] = useState<ColorDto[]>([]);
+	const [assistantStones, setAssistantStones] = useState<AssistantStoneDto[]>(
+		[]
+	);
+	const [goldHarries, setGoldHarries] = useState<GoldHarryDto[]>([]);
 
 	// 상품 상세 정보 관련 state
 	const [currentProductDetail, setCurrentProductDetail] =
@@ -836,7 +831,8 @@ export const StockCreatePage = () => {
 							additionalStonePrice: 0,
 							stoneWeightTotal: 0,
 							assistantStone: false,
-							assistantStoneId: defaultAssistantStone?.assistantStoneId.toString() || "1",
+							assistantStoneId:
+								defaultAssistantStone?.assistantStoneId.toString() || "1",
 							assistantStoneName:
 								defaultAssistantStone?.assistantStoneName || "",
 							assistantStoneCreateAt: "",
@@ -876,7 +872,6 @@ export const StockCreatePage = () => {
 					productId ? fetchProductDetail(productId) : Promise.resolve(null),
 				]);
 
-
 				if (materialRes.success) {
 					const loadedMaterials = (materialRes.data || []).map((m) => ({
 						materialId: m.materialId?.toString() || "",
@@ -894,10 +889,12 @@ export const StockCreatePage = () => {
 					setColors(loadedColors);
 				}
 				if (assistantStoneRes.success) {
-					const loadedAssistantStones = (assistantStoneRes.data || []).map((a) => ({
-						assistantStoneId: a.assistantStoneId,
-						assistantStoneName: a.assistantStoneName,
-					}));
+					const loadedAssistantStones = (assistantStoneRes.data || []).map(
+						(a) => ({
+							assistantStoneId: a.assistantStoneId,
+							assistantStoneName: a.assistantStoneName,
+						})
+					);
 					setAssistantStones(loadedAssistantStones);
 				}
 				if (goldHarryRes.success) {
@@ -955,7 +952,8 @@ export const StockCreatePage = () => {
 						assistanceStoneCount: 0,
 						stoneAddLaborCost: 0,
 						stoneWeightTotal: 0,
-						assistantStoneId: defaultAssistantStone?.assistantStoneId.toString() || "1",
+						assistantStoneId:
+							defaultAssistantStone?.assistantStoneId.toString() || "1",
 						assistantStone: false,
 						assistantStoneName: defaultAssistantStone?.assistantStoneName || "",
 						assistantStoneCreateAt: "",
@@ -1128,25 +1126,15 @@ export const StockCreatePage = () => {
 				return stockApi.createStock(stockData, orderStatus);
 			});
 
-			const responses = await Promise.all(promises);
-			const successCount = responses.filter((res) => res.success).length;
-
-			alert(`${successCount}개의 재고가 성공적으로 등록되었습니다.`);
-
-			if (window.opener) {
-				window.opener.postMessage(
-					{
-						type: "STOCK_CREATED",
-						count: successCount,
-					},
-					window.location.origin
-				);
-			}
-
-			// 팝업창 닫기 또는 페이지 리프레시
-			if (window.opener) {
-				window.close();
-			}
+			await handleApiSubmit({
+				promises,
+				successMessage: `${validRows.length}개의 재고가 성공적으로 등록되었습니다.`,
+				failureMessage:
+					"일부 재고 등록에 실패했습니다.\n실패한 항목을 확인해주세요.",
+				parentMessageType: "STOCK_CREATED",
+				parentMessageData: { count: validRows.length },
+				logMessage: "재고 등록",
+			});
 		} catch (err) {
 			handleError(err);
 		} finally {

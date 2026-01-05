@@ -40,7 +40,7 @@ const StockBulkActionBar: React.FC<StockBulkActionBarProps> = ({
 							}
 						}}
 					>
-						판매
+						판매 등록
 					</a>
 				)}
 				{onRentalRegister && (
@@ -56,7 +56,7 @@ const StockBulkActionBar: React.FC<StockBulkActionBarProps> = ({
 							}
 						}}
 					>
-						대여
+						대여 등록
 					</a>
 				)}
 				{onReturnRegister && (
@@ -72,7 +72,7 @@ const StockBulkActionBar: React.FC<StockBulkActionBarProps> = ({
 							}
 						}}
 					>
-						반납
+						반납 등록
 					</a>
 				)}
 				{onRollBack && (
@@ -88,7 +88,7 @@ const StockBulkActionBar: React.FC<StockBulkActionBarProps> = ({
 							}
 						}}
 					>
-						복구
+						복구 등록
 					</a>
 				)}
 				{onDelete && (
@@ -104,7 +104,7 @@ const StockBulkActionBar: React.FC<StockBulkActionBarProps> = ({
 							}
 						}}
 					>
-						삭제
+						삭제 등록
 					</a>
 				)}
 				{onPrintProductBarcode && (

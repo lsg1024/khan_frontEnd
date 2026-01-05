@@ -35,7 +35,6 @@
 	border-right: 1px solid #dee2e6;
 	border-bottom: 1px solid #dee2e6;
 	vertical-align: middle;
-	color: #000; /* 검정색으로 변경 */
 }
 
 .table tbody tr:hover {
@@ -55,7 +54,6 @@
 	min-width: 1000px;
 	margin: 0 auto;
 	width: 100%;
-	/* 작은 화면에서 왼쪽부터 보이도록 설정 */
 	display: block;
 	scroll-behavior: smooth;
 }

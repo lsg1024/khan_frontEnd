@@ -39,7 +39,7 @@ export interface SaleRow {
 	assistantStone: boolean;
 	assistantName: string | null;
 	totalWeight: number;
-	goldWeight: number;
+	pureGoldWeight: number;
 	totalProductLaborCost: number;
 	mainStoneLaborCost: number;
 	assistanceStoneLaborCost: number;

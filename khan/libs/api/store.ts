@@ -28,10 +28,18 @@ export const storeApi = {
 	getStoreAttempt: async (
 		name?: string,
 		page: number = 1,
-		size = 12
+		size = 20,
+		sortField?: string,
+		sortOrder?: string
 	): Promise<ApiResponse<StoreAttemptResponse>> => {
 		return apiRequest.get<StoreAttemptResponse>("account/stores/attempt", {
-			params: { search: name || "", page: page, size: size },
+			params: {
+				search: name || "",
+				page: page,
+				size: size,
+				sortField: sortField || undefined,
+				sortOrder: sortOrder || undefined,
+			},
 		});
 	},
 

@@ -57,10 +57,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 		if (!isSaleStatus(row.status)) {
 			return false;
 		}
-		// 구분이 판매이고 시리얼에 값이 있는 경우 변경 불가능
-		if (isSaleStatus(row.status) && row.flowCode) {
-			return false;
-		}
+		// 판매인 경우 항상 편집 가능 (재선택 허용)
 		return true;
 	};
 
@@ -754,7 +751,11 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										<span
 											className="search-icon"
 											onClick={() => {
-												if (!isStoreNotSelected) {
+												if (
+													!isStoreNotSelected &&
+													canEditStonePrice(row) &&
+													row.flowCode
+												) {
 													safeOnStoneInfoOpen?.(row.id);
 												}
 											}}
@@ -763,14 +764,16 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 													loading ||
 													disabled ||
 													isStoreNotSelected ||
-													!canEditStonePrice(row)
+													!canEditStonePrice(row) ||
+													!row.flowCode
 														? 0.5
 														: 1,
 												cursor:
 													loading ||
 													disabled ||
 													isStoreNotSelected ||
-													!canEditStonePrice(row)
+													!canEditStonePrice(row) ||
+													!row.flowCode
 														? "not-allowed"
 														: "pointer",
 											}}

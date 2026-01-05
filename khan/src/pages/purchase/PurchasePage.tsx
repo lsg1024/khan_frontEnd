@@ -7,6 +7,7 @@ import type {
 } from "../../types/store";
 import { getLocalDate } from "../../utils/dateUtils";
 import Pagination from "../../components/common/Pagination";
+import PurchaseList from "../../components/common/purchase/PurchaseList";
 import "../../styles/pages/AccountsReceivablePage.css";
 
 export const PurchasePage = () => {
@@ -123,6 +124,19 @@ export const PurchasePage = () => {
 		loadFactoryPurchase(resetFilters, 1);
 	};
 
+	// 매입 생성
+	const handleCreate = async () => {
+		try {
+			setLoading(true);
+			setError("");
+			alert("엑셀 다운로드 기능은 준비 중입니다.");
+		} catch {
+			alert("엑셀 다운로드에 실패했습니다.");
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	// 엑셀 다운로드 처리
 	const handleExcelDownload = async () => {
 		try {
@@ -200,7 +214,7 @@ export const PurchasePage = () => {
 					<div className="search-controls-common">
 						<input
 							type="text"
-							placeholder="제조사명 검색..."
+							placeholder=""
 							value={searchFilters.accountName}
 							onChange={(e) =>
 								handleFilterChange("accountName", e.target.value)
@@ -226,6 +240,13 @@ export const PurchasePage = () => {
 							</button>
 							<button
 								className="common-btn-common"
+								onClick={handleCreate}
+								disabled={loading}
+							>
+								생성
+							</button>
+							<button
+								className="common-btn-common"
 								onClick={handleExcelDownload}
 								disabled={loading}
 							>
@@ -237,66 +258,23 @@ export const PurchasePage = () => {
 			</div>
 
 			{/* 결과 섹션 */}
-			<div className="list">
-				{loading ? (
-					<div className="loading-container">
-						<div className="spinner"></div>
-						<p>데이터를 불러오는 중...</p>
-					</div>
-				) : transactions.length === 0 ? (
-					<div className="empty-state">
-						<span className="empty-icon">📋</span>
-						<h3>매입 미수금 내역이 없습니다</h3>
-						<p>조회 기간에 해당하는 데이터가 없습니다.</p>
-					</div>
-				) : (
-					<>
-						<table className="table">
-							<thead>
-								<tr>
-									<th>NO</th>
-									<th>제조사명</th>
-									<th>거래 구분</th>
-									<th>거래 날짜</th>
-									<th>금 중량(g)</th>
-									<th>금액</th>
-								</tr>
-							</thead>
-							<tbody>
-								{transactions.map((transaction, index) => (
-									<tr key={transaction.accountId}>
-										<td>{(currentPage - 1) * size + index + 1}</td>
-										<td>{transaction.accountName}</td>
-										<td>
-											<span
-												className={`trade-type-badge ${
-													transaction.tradeType === "매입" ? "purchase" : "sale"
-												}`}
-											>
-												{transaction.tradeType}
-											</span>
-										</td>
-										<td className="date-cell">{transaction.createDate}</td>
-										<td className="gold-weight">
-											{parseFloat(transaction.goldAmount).toFixed(3)}g
-										</td>
-										<td className="money-amount">
-											{parseInt(transaction.moneyAmount).toLocaleString()}원
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
+			<div className="purchase-list">
+				<PurchaseList
+					transactions={transactions}
+					currentPage={currentPage}
+					size={size}
+					loading={loading}
+				/>
 
-						{/* 페이지네이션 */}
-						<Pagination
-							currentPage={currentPage}
-							totalPages={totalPages}
-							totalElements={totalElements}
-							loading={loading}
-							onPageChange={handlePageChange}
-						/>
-					</>
+				{/* 페이지네이션 */}
+				{!loading && transactions.length > 0 && (
+					<Pagination
+						currentPage={currentPage}
+						totalPages={totalPages}
+						totalElements={totalElements}
+						loading={loading}
+						onPageChange={handlePageChange}
+					/>
 				)}
 			</div>
 		</div>

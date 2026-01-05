@@ -8,6 +8,7 @@ import { goldHarryApi } from "../../../libs/api/goldHarry";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { formatToLocalDate, getLocalDate } from "../../utils/dateUtils";
 import { calculateStoneDetails } from "../../utils/calculateStone";
+import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import type { MaterialDto } from "../../types/material";
 import type { ColorDto } from "../../types/color";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
@@ -334,30 +335,15 @@ const StockUpdatePage: React.FC = () => {
 			});
 
 			// 모든 업데이트 요청을 병렬로 실행
-			const responses = await Promise.all(updatePromises);
-
-			// 성공/실패 개수 확인
-			const successCount = responses.filter((res) => res.success).length;
-			const failCount = responses.length - successCount;
-
-			if (failCount === 0) {
-				alert(`${successCount}개의 재고 정보가 성공적으로 업데이트되었습니다.`);
-			} else {
-				alert(
-					`${successCount}개 성공, ${failCount}개 실패\n일부 재고 정보 업데이트에 실패했습니다.`
-				);
-			}
-
-			// 부모 창(StockPage)에 새로고침 메시지 전송
-			if (window.opener) {
-				window.opener.postMessage(
-					{
-						type: "STOCK_UPDATE_SUCCESS",
-						flowCodes: flowCodes,
-					},
-					window.location.origin
-				);
-			}
+			await handleApiSubmit({
+				promises: updatePromises,
+				successMessage: "재고 정보가 성공적으로 업데이트되었습니다.",
+				failureMessage: "일부 재고 정보 업데이트에 실패했습니다.",
+				parentMessageType: "STOCK_UPDATE_SUCCESS",
+				parentMessageData: { flowCodes },
+				logMessage: "재고 수정",
+				autoClose: false, // handleClose()로 직접 닫음
+			});
 
 			handleClose();
 		} catch (err) {

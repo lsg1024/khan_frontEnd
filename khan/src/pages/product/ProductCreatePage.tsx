@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { isApiSuccess } from "../../../libs/api/config";
 import { productApi } from "../../../libs/api/product";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import { useProductImageUpload } from "../../hooks/useProductImageUpload";
 import ProductInfo from "../../components/common/product/BasicInfo";
 import PriceTable from "../../components/common/product/PriceTable";
@@ -260,13 +261,12 @@ const ProductCreatePage = () => {
 					setError("");
 					setImageFile(null);
 				} else {
-					if (window.opener && !window.opener.closed) {
-						window.opener.postMessage(
-							{ type: "PRODUCT_CREATED" },
-							window.location.origin
-						);
-					}
-					window.close();
+					await handleApiSubmit({
+						promises: [Promise.resolve(res)],
+						successMessage: "상품이 생성되었습니다.",
+						parentMessageType: "PRODUCT_CREATED",
+						logMessage: "상품 생성",
+					});
 				}
 			}
 		} catch (err) {

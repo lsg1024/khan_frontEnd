@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import { useProductImageUpload } from "../../hooks/useProductImageUpload";
 import StoneTable from "../../components/common/stone/StoneTable";
 import PriceTable from "../../components/common/product/PriceTable";
@@ -395,7 +396,14 @@ function ProductEditPage() {
 					await uploadImage(product.productId, imageFile);
 				}
 
-				alert(response.data || "상품 정보가 성공적으로 저장되었습니다.");
+				await handleApiSubmit({
+					promises: [Promise.resolve(response)],
+					successMessage: "상품 정보가 성공적으로 저장되었습니다.",
+					parentMessageType: "PRODUCT_UPDATED",
+					logMessage: "상품 수정",
+					autoClose: false,
+				});
+
 				setImageFile(null);
 				loadProductDetail();
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { storeApi } from "../../../libs/api/store";
 import { isApiSuccess } from "../../../libs/api/config";
+import { useErrorHandler } from "../../utils/errorHandler";
 import type { AccountInfoDto, StoreAttemptResponse } from "../../types/store";
 import Pagination from "../../components/common/Pagination";
 import AccountsReceivableSearch from "../../components/common/sale/AccountsReceivableSearch";
@@ -11,7 +12,7 @@ import "../../styles/pages/AccountsReceivablePage.css";
 export const AccountReceivablePage = () => {
 	const [stores, setStores] = useState<AccountInfoDto[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
+	const { handleError } = useErrorHandler();
 
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
@@ -21,7 +22,8 @@ export const AccountReceivablePage = () => {
 	const [searchFilters, setSearchFilters] =
 		useState<AccountsReceivableSearchFilters>({
 			search: "",
-			accountType: "",
+			sortField: "",
+			sortOrder: "" as const,
 		});
 
 	const size = 20;
@@ -40,13 +42,18 @@ export const AccountReceivablePage = () => {
 		page: number
 	) => {
 		setLoading(true);
-		setError("");
 
 		try {
-			const res = await storeApi.getStoreAttempt(filters.search, page, size);
+			const res = await storeApi.getStoreAttempt(
+				filters.search,
+				page,
+				size,
+				filters.sortField || undefined,
+				filters.sortOrder || undefined
+			);
 
 			if (!isApiSuccess(res)) {
-				setError(res.message || "미수금 데이터를 불러오지 못했습니다.");
+				handleError(res.message || "미수금 데이터를 불러오지 못했습니다.");
 				setStores([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -55,25 +62,16 @@ export const AccountReceivablePage = () => {
 			}
 
 			const data = res.data as StoreAttemptResponse;
-			let content = data?.content ?? [];
-
-			// accountType 필터 적용 (클라이언트 사이드 필터링)
-			if (filters.accountType) {
-				content = content.filter(
-					(store) => store.tradeType === filters.accountType
-				);
-			}
 
 			const pageInfo = data?.page;
 
-			setStores(content);
+			setStores(data.content || []);
 			const uiPage = (pageInfo?.number ?? page - 1) + 1;
 			setCurrentPage(uiPage);
 			setTotalPages(pageInfo?.totalPages ?? 1);
-			setTotalElements(content.length);
+			setTotalElements(data.content.length);
 		} catch (err) {
-			console.error("미수금 데이터 로드 실패:", err);
-			setError("미수금 데이터를 불러오지 못했습니다.");
+			handleError(err);
 			setStores([]);
 			setCurrentPage(1);
 			setTotalPages(0);
@@ -98,7 +96,8 @@ export const AccountReceivablePage = () => {
 	const handleReset = () => {
 		const resetFilters: AccountsReceivableSearchFilters = {
 			search: "",
-			accountType: "",
+			sortField: "",
+			sortOrder: "" as const,
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
@@ -109,7 +108,6 @@ export const AccountReceivablePage = () => {
 	const handleExcelDownload = async () => {
 		try {
 			setLoading(true);
-			setError("");
 			alert("엑셀 다운로드 기능은 준비 중입니다.");
 		} catch {
 			alert("엑셀 다운로드에 실패했습니다.");
@@ -125,13 +123,6 @@ export const AccountReceivablePage = () => {
 
 	return (
 		<div className="page">
-			{error && (
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-			)}
-
 			{/* 검색 영역 */}
 			<AccountsReceivableSearch
 				searchFilters={searchFilters}
@@ -152,7 +143,7 @@ export const AccountReceivablePage = () => {
 				/>
 
 				{/* 페이지네이션 */}
-				{!error && stores.length > 0 && (
+				{stores.length > 0 && (
 					<Pagination
 						currentPage={currentPage}
 						totalPages={totalPages}

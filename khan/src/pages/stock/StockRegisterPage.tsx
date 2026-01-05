@@ -602,7 +602,7 @@ const StockRegisterPage: React.FC = () => {
 				<button className="btn-submit" onClick={handleSave} disabled={loading}>
 					{loading ? "저장 중..." : `전체 ${stockRows.length}개 재고 등록`}
 				</button>
-			</div>{" "}
+			</div>
 			{/* 검색 컴포넌트들 - 팝업 방식 */}
 			{isStoreSearchOpen && (
 				<StoreSearch

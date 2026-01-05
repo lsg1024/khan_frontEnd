@@ -140,3 +140,37 @@ export const calculatePureGoldWeightWithHarry = (
 
 	return parseFloat(result.toFixed(5)); // 소수점 최대 5자리로 제한
 };
+
+/**
+ * 순금 중량에서 총 중량을 역산하는 함수
+ * @param pureGoldWeight - 순금 중량 (문자열)
+ * @param material - 재질 (14K, 18K, 24K 등)
+ * @param harry - 해리 값 (문자열)
+ * @returns 총 중량 (숫자) 또는 0
+ */
+export const calculateTotalWeightFromPureGold = (
+	pureGoldWeight: string | number,
+	material: string,
+	harry: string
+): number => {
+	const pureGoldNum =
+		typeof pureGoldWeight === "string"
+			? parseFloat(pureGoldWeight)
+			: pureGoldWeight;
+	if (isNaN(pureGoldNum)) return 0;
+
+	let purityRatio = 0;
+	if (material === "14K") {
+		purityRatio = 0.585; // 58.5%
+	} else if (material === "18K") {
+		purityRatio = 0.75; // 75%
+	} else if (material === "24K") {
+		purityRatio = 1.0; // 100%
+	} else {
+		return pureGoldNum; // 재질 정보가 없으면 순금 값 그대로 반환
+	}
+
+	// 총 중량 = 순금 / 순도 비율
+	const totalWeight = pureGoldNum / (purityRatio * Number(harry));
+	return parseFloat(totalWeight.toFixed(3)); // 소수점 최대 3자리로 제한
+};

@@ -41,13 +41,6 @@ export const stockApi = {
 		);
 	},
 
-	getStock: async (
-		flowCodes: string[]
-	): Promise<ApiResponse<ResponseDetail[]>> => {
-		const params = { ids: flowCodes.join(",") };
-		return apiRequest.get<ResponseDetail[]>("order/stock", { params });
-	},
-
 	updateStock: async (
 		flowCode: string,
 		stockData: StockUpdateRequest
@@ -57,6 +50,13 @@ export const stockApi = {
 		params.order_type = "update";
 
 		return apiRequest.patch<string>("order/stock", stockData, { params });
+	},
+
+	getStock: async (
+		flowCodes: string[]
+	): Promise<ApiResponse<ResponseDetail[]>> => {
+		const params = { ids: flowCodes.join(",") };
+		return apiRequest.get<ResponseDetail[]>("order/stock", { params });
 	},
 
 	getStocks: async (
@@ -70,7 +70,8 @@ export const stockApi = {
 		color?: string,
 		sortField?: string,
 		sortOrder?: "ASC" | "DESC" | "",
-		page: number = 1
+		page: number = 1,
+		size?: number
 	): Promise<ApiResponse<StockSearchResponse>> => {
 		const params: Record<string, string> = { page: page.toString() };
 		if (start) params.start = start;
@@ -83,6 +84,7 @@ export const stockApi = {
 		if (sortField) params.sortField = sortField;
 		if (sortOrder) params.sortOrder = sortOrder;
 		if (order_status) params.order_status = order_status;
+		if (size) params.size = size.toString();
 
 		return apiRequest.get<StockSearchResponse>("order/stocks", { params });
 	},

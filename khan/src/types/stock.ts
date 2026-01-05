@@ -162,6 +162,7 @@ export interface StockSaleRequest {
 	stockNote: string;
 	assistantStone: boolean;
 	assistantStoneId: string;
+	assistantStoneName: string;
 	assistantStoneCreateAt: string;
 	goldWeight: string;
 	stoneWeight: string;
