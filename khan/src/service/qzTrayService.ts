@@ -48,7 +48,6 @@ const initialize = (): void => {
 					if (response && response.success === true) {
 						const sig = response.data?.signature;
 						if (sig) {
-							console.log("서버로부터 서명을 받았습니다:", sig);
 							resolve(sig);
 							return;
 						}

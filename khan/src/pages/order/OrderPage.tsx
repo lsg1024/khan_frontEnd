@@ -485,7 +485,6 @@ export const OrderPage = () => {
 		const handleOrderCreated = (event: MessageEvent) => {
 			if (event.data && event.data.type === "ORDER_CREATED") {
 				// 주문 목록 새로고침
-				console.log("ORDER_CREATED 메시지 수신됨, 주문 목록 새로고침 수행");
 				loadOrders(searchFilters, 1);
 				setCurrentPage(1);
 			}

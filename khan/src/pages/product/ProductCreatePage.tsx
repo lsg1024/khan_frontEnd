@@ -106,7 +106,10 @@ const ProductCreatePage = () => {
 				errors["productWorkGradePolicyGroupDto[0].colorId"] =
 					"색상은 필수 선택값입니다.";
 			}
-			if (base.productPurchasePrice == null || base.productPurchasePrice <= 0) {
+			if (
+				base.productPurchasePrice == null ||
+				base.productPurchasePrice === undefined
+			) {
 				errors["productWorkGradePolicyGroupDto[0].productPurchasePrice"] =
 					"구매 공임을 입력하세요.";
 			}
@@ -115,7 +118,7 @@ const ProductCreatePage = () => {
 				(g, order) => {
 					const idx = policies.findIndex((p) => p.grade === g);
 					const item = idx >= 0 ? policies[idx] : undefined;
-					if (!item || item.laborCost == null || item.laborCost <= 0) {
+					if (!item || item.laborCost == null || item.laborCost === undefined) {
 						const key =
 							idx >= 0
 								? `productWorkGradePolicyGroupDto[0].policyDtos[${idx}].laborCost`

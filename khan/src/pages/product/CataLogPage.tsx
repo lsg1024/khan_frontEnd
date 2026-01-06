@@ -96,7 +96,13 @@ function CataLogPage() {
 			alert("주문 등록할 상품을 선택해주세요.");
 			return;
 		}
-		const url = `/orders/create/order?productId=${selectedProductId}`;
+		const selectedProduct = products.find(
+			(p) => p.productId === selectedProductId
+		);
+		const productName = selectedProduct
+			? encodeURIComponent(selectedProduct.productName)
+			: "";
+		const url = `/orders/create/order?productId=${selectedProductId}&productName=${productName}`;
 		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
 		window.open(url, "order_create", features);
 	};
@@ -107,7 +113,13 @@ function CataLogPage() {
 			alert("재고 등록할 상품을 선택해주세요.");
 			return;
 		}
-		const url = `/stocks/create/normal?productId=${selectedProductId}`;
+		const selectedProduct = products.find(
+			(p) => p.productId === selectedProductId
+		);
+		const productName = selectedProduct
+			? encodeURIComponent(selectedProduct.productName)
+			: "";
+		const url = `/stocks/create/normal?productId=${selectedProductId}&productName=${productName}`;
 		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
 		window.open(url, "stock_create", features);
 	};

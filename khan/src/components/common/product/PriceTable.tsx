@@ -107,7 +107,6 @@ const PriceTable: React.FC<PriceTableProps> = ({
 			const cleaned = rows
 				// 뒤쪽 템플릿까지 포함되어 올 수 있음 → 실제 값이 있거나 기존 id가 있으면 유지
 				.filter((r) => isRowDirty(r) || !!r.productGroupId)
-				// gradePolicyDtos 안전화
 				.map((r, idx) => ({
 					...r,
 					policyDtos: normalizePolicies(
@@ -311,7 +310,7 @@ const PriceTable: React.FC<PriceTableProps> = ({
 								const idx = group.policyDtos.findIndex(
 									(p) => p.grade === grade
 								);
-								const errKey = `productWorkGradePolicyGroupDto[${index}].gradePolicyDtos[${
+								const errKey = `productWorkGradePolicyGroupDto[${index}].policyDtos[${
 									idx >= 0 ? idx : n
 								}].laborCost`;
 								const hasErr = !!validationErrors[errKey];
