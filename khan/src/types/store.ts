@@ -36,6 +36,7 @@ export interface StoreAttemptResponse {
 
 // 거래 내역 페이지 (매입/판매 미수금)
 export interface TransactionPage {
+	saleCode: string;
 	accountId: string;
 	accountName: string;
 	accountHarry: string;

@@ -149,20 +149,25 @@ export const SaleList = ({
 								{sale.storeName}
 							</td>
 							<td className="sale-code-cell" title={sale.saleCode.toString()}>
-								<a
-									href="#"
-									className="sale-code-link"
+								<button
+									className="serial-btn sale-code-cell"
 									onClick={(e) => {
 										e.preventDefault();
-										// TODO: 거래번호 링크 기능 구현
+										e.stopPropagation();
+										// 거래명세서 인쇄 팝업 열기
+										const url = `/sales/print/${sale.saleCode}`;
+										const NAME = `sale_print_${sale.saleCode}`;
+										const FEATURES =
+											"resizable=yes,scrollbars=yes,width=1400,height=900";
+										window.open(url, NAME, FEATURES);
 									}}
 								>
 									{sale.saleCode}
-								</a>
+								</button>
 							</td>
-							<td className="flow-code-cell" title={sale.flowCode.toString()}>
+							<td className="sale-code-cell" title={sale.flowCode.toString()}>
 								<button
-									className="serial-btn"
+									className="serial-btn sale-code-cell "
 									onClick={(e) => {
 										e.preventDefault();
 										e.stopPropagation();
@@ -213,9 +218,9 @@ export const SaleList = ({
 							</td>
 							<td
 								className="total-weight-cell"
-								title={sale.totalWeight?.toString() || "-"}
+								title={sale.goldWeight?.toString() || "-"}
 							>
-								{sale.totalWeight || "-"}
+								{sale.goldWeight || "-"}
 							</td>
 							<td
 								className="gold-weight-cell"

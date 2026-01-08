@@ -15,6 +15,9 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 	size,
 	loading,
 }) => {
+	// 판매번호 클릭 시 인쇄
+	const handleSerialClick = async (saleCode: string) => {};
+
 	if (loading) {
 		return (
 			<div className="loading-container">
@@ -71,6 +74,7 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 				<tr>
 					<th>NO</th>
 					<th>거래 날짜</th>
+					<th>거래번호</th>
 					<th>제조사명</th>
 					<th>거래 구분</th>
 					<th colSpan={4}>중량(g)</th>
@@ -78,6 +82,7 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 					<th>비고</th>
 				</tr>
 				<tr>
+					<th></th>
 					<th></th>
 					<th></th>
 					<th></th>
@@ -115,6 +120,18 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 								{(currentPage - 1) * size + index + 1}
 							</td>
 							<td className="date-cell">{transaction.createDate}</td>
+							<td className="sale-code-cell">
+								<button
+									className="serial-btn sale-code-cell "
+									onClick={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										handleSerialClick(transaction.saleCode);
+									}}
+								>
+									{transaction.saleCode}
+								</button>
+							</td>
 							<td className="serial-cell">{transaction.accountName}</td>
 							<td className="material-cell">
 								<span
@@ -132,9 +149,7 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 							<td className="money-amount">
 								{parseInt(transaction.moneyAmount).toLocaleString()}원
 							</td>
-							<td className="note-cell">
-								{transaction.transactionNote || ""}
-							</td>
+							<td className="note-cell">{transaction.transactionNote || ""}</td>
 						</tr>
 					);
 				})}

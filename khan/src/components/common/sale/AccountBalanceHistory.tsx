@@ -84,7 +84,7 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 							style={{ backgroundColor: "#f5f5f5" }}
 						/>
 					</div>
-				</div>{" "}
+				</div>
 				{/* DC */}
 				<div className="gold-history-table-row">
 					<div className="gold-history-label-cell">D C</div>
@@ -150,6 +150,17 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 							style={{ backgroundColor: "#ffffe0" }}
 						/>
 					</div>
+				</div>
+				{/* 후미수 */}
+				<div className="gold-history-table-row">
+					<div className="gold-history-label-cell">순금 환산</div>
+					<div className="gold-history-label-cell">시세 환산</div>
+					<div className="gold-history-label-cell">WG 환산</div>
+				</div>
+				<div className="gold-history-table-row">
+					<div className="gold-history-value-cell-WG">rma</div>
+					<div className="gold-history-value-cell-WG">rma</div>
+					<div className="gold-history-value-cell-WG">rma</div>
 				</div>
 			</div>
 		</div>

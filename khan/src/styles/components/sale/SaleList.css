@@ -163,16 +163,10 @@
 
 .sale-code-cell {
 	width: 60px;
-	max-width: 60px;
+	max-width: 100px;
 	overflow: hidden;
 	text-overflow: ellipsis;
-}
-
-.flow-code-cell {
-	width: 60px;
-	max-width: 60px !important;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 /* 거래번호, 시리얼 링크 스타일 */

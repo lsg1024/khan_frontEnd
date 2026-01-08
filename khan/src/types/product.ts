@@ -11,6 +11,7 @@ export interface ProductData {
 	productName: string;
 	productFactoryName: string;
 	standardWeight: string;
+	productRelatedNumber: string;
 	productNote: string;
 	factoryId: number;
 	factoryName: string;
@@ -47,6 +48,7 @@ export interface CreateProductRequest {
 	classification: string;
 	material: string;
 	standardWeight: string; // 서버가 문자열로 받는 형태 유지
+	productRelatedNumber: string;
 	productNote: string;
 
 	productWorkGradePolicyGroupDto: Array<{
@@ -77,6 +79,7 @@ export interface UpdateProductRequest {
 	classification: string;
 	material: string;
 	standardWeight: string; // 서버가 문자열로 받는 형태 유지
+	productRelatedNumber: string;
 	productNote: string;
 
 	productWorkGradePolicyGroupDto: Array<{

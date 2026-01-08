@@ -150,7 +150,6 @@ export const SalePage = () => {
 			if (newPopup) {
 				saleCreatePopup.current = newPopup;
 
-				// 팝업 닫힘 감지를 위한 인터벌 설정 (참조 정리만 수행)
 				const checkClosed = setInterval(() => {
 					if (newPopup.closed) {
 						clearInterval(checkClosed);

@@ -129,9 +129,9 @@ export const PurchasePage = () => {
 		try {
 			setLoading(true);
 			setError("");
-			alert("엑셀 다운로드 기능은 준비 중입니다.");
+			alert("생성 기능은 준비 중입니다.");
 		} catch {
-			alert("엑셀 다운로드에 실패했습니다.");
+			alert("생성에 실패했습니다.");
 		} finally {
 			setLoading(false);
 		}

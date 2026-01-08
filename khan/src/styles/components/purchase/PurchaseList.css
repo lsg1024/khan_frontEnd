@@ -22,8 +22,15 @@
 }
 
 .purchase-table .date-cell {
-	min-width: 60px;
+	min-width: 80px;
 	padding: 8px;
+}
+
+.purchase-table .sale-code-cell {
+	min-width: 100px;
+	overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .purchase-table .weight-detail-cell {

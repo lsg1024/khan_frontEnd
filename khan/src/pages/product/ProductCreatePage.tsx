@@ -24,6 +24,7 @@ const buildCreatePayload = (p: Product): CreateProductRequest => ({
 	classification: p.classificationDto?.classificationId ?? "",
 	material: p.materialDto?.materialId ?? "",
 	standardWeight: p.standardWeight ?? "0",
+	productRelatedNumber: p.productRelatedNumber ?? "",
 	productNote: p.productNote ?? "",
 	productWorkGradePolicyGroupDto: (p.productWorkGradePolicyGroupDto || []).map(
 		(g) => ({
@@ -51,6 +52,7 @@ const EMPTY_PRODUCT: Product = {
 	productName: "",
 	productFactoryName: "",
 	standardWeight: "0",
+	productRelatedNumber: "",
 	productNote: "",
 	factoryId: 0,
 	factoryName: "",

@@ -349,6 +349,7 @@ function ProductEditPage() {
 				classification: product.classificationDto?.classificationId || "",
 				material: product.materialDto?.materialId || "",
 				standardWeight: product.standardWeight,
+				productRelatedNumber: product.productRelatedNumber,
 				productNote: product.productNote,
 				productWorkGradePolicyGroupDto:
 					product.productWorkGradePolicyGroupDto.map((group) => ({

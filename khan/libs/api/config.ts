@@ -8,7 +8,7 @@ const API_BASE_URL = "https://api.kkhan.co.kr";
 const API_LOCAL_URL = "http://localhost:8080";
 
 export function getApiBaseUrl(): string {
-	return API_BASE_URL;
+	return API_LOCAL_URL;
 }
 
 function parseJwt(token: string) {

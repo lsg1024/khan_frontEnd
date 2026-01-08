@@ -38,7 +38,8 @@ export interface SaleRow {
 	note: string | null;
 	assistantStone: boolean;
 	assistantName: string | null;
-	totalWeight: number;
+	goldWeight: number;
+	stoneWeight: number;
 	pureGoldWeight: number;
 	totalProductLaborCost: number;
 	mainStoneLaborCost: number;
@@ -171,4 +172,41 @@ export interface SalePaymentRequest {
 	note: string;
 	goldWeight: string;
 	payAmount: number;
+}
+
+// 판매 인쇄용 응답 타입
+export interface SaleItemResponse {
+	createAt: string;
+	createBy: string;
+	storeId: string;
+	storeName: string;
+	storeCode: string;
+	accountGoldPrice: string;
+	saleItems: SaleItem[];
+}
+
+export interface SaleItem {
+	createAt: string;
+	createBy: string;
+	saleType: string;
+	storeId: string;
+	storeName: string;
+	saleCode: string;
+	flowCode: string;
+	productName: string;
+	materialName: string | null;
+	colorName: string | null;
+	note: string | null;
+	assistantStone: boolean;
+	assistantName: string | null;
+	assistantCreateAt: string | null;
+	goldWeight: number;
+	stoneWeight: number;
+	pureGoldWeight: number;
+	totalProductLaborCost: number;
+	mainStoneLaborCost: number;
+	assistanceStoneLaborCost: number;
+	stoneAddLaborCost: number;
+	mainStoneQuantity: number;
+	assistanceStoneQuantity: number;
 }

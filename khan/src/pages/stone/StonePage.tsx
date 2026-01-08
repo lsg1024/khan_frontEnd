@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { stoneApi } from "../../../libs/api/stone";
+import { stoneShapeApi } from "../../../libs/api/stoneShape";
+import { stoneTypeApi } from "../../../libs/api/stoneType";
+import type { StoneShapeDto } from "../../types/stoneShape";
+import type { StoneTypeDto } from "../../types/stoneType";
 import { isApiSuccess } from "../../../libs/api/config";
 import type {
 	StoneSearchDto,
@@ -8,6 +12,9 @@ import type {
 } from "../../types/stone";
 import type { PageInfo } from "../../types/page";
 import StoneListTable from "../../components/common/stone/StoneListTable";
+import StoneSearchBar, {
+	type StoneSearchFilters,
+} from "../../components/common/stone/StoneSearchBar";
 import Pagination from "../../components/common/Pagination";
 import { AuthImage } from "../../components/common/AuthImage";
 import { useErrorHandler } from "../../utils/errorHandler";
@@ -33,8 +40,7 @@ const convertToProductStone = (stone: StoneSearchDto): ProductStoneDto => {
 export const StonePage = () => {
 	const [stones, setStones] = useState<ProductStoneDto[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
-	const [error, setError] = useState<string>("");
-	const [searchTerm, setSearchTerm] = useState<string>("");
+	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [pageInfo, setPageInfo] = useState<PageInfo>({
 		size: 10,
@@ -44,44 +50,103 @@ export const StonePage = () => {
 	});
 	const [showProductModal, setShowProductModal] = useState<boolean>(false);
 	const [selectedProducts, setSelectedProducts] = useState<ProductInfo[]>([]);
+	const [stoneShapes, setStoneShapes] = useState<StoneShapeDto[]>([]);
+	const [stoneTypes, setStoneTypes] = useState<StoneTypeDto[]>([]);
 
 	const { handleError } = useErrorHandler();
 
+	// 검색 필터 상태
+	const [searchFilters, setSearchFilters] = useState<StoneSearchFilters>({
+		search: "",
+		stoneType: "",
+		stoneShape: "",
+		sortField: "",
+		sortOrder: "",
+	});
+
+	// 검색 필터 변경 핸들러
+	const handleFilterChange = <K extends keyof StoneSearchFilters>(
+		field: K,
+		value: StoneSearchFilters[K]
+	) => {
+		setSearchFilters((prev) => ({ ...prev, [field]: value }));
+	};
+
 	// 스톤 목록 로드
-	const loadStones = useCallback(async (search?: string, page: number = 1) => {
-		try {
-			setLoading(true);
-			setError("");
+	const loadStones = useCallback(
+		async (filters: StoneSearchFilters, page: number = 1) => {
+			setDropdownLoading(true);
+			try {
+				setLoading(true);
 
-			const response = await stoneApi.getStones(search, page, 20);
-
-			if (isApiSuccess(response) && response.data) {
-				const convertedStones = response.data.content.map((stone) =>
-					convertToProductStone(stone)
+				const response = await stoneApi.getStones(
+					filters.search,
+					page,
+					20,
+					filters.stoneShape,
+					filters.stoneType,
+					filters.sortField,
+					filters.sortOrder
 				);
-				setStones(convertedStones);
-				setPageInfo(response.data.page);
-				setCurrentPage(page);
-			} else {
-				setError("스톤 목록을 불러올 수 없습니다.");
+
+				if (isApiSuccess(response) && response.data) {
+					const convertedStones = response.data.content.map((stone) =>
+						convertToProductStone(stone)
+					);
+					setStones(convertedStones);
+					setPageInfo(response.data.page);
+					setCurrentPage(page);
+				} else {
+					handleError(new Error("스톤 목록을 불러올 수 없습니다."));
+				}
+			} catch (err: unknown) {
+				handleError(err);
+			} finally {
+				setLoading(false);
+				setDropdownLoading(false);
+			}
+		},
+		[]
+	); // eslint-disable-line react-hooks/exhaustive-deps
+
+	// 스톤 모양, 스톤 종류 로드
+	const fetchDropdownData = useCallback(async () => {
+		setDropdownLoading(true);
+		try {
+			const [shapesRes, typesRes] = await Promise.all([
+				stoneShapeApi.getStoneShapes(),
+				stoneTypeApi.getStoneTypes(),
+			]);
+			if (isApiSuccess(shapesRes) && shapesRes.data) {
+				setStoneShapes(shapesRes.data);
+			}
+			if (isApiSuccess(typesRes) && typesRes.data) {
+				setStoneTypes(typesRes.data);
 			}
 		} catch (err: unknown) {
 			handleError(err);
 		} finally {
-			setLoading(false);
+			setDropdownLoading(false);
 		}
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const handleSearch = () => {
 		setCurrentPage(1);
-		loadStones(searchTerm, 1);
+		loadStones(searchFilters, 1);
 	};
 
 	// 검색어 초기화
 	const handleClearSearch = () => {
-		setSearchTerm("");
+		const clearedFilters: StoneSearchFilters = {
+			search: "",
+			stoneType: "",
+			stoneShape: "",
+			sortField: "",
+			sortOrder: "",
+		};
+		setSearchFilters(clearedFilters);
 		setCurrentPage(1);
-		loadStones("", 1);
+		loadStones(clearedFilters, 1);
 	};
 
 	// 스톤 생성 핸들러
@@ -144,89 +209,50 @@ export const StonePage = () => {
 
 	// 페이지 변경 핸들러
 	const handlePageChange = (page: number) => {
-		loadStones(searchTerm, page);
-	};
-
-	// Enter 키 검색
-	const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === "Enter") {
-			handleSearch();
-		}
+		loadStones(searchFilters, page);
 	};
 
 	useEffect(() => {
-		loadStones("", 1);
-	}, [loadStones]);
+		const initialFilters: StoneSearchFilters = {
+			search: "",
+			stoneType: "",
+			stoneShape: "",
+			sortField: "",
+			sortOrder: "",
+		};
+		loadStones(initialFilters, 1);
+		fetchDropdownData();
+	}, [loadStones, fetchDropdownData]);
 
 	useEffect(() => {
 		const onMessage = (e: MessageEvent) => {
 			if (e.origin !== window.location.origin) return;
 			if (e.data && e.data.type === "STONE_CREATED") {
-				loadStones(searchTerm, currentPage);
+				loadStones(searchFilters, currentPage);
 			}
 			if (e.data && e.data.type === "STONE_UPDATED") {
-				loadStones(searchTerm, currentPage);
+				loadStones(searchFilters, currentPage);
 			}
 		};
 		window.addEventListener("message", onMessage);
 		return () => window.removeEventListener("message", onMessage);
-	}, [loadStones, searchTerm, currentPage]);
+	}, [loadStones, searchFilters, currentPage]);
 
 	return (
 		<div className="page">
 			{/* 검색 섹션 */}
-			<div className="search-section-common">
-				<div className="search-filters-common">
-					<div className="search-controls-common">
-						<input
-							type="text"
-							className="search-input-common"
-							placeholder="스톤명으로 검색..."
-							value={searchTerm}
-							onChange={(e) => setSearchTerm(e.target.value)}
-							onKeyDown={handleKeyPress}
-						/>
-						<div className="search-buttons-common">
-							<div className="filter-group-common">
-								<button
-									className="search-btn-common"
-									onClick={handleSearch}
-									disabled={loading}
-								>
-									검색
-								</button>
-							</div>
-							<div className="filter-group-common">
-								<button
-									className="reset-btn-common"
-									onClick={handleClearSearch}
-									disabled={loading}
-								>
-									초기화
-								</button>
-							</div>
-							<div className="filter-group-common">
-								<button
-									className="common-btn-common"
-									onClick={handleCreateStone}
-									disabled={loading}
-								>
-									생성
-								</button>
-							</div>
-							<div className="filter-group-common">
-								<button
-									className="common-btn-common"
-									onClick={handleDownExcel}
-									disabled={loading}
-								>
-									엑셀 다운로드
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+			<StoneSearchBar
+				filters={searchFilters}
+				stoneShapes={stoneShapes}
+				stoneTypes={stoneTypes}
+				loading={loading}
+				dropdownLoading={dropdownLoading}
+				onFilterChange={handleFilterChange}
+				onSearch={handleSearch}
+				onClear={handleClearSearch}
+				onCreate={handleCreateStone}
+				onDownloadExcel={handleDownExcel}
+			/>
 
 			{/* 로딩 상태 */}
 			{loading && (
@@ -236,23 +262,9 @@ export const StonePage = () => {
 				</div>
 			)}
 
-			{/* 에러 상태 */}
-			{error && (
-				<div className="error-container">
-					<span className="error-icon">⚠️</span>
-					<p>{error}</p>
-					<button
-						onClick={() => loadStones(searchTerm, currentPage)}
-						className="retry-button"
-					>
-						다시 시도
-					</button>
-				</div>
-			)}
-
 			{/* 스톤 목록 */}
 			<div className="list">
-				{!loading && !error && (
+				{!loading && (
 					<>
 						<StoneListTable
 							stones={stones}
@@ -277,10 +289,10 @@ export const StonePage = () => {
 			</div>
 
 			{/* 데이터가 없는 경우 */}
-			{!loading && !error && stones.length === 0 && (
+			{!loading && stones.length === 0 && (
 				<div className="no-data-container">
 					<p>검색 결과가 없습니다.</p>
-					{searchTerm && (
+					{searchFilters.search && (
 						<button onClick={handleClearSearch} className="clear-search-button">
 							전체 목록 보기
 						</button>

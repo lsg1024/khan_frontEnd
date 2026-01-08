@@ -47,6 +47,7 @@ import AccountReceivablePage from "./pages/sale/AccountsReceivablePage";
 import SalePage from "./pages/sale/SalePage";
 import SaleCreatePage from "./pages/sale/SaleCreatePage";
 import SaleDetailPage from "./pages/sale/SaleDetailPage";
+import SalePrintPage from "./pages/sale/SalePrintPage";
 import StockSearchPopup from "./pages/sale/StockSearchPopup";
 import GoldMoneyPage from "./pages/gold_money/GoldMoneyPage";
 import PurchasePage from "./pages/purchase/PurchasePage";
@@ -168,6 +169,7 @@ function App() {
 						element={<StockCommonActionPage />}
 					/>
 					<Route path="/sales/create" element={<SaleCreatePage />} />
+					<Route path="/sales/print/:saleCode" element={<SalePrintPage />} />
 					<Route path="/sales/stock-search" element={<StockSearchPopup />} />
 					<Route
 						path="/sales/detail/:orderStatus/:flowCode"
