@@ -311,7 +311,10 @@ export const SalePrintPage = () => {
 								<td className="payment-label">거래 전 미수</td>
 								<td>{printData.previousGoldBalance || "0"}g</td>
 								<td>
-									{getGoldDonFromWeight(Number(printData.previousGoldBalance) || 0)}돈
+									{getGoldDonFromWeight(
+										Number(printData.previousGoldBalance) || 0
+									)}
+									돈
 								</td>
 								<td>
 									{printData.previousMoneyBalance
@@ -448,11 +451,7 @@ export const SalePrintPage = () => {
 											0
 										);
 										return dcGold !== 0
-											? calculatePureGoldWeightWithHarry(
-													dcGold,
-													"24K",
-													harry
-											  )
+											? calculatePureGoldWeightWithHarry(dcGold, "24K", harry)
 											: "-";
 									})()}
 								</td>
@@ -540,7 +539,9 @@ export const SalePrintPage = () => {
 									{(() => {
 										const allSaleItems =
 											printData.saleItemResponses[0]?.saleItems || [];
-										const beforeGold = Number(printData.previousGoldBalance || 0);
+										const beforeGold = Number(
+											printData.previousGoldBalance || 0
+										);
 										const currentGold = Object.values(materialWeights).reduce(
 											(sum, weight) => sum + weight,
 											0
@@ -567,7 +568,9 @@ export const SalePrintPage = () => {
 									{(() => {
 										const allSaleItems =
 											printData.saleItemResponses[0]?.saleItems || [];
-										const beforeGold = Number(printData.previousGoldBalance || 0);
+										const beforeGold = Number(
+											printData.previousGoldBalance || 0
+										);
 										const currentGold = Object.values(materialWeights).reduce(
 											(sum, weight) => sum + weight,
 											0
@@ -594,7 +597,9 @@ export const SalePrintPage = () => {
 									{(() => {
 										const allSaleItems =
 											printData.saleItemResponses[0]?.saleItems || [];
-										const beforeMoney = Number(printData.previousMoneyBalance || 0);
+										const beforeMoney = Number(
+											printData.previousMoneyBalance || 0
+										);
 										const currentMoney = totalLaborCost;
 										const returnMoney = allSaleItems
 											.filter((item) => item.saleType === "반품")
