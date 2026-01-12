@@ -279,7 +279,7 @@ export const StorePage = () => {
 							{ key: "businessNumber1", label: "사업장번호1" },
 							{ key: "businessNumber2", label: "사업장번호2" },
 							{ key: "address", label: "주소", maxWidth: "200px" },
-							{ key: "level", label: "등급" },
+							{ key: "grade", label: "등급" },
 							{ key: "goldHarryLoss", label: "해리" },
 							{ key: "tradeType", label: "거래방식" },
 							{ key: "note", label: "비고", maxWidth: "150px" },

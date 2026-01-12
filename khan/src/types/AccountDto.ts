@@ -13,7 +13,7 @@ export interface AccountSingleResponse {
 	addressAdd: string;
 	commonOptionId: string;
 	tradeType: string;
-	level: string;
+	grade: string;
 	goldHarryId: string;
 	goldHarryLoss: string;
 	// 거래처 전용 추가 필드 (제조사는 null/undefined)
@@ -37,7 +37,7 @@ export interface AccountInfo {
 // 공통 옵션 정보
 export interface CommonOptionInfo {
 	tradeType?: string;
-	level?: string;
+	grade?: string;
 	goldHarryId?: string;
 }
 

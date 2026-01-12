@@ -10,7 +10,7 @@ import type {
 	SaleDetailResponse,
 	SaleUpdateRequest,
 	SalePaymentRequest,
-	SaleItemResponse,
+	SalePrintResponse,
 } from "../../src/types/sale";
 
 export const saleApi = {
@@ -148,8 +148,8 @@ export const saleApi = {
 	// 판매 인쇄용 데이터 조회
 	getSalePrint: async (
 		saleCode: string
-	): Promise<ApiResponse<SaleItemResponse[]>> => {
+	): Promise<ApiResponse<SalePrintResponse>> => {
 		const params = { saleCode };
-		return apiRequest.get<SaleItemResponse[]>("order/sale/print", { params });
+		return apiRequest.get<SalePrintResponse>("order/sale/print", { params });
 	},
 };

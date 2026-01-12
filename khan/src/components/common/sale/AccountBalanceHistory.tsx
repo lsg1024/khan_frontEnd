@@ -69,7 +69,7 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 					<div className="gold-history-value-cell">
 						<input
 							type="text"
-							value={history.returnsGoldBalance.toLocaleString()}
+							value={(history.returnsGoldBalance * -1).toLocaleString()}
 							readOnly
 							disabled={disabled}
 							style={{ backgroundColor: "#f5f5f5" }}
@@ -78,7 +78,7 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 					<div className="gold-history-value-cell">
 						<input
 							type="text"
-							value={history.returnsMoneyBalance.toLocaleString()}
+							value={(history.returnsMoneyBalance * -1).toLocaleString()}
 							readOnly
 							disabled={disabled}
 							style={{ backgroundColor: "#f5f5f5" }}
@@ -91,7 +91,7 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 					<div className="gold-history-value-cell">
 						<input
 							type="text"
-							value={history.dcGoldBalance.toLocaleString()}
+							value={(history.dcGoldBalance * -1).toLocaleString()}
 							readOnly
 							disabled={disabled}
 							style={{ backgroundColor: "#f5f5f5" }}
@@ -100,7 +100,7 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 					<div className="gold-history-value-cell">
 						<input
 							type="text"
-							value={history.dcMoneyBalance.toLocaleString()}
+							value={(history.dcMoneyBalance * -1).toLocaleString()}
 							readOnly
 							disabled={disabled}
 							style={{ backgroundColor: "#f5f5f5" }}
@@ -113,7 +113,7 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 					<div className="gold-history-value-cell">
 						<input
 							type="text"
-							value={history.paymentGoldBalance.toLocaleString()}
+							value={(history.paymentGoldBalance * -1).toLocaleString()}
 							readOnly
 							disabled={disabled}
 							style={{ backgroundColor: "#f5f5f5" }}
@@ -122,7 +122,7 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 					<div className="gold-history-value-cell">
 						<input
 							type="text"
-							value={history.paymentMoneyBalance.toLocaleString()}
+							value={(history.paymentMoneyBalance * -1).toLocaleString()}
 							readOnly
 							disabled={disabled}
 							style={{ backgroundColor: "#f5f5f5" }}
@@ -158,9 +158,33 @@ const AccountBalanceHistory: React.FC<GoldHistoryProps> = ({
 					<div className="gold-history-label-cell">WG 환산</div>
 				</div>
 				<div className="gold-history-table-row">
-					<div className="gold-history-value-cell-WG">rma</div>
-					<div className="gold-history-value-cell-WG">rma</div>
-					<div className="gold-history-value-cell-WG">rma</div>
+					<div className="gold-history-value-cell">
+						<input
+							type="text"
+							value={history.pureGoldConversion.toFixed(3)}
+							readOnly
+							disabled={disabled}
+							style={{ backgroundColor: "#f0f8ff" }}
+						/>
+					</div>
+					<div className="gold-history-value-cell">
+						<input
+							type="text"
+							value={(history.marketPriceConversion * -1).toLocaleString()}
+							readOnly
+							disabled={disabled}
+							style={{ backgroundColor: "#f0f8ff" }}
+						/>
+					</div>
+					<div className="gold-history-value-cell">
+						<input
+							type="text"
+							value={(history.wgConversion * -1).toLocaleString()}
+							readOnly
+							disabled={disabled}
+							style={{ backgroundColor: "#f0f8ff" }}
+						/>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -2,22 +2,26 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import { saleApi } from "../../../libs/api/sale";
-import type { SaleItemResponse, SaleItem } from "../../types/sale";
+import type { SalePrintResponse, SaleItem } from "../../types/sale";
 import { useErrorHandler } from "../../utils/errorHandler";
-import { getGoldTransferWeight } from "../../utils/goldUtils";
+import {
+	calculatePureGoldWeightWithHarry,
+	getGoldDonFromWeight,
+} from "../../utils/goldUtils";
+import { AuthImage } from "../../components/common/AuthImage";
 import "../../styles/pages/sale/SalePrintPage.css";
 
 export const SalePrintPage = () => {
 	const { saleCode } = useParams<{ saleCode: string }>();
 	const [loading, setLoading] = useState(true);
-	const [printData, setPrintData] = useState<SaleItemResponse | null>(null);
+	const [printData, setPrintData] = useState<SalePrintResponse | null>(null);
 	const { handleError } = useErrorHandler();
 	const printRef = useRef<HTMLDivElement>(null);
 
 	// 인쇄 핸들러
 	const handlePrint = useReactToPrint({
 		contentRef: printRef,
-		documentTitle: `거래명세서_${printData?.storeName}_${printData?.storeCode}`,
+		documentTitle: `거래명세서_${printData?.saleItemResponses?.[0]?.storeName}_${printData?.saleItemResponses?.[0]?.storeCode}`,
 	});
 
 	// 데이터 로드
@@ -33,8 +37,8 @@ export const SalePrintPage = () => {
 				setLoading(true);
 				const response = await saleApi.getSalePrint(saleCode);
 
-				if (response.success && response.data && response.data.length > 0) {
-					setPrintData(response.data[0]);
+				if (response.success && response.data) {
+					setPrintData(response.data);
 				} else {
 					handleError(new Error("거래명세서 데이터를 불러올 수 없습니다."));
 					window.close();
@@ -67,20 +71,39 @@ export const SalePrintPage = () => {
 	};
 
 	// 거래명세서 단일 컴포넌트
-	const InvoiceTemplate = ({ title }: { title: string }) => {
-		if (!printData) return null;
+	const InvoiceTemplate = ({
+		pageNumber,
+		totalPages,
+		items,
+	}: {
+		pageNumber: number;
+		totalPages: number;
+		items: SaleItem[];
+	}) => {
+		if (
+			!printData ||
+			!printData.saleItemResponses ||
+			printData.saleItemResponses.length === 0
+		)
+			return null;
 
-		const items = printData.saleItems.slice(0, 10); // 최대 10개
+		const saleData = printData.saleItemResponses[0]; // 첫 번째 거래 정보 사용
 		const materialWeights = calculateTotalWeightByMaterial(items);
+		const harry = saleData.storeHarry;
+
+		// 서브도메인 추출
+		const subdomain = window.location.hostname.split(".")[0];
 
 		// 총 합계 계산
 		const totalProductCount = items.length;
+
 		const totalLaborCost = items.reduce(
 			(sum, item) =>
 				sum +
 				(item.totalProductLaborCost || 0) +
 				(item.mainStoneLaborCost || 0) +
-				(item.assistanceStoneLaborCost || 0),
+				(item.assistanceStoneLaborCost || 0) +
+				(item.stoneAddLaborCost || 0),
 			0
 		);
 		const totalSubtotal = totalLaborCost; // VAT 별도
@@ -89,13 +112,13 @@ export const SalePrintPage = () => {
 			<div className="invoice-container">
 				{/* 헤더 */}
 				<div className="invoice-header">
-					<h1 className="invoice-title">{printData.storeName} 거래 명세서</h1>
+					<h1 className="invoice-title">{saleData.storeName} 거래 명세서</h1>
 					<div className="invoice-subtitle">
 						<span>
-							일자:{" "}
-							{printData.createAt
+							일자:
+							{saleData.createAt
 								? (() => {
-										const date = new Date(printData.createAt);
+										const date = new Date(saleData.createAt);
 										const year = String(date.getFullYear()).slice(-2); // 연도 2자리
 										const month = String(date.getMonth() + 1).padStart(2, "0");
 										const day = String(date.getDate()).padStart(2, "0");
@@ -103,51 +126,27 @@ export const SalePrintPage = () => {
 								  })()
 								: "-"}
 						</span>
-						<span>거래처: {printData.storeName}</span>
-						<span>공급자: {printData.createBy}</span>
-						<span>No: {printData.storeCode}</span>
-						<span>전화: -</span>
-						<span>팩스: -</span>
+						<span>거래처: {saleData.storeName}</span>
+						<span>공급자: {subdomain}</span>
+						<span>No: {saleData.storeCode}</span>
+						<span>사업자: {printData.businessOwnerNumber || "-"}</span>
+						<span>팩스: {printData.faxNumber || "-"}</span>
 					</div>
-					<div className="invoice-copy-label">{title}</div>
 				</div>
 
 				{/* 상품 테이블 */}
 				<table className="invoice-table">
 					<thead>
 						<tr>
-							<th rowSpan={2} style={{ width: "40px" }}>
-								No
-							</th>
-							<th rowSpan={2} style={{ width: "55px" }}>
-								사진
-							</th>
-							<th rowSpan={2} style={{ width: "95px" }}>
-								모델번호
-							</th>
-							<th colSpan={2} style={{ width: "90px" }}>
-								중량
-							</th>
-							<th rowSpan={2} style={{ width: "50px" }}>
-								개당
-								<br />알 수
-							</th>
-							<th rowSpan={2} style={{ width: "70px" }}>
-								상품
-								<br />
-								단가
-							</th>
-							<th colSpan={2} style={{ width: "110px" }}>
-								중앙 보조
-							</th>
-							<th rowSpan={2} style={{ width: "70px" }}>
-								공임
-								<br />합
-							</th>
-							<th rowSpan={2} style={{ width: "70px" }}>
-								금값
-							</th>
-							<th rowSpan={2} style={{ width: "90px" }}>
+							<th rowSpan={2}>No</th>
+							<th rowSpan={2}>사진 모델번호</th>
+							<th rowSpan={2}>함량 색상</th>
+							<th colSpan={2}>중량</th>
+							<th rowSpan={2}>알</th>
+							<th rowSpan={2}>상품 단가</th>
+							<th rowSpan={2}>중/보/추</th>
+							<th rowSpan={2}>공임합</th>
+							<th rowSpan={3}>
 								소계
 								<br />
 								VAT별도
@@ -156,8 +155,6 @@ export const SalePrintPage = () => {
 						<tr>
 							<th>금</th>
 							<th>알</th>
-							<th>메인</th>
-							<th>보조</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -168,35 +165,69 @@ export const SalePrintPage = () => {
 							const laborSum =
 								(item.totalProductLaborCost || 0) +
 								(item.mainStoneLaborCost || 0) +
-								(item.assistanceStoneLaborCost || 0);
+								(item.assistanceStoneLaborCost || 0) +
+								(item.stoneAddLaborCost || 0);
 							const subtotal = laborSum;
 
 							return (
 								<tr key={index}>
-									<td>{index + 1}</td>
+									<td style={{ width: "20px" }}>{index + 1}</td>
 									<td>
-										<div className="product-image-cell">이미지</div>
-									</td>
-									<td>
-										<div className="product-info-cell">
-											<div>{item.productName}</div>
-											<div className="note-text">{item.note || ""}</div>
-											<div className="material-color">
-												{item.materialName || ""} {item.colorName || ""}
+										<div
+											className="print-product"
+											style={{ minWidth: "130px", padding: "1px 2px" }}
+										>
+											<div className="product-image-cell">
+												<AuthImage
+													imagePath={item.imagePath}
+													alt={item.productName}
+													style={{
+														width: "100%",
+														height: "100%",
+														objectFit: "cover",
+													}}
+												/>
+											</div>
+											<div className="product-info-cell">
+												<div>{item.productName}</div>
+												<div className="note-text">{item.note || ""}</div>
 											</div>
 										</div>
 									</td>
-									<td>{item.goldWeight?.toFixed(3) || "-"}</td>
-									<td>{item.stoneWeight?.toFixed(3) || "-"}</td>
-									<td>{totalStoneCount || "-"}</td>
-									<td>{item.totalProductLaborCost?.toLocaleString() || "-"}</td>
-									<td>{item.mainStoneLaborCost?.toLocaleString() || "-"}</td>
-									<td>
-										{item.assistanceStoneLaborCost?.toLocaleString() || "-"}
+									<td style={{ padding: "0px 2px" }}>
+										<div className="material-color">
+											{item.materialName || ""} {item.colorName || ""}
+										</div>
 									</td>
-									<td>{laborSum.toLocaleString()}</td>
-									<td>-</td>
-									<td>{subtotal.toLocaleString()}</td>
+									<td style={{ width: "40px", padding: "0px 2px" }}>
+										{item.goldWeight?.toFixed(3) || "-"}
+									</td>
+									<td style={{ width: "40px", padding: "0px 2px" }}>
+										{item.stoneWeight?.toFixed(3) || "-"}
+									</td>
+									<td style={{ width: "20px", padding: "0px 2px" }}>
+										{totalStoneCount || "-"}
+									</td>
+									<td style={{ width: "50px", padding: "0px 2px" }}>
+										{item.totalProductLaborCost?.toLocaleString() || "-"}
+									</td>
+									<td style={{ width: "50px", padding: "0px 2px" }}>
+										{(() => {
+											const itemStoneLaborCost =
+												(item.mainStoneLaborCost || 0) +
+												(item.assistanceStoneLaborCost || 0) +
+												(item.stoneAddLaborCost || 0);
+											return itemStoneLaborCost !== 0
+												? itemStoneLaborCost.toLocaleString()
+												: "-";
+										})()}
+									</td>
+									<td style={{ width: "70px", padding: "0px 2px" }}>
+										{laborSum.toLocaleString()}
+									</td>
+									<td style={{ width: "70px", padding: "0px 2px" }}>
+										{subtotal.toLocaleString()}
+									</td>
 								</tr>
 							);
 						})}
@@ -213,37 +244,401 @@ export const SalePrintPage = () => {
 								<td></td>
 								<td></td>
 								<td></td>
-								<td></td>
-								<td></td>
 							</tr>
 						))}
 					</tbody>
 					<tfoot>
 						<tr className="total-row">
-							<td colSpan={3}>
+							<td colSpan={2}>
 								<div className="material-weights">
-									{Object.entries(materialWeights).map(([material, weight]) => (
-										<div key={material}>
-											{material}: {weight.toFixed(3)}g (
-											{getGoldTransferWeight(weight, material).toFixed(3)}돈)
-										</div>
-									))}
+									{Object.entries(materialWeights)
+										// eslint-disable-next-line @typescript-eslint/no-unused-vars
+										.filter(([_, weight]) => weight !== 0)
+										.map(([material, weight]) => (
+											<div key={material}>
+												{material}: {weight.toFixed(3)}g
+											</div>
+										))}
 								</div>
 							</td>
-							<td colSpan={2}>제품 수량: {totalProductCount}개</td>
-							<td colSpan={3}></td>
-							<td colSpan={2}>총 공임합: {totalLaborCost.toLocaleString()}</td>
-							<td></td>
-							<td>총 소계: {totalSubtotal.toLocaleString()}</td>
+							<td colSpan={2}>상품 {totalProductCount}개</td>
+							<td colSpan={4}></td>
+							<td colSpan={1}>{totalLaborCost.toLocaleString()}</td>
+							<td>{totalSubtotal.toLocaleString()}</td>
 						</tr>
 					</tfoot>
 				</table>
 
-				{/* 푸터 영역 (미수금 계산 - 추후 추가) */}
+				{/* 페이지 번호 */}
+				<div style={{ fontSize: "10px" }}>
+					{pageNumber} / {totalPages}
+				</div>
+
+				{/* 푸터 영역 (미수금 계산) */}
 				<div className="invoice-footer">
-					<div className="footer-note">
-						거래 이후 미수 금액 계산 (추후 추가 예정)
-					</div>
+					<table className="payment-history-table">
+						<thead>
+							<tr>
+								<th className="payment-label-col"></th>
+								<th className="payment-gold-col">순금(g)</th>
+								<th className="payment-don-col">순금(돈)</th>
+								<th className="payment-amount-col">공임 및 현금</th>
+								<th className="payment-date-col"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td className="payment-label">최근 결제</td>
+								<td>-</td>
+								<td>-</td>
+								<td>-</td>
+								<td>
+									{printData.lastSaleDate
+										? (() => {
+												const date = new Date(printData.lastSaleDate);
+												const year = String(date.getFullYear()).slice(-2); // 연도 2자리
+												const month = String(date.getMonth() + 1).padStart(
+													2,
+													"0"
+												);
+												const day = String(date.getDate()).padStart(2, "0");
+												return `${year}-${month}-${day}`;
+										  })()
+										: "-"}
+								</td>
+							</tr>
+							<tr className="highlight-row">
+								<td className="payment-label">거래 전 미수</td>
+								<td>{printData.previousGoldBalance || "0"}g</td>
+								<td>
+									{getGoldDonFromWeight(Number(printData.previousGoldBalance) || 0)}돈
+								</td>
+								<td>
+									{printData.previousMoneyBalance
+										? Number(printData.previousMoneyBalance).toLocaleString()
+										: "-"}
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td className="payment-label">판 매</td>
+								<td>
+									{(() => {
+										const totalPureGold = Object.entries(
+											materialWeights
+										).reduce((sum, [material, weight]) => {
+											return (
+												sum +
+												calculatePureGoldWeightWithHarry(
+													weight,
+													material,
+													harry
+												)
+											);
+										}, 0);
+										return totalPureGold !== 0 ? totalPureGold.toFixed(3) : "-";
+									})()}
+								</td>
+								<td>
+									{(() => {
+										const totalPureGold = Object.entries(
+											materialWeights
+										).reduce((sum, [material, weight]) => {
+											return (
+												sum +
+												calculatePureGoldWeightWithHarry(
+													weight,
+													material,
+													harry
+												)
+											);
+										}, 0);
+										const don = getGoldDonFromWeight(totalPureGold);
+										return don !== 0 ? don.toFixed(3) : "-";
+									})()}
+								</td>
+								<td>
+									{totalLaborCost !== 0 ? totalLaborCost.toLocaleString() : "-"}
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td className="payment-label">반 품</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const returnItems = allSaleItems.filter(
+											(item) => item.saleType === "반품"
+										);
+										const returnGold = returnItems.reduce(
+											(sum, item) => sum + (item.goldWeight || 0),
+											0
+										);
+										return returnGold !== 0 ? returnGold.toFixed(3) : "-";
+									})()}
+								</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const returnItems = allSaleItems.filter(
+											(item) => item.saleType === "반품"
+										);
+										const returnGold = returnItems.reduce(
+											(sum, item) => sum + (item.goldWeight || 0),
+											0
+										);
+										return returnGold !== 0
+											? calculatePureGoldWeightWithHarry(
+													returnGold,
+													"24K",
+													harry
+											  )
+											: "-";
+									})()}
+								</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const returnItems = allSaleItems.filter(
+											(item) => item.saleType === "반품"
+										);
+										const returnMoney = returnItems.reduce(
+											(sum, item) =>
+												sum +
+												(item.totalProductLaborCost || 0) +
+												(item.mainStoneLaborCost || 0) +
+												(item.assistanceStoneLaborCost || 0),
+											0
+										);
+										return returnMoney !== 0
+											? returnMoney.toLocaleString()
+											: "-";
+									})()}
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td className="payment-label">D C</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const dcItems = allSaleItems.filter(
+											(item) => item.saleType === "DC"
+										);
+										const dcGold = dcItems.reduce(
+											(sum, item) => sum + (item.goldWeight || 0),
+											0
+										);
+										return dcGold !== 0 ? dcGold.toFixed(3) : "-";
+									})()}
+								</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const dcItems = allSaleItems.filter(
+											(item) => item.saleType === "DC"
+										);
+										const dcGold = dcItems.reduce(
+											(sum, item) => sum + (item.goldWeight || 0),
+											0
+										);
+										return dcGold !== 0
+											? calculatePureGoldWeightWithHarry(
+													dcGold,
+													"24K",
+													harry
+											  )
+											: "-";
+									})()}
+								</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const dcItems = allSaleItems.filter(
+											(item) => item.saleType === "DC"
+										);
+										const dcMoney = dcItems.reduce(
+											(sum, item) =>
+												sum +
+												(item.totalProductLaborCost || 0) +
+												(item.mainStoneLaborCost || 0) +
+												(item.assistanceStoneLaborCost || 0),
+											0
+										);
+										return dcMoney !== 0 ? dcMoney.toLocaleString() : "-";
+									})()}
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td className="payment-label">결 제</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const paymentItems = allSaleItems.filter(
+											(item) => item.saleType === "결제"
+										);
+										const paymentGold = paymentItems.reduce(
+											(sum, item) => sum + (item.goldWeight || 0),
+											0
+										);
+										return paymentGold !== 0 ? paymentGold.toFixed(3) : "-";
+									})()}
+								</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const paymentItems = allSaleItems.filter(
+											(item) => item.saleType === "결제"
+										);
+										const paymentGold = paymentItems.reduce(
+											(sum, item) => sum + (item.goldWeight || 0),
+											0
+										);
+										return paymentGold !== 0
+											? calculatePureGoldWeightWithHarry(
+													paymentGold,
+													"24K",
+													harry
+											  )
+											: "-";
+									})()}
+								</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const paymentItems = allSaleItems.filter(
+											(item) => item.saleType === "결제"
+										);
+										const paymentMoney = paymentItems.reduce(
+											(sum, item) =>
+												sum +
+												(item.totalProductLaborCost || 0) +
+												(item.mainStoneLaborCost || 0) +
+												(item.assistanceStoneLaborCost || 0),
+											0
+										);
+										return paymentMoney !== 0
+											? paymentMoney.toLocaleString()
+											: "-";
+									})()}
+								</td>
+								<td></td>
+							</tr>
+							<tr className="highlight-row total-row">
+								<td className="payment-label">거래 후 미수</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const beforeGold = Number(printData.previousGoldBalance || 0);
+										const currentGold = Object.values(materialWeights).reduce(
+											(sum, weight) => sum + weight,
+											0
+										);
+										const returnGold = allSaleItems
+											.filter((item) => item.saleType === "반품")
+											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+										const dcGold = allSaleItems
+											.filter((item) => item.saleType === "DC")
+											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+										const paymentGold = allSaleItems
+											.filter((item) => item.saleType === "결제")
+											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+										return (
+											beforeGold +
+											currentGold -
+											returnGold -
+											dcGold -
+											paymentGold
+										).toFixed(3);
+									})()}
+								</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const beforeGold = Number(printData.previousGoldBalance || 0);
+										const currentGold = Object.values(materialWeights).reduce(
+											(sum, weight) => sum + weight,
+											0
+										);
+										const returnGold = allSaleItems
+											.filter((item) => item.saleType === "반품")
+											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+										const dcGold = allSaleItems
+											.filter((item) => item.saleType === "DC")
+											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+										const paymentGold = allSaleItems
+											.filter((item) => item.saleType === "결제")
+											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+										const totalGold =
+											beforeGold +
+											currentGold -
+											returnGold -
+											dcGold -
+											paymentGold;
+										return getGoldDonFromWeight(totalGold) + "돈";
+									})()}
+								</td>
+								<td>
+									{(() => {
+										const allSaleItems =
+											printData.saleItemResponses[0]?.saleItems || [];
+										const beforeMoney = Number(printData.previousMoneyBalance || 0);
+										const currentMoney = totalLaborCost;
+										const returnMoney = allSaleItems
+											.filter((item) => item.saleType === "반품")
+											.reduce(
+												(sum, item) =>
+													sum +
+													(item.totalProductLaborCost || 0) +
+													(item.mainStoneLaborCost || 0) +
+													(item.assistanceStoneLaborCost || 0),
+												0
+											);
+										const dcMoney = allSaleItems
+											.filter((item) => item.saleType === "DC")
+											.reduce(
+												(sum, item) =>
+													sum +
+													(item.totalProductLaborCost || 0) +
+													(item.mainStoneLaborCost || 0) +
+													(item.assistanceStoneLaborCost || 0),
+												0
+											);
+										const paymentMoney = allSaleItems
+											.filter((item) => item.saleType === "결제")
+											.reduce(
+												(sum, item) =>
+													sum +
+													(item.totalProductLaborCost || 0) +
+													(item.mainStoneLaborCost || 0) +
+													(item.assistanceStoneLaborCost || 0),
+												0
+											);
+										return (
+											beforeMoney +
+											currentMoney -
+											returnMoney -
+											dcMoney -
+											paymentMoney
+										).toLocaleString();
+									})()}
+								</td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
 			</div>
 		);
@@ -268,15 +663,50 @@ export const SalePrintPage = () => {
 
 	return (
 		<div className="print-page">
-			<div ref={printRef} className="print-content">
-				{/* 매장용 */}
-				<InvoiceTemplate title="매장용" />
+			<div ref={printRef}>
+				{(() => {
+					// 판매 타입만 필터링하여 상품 테이블에 표시
+					const allSaleItems = printData.saleItemResponses[0]?.saleItems || [];
+					const saleOnlyItems = allSaleItems.filter(
+						(item) => item.saleType === "판매"
+					);
+					const itemsPerPage = 10;
+					const totalPages = Math.max(
+						1,
+						Math.ceil(saleOnlyItems.length / itemsPerPage)
+					); // 최소 1페이지
 
-				{/* 페이지 구분선 */}
-				<div className="page-break"></div>
+					const pages = [];
+					for (let i = 0; i < totalPages; i++) {
+						const startIndex = i * itemsPerPage;
+						const endIndex = startIndex + itemsPerPage;
+						const pageItems = saleOnlyItems.slice(startIndex, endIndex);
+						const pageNumber = i + 1;
 
-				{/* 판매용 */}
-				<InvoiceTemplate title="판매용" />
+						pages.push(
+							<div className="print-content" key={`page-${i}`}>
+								{/* 매장용 */}
+								<InvoiceTemplate
+									pageNumber={pageNumber}
+									totalPages={totalPages}
+									items={pageItems}
+								/>
+
+								{/* 판매용 */}
+								<InvoiceTemplate
+									pageNumber={pageNumber}
+									totalPages={totalPages}
+									items={pageItems}
+								/>
+
+								{/* 다음 페이지가 있으면 구분선 추가 */}
+								{i < totalPages - 1 && <div className="page-break"></div>}
+							</div>
+						);
+					}
+
+					return pages;
+				})()}
 			</div>
 			<div className="print-controls">
 				<button onClick={handlePrint} className="btn-submit">

@@ -3,7 +3,7 @@ import { api, apiRequest } from "./config";
 import type { ApiResponse } from "./config";
 import type {
 	StoreSearchResponse,
-	StoreAttemptResponse,
+	StoreReceivableResponse,
 	AccountInfoDto,
 } from "../../src/types/store";
 import type {
@@ -25,22 +25,26 @@ export const storeApi = {
 	},
 
 	// 판매처 미수 포함
-	getStoreAttempt: async (
+	getStoreReceivable: async (
 		name?: string,
 		page: number = 1,
 		size = 20,
 		sortField?: string,
-		sortOrder?: string
-	): Promise<ApiResponse<StoreAttemptResponse>> => {
-		return apiRequest.get<StoreAttemptResponse>("account/stores/attempt", {
-			params: {
-				search: name || "",
-				page: page,
-				size: size,
-				sortField: sortField || undefined,
-				sortOrder: sortOrder || undefined,
-			},
-		});
+		sortOrder?: string,
+		
+	): Promise<ApiResponse<StoreReceivableResponse>> => {
+		return apiRequest.get<StoreReceivableResponse>(
+			"account/stores/receivable",
+			{
+				params: {
+					search: name || "",
+					page: page,
+					size: size,
+					sortField: sortField || undefined,
+					sortOrder: sortOrder || undefined,
+				},
+			}
+		);
 	},
 
 	// 판매처 상세 조회
@@ -51,15 +55,24 @@ export const storeApi = {
 	},
 
 	// 개별 판매처 미수 정보 조회
-	getStoreAttemptById: async (
-		id: number
+	getStoreReceivableById: async (
+		id: string
 	): Promise<ApiResponse<AccountInfoDto>> => {
-		return apiRequest.get(`account/stores/attempt/${id}`);
+		return apiRequest.get(`account/stores/receivable/${id}`);
+	},
+
+	getStoreReceivableLogById: async (
+		id: string,
+		saleCode: string
+	): Promise<ApiResponse<AccountInfoDto>> => {
+		const params = { saleCode: saleCode };
+
+		return apiRequest.get(`account/stores/receivable/sale-log/${id}`, { params });
 	},
 
 	// 판매처 생성
-	createStore: async (
-		data: StoreCreateRequest
+		createStore: async (
+			data: StoreCreateRequest
 	): Promise<ApiResponse<string>> => {
 		return apiRequest.post("account/store", data);
 	},

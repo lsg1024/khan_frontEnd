@@ -24,8 +24,9 @@ import {
 } from "../../utils/goldUtils";
 
 const SaleDetailPage: React.FC = () => {
-	const { flowCode, orderStatus } = useParams<{
+	const { flowCode, saleCode, orderStatus } = useParams<{
 		flowCode: string;
+		saleCode: string;
 		orderStatus: string;
 	}>();
 	const [searchParams] = useSearchParams();
@@ -55,6 +56,9 @@ const SaleDetailPage: React.FC = () => {
 			paymentMoneyBalance: 0,
 			afterGoldBalance: 0,
 			afterMoneyBalance: 0,
+			pureGoldConversion: 0,
+			marketPriceConversion: 0,
+			wgConversion: 0,
 		});
 
 	// 판매 옵션 상태 (읽기 전용)
@@ -71,7 +75,7 @@ const SaleDetailPage: React.FC = () => {
 		goldWeight: "",
 	});
 
-	// bulk 모드 체크 
+	// bulk 모드 체크
 	const isBulkMode = searchParams.has("flowCode");
 
 	useEffect(() => {
@@ -80,7 +84,9 @@ const SaleDetailPage: React.FC = () => {
 			if (isBulkMode) {
 				const flowCodes = searchParams.getAll("flowCode");
 				const orderStatuses = searchParams.getAll("orderStatus");
+				const saleCodes = searchParams.getAll("saleCode");
 				const storeId = searchParams.get("storeId") || "";
+				const saleCodeValue = saleCodes.length > 0 ? saleCodes[0] : "";
 
 				if (flowCodes.length === 0) {
 					setError("판매 코드가 전달되지 않았습니다.");
@@ -148,10 +154,11 @@ const SaleDetailPage: React.FC = () => {
 							const stoneWeight = parseFloat(String(response.stoneWeight)) || 0;
 							const totalWeight = goldWeight + stoneWeight;
 
-							// bulk 모드는 status가 반품이므로 해리 미적용
-							const pureGoldWeight = calculatePureGoldWeight(
+							// bulk 모드는 반품이지만 해리 적용
+							const pureGoldWeight = calculatePureGoldWeightWithHarry(
 								goldWeight,
-								response.materialName || ""
+								response.materialName || "",
+								response.harry
 							);
 							const saleData: SaleCreateRow = {
 								id: `bulk_${index}`,
@@ -216,14 +223,16 @@ const SaleDetailPage: React.FC = () => {
 
 					console.log("Loaded Rows in Bulk Mode:", storeId);
 
-					// 거래처 미수 데이터 조회 
-					if (storeId) {
+					// 거래처 미수 데이터 조회
+					if (storeId && saleCodeValue) {
 						try {
 							const storeIdNum = parseInt(storeId);
 							if (!isNaN(storeIdNum)) {
-								const storeAttemptRes = await storeApi.getStoreAttemptById(
-									storeIdNum
-								);
+								const storeAttemptRes =
+									await storeApi.getStoreReceivableLogById(
+										String(storeIdNum),
+										saleCodeValue
+									);
 								if (
 									storeAttemptRes.success &&
 									storeAttemptRes.data &&
@@ -300,6 +309,9 @@ const SaleDetailPage: React.FC = () => {
 										dcMoneyBalance: dcTotalMoney,
 										paymentGoldBalance: paymentTotalGold,
 										paymentMoneyBalance: paymentTotalMoney,
+										pureGoldConversion: 0,
+										marketPriceConversion: 0,
+										wgConversion: 0,
 										afterGoldBalance:
 											previousGold +
 											salesTotalGold -
@@ -402,17 +414,14 @@ const SaleDetailPage: React.FC = () => {
 							? "반품"
 							: getSaleStatusFromType(response.saleType);
 
-					// 순금 중량 계산 (판매일 때만 해리 적용)
+					// 순금 중량 계산 (결제, WG만 해리 미적용)
 					const pureGoldWeight =
-						finalStatus === "판매"
-							? calculatePureGoldWeightWithHarry(
+						finalStatus === "결제" || finalStatus === "WG"
+							? calculatePureGoldWeight(goldWeight, response.materialName || "")
+							: calculatePureGoldWeightWithHarry(
 									goldWeight,
 									response.materialName || "",
 									response.harry
-							  )
-							: calculatePureGoldWeight(
-									goldWeight,
-									response.materialName || ""
 							  );
 
 					const saleData: SaleCreateRow = {
@@ -472,8 +481,9 @@ const SaleDetailPage: React.FC = () => {
 					// 거래처 미수 정보 조회
 					if (saleData.storeId) {
 						try {
-							const storeAttemptRes = await storeApi.getStoreAttemptById(
-								parseInt(String(saleData.storeId))
+							const storeAttemptRes = await storeApi.getStoreReceivableLogById(
+								saleData.storeId,
+								String(saleCode)
 							);
 							if (storeAttemptRes.success && storeAttemptRes.data) {
 								const attemptData = storeAttemptRes.data;
@@ -497,7 +507,7 @@ const SaleDetailPage: React.FC = () => {
 		};
 
 		loadData();
-	}, [flowCode, orderStatus, isBulkMode, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [flowCode, saleCode, orderStatus, isBulkMode, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 행 업데이트 핸들러
 	const onRowUpdate = (
@@ -530,17 +540,17 @@ const SaleDetailPage: React.FC = () => {
 							updatedRow.materialName = material24K.materialName;
 						}
 					}
-					// status 변경 시 순금 중량 재계산 (판매일 때만 해리 적용)
-					if (newStatus === "판매") {
+					// status 변경 시 순금 중량 재계산 (결제, WG만 해리 미적용)
+					if (newStatus === "결제" || newStatus === "WG") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							row.goldWeight,
+							row.materialName
+						);
+					} else {
 						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
 							row.goldWeight,
 							row.materialName,
 							saleOptions.harry
-						);
-					} else {
-						updatedRow.pureGoldWeight = calculatePureGoldWeight(
-							row.goldWeight,
-							row.materialName
 						);
 					}
 				}
@@ -551,21 +561,20 @@ const SaleDetailPage: React.FC = () => {
 					const goldWeight = totalWeight - stoneWeight;
 
 					updatedRow.goldWeight = parseFloat(goldWeight.toFixed(3));
-					// 판매일 때만 해리 적용
-					if (row.status === "판매") {
+					// 결제, WG만 해리 미적용
+					if (row.status === "결제" || row.status === "WG") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							goldWeight,
+							row.materialName
+						);
+					} else {
 						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
 							goldWeight,
 							row.materialName,
 							saleOptions.harry
 						);
-					} else {
-						updatedRow.pureGoldWeight = calculatePureGoldWeight(
-							goldWeight,
-							row.materialName
-						);
 					}
 				}
-
 				// stoneWeight가 변경되면 goldWeight 재계산
 				if (field === "stoneWeight") {
 					const stoneWeight = parseFloat(String(value)) || 0;
@@ -573,17 +582,17 @@ const SaleDetailPage: React.FC = () => {
 					const goldWeight = totalWeight - stoneWeight;
 
 					updatedRow.goldWeight = parseFloat(goldWeight.toFixed(3));
-					// 판매일 때만 해리 적용
-					if (row.status === "판매") {
+					// 결제, WG만 해리 미적용
+					if (row.status === "결제" || row.status === "WG") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							goldWeight,
+							row.materialName
+						);
+					} else {
 						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
 							goldWeight,
 							row.materialName,
 							saleOptions.harry
-						);
-					} else {
-						updatedRow.pureGoldWeight = calculatePureGoldWeight(
-							goldWeight,
-							row.materialName
 						);
 					}
 				}
@@ -597,17 +606,17 @@ const SaleDetailPage: React.FC = () => {
 					const materialName =
 						field === "materialName" ? String(value) : row.materialName;
 
-					// 판매일 때만 해리 적용
-					if (row.status === "판매") {
+					// 결제, WG만 해리 미적용
+					if (row.status === "결제" || row.status === "WG") {
+						updatedRow.pureGoldWeight = calculatePureGoldWeight(
+							goldWeight,
+							materialName
+						);
+					} else {
 						updatedRow.pureGoldWeight = calculatePureGoldWeightWithHarry(
 							goldWeight,
 							materialName,
 							saleOptions.harry
-						);
-					} else {
-						updatedRow.pureGoldWeight = calculatePureGoldWeight(
-							goldWeight,
-							materialName
 						);
 					}
 				}
@@ -785,12 +794,18 @@ const SaleDetailPage: React.FC = () => {
 			.filter((row) => row.status === "결제" || row.status === "결통")
 			.reduce((acc, row) => acc + row.pureGoldWeight, 0);
 
+		// WG: 입력된 금액을 시세로 나눠서 중량 계산
 		const wgTotalMoney = saleRows
 			.filter((row) => row.status === "WG")
-			.reduce(
-				(acc, row) => acc + row.pureGoldWeight * saleOptions.marketPrice,
-				0
-			);
+			.reduce((acc, row) => acc + row.productPrice, 0);
+
+		// WG 순금 환산: 입력된 금액 / 시세 (순금 g)
+		const wgPureGoldConversion =
+			saleOptions.marketPrice > 0 ? wgTotalMoney / saleOptions.marketPrice : 0;
+
+		// WG 시세 환산과 WG 환산은 동일하게 입력받은 금액
+		const wgMarketPriceConversion = wgTotalMoney;
+		const wgConversionValue = wgTotalMoney;
 
 		setAccountBalanceHistory((prev) => {
 			// 전미수 값은 API에서 로드된 값을 유지
@@ -807,12 +822,16 @@ const SaleDetailPage: React.FC = () => {
 				dcMoneyBalance: dcTotalMoney,
 				paymentGoldBalance: paymentTotalGold,
 				paymentMoneyBalance: paymentTotalMoney,
+				pureGoldConversion: wgPureGoldConversion,
+				marketPriceConversion: wgMarketPriceConversion,
+				wgConversion: wgConversionValue,
 				afterGoldBalance:
 					previousGold +
 					salesTotalGold -
 					returnsTotalGold -
 					dcTotalGold -
-					paymentTotalGold,
+					paymentTotalGold -
+					wgPureGoldConversion,
 				afterMoneyBalance:
 					previousMoney +
 					salesTotalMoney -

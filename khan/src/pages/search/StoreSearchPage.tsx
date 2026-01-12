@@ -5,7 +5,7 @@ import { storeApi } from "../../../libs/api/store";
 import type {
 	StoreSearchDto,
 	StoreSearchResponse,
-	StoreAttemptResponse,
+	StoreReceivableResponse,
 	AccountInfoDto,
 } from "../../types/store";
 import StoreList from "../../components/common/store/StoreList";
@@ -14,7 +14,7 @@ import "../../styles/pages/StoreSearchPage.css";
 
 const StoreSearchPage: React.FC = () => {
 	const [searchParams] = useSearchParams();
-	const useAttempt = searchParams.get("useAttempt") === "true"; // URL 파라미터 확인
+	const useReceivable = searchParams.get("useReceivable") === "true"; // URL 파라미터 확인
 
 	const [searchName, setSearchName] = useState("");
 	const [stores, setStores] = useState<(StoreSearchDto | AccountInfoDto)[]>([]);
@@ -35,9 +35,9 @@ const StoreSearchPage: React.FC = () => {
 			setError("");
 
 			try {
-				if (useAttempt) {
+				if (useReceivable) {
 					// 미수 정보 API 호출
-					const res = await storeApi.getStoreAttempt(name, page, size);
+					const res = await storeApi.getStoreReceivable(name, page, size);
 					console.log("🔍 StoreAttempt API 응답:", res);
 
 					if (!isApiSuccess(res)) {
@@ -49,7 +49,7 @@ const StoreSearchPage: React.FC = () => {
 						return;
 					}
 
-					const data = res.data as StoreAttemptResponse;
+					const data = res.data as StoreReceivableResponse;
 					const content = data?.content ?? [];
 					const pageInfo = data?.page;
 
@@ -92,7 +92,7 @@ const StoreSearchPage: React.FC = () => {
 				setLoading(false);
 			}
 		},
-		[useAttempt]
+		[useReceivable]
 	);
 
 	// 초기 데이터 로드

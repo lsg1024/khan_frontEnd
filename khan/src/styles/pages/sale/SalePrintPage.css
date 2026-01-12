@@ -5,9 +5,9 @@
 	min-height: 100vh;
 	background-color: #f5f5f5;
 	padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 .print-controls {
@@ -51,7 +51,7 @@
 	background-color: white;
 	max-width: 1080px !important; /* A4 가로 */
 	margin: 0 auto;
-	padding: 10mm;
+	padding: 5mm;
 	text-align: center;
 	display: flex;
 	justify-content: space-between;
@@ -87,8 +87,10 @@
 
 /* 거래명세서 컨테이너 */
 .invoice-container {
-	width: 525px !important; /* 명세서 1장당 최대 넓이 */
+	width: 525px !important; /* 명세서 1장당 고정 넓이 */
+	height: 720px !important; /* 명세서 1장당 고정 높이 */
 	max-width: 525px !important;
+	max-height: 720px !important;
 	margin: 0;
 	padding: 3mm;
 	border: 1px solid #000;
@@ -131,7 +133,6 @@
 	right: 0;
 	background-color: #f0f0f0;
 	padding: 2px 8px;
-	border: 1px solid #000;
 	font-size: 10px;
 	font-weight: bold;
 }
@@ -149,7 +150,6 @@
 .invoice-table th,
 .invoice-table td {
 	border: 1px solid #000;
-	padding: 3px;
 	text-align: center;
 	vertical-align: middle;
 }
@@ -165,9 +165,16 @@
 	height: 35px;
 }
 
+.print-product {
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	justify-content: flex-start;
+}
+
 .product-image-cell {
-	width: 40px;
-	height: 40px;
+	max-width: 40px;
+	max-height: 40px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -218,19 +225,81 @@
 	margin-bottom: 2px;
 }
 
+/* 페이지 번호 */
+.page-number {
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+	margin: 10px 0;
+	color: #333;
+}
+
 /* 푸터 */
 .invoice-footer {
-	margin-top: 10px;
-	padding: 5px;
-	border: 1px solid #ddd;
-	background-color: #f9f9f9;
-	text-align: center;
-	font-size: 9px;
+    margin-top: 10px;
+    background-color: white;
+    font-size: 9px;
 }
 
 .footer-note {
 	color: #666;
 	font-style: italic;
+}
+
+/* 미수금 테이블 */
+.payment-history-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 9px;
+	text-align: center;
+}
+
+.payment-history-table th,
+.payment-history-table td {
+	border: 1px solid #000;
+	padding: 3px 2px;
+	vertical-align: middle;
+}
+
+.payment-history-table th {
+	background-color: #f0f0f0;
+	font-weight: bold;
+	font-size: 8px;
+}
+
+.payment-label {
+	font-weight: bold;
+	text-align: center;
+}
+
+.payment-label-col {
+	width: 20%;
+}
+
+.payment-gold-col {
+	width: 15%;
+}
+
+.payment-don-col {
+	width: 15%;
+}
+
+.payment-amount-col {
+	width: 30%;
+}
+
+.payment-date-col {
+	width: 20%;
+}
+
+.payment-history-table .highlight-row {
+	background-color: #fff3cd;
+	font-weight: bold;
+}
+
+.payment-history-table .total-row {
+	background-color: #ffe6e6;
+	font-weight: bold;
 }
 
 /* 페이지 구분선 (인쇄 시에만 적용) */

@@ -159,6 +159,7 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 					<td colSpan={5} className="summary-label">
 						매입 합계
 					</td>
+					<td></td>
 					<td className="gold-amount">{purchaseTotal.weight.toFixed(3)}g</td>
 					<td className="gold-amount">{purchaseTotal.pureGold.toFixed(3)}g</td>
 					<td></td>
@@ -171,6 +172,7 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 					<td colSpan={5} className="summary-label">
 						결제 & 반품 & DC 합계
 					</td>
+					<td></td>
 					<td className="gold-amount">{negativeTotal.weight.toFixed(3)}g</td>
 					<td className="gold-amount">{negativeTotal.pureGold.toFixed(3)}g</td>
 					<td></td>
@@ -183,6 +185,7 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 					<td colSpan={5} className="summary-label">
 						매입-결제 합계
 					</td>
+					<td></td>
 					<td className="gold-amount">{finalTotal.weight.toFixed(3)}g</td>
 					<td className="gold-amount">{finalTotal.pureGold.toFixed(3)}g</td>
 					<td></td>

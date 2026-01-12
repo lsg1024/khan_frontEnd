@@ -45,6 +45,7 @@ const MainList = ({
 					<th>판매처</th>
 					<th>이미지</th>
 					<th>재질/색상</th>
+					<th colSpan={3}>보조석</th>
 					<th>메인/보조</th>
 					<th>사이즈</th>
 					<th>세트타입</th>
@@ -53,6 +54,27 @@ const MainList = ({
 					<th>비고</th>
 					<th>상품상태</th>
 					<th>제조사</th>
+				</tr>
+				<tr>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th>입</th>
+					<th>유형</th>
+					<th>입고날짜</th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -123,13 +145,34 @@ const MainList = ({
 						</td>
 						<td className="info-cell">
 							<div className="info-row-order">
+								<span className="info-value">
+								{dto.assistantStone ? "Y" : "N"}
+								</span>
+							</div>
+						</td>
+						<td className="info-cell">
+							<div className="info-row-order">
+								<span className="info-value">
+									{dto.assistantStoneName}
+								</span>
+							</div>
+						</td>
+						<td className="info-cell">
+							<div className="info-row-order">
+								<span className="info-value">
+									{formatToLocalDate(dto.assistantStoneCreateAt)}
+								</span>
+							</div>
+						</td>
+						<td className="info-cell">
+							<div className="info-row-order">
 								<span className="info-value-stone-note">
 									{dto.mainStoneNote}
 								</span>
 							</div>
 							<div className="info-row-order">
 								<span className="info-value-stone-note">
-									{dto.assistanceStoneNote}
+								{dto.assistanceStoneNote}
 								</span>
 							</div>
 						</td>

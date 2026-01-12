@@ -322,6 +322,7 @@ export const SalePage = () => {
 		// 선택된 항목들의 정보를 URL 파라미터로 변환
 		const salesData = selectedSales.map((sale) => ({
 			flowCode: sale.flowCode,
+			saleCode: sale.saleCode,
 			orderStatus: convertSaleTypeToEnum(sale.saleType),
 			storeId: sale.storeId,
 		}));
@@ -331,6 +332,8 @@ export const SalePage = () => {
 				(data) =>
 					`flowCode=${encodeURIComponent(
 						data.flowCode
+					)}&saleCode=${encodeURIComponent(
+						data.saleCode
 					)}&orderStatus=${encodeURIComponent(data.orderStatus)}`
 			)
 			.join("&");
@@ -421,7 +424,10 @@ export const SalePage = () => {
 			if (event.origin !== window.location.origin) return;
 
 			// 저장이 완료된 경우에만 새로고침
-			if (event.data.type === "SALE_SAVED") {
+			if (
+				event.data.type === "SALE_SAVED" ||
+				event.data.type === "SALES_REGISTERED"
+			) {
 				loadSales(searchFilters, currentPage);
 			}
 		};

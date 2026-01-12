@@ -29,7 +29,7 @@ export interface AccountInfoDto extends StoreSearchDto {
 	lastPaymentDate?: string;
 }
 
-export interface StoreAttemptResponse {
+export interface StoreReceivableResponse {
 	content: AccountInfoDto[];
 	page: PageInfo;
 }

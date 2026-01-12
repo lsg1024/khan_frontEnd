@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { storeApi } from "../../../libs/api/store";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
-import type { AccountInfoDto, StoreAttemptResponse } from "../../types/store";
+import type {
+	AccountInfoDto,
+	StoreReceivableResponse,
+} from "../../types/store";
 import Pagination from "../../components/common/Pagination";
 import AccountsReceivableSearch from "../../components/common/sale/AccountsReceivableSearch";
 import AccountsReceivableList from "../../components/common/sale/AccountsReceivableList";
@@ -44,7 +47,7 @@ export const AccountReceivablePage = () => {
 		setLoading(true);
 
 		try {
-			const res = await storeApi.getStoreAttempt(
+			const res = await storeApi.getStoreReceivable(
 				filters.search,
 				page,
 				size,
@@ -61,7 +64,7 @@ export const AccountReceivablePage = () => {
 				return;
 			}
 
-			const data = res.data as StoreAttemptResponse;
+			const data = res.data as StoreReceivableResponse;
 
 			const pageInfo = data?.page;
 

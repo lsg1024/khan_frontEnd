@@ -39,7 +39,7 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 
 				{/* 시세 */}
 				<div className="sale-option-field">
-					<label className="required-field">시세</label>
+					<label>시세</label>
 					<input
 						type="number"
 						value={options.marketPrice || ""}

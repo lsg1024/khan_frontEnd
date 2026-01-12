@@ -105,7 +105,7 @@ export const calculatePureGoldWeightNoRound = (
 };
 
 /**
- * 해리 값을 포함한 순금 중량 계산 함수
+ * 해리 값을 포함한 금중량을 순금 중량 환산 계산 함수
  * @param goldWeight - 금중량 (문자열 또는 숫자)
  * @param material - 재질 (14K, 18K, 24K 등)
  * @param harry - 해리 값 (문자열 또는 숫자, 기본값 1.0)
@@ -114,7 +114,8 @@ export const calculatePureGoldWeightNoRound = (
 export const calculatePureGoldWeightWithHarry = (
 	goldWeight: string | number,
 	material: string,
-	harry: string | number = 1.1
+	harry: string | number = 1.1,
+	size: number = 3	
 ): number => {
 	const goldWeightNum =
 		typeof goldWeight === "string" ? parseFloat(goldWeight) : goldWeight;
@@ -126,7 +127,7 @@ export const calculatePureGoldWeightWithHarry = (
 
 	// 24K는 순금이므로 해리를 적용하지 않음
 	if (material === "24K") {
-		return parseFloat(pureGold.toFixed(5));
+		return parseFloat(pureGold.toFixed(size));
 	}
 
 	// 해리 값 처리 (14K, 18K 등)
@@ -138,7 +139,7 @@ export const calculatePureGoldWeightWithHarry = (
 
 	console.log(goldWeightNum, validHarry, result);
 
-	return parseFloat(result.toFixed(5)); // 소수점 최대 5자리로 제한
+	return parseFloat(result.toFixed(size));
 };
 
 /**

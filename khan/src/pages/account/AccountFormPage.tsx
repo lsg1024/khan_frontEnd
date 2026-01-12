@@ -44,7 +44,7 @@ export const AccountFormPage = () => {
 		addressAdd: "",
 		commonOptionId: "",
 		tradeType: "WEIGHT",
-		level: "ONE",
+		grade: "ONE",
 		goldHarryId: "",
 		goldHarryLoss: "",
 		additionalOptionId: "",
@@ -60,22 +60,22 @@ export const AccountFormPage = () => {
 		if (tradeType === "중량") tradeType = "WEIGHT";
 		else if (tradeType === "시세") tradeType = "PRICE";
 
-		// level 변환: "1" -> "ONE", "2" -> "TWO", "3" -> "THREE", "4" -> "FOUR"
-		let level = data.level;
-		const levelMap: Record<string, string> = {
+		// grade 변환: "1" -> "ONE", "2" -> "TWO", "3" -> "THREE", "4" -> "FOUR"
+		let grade = data.grade;
+		const gradeMap: Record<string, string> = {
 			"1": "ONE",
 			"2": "TWO",
 			"3": "THREE",
 			"4": "FOUR",
 		};
-		if (level && levelMap[level]) {
-			level = levelMap[level];
+		if (grade && gradeMap[grade]) {
+			grade = gradeMap[grade];
 		}
 
 		return {
 			...data,
 			tradeType,
-			level,
+			grade,
 		};
 	};
 
@@ -190,7 +190,7 @@ export const AccountFormPage = () => {
 
 			const commonOptionInfo = {
 				tradeType: formData.tradeType || undefined,
-				level: formData.level || undefined,
+				grade: formData.grade || undefined,
 				goldHarryId: formData.goldHarryId || undefined,
 			};
 
@@ -470,8 +470,8 @@ export const AccountFormPage = () => {
 										<th>등급</th>
 										<td>
 											<select
-												name="level"
-												value={formData.level}
+												name="grade"
+												value={formData.grade}
 												onChange={handleInputChange}
 											>
 												<option value="">선택</option>

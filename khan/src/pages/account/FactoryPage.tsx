@@ -286,7 +286,7 @@ export const FactoryPage = () => {
 							{ key: "factoryContactNumber1", label: "연락처1" },
 							{ key: "factoryContactNumber2", label: "연락처2" },
 							{ key: "factoryFaxNumber", label: "팩스" },
-							{ key: "level", label: "등급" },
+							{ key: "grade", label: "등급" },
 							{ key: "goldHarryLoss", label: "해리" },
 							{ key: "tradeType", label: "거래방식" },
 							{ key: "address", label: "주소", maxWidth: "200px" },

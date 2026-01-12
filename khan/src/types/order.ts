@@ -89,6 +89,9 @@ export interface OrderDto {
 	stockQuantity: number;
 	mainStoneNote: string;
 	assistanceStoneNote: string;
+	assistantStone: boolean;
+	assistantStoneName: string;
+	assistantStoneCreateAt: string;
 	stockFlowCodes: string[];
 	orderNote: string;
 	factoryName: string;

@@ -160,6 +160,9 @@ export interface GoldHistoryData {
 	previousMoneyBalance: number; // 전 미수 금액
 	afterGoldBalance: number; // 후미수 순금
 	afterMoneyBalance: number; // 후미수 금액
+	pureGoldConversion: number; // 순금 환산
+	marketPriceConversion: number; // 시세 환산
+	wgConversion: number; // WG 환산
 }
 
 export interface SalePaymentRequest {
@@ -175,11 +178,24 @@ export interface SalePaymentRequest {
 }
 
 // 판매 인쇄용 응답 타입
+export interface SalePrintResponse {
+    lastSaleDate : string
+    lastPaymentDate : string
+    businessOwnerNumber : string
+    faxNumber : string
+    previousGoldBalance : string
+    previousMoneyBalance : string
+    afterGoldBalance : string
+    afterMoneyBalance : string
+	saleItemResponses: SaleItemResponse[];
+}
+
 export interface SaleItemResponse {
 	createAt: string;
 	createBy: string;
 	storeId: string;
 	storeName: string;
+	storeHarry: string;
 	storeCode: string;
 	accountGoldPrice: string;
 	saleItems: SaleItem[];
@@ -193,6 +209,7 @@ export interface SaleItem {
 	storeName: string;
 	saleCode: string;
 	flowCode: string;
+	imagePath: string;
 	productName: string;
 	materialName: string | null;
 	colorName: string | null;
