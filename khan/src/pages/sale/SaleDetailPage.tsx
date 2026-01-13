@@ -239,9 +239,9 @@ const SaleDetailPage: React.FC = () => {
 									storeAttemptRes.data !== null
 								) {
 									const previousMoney =
-										parseFloat(storeAttemptRes.data!.moneyAmount) || 0;
+										parseFloat(storeAttemptRes.data!.afterMoneyBalance) || 0;
 									const previousGold =
-										parseFloat(storeAttemptRes.data!.goldWeight) || 0;
+										parseFloat(storeAttemptRes.data!.afterGoldBalance) || 0;
 
 									// 전미수 값을 먼저 설정한 후, loadedRows를 이용해 후미수까지 계산
 									const salesTotalMoney = loadedRows
@@ -490,8 +490,8 @@ const SaleDetailPage: React.FC = () => {
 								setAccountBalanceHistory((prev) => ({
 									...prev,
 									previousMoneyBalance:
-										parseFloat(attemptData.moneyAmount) || 0,
-									previousGoldBalance: parseFloat(attemptData.goldWeight) || 0,
+										parseFloat(attemptData.afterMoneyBalance) || 0,
+									previousGoldBalance: parseFloat(attemptData.afterGoldBalance) || 0,
 								}));
 							}
 						} catch (err) {

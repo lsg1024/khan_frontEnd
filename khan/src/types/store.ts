@@ -34,6 +34,15 @@ export interface StoreReceivableResponse {
 	page: PageInfo;
 }
 
+export interface StoreReceivableSaleLogResponse extends StoreSearchDto {
+	previousGoldBalance: string;
+	previousMoneyBalance: string;
+	afterGoldBalance: string;
+	afterMoneyBalance: string;
+	lastSaleDate: string;
+	lastPaymentDate: string;
+}
+
 // 거래 내역 페이지 (매입/판매 미수금)
 export interface TransactionPage {
 	saleCode: string;

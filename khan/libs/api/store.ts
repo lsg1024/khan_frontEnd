@@ -4,6 +4,7 @@ import type { ApiResponse } from "./config";
 import type {
 	StoreSearchResponse,
 	StoreReceivableResponse,
+	StoreReceivableSaleLogResponse,
 	AccountInfoDto,
 } from "../../src/types/store";
 import type {
@@ -64,7 +65,7 @@ export const storeApi = {
 	getStoreReceivableLogById: async (
 		id: string,
 		saleCode: string
-	): Promise<ApiResponse<AccountInfoDto>> => {
+	): Promise<ApiResponse<StoreReceivableSaleLogResponse>> => {
 		const params = { saleCode: saleCode };
 
 		return apiRequest.get(`account/stores/receivable/sale-log/${id}`, { params });
