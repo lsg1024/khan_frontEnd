@@ -166,6 +166,7 @@ export interface GoldHistoryData {
 }
 
 export interface SalePaymentRequest {
+	accountGoldPrice: number;
 	id: number;
 	name: string;
 	harry: string;

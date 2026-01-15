@@ -20,3 +20,16 @@ export interface FactorySearchResponse {
 	content: FactorySearchDto[];
 	page: PageInfo;
 }
+
+// 공장 매입금 조회 응답
+export interface FactoryPurchaseDto {
+	accountId: number;
+	accountName: string;
+	goldWeight: string;
+	moneyAmount: string;
+}
+
+export interface FactoryPurchaseResponse {
+	content: FactoryPurchaseDto[];
+	page: PageInfo;
+}

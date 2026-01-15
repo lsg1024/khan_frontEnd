@@ -51,11 +51,13 @@ import SalePrintPage from "./pages/sale/SalePrintPage";
 import StockSearchPopup from "./pages/sale/StockSearchPopup";
 import GoldMoneyPage from "./pages/gold_money/GoldMoneyPage";
 import PurchasePage from "./pages/purchase/PurchasePage";
+import PurchaseReceiptsPage from "./pages/purchase/PurchaseReceiptsPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/setting/SettingsPage";
 import SettingItemPopupPage from "./pages/setting/SettingItemPopupPage";
 import UserManagementPopupPage from "./pages/setting/UserManagementPopupPage";
 import GoldPricePopupPage from "./pages/setting/GoldPricePopupPage";
+import WGPricePopupPage from "./pages/sale/WGPricePopupPage";
 
 import Layout from "./components/layout/Layout";
 
@@ -177,6 +179,7 @@ function App() {
 					/>
 					<Route path="/sales/detail/bulk" element={<SaleDetailPage />} />
 					<Route path="/accounts/detail/:id?" element={<AccountFormPage />} />
+					<Route path="/sales/wg-price/:saleCode/:goldPrice?" element={<WGPricePopupPage />} />
 
 					{/* Layout 안에서 렌더링 */}
 					<Route
@@ -211,6 +214,7 @@ function App() {
 						<Route path="/accounts/factory" element={<FactoryPage />} />
 						<Route path="/gold-money" element={<GoldMoneyPage />} />
 						<Route path="/purchase" element={<PurchasePage />} />
+						<Route path="/purchase/receipts" element={<PurchaseReceiptsPage />} />
 						<Route path="/login" element={<Navigate to="/" replace />} />
 						<Route path="/join" element={<Navigate to="/" replace />} />
 					</Route>

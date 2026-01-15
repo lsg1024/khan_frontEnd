@@ -89,6 +89,13 @@ export const usePreviousRowCopy = (rows: any[], updateRow: any) => {
 							prevValues.productAddLaborCost
 						);
 					}
+					if (prevValues.productPurchaseCost !== undefined) {
+						updateRow(
+							currentRowId,
+							"productPurchaseCost",
+							prevValues.productPurchaseCost
+						);
+					}
 					if (prevValues.mainStonePrice !== undefined) {
 						updateRow(
 							currentRowId,
@@ -124,6 +131,32 @@ export const usePreviousRowCopy = (rows: any[], updateRow: any) => {
 							currentRowId,
 							"assistanceStoneCount",
 							prevValues.assistanceStoneCount
+						);
+					}
+
+					// 중량 정보
+					if (prevValues.stoneWeightTotal !== undefined) {
+						updateRow(
+							currentRowId,
+							"stoneWeightTotal",
+							prevValues.stoneWeightTotal
+						);
+					}
+					if (prevValues.stoneWeight !== undefined) {
+						updateRow(currentRowId, "stoneWeight", prevValues.stoneWeight);
+					}
+
+					// 스톤 정보 배열
+					if (prevValues.stoneInfos) {
+						updateRow(currentRowId, "stoneInfos", prevValues.stoneInfos);
+					}
+
+					// 상품 공장명
+					if (prevValues.productFactoryName) {
+						updateRow(
+							currentRowId,
+							"productFactoryName",
+							prevValues.productFactoryName
 						);
 					}
 

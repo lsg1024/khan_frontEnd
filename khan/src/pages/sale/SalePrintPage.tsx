@@ -388,16 +388,18 @@ export const SalePrintPage = () => {
 										const returnItems = allSaleItems.filter(
 											(item) => item.saleType === "반품"
 										);
-										const returnGold = returnItems.reduce(
-											(sum, item) => sum + (item.goldWeight || 0),
-											0
-										);
-										return returnGold !== 0
-											? calculatePureGoldWeightWithHarry(
-													returnGold,
-													"24K",
+										const returnPureGold = returnItems.reduce((sum, item) => {
+											return (
+												sum +
+												calculatePureGoldWeightWithHarry(
+													item.goldWeight || 0,
+													item.materialName || "24K",
 													harry
-											  )
+												)
+											);
+										}, 0);
+										return returnPureGold !== 0
+											? returnPureGold.toFixed(3)
 											: "-";
 									})()}
 								</td>
@@ -443,15 +445,21 @@ export const SalePrintPage = () => {
 									{(() => {
 										const allSaleItems =
 											printData.saleItemResponses[0]?.saleItems || [];
-										const dcItems = allSaleItems.filter(
+										const returnItems = allSaleItems.filter(
 											(item) => item.saleType === "DC"
 										);
-										const dcGold = dcItems.reduce(
-											(sum, item) => sum + (item.goldWeight || 0),
-											0
-										);
-										return dcGold !== 0
-											? calculatePureGoldWeightWithHarry(dcGold, "24K", harry)
+										const returnPureGold = returnItems.reduce((sum, item) => {
+											return (
+												sum +
+												calculatePureGoldWeightWithHarry(
+													item.goldWeight || 0,
+													item.materialName || "24K",
+													harry
+												)
+											);
+										}, 0);
+										return getGoldDonFromWeight(returnPureGold) !== 0
+											? getGoldDonFromWeight(returnPureGold.toFixed(3))
 											: "-";
 									})()}
 								</td>
@@ -482,7 +490,10 @@ export const SalePrintPage = () => {
 										const allSaleItems =
 											printData.saleItemResponses[0]?.saleItems || [];
 										const paymentItems = allSaleItems.filter(
-											(item) => item.saleType === "결제"
+											(item) =>
+												item.saleType === "결제" ||
+												item.saleType === "WG" ||
+												item.saleType === "결통"
 										);
 										const paymentGold = paymentItems.reduce(
 											(sum, item) => sum + (item.goldWeight || 0),
@@ -496,19 +507,22 @@ export const SalePrintPage = () => {
 										const allSaleItems =
 											printData.saleItemResponses[0]?.saleItems || [];
 										const paymentItems = allSaleItems.filter(
-											(item) => item.saleType === "결제"
+											(item) =>
+												item.saleType === "결제" ||
+												item.saleType === "WG" ||
+												item.saleType === "결통"
 										);
-										const paymentGold = paymentItems.reduce(
-											(sum, item) => sum + (item.goldWeight || 0),
-											0
-										);
-										return paymentGold !== 0
-											? calculatePureGoldWeightWithHarry(
-													paymentGold,
-													"24K",
+										const paymentPureGold = paymentItems.reduce((sum, item) => {
+											return (
+												sum +
+												calculatePureGoldWeightWithHarry(
+													item.goldWeight || 0,
+													item.materialName || "24K",
 													harry
-											  )
-											: "-";
+												)
+											);
+										}, 0);
+										return getGoldDonFromWeight(paymentPureGold) || "-";
 									})()}
 								</td>
 								<td>
@@ -516,7 +530,10 @@ export const SalePrintPage = () => {
 										const allSaleItems =
 											printData.saleItemResponses[0]?.saleItems || [];
 										const paymentItems = allSaleItems.filter(
-											(item) => item.saleType === "결제"
+											(item) =>
+												item.saleType === "결제" ||
+												item.saleType === "WG" ||
+												item.saleType === "결통"
 										);
 										const paymentMoney = paymentItems.reduce(
 											(sum, item) =>
@@ -542,24 +559,65 @@ export const SalePrintPage = () => {
 										const beforeGold = Number(
 											printData.previousGoldBalance || 0
 										);
-										const currentGold = Object.values(materialWeights).reduce(
-											(sum, weight) => sum + weight,
-											0
-										);
+										// 판매의 순금 중량 (해리 적용)
+										const currentPureGold = Object.entries(
+											materialWeights
+										).reduce((sum, [material, weight]) => {
+											return (
+												sum +
+												calculatePureGoldWeightWithHarry(
+													weight,
+													material,
+													harry
+												)
+											);
+										}, 0);
 										const returnGold = allSaleItems
 											.filter((item) => item.saleType === "반품")
-											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+											.reduce((sum, item) => {
+												return (
+													sum +
+													calculatePureGoldWeightWithHarry(
+														item.goldWeight || 0,
+														item.materialName || "24K",
+														harry
+													)
+												);
+											}, 0);
 										const dcGold = allSaleItems
 											.filter((item) => item.saleType === "DC")
-											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
-										const paymentGold = allSaleItems
-											.filter((item) => item.saleType === "결제")
-											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+											.reduce((sum, item) => {
+												return (
+													sum +
+													calculatePureGoldWeightWithHarry(
+														item.goldWeight || 0,
+														item.materialName || "24K",
+														harry
+													)
+												);
+											}, 0);
+										const paymentItems = allSaleItems.filter(
+											(item) =>
+												item.saleType === "결제" ||
+												item.saleType === "WG" ||
+												item.saleType === "결통"
+										);
+										const paymentGold = paymentItems.reduce((sum, item) => {
+											return (
+												sum +
+												calculatePureGoldWeightWithHarry(
+													item.goldWeight || 0,
+													item.materialName || "24K",
+													harry
+												)
+											);
+										}, 0);
+
 										return (
 											beforeGold +
-											currentGold -
-											returnGold -
-											dcGold -
+											currentPureGold +
+											returnGold +
+											dcGold +
 											paymentGold
 										).toFixed(3);
 									})()}
@@ -571,24 +629,65 @@ export const SalePrintPage = () => {
 										const beforeGold = Number(
 											printData.previousGoldBalance || 0
 										);
-										const currentGold = Object.values(materialWeights).reduce(
-											(sum, weight) => sum + weight,
-											0
-										);
+										// 판매의 순금 중량 (해리 적용)
+										const currentPureGold = Object.entries(
+											materialWeights
+										).reduce((sum, [material, weight]) => {
+											return (
+												sum +
+												calculatePureGoldWeightWithHarry(
+													weight,
+													material,
+													harry
+												)
+											);
+										}, 0);
 										const returnGold = allSaleItems
 											.filter((item) => item.saleType === "반품")
-											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+											.reduce((sum, item) => {
+												return (
+													sum +
+													calculatePureGoldWeightWithHarry(
+														item.goldWeight || 0,
+														item.materialName || "24K",
+														harry
+													)
+												);
+											}, 0);
 										const dcGold = allSaleItems
 											.filter((item) => item.saleType === "DC")
-											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+											.reduce((sum, item) => {
+												return (
+													sum +
+													calculatePureGoldWeightWithHarry(
+														item.goldWeight || 0,
+														item.materialName || "24K",
+														harry
+													)
+												);
+											}, 0);
 										const paymentGold = allSaleItems
-											.filter((item) => item.saleType === "결제")
-											.reduce((sum, item) => sum + (item.goldWeight || 0), 0);
+											.filter(
+												(item) =>
+													item.saleType === "결제" ||
+													item.saleType === "WG" ||
+													item.saleType === "결통"
+											)
+											.reduce((sum, item) => {
+												return (
+													sum +
+													calculatePureGoldWeightWithHarry(
+														item.goldWeight || 0,
+														item.materialName || "24K",
+														harry
+													)
+												);
+											}, 0);
 										const totalGold =
 											beforeGold +
-											currentGold -
-											returnGold -
-											dcGold -
+											currentPureGold +
+											returnGold +
+											dcGold +
 											paymentGold;
 										return getGoldDonFromWeight(totalGold) + "돈";
 									})()}
@@ -622,7 +721,12 @@ export const SalePrintPage = () => {
 												0
 											);
 										const paymentMoney = allSaleItems
-											.filter((item) => item.saleType === "결제")
+											.filter(
+												(item) =>
+													item.saleType === "결제" ||
+													item.saleType === "WG" ||
+													item.saleType === "결통"
+											)
 											.reduce(
 												(sum, item) =>
 													sum +
@@ -633,9 +737,9 @@ export const SalePrintPage = () => {
 											);
 										return (
 											beforeMoney +
-											currentMoney -
-											returnMoney -
-											dcMoney -
+											currentMoney +
+											returnMoney +
+											dcMoney +
 											paymentMoney
 										).toLocaleString();
 									})()}
@@ -714,11 +818,11 @@ export const SalePrintPage = () => {
 				})()}
 			</div>
 			<div className="print-controls">
-				<button onClick={handlePrint} className="btn-submit">
-					인쇄하기
-				</button>
 				<button onClick={() => window.close()} className="btn-cancel">
 					닫기
+				</button>
+				<button onClick={handlePrint} className="btn-submit">
+					인쇄하기
 				</button>
 			</div>
 		</div>

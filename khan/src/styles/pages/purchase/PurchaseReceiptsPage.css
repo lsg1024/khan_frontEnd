@@ -1,0 +1,72 @@
+.purchase-receipts-page {
+	padding: 20px;
+	max-width: 1400px;
+    min-width: 1000px;
+	margin: 0 auto;
+}
+
+.page-header h1 {
+	font-size: 24px;
+	font-weight: 600;
+	color: #333;
+}
+
+/* 검색 영역 */
+.search-section {
+	background: #fff;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.search-row label {
+	font-weight: 500;
+	min-width: 80px;
+}
+
+.search-row input[type="date"] {
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.search-row button {
+	padding: 8px 20px;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.2s;
+}
+
+.search-row button:hover:not(:disabled) {
+	background-color: #0056b3;
+}
+
+.search-row button:disabled {
+	background-color: #ccc;
+	cursor: not-allowed;
+}
+
+.number-cell {
+	text-align: right !important;
+    font-size: 12px
+}
+
+.loading-cell,
+.empty-cell {
+	text-align: center !important;
+	padding: 40px !important;
+	color: #666;
+}

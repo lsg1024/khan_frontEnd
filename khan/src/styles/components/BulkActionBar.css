@@ -3,6 +3,7 @@
 	justify-content: center;
 	align-items: center;
 	padding: 8px 0px;
+	    border-top: 1px solid #dee2e6;
 	background-color: white;
 	flex-direction: row;
 }

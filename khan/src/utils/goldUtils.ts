@@ -27,7 +27,7 @@ export const calculatePureGoldWeight = (
 	const pureGoldInteger = (weightInteger * purityInteger) / 1000; // 1000으로 나누어 중간 계산
 
 	const result = pureGoldInteger / 1000; // 다시 1000으로 나누어 최종 결과 계산
-	return parseFloat(result.toFixed(3)); // 소수점 최대 3자리로 제한
+	return Math.round(result * 1000) / 1000; // 소수점 3자리 반올림
 };
 
 /**
@@ -40,7 +40,7 @@ export const getGoldDonFromWeight = (weight: string | number): number => {
 	if (isNaN(weightNum)) return 0;
 
 	const don = weightNum / 3.75;
-	return parseFloat(don.toFixed(3));
+	return Math.round(don * 1000) / 1000;
 };
 
 /**
@@ -70,7 +70,7 @@ export const getGoldTransferWeight = (
 	const pureGoldGram = weightNum * purityRatio;
 	const pureGoldDon = pureGoldGram / 3.75;
 
-	return parseFloat(pureGoldDon.toFixed(3));
+	return Math.round(pureGoldDon * 1000) / 1000;
 };
 
 /**
@@ -115,19 +115,22 @@ export const calculatePureGoldWeightWithHarry = (
 	goldWeight: string | number,
 	material: string,
 	harry: string | number = 1.1,
-	size: number = 3	
+	size: number = 3
 ): number => {
 	const goldWeightNum =
 		typeof goldWeight === "string" ? parseFloat(goldWeight) : goldWeight;
-	if (isNaN(goldWeightNum) || goldWeightNum <= 0) return 0;
+	if (isNaN(goldWeightNum) || goldWeightNum === 0) return 0;
 
 	// 순금 중량 계산
 	const pureGold = calculatePureGoldWeightNoRound(goldWeightNum, material);
 	if (pureGold === 0) return 0;
 
+	// 반올림을 위한 승수 (size=3이면 1000)
+	const multiplier = Math.pow(10, size);
+
 	// 24K는 순금이므로 해리를 적용하지 않음
 	if (material === "24K") {
-		return parseFloat(pureGold.toFixed(size));
+		return Math.round(pureGold * multiplier) / multiplier;
 	}
 
 	// 해리 값 처리 (14K, 18K 등)
@@ -139,7 +142,7 @@ export const calculatePureGoldWeightWithHarry = (
 
 	console.log(goldWeightNum, validHarry, result);
 
-	return parseFloat(result.toFixed(size));
+	return Math.round(result * multiplier) / multiplier;
 };
 
 /**
@@ -173,5 +176,5 @@ export const calculateTotalWeightFromPureGold = (
 
 	// 총 중량 = 순금 / 순도 비율
 	const totalWeight = pureGoldNum / (purityRatio * Number(harry));
-	return parseFloat(totalWeight.toFixed(3)); // 소수점 최대 3자리로 제한
+	return Math.round(totalWeight * 1000) / 1000; // 소수점 3자리 반올림
 };

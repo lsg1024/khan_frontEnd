@@ -140,9 +140,9 @@ export const saleApi = {
 	},
 
 	// 판매 등록 전 동일 거래처 확인
-	checkBeforeSale: async (accountId: number): Promise<ApiResponse<string>> => {
+	checkBeforeSale: async (accountId: number): Promise<ApiResponse<{ saleCode: string, accountGoldPrice: number}>> => {
 		const params = { id: accountId };
-		return apiRequest.get<string>("order/sale/check", { params });
+		return apiRequest.get<{ saleCode: string, accountGoldPrice: number }>("order/sale/check", { params });
 	},
 
 	// 판매 인쇄용 데이터 조회
@@ -151,5 +151,27 @@ export const saleApi = {
 	): Promise<ApiResponse<SalePrintResponse>> => {
 		const params = { saleCode };
 		return apiRequest.get<SalePrintResponse>("order/sale/print", { params });
+	},
+
+	checkSaleGoldPrice: async (
+		saleCode: string
+	): Promise<ApiResponse<{ goldPrice: number }>> => {
+		const params = { id: saleCode };
+		return apiRequest.get<{ goldPrice: number }>("order/sale/gold-price", {
+			params,
+		});
+	},
+
+	//시세 추가
+	addSaleGoldPrice: async (
+		saleCode: string,
+		accountGoldPrice: number
+	): Promise<ApiResponse<string>> => {
+		const params = { id: saleCode };
+		return apiRequest.patch<string>(
+			"order/sale/gold-price",
+			{ accountGoldPrice },
+			{ params }
+		);
 	},
 };

@@ -146,6 +146,15 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 		}
 	};
 
+	// [추가] 금액 표시용 헬퍼 함수: "-" 입력 시 NaN 방지 및 포맷팅
+	const formatPriceValue = (value: number | string | undefined): string => {
+		if (value === "-") return "-";
+		if (!value) return "0";
+		const strVal = String(value);
+		const num = parseFloat(strVal.replace(/,/g, ""));
+		return isNaN(num) ? "0" : num.toLocaleString();
+	};
+
 	return (
 		<div className="sale-table-container">
 			<table className="sale-table">
@@ -344,17 +353,21 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 											loading ||
 											disabled ||
 											isStoreNotSelected ||
-											isBulkReturnMode
+											isBulkReturnMode ||
+											row.status === "DC"
 										}
 										style={{
 											backgroundColor:
-												isStoreNotSelected || isBulkReturnMode
+												isStoreNotSelected || isBulkReturnMode || row.status === "DC"
 													? "#f5f5f5"
 													: "white",
 										}}
 									>
 										<option value="">선택</option>
-										{materials.map((material) => (
+										{(row.status === "DC"
+											? materials.filter((m) => m.materialName === "24K")
+											: materials
+										).map((material) => (
 											<option
 												key={material.materialId}
 												value={material.materialId}
@@ -593,14 +606,17 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								{/* 총 중량 - 총 중량 */}
+								{/* 총 중량 - 총 중량 (음수/소수점 입력 허용) */}
 								<td className="stone-weight-cell">
 									<input
-										type="number"
-										value={row.totalWeight > 0 ? row.totalWeight : ""}
+										type="text"
+										value={row.totalWeight}
 										onChange={(e) => {
-											const newTotalWeight = parseFloat(e.target.value) || 0;
-											onRowUpdate(row.id, "totalWeight", newTotalWeight);
+											const val = e.target.value;
+											// 숫자, 마이너스(-), 소수점(.) 만 허용하는 정규식
+											if (/^-?\d*\.?\d*$/.test(val)) {
+												onRowUpdate(row.id, "totalWeight", val);
+											}
 										}}
 										disabled={
 											loading ||
@@ -651,10 +667,13 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.productPrice?.toLocaleString() || "0"}
+										value={formatPriceValue(row.productPrice)}
 										onChange={(e) => {
 											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(row.id, "productPrice", Number(value));
+											// 숫자, 마이너스만 허용
+											if (/^-?\d*$/.test(value)) {
+												onRowUpdate(row.id, "productPrice", value);
+											}
 										}}
 										disabled={
 											loading ||
@@ -675,14 +694,12 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.additionalProductPrice?.toLocaleString() || "0"}
+										value={formatPriceValue(row.additionalProductPrice)}
 										onChange={(e) => {
 											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(
-												row.id,
-												"additionalProductPrice",
-												Number(value)
-											);
+											if (/^-?\d*$/.test(value)) {
+												onRowUpdate(row.id, "additionalProductPrice", value);
+											}
 										}}
 										disabled={
 											loading ||
@@ -704,10 +721,12 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.mainStonePrice?.toLocaleString() || "0"}
+										value={formatPriceValue(row.mainStonePrice)}
 										onChange={(e) => {
 											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(row.id, "mainStonePrice", Number(value));
+											if (/^-?\d*$/.test(value)) {
+												onRowUpdate(row.id, "mainStonePrice", value);
+											}
 										}}
 										disabled={
 											loading ||
@@ -729,10 +748,12 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 									<div className="search-field-container">
 										<input
 											type="text"
-											value={row.assistanceStonePrice.toLocaleString()}
+											value={formatPriceValue(row.assistanceStonePrice)}
 											onChange={(e) => {
 												const value = e.target.value.replace(/,/g, "");
-												onRowUpdate(row.id, "assistanceStonePrice", value);
+												if (/^-?\d*$/.test(value)) {
+													onRowUpdate(row.id, "assistanceStonePrice", value);
+												}
 											}}
 											readOnly
 											disabled={
@@ -786,10 +807,12 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.stoneAddLaborCost?.toLocaleString() || "0"}
+										value={formatPriceValue(row.stoneAddLaborCost)}
 										onChange={(e) => {
 											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(row.id, "stoneAddLaborCost", Number(value));
+											if (/^-?\d*$/.test(value)) {
+												onRowUpdate(row.id, "stoneAddLaborCost", value);
+											}
 										}}
 										disabled={
 											loading ||

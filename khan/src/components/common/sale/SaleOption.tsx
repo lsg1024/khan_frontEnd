@@ -11,6 +11,7 @@ interface SaleOptionProps {
 	disabled?: boolean;
 	hasWGStatus: boolean;
 	isStoreLoadedFromApi?: boolean;
+	isMarketPriceLocked?: boolean;
 }
 
 const SaleOption: React.FC<SaleOptionProps> = ({
@@ -20,6 +21,7 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 	disabled = false,
 	hasWGStatus,
 	isStoreLoadedFromApi = false,
+	isMarketPriceLocked = false,
 }) => {
 	return (
 		<div className="sale-option-container">
@@ -47,10 +49,16 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 							onOptionChange("marketPrice", Number(e.target.value))
 						}
 						placeholder="시세 입력"
-						disabled={disabled || !hasWGStatus}
+						disabled={disabled || !hasWGStatus || isMarketPriceLocked}
 						style={{
-							backgroundColor: !hasWGStatus ? "#f5f5f5" : "white",
+							backgroundColor: isMarketPriceLocked || !hasWGStatus ? "#f5f5f5" : undefined,
+							cursor: isMarketPriceLocked ? "not-allowed" : undefined,
 						}}
+						title={
+							isMarketPriceLocked
+								? "기존 판매장의 시세가 자동 설정되었습니다"
+								: ""
+						}
 					/>
 				</div>
 

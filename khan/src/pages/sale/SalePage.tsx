@@ -187,14 +187,50 @@ export const SalePage = () => {
 	};
 
 	// 시세 추가 처리
-	const handleAddMarketPrice = () => {
+	const handleAddMarketPrice = async () => {
 		if (selected.length === 0) {
 			alert("시세를 추가할 판매 항목을 선택해주세요.");
 			return;
 		}
 
-		// TODO: 시세 추가 로직 구현
-		alert(`${selected.length}개 항목에 시세 추가 기능은 준비 중입니다.`);
+		try {
+			// 선택된 판매 항목들의 saleCode 가져오기 (동일한 saleCode를 가진 항목만 선택 가능)
+			const selectedSale = sales.find((sale) => sale.flowCode === selected[0]);
+			if (!selectedSale || !selectedSale.saleCode) {
+				alert("판매 정보를 찾을 수 없습니다.");
+				return;
+			}
+
+			const saleCode = selectedSale.saleCode;
+
+			// 시세가 이미 존재하는지 확인
+			const goldPrice = await saleApi.checkSaleGoldPrice(saleCode);
+			if (goldPrice.success && goldPrice.data) {
+				if (goldPrice.data.goldPrice !== 0) {
+					if (!confirm("시세가 이미 존재합니다. 변경하시겠습니까?")) {
+						return;
+					}
+				}
+			}
+
+			// 시세 추가/변경 팝업 열기
+			const url = `/sales/wg-price/${saleCode}/${goldPrice.data}`;
+			const NAME = `wg_price_${saleCode}`;
+			const FEATURES = "resizable=yes,scrollbars=yes,width=600,height=500";
+			const popup = window.open(url, NAME, FEATURES);
+
+			if (popup) {
+				// 팝업에서 시세가 설정되면 새로고침
+				const checkClosed = setInterval(() => {
+					if (popup.closed) {
+						clearInterval(checkClosed);
+						loadSales(searchFilters, currentPage);
+					}
+				}, 1000);
+			}
+		} catch (error) {
+			handleError(error);
+		}
 	};
 
 	// 시리얼번호 클릭 시 바코드 출력 확인

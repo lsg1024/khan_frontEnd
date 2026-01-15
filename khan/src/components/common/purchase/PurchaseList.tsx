@@ -16,7 +16,7 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 	loading,
 }) => {
 	// 판매번호 클릭 시 인쇄
-	const handleSerialClick = async (saleCode: string) => {};
+	const handleSerialClick = async () => {};
 
 	if (loading) {
 		return (
@@ -126,7 +126,7 @@ const PurchaseList: React.FC<PurchaseListProps> = ({
 									onClick={(e) => {
 										e.preventDefault();
 										e.stopPropagation();
-										handleSerialClick(transaction.saleCode);
+										handleSerialClick();
 									}}
 								>
 									{transaction.saleCode}

@@ -1,7 +1,7 @@
 import { type AxiosResponse } from "axios";
 import { api, apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { FactorySearchResponse } from "../../src/types/factory";
+import type { FactorySearchResponse, FactoryPurchaseResponse } from "../../src/types/factory";
 import type {
 	AccountSingleResponse,
 	FactoryCreateRequest,
@@ -96,6 +96,21 @@ export const factoryApi = {
 	downloadExcel: async (): Promise<AxiosResponse<Blob>> => {
 		return api.get("account/factories/excel", {
 			responseType: "blob",
+		});
+	},
+
+	// 제조사 매입금 조회 (새 API)
+	getFactoriesPurchase: async (
+		endAt?: string,
+		page: number = 1,
+		size: number = 12
+	): Promise<ApiResponse<FactoryPurchaseResponse>> => {
+		return apiRequest.get<FactoryPurchaseResponse>("account/factories/purchase", {
+			params: {
+				endAt: endAt || undefined,
+				page,
+				size,
+			},
 		});
 	},
 };

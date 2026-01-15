@@ -491,7 +491,8 @@ const SaleDetailPage: React.FC = () => {
 									...prev,
 									previousMoneyBalance:
 										parseFloat(attemptData.afterMoneyBalance) || 0,
-									previousGoldBalance: parseFloat(attemptData.afterGoldBalance) || 0,
+									previousGoldBalance:
+										parseFloat(attemptData.afterGoldBalance) || 0,
 								}));
 							}
 						} catch (err) {
@@ -985,11 +986,13 @@ const SaleDetailPage: React.FC = () => {
 						isStoreLoadedFromApi={true}
 					/>
 
-					{/* 계정 결제 내역 */}
-					<AccountPaymentHistory
-						history={accountBalanceHistoryData}
-						disabled={loading}
-					/>
+					{/* 계정 결제 내역 - bulk 모드에서만 표시 */}
+					{isBulkMode && (
+						<AccountPaymentHistory
+							history={accountBalanceHistoryData}
+							disabled={loading}
+						/>
+					)}
 				</div>
 			</div>
 

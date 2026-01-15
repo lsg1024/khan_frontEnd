@@ -64,7 +64,11 @@ const sidebarItems: SidebarItem[] = [
 	{
 		path: "/purchase",
 		label: "매입 관리",
-		icon: "🛍️"
+		icon: "🛍️",
+		children: [
+			{ path: "/purchase", label: "매입 목록"},
+			{ path: "/purchase/receipts", label: "매입 금액"},
+		],
 	},
 	{
 		path:"/accounts",
