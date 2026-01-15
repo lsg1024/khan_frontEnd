@@ -1,7 +1,10 @@
 import { type AxiosResponse } from "axios";
 import { api, apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { FactorySearchResponse, FactoryPurchaseResponse } from "../../src/types/factory";
+import type {
+	FactorySearchResponse,
+	FactoryPurchaseResponse,
+} from "../../src/types/factory";
 import type {
 	AccountSingleResponse,
 	FactoryCreateRequest,
@@ -105,12 +108,15 @@ export const factoryApi = {
 		page: number = 1,
 		size: number = 12
 	): Promise<ApiResponse<FactoryPurchaseResponse>> => {
-		return apiRequest.get<FactoryPurchaseResponse>("account/factories/purchase", {
-			params: {
-				endAt: endAt || undefined,
-				page,
-				size,
-			},
-		});
+		return apiRequest.get<FactoryPurchaseResponse>(
+			"account/factories/purchase",
+			{
+				params: {
+					endAt: endAt || undefined,
+					page,
+					size,
+				},
+			}
+		);
 	},
 };

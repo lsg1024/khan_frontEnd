@@ -358,7 +358,9 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										}
 										style={{
 											backgroundColor:
-												isStoreNotSelected || isBulkReturnMode || row.status === "DC"
+												isStoreNotSelected ||
+												isBulkReturnMode ||
+												row.status === "DC"
 													? "#f5f5f5"
 													: "white",
 										}}
