@@ -49,7 +49,7 @@ const StoneInfoPage: React.FC = () => {
 			};
 			return storeGradeMap[storeGrade] || "GRADE_1";
 		},
-		[]
+		[],
 	);
 
 	// 초기 데이터 로드
@@ -64,7 +64,7 @@ const StoneInfoPage: React.FC = () => {
 						type: "REQUEST_STONE_INFO",
 						rowId: rowId,
 					},
-					parentOrigin
+					parentOrigin,
 				);
 
 				// store grade 정보도 요청
@@ -73,8 +73,10 @@ const StoneInfoPage: React.FC = () => {
 						type: "REQUEST_STORE_GRADE",
 						rowId: rowId,
 					},
-					parentOrigin
+					parentOrigin,
 				);
+
+				console.log("grade data: " + storeGrade);
 			}
 
 			// 사용 가능한 스톤 목록 로드
@@ -109,7 +111,7 @@ const StoneInfoPage: React.FC = () => {
 							(existingStone, index) =>
 								index !== stoneIndex &&
 								existingStone.stoneName.trim().toLowerCase() ===
-									stone.stoneName.trim().toLowerCase()
+									stone.stoneName.trim().toLowerCase(),
 						);
 
 						if (isDuplicate) {
@@ -123,7 +125,7 @@ const StoneInfoPage: React.FC = () => {
 						const laborCostToUse =
 							stone.stoneWorkGradePolicyDto.find(
 								(policy: { grade: string; laborCost: number }) =>
-									policy.grade === gradeToUse
+									policy.grade === gradeToUse,
 							)?.laborCost || 0;
 
 						const updateStoneInfos = [...currentStoneInfos];
@@ -145,7 +147,7 @@ const StoneInfoPage: React.FC = () => {
 									rowId: rowId,
 									stoneInfos: updateStoneInfos,
 								},
-								parentOrigin
+								parentOrigin,
 							);
 						}
 
@@ -181,11 +183,11 @@ const StoneInfoPage: React.FC = () => {
 						rowId: rowId,
 						stoneInfos: updatedStoneInfos,
 					},
-					parentOrigin
+					parentOrigin,
 				);
 			}
 		},
-		[rowId, parentOrigin]
+		[rowId, parentOrigin],
 	);
 
 	useEffect(() => {
@@ -226,7 +228,7 @@ const StoneInfoPage: React.FC = () => {
 	const updateStoneInfo = (
 		index: number,
 		field: keyof StoneInfo,
-		value: string | number | boolean
+		value: string | number | boolean,
 	) => {
 		const updatedStoneInfos = [...stoneInfos];
 		updatedStoneInfos[index] = { ...updatedStoneInfos[index], [field]: value };
@@ -234,7 +236,7 @@ const StoneInfoPage: React.FC = () => {
 		// 스톤 선택 시 스톤명 자동 설정
 		if (field === "stoneId" && value) {
 			const selectedStone = availableStones.find(
-				(stone) => stone.stoneId === value
+				(stone) => stone.stoneId === value,
 			);
 			if (selectedStone) {
 				updatedStoneInfos[index].stoneName = selectedStone.stoneName;
@@ -244,16 +246,16 @@ const StoneInfoPage: React.FC = () => {
 		// grade 변경 시 해당 스톤의 laborCost 자동 설정
 		if (field === "grade" && value && updatedStoneInfos[index].stoneId) {
 			const selectedStone = availableStones.find(
-				(stone) => stone.stoneId === updatedStoneInfos[index].stoneId
+				(stone) => stone.stoneId === updatedStoneInfos[index].stoneId,
 			);
 			if (selectedStone) {
 				const gradePolicy = selectedStone.stoneWorkGradePolicyDto.find(
-					(policy) => policy.grade === value
+					(policy) => policy.grade === value,
 				);
 
 				console.log(
 					"selectedStone.stonePurchasePrice:",
-					selectedStone.stonePurchasePrice
+					selectedStone.stonePurchasePrice,
 				);
 				updatedStoneInfos[index].purchaseCost =
 					selectedStone.stonePurchasePrice || 0;
@@ -314,10 +316,10 @@ const StoneInfoPage: React.FC = () => {
 				(stone, index) =>
 					index !== currentIndex &&
 					stone.stoneName.trim().toLowerCase() ===
-						stoneName.trim().toLowerCase()
+						stoneName.trim().toLowerCase(),
 			);
 		},
-		[stoneInfos]
+		[stoneInfos],
 	);
 
 	// 스톤 검색 열기 (팝업)
@@ -326,12 +328,12 @@ const StoneInfoPage: React.FC = () => {
 
 		// 팝업 창 열기
 		const popupUrl = `/stone-search?parentOrigin=${encodeURIComponent(
-			window.location.origin
+			window.location.origin,
 		)}&stoneIndex=${index}`;
 		const popup = window.open(
 			popupUrl,
 			`stoneSearch_${index}`,
-			"width=800,height=600,scrollbars=yes,resizable=yes"
+			"width=800,height=600,scrollbars=yes,resizable=yes",
 		);
 
 		if (popup) {
@@ -354,7 +356,7 @@ const StoneInfoPage: React.FC = () => {
 					currentGrade || getDefaultGradeByStoreGrade(storeGrade);
 				const laborCostToUse =
 					stone.stoneWorkGradePolicyDto.find(
-						(policy) => policy.grade === gradeToUse
+						(policy) => policy.grade === gradeToUse,
 					)?.laborCost || 0;
 
 				const updateStoneInfos = [...stoneInfos];
@@ -420,7 +422,6 @@ const StoneInfoPage: React.FC = () => {
 										<th>메인스톤</th>
 										<th>포함여부</th>
 										<th>스톤 선택</th>
-										<th>스톤명</th>
 										<th>등급</th>
 										<th>중량</th>
 										<th>매입단가</th>
@@ -459,7 +460,7 @@ const StoneInfoPage: React.FC = () => {
 															updateStoneInfo(
 																index,
 																"mainStone",
-																e.target.checked
+																e.target.checked,
 															)
 														}
 													/>
@@ -472,7 +473,7 @@ const StoneInfoPage: React.FC = () => {
 															updateStoneInfo(
 																index,
 																"includeStone",
-																e.target.checked
+																e.target.checked,
 															)
 														}
 													/>
@@ -485,24 +486,7 @@ const StoneInfoPage: React.FC = () => {
 														{info.stoneName || "스톤 선택"}
 													</button>
 												</td>
-												<td>
-													<input
-														type="text"
-														value={info.stoneName}
-														onChange={(e) => {
-															const newValue = e.target.value;
-															if (
-																newValue &&
-																isDuplicateStoneName(newValue, index)
-															) {
-																alert(`이미 추가된 스톤입니다: ${newValue}`);
-																return;
-															}
-															updateStoneInfo(index, "stoneName", newValue);
-														}}
-														placeholder="스톤명"
-													/>
-												</td>
+
 												<td>
 													<select
 														value={info.grade || ""}
@@ -544,7 +528,7 @@ const StoneInfoPage: React.FC = () => {
 															updateStoneInfo(
 																index,
 																"stoneWeight",
-																e.target.value
+																e.target.value,
 															)
 														}
 														placeholder="0.00"
@@ -558,7 +542,7 @@ const StoneInfoPage: React.FC = () => {
 															updateStoneInfo(
 																index,
 																"purchaseCost",
-																e.target.value
+																e.target.value,
 															)
 														}
 														placeholder="0"
@@ -572,7 +556,7 @@ const StoneInfoPage: React.FC = () => {
 															updateStoneInfo(
 																index,
 																"laborCost",
-																parseFloat(e.target.value) || 0
+																parseFloat(e.target.value) || 0,
 															)
 														}
 														placeholder="0"
@@ -586,7 +570,7 @@ const StoneInfoPage: React.FC = () => {
 															updateStoneInfo(
 																index,
 																"addLaborCost",
-																parseFloat(e.target.value) || 0
+																parseFloat(e.target.value) || 0,
 															)
 														}
 														placeholder="0"
@@ -600,7 +584,7 @@ const StoneInfoPage: React.FC = () => {
 															updateStoneInfo(
 																index,
 																"quantity",
-																parseInt(e.target.value) || 1
+																parseInt(e.target.value) || 1,
 															)
 														}
 														placeholder="1"

@@ -62,7 +62,7 @@ const OrderUpdatePage: React.FC = () => {
 	const productModal = useSearchModal();
 
 	const [orderDetail, setOrderDetail] = useState<OrderResponseDetail | null>(
-		null
+		null,
 	);
 	const [currentProductDetail, setCurrentProductDetail] =
 		useState<Product | null>(null);
@@ -78,7 +78,7 @@ const OrderUpdatePage: React.FC = () => {
 		{ priorityName: string; priorityDate: number }[]
 	>([]);
 	const [assistantStones, setAssistantStones] = useState<AssistantStoneDto[]>(
-		[]
+		[],
 	);
 
 	const orderStatus = MODE_TO_STATUS[mode as UpdateMode];
@@ -89,19 +89,19 @@ const OrderUpdatePage: React.FC = () => {
 		storeGrade: string,
 
 		priorities: { priorityName: string; priorityDate: number }[],
-		assistantStonesParam: AssistantStoneDto[]
+		assistantStonesParam: AssistantStoneDto[],
 	): OrderRowData => {
 		const calculatedStoneData = calculateStoneDetails(detail.stoneInfos);
 
 		const foundPriority = priorities.find(
-			(p) => p.priorityName === detail.priority
+			(p) => p.priorityName === detail.priority,
 		);
 
 		let deliveryDate = detail.createAt;
 		if (foundPriority && detail.createAt) {
 			const calculatedDate = addBusinessDays(
 				detail.createAt,
-				foundPriority.priorityDate
+				foundPriority.priorityDate,
 			);
 			deliveryDate = formatDateToString(calculatedDate);
 		}
@@ -109,7 +109,7 @@ const OrderUpdatePage: React.FC = () => {
 		const foundAssistantStone = assistantStonesParam.find(
 			(a) =>
 				a.assistantStoneId.toString() ===
-				(detail.assistantStoneId?.toString() ?? "")
+				(detail.assistantStoneId?.toString() ?? ""),
 		);
 
 		const baseRowData: OrderRowData = {
@@ -168,7 +168,7 @@ const OrderUpdatePage: React.FC = () => {
 	const updateOrderRow = (
 		id: string,
 		field: keyof OrderRowData,
-		value: unknown
+		value: unknown,
 	) => {
 		setOrderRows((prevRows) => {
 			const updatedRows = prevRows.map((row) => {
@@ -231,12 +231,12 @@ const OrderUpdatePage: React.FC = () => {
 				orderDetail,
 				storeGrade,
 				priorities,
-				assistantStones
+				assistantStones,
 			);
 			setOrderRows([rowData]);
 			isInitialMount.current = false;
 		}
-	}, [orderDetail, materials, colors, priorities, assistantStones, storeGrade]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 거래처 선택 처리
 	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
@@ -249,25 +249,25 @@ const OrderUpdatePage: React.FC = () => {
 			updateOrderRow(
 				storeModal.selectedRowId,
 				"storeId",
-				store.accountId.toString()
+				store.accountId.toString(),
 			);
 			updateOrderRow(
 				storeModal.selectedRowId,
 				"storeName",
-				store.accountName || ""
+				store.accountName || "",
 			);
 
 			// 거래처 변경 시 storeGrade 재조회
 			try {
 				const storeGradeRes = await storeApi.getStoreGrade(
-					store.accountId.toString()
+					store.accountId.toString(),
 				);
 				if (storeGradeRes.success && storeGradeRes.data) {
 					setStoreGrade(storeGradeRes.data);
 					updateOrderRow(
 						storeModal.selectedRowId,
 						"storeGrade",
-						storeGradeRes.data
+						storeGradeRes.data,
 					);
 				}
 			} catch (err) {
@@ -296,38 +296,38 @@ const OrderUpdatePage: React.FC = () => {
 			updateOrderRow(
 				productModal.selectedRowId,
 				"productName",
-				product.productName || ""
+				product.productName || "",
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
 				"productFactoryName",
-				product.productFactoryName || ""
+				product.productFactoryName || "",
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
 				"classificationName",
-				currentProductDetail?.classificationDto.classificationName || ""
+				currentProductDetail?.classificationDto.classificationName || "",
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
 				"setTypeId",
-				currentProductDetail?.setTypeDto.setTypeId || ""
+				currentProductDetail?.setTypeDto.setTypeId || "",
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
 				"setTypeName",
-				currentProductDetail?.setTypeDto.setTypeName || ""
+				currentProductDetail?.setTypeDto.setTypeName || "",
 			);
 			updateOrderRow(productModal.selectedRowId, "factoryId", factoryIdValue);
 			updateOrderRow(
 				productModal.selectedRowId,
 				"factoryName",
-				product.factoryName || ""
+				product.factoryName || "",
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
 				"productLaborCost",
-				product.productLaborCost || 0
+				product.productLaborCost || 0,
 			);
 
 			const mainStone = product.productStones.find((stone) => stone.mainStone);
@@ -340,63 +340,63 @@ const OrderUpdatePage: React.FC = () => {
 			updateOrderRow(
 				productModal.selectedRowId,
 				"mainStonePrice",
-				mainStonePrice
+				mainStonePrice,
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
 				"mainStoneCount",
-				mainStoneCount
+				mainStoneCount,
 			);
 
 			const assistanceStone = product.productStones.find(
-				(stone) => !stone.mainStone
+				(stone) => !stone.mainStone,
 			);
 
 			const assistanceStonePrice = assistanceStone
 				? (assistanceStone.laborCost || 0) *
-				  (assistanceStone.stoneQuantity || 0)
+					(assistanceStone.stoneQuantity || 0)
 				: 0;
 			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
 
 			updateOrderRow(
 				productModal.selectedRowId,
 				"assistanceStonePrice",
-				assistanceStonePrice
+				assistanceStonePrice,
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
 				"assistanceStoneCount",
-				assistanceStoneCount
+				assistanceStoneCount,
 			);
 
 			updateOrderRow(
 				productModal.selectedRowId,
 				"mainStoneCount",
 				product.productStones.find((stone) => stone.mainStone)?.stoneQuantity ||
-					0
+					0,
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
 				"assistanceStoneCount",
 				product.productStones.find((stone) => !stone.mainStone)
-					?.stoneQuantity || 0
+					?.stoneQuantity || 0,
 			);
 
 			// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
 			if (product.productMaterial) {
 				const foundMaterial = materials.find(
-					(m) => m.materialName === product.productMaterial
+					(m) => m.materialName === product.productMaterial,
 				);
 				if (foundMaterial) {
 					updateOrderRow(
 						productModal.selectedRowId,
 						"materialId",
-						foundMaterial.materialId.toString()
+						foundMaterial.materialId.toString(),
 					);
 					updateOrderRow(
 						productModal.selectedRowId,
 						"materialName",
-						foundMaterial.materialName
+						foundMaterial.materialName,
 					);
 				}
 			}
@@ -404,18 +404,18 @@ const OrderUpdatePage: React.FC = () => {
 			// productColor 값이 있으면 자동으로 드롭다운에서 선택
 			if (product.productColor) {
 				const foundColor = colors.find(
-					(c) => c.colorName === product.productColor
+					(c) => c.colorName === product.productColor,
 				);
 				if (foundColor) {
 					updateOrderRow(
 						productModal.selectedRowId,
 						"colorId",
-						foundColor.colorId.toString()
+						foundColor.colorId.toString(),
 					);
 					updateOrderRow(
 						productModal.selectedRowId,
 						"colorName",
-						foundColor.colorName
+						foundColor.colorName,
 					);
 				}
 			}
@@ -436,26 +436,19 @@ const OrderUpdatePage: React.FC = () => {
 			updateOrderRow(
 				factoryModal.selectedRowId,
 				"factoryName",
-				factory.factoryName || ""
+				factory.factoryName || "",
 			);
 		}
 		factoryModal.handleSelect();
 	};
 
-	// 초기 데이터 로드
-	useEffect(() => {
-		const loadInitialData = async () => {
-			try {
-				setLoading(true);
+	const loadInitialData = async () => {
+		try {
+			setLoading(true);
 
-				// 주문 상세 정보와 드롭다운 데이터를 병렬로 로드
-				const [
-					orderRes,
-					materialRes,
-					colorRes,
-					priorityRes,
-					assistantStoneRes,
-				] = await Promise.all([
+			// 1. [병렬 호출] 주문 정보(핵심) + 기초 데이터(Master Data)
+			const [orderRes, materialRes, colorRes, priorityRes, assistantStoneRes] =
+				await Promise.all([
 					flowCode
 						? orderApi.getOrder(flowCode)
 						: Promise.resolve({ success: false, data: null }),
@@ -465,113 +458,144 @@ const OrderUpdatePage: React.FC = () => {
 					assistantStoneApi.getAssistantStones(),
 				]);
 
-				// 드롭다운 데이터 설정
-				let prioritiesData: { priorityName: string; priorityDate: number }[] =
-					[];
-				let assistantStonesData: AssistantStoneDto[] = [];
+			// 2. 기초 데이터 State 설정 (드롭다운 옵션들)
+			let prioritiesData: { priorityName: string; priorityDate: number }[] = [];
+			let assistantStonesData: AssistantStoneDto[] = [];
 
-				if (materialRes.success) {
-					const materialsData = (materialRes.data || []).map((m) => ({
+			if (materialRes.success) {
+				setMaterials(
+					(materialRes.data || []).map((m) => ({
 						materialId: m.materialId?.toString() || "",
 						materialName: m.materialName,
 						materialGoldPurityPercent: m.materialGoldPurityPercent || "",
-					}));
-					setMaterials(materialsData);
-				}
+					})),
+				);
+			}
 
-				if (colorRes.success) {
-					const colorsData = (colorRes.data || []).map((c) => ({
+			if (colorRes.success) {
+				setColors(
+					(colorRes.data || []).map((c) => ({
 						colorId: c.colorId?.toString() || "",
 						colorName: c.colorName,
 						colorNote: c.colorNote || "",
-					}));
-					setColors(colorsData);
-				}
+					})),
+				);
+			}
 
-				if (priorityRes.success) {
-					prioritiesData = (priorityRes.data || []).map((p) => ({
-						priorityName: p.priorityName,
-						priorityDate: p.priorityDate,
-					}));
-					setPriorities(prioritiesData);
-				}
+			if (priorityRes.success) {
+				prioritiesData = (priorityRes.data || []).map((p) => ({
+					priorityName: p.priorityName,
+					priorityDate: p.priorityDate,
+				}));
+				setPriorities(prioritiesData);
+			}
 
-				if (assistantStoneRes.success) {
-					assistantStonesData = (assistantStoneRes.data || []).map((a) => ({
-						assistantStoneId: a.assistantStoneId,
-						assistantStoneName: a.assistantStoneName,
-					}));
-					setAssistantStones(assistantStonesData);
-				}
+			if (assistantStoneRes.success) {
+				assistantStonesData = (assistantStoneRes.data || []).map((a) => ({
+					assistantStoneId: a.assistantStoneId,
+					assistantStoneName: a.assistantStoneName,
+				}));
+				setAssistantStones(assistantStonesData);
+			}
 
-				// 주문 상세 정보를 OrderRowData로 변환
-				if (orderRes.success && orderRes.data) {
-					const detail = orderRes.data as OrderResponseDetail;
-					setOrderDetail(detail);
+			// 3. 주문 데이터 처리 (가장 중요)
+			if (orderRes.success && orderRes.data) {
+				const detail = orderRes.data as OrderResponseDetail;
+				setOrderDetail(detail);
 
-					let grade = "";
+				// 3-1. 거래처 등급 조회
+				let grade = "1"; // 기본값
+				try {
 					const storeGradeRes = await storeApi.getStoreGrade(detail.storeId);
 					if (storeGradeRes.success && storeGradeRes.data) {
 						grade = storeGradeRes.data;
 						setStoreGrade(grade);
 					}
-
-					// 상품 상세 정보 로드
-					if (detail.productId) {
-						try {
-							const response = await productApi.getProduct(detail.productId);
-							if (isApiSuccess(response) && response.data) {
-								const transformedData: Product = {
-									...response.data,
-									productWorkGradePolicyGroupDto:
-										response.data.productWorkGradePolicyGroupDto.map(
-											(group: {
-												productGroupId: string;
-												productPurchasePrice: number;
-												colorId: string;
-												colorName: string;
-												note: string;
-												gradePolicyDtos?: unknown;
-												policyDtos?: unknown;
-											}) => ({
-												productGroupId: group.productGroupId,
-												productPurchasePrice: group.productPurchasePrice,
-												colorId: group.colorId,
-												colorName: group.colorName,
-												note: group.note,
-												policyDtos: (group.gradePolicyDtos ||
-													group.policyDtos ||
-													[]) as {
-													workGradePolicyId: string;
-													grade: string;
-													laborCost: number;
-													groupId: number;
-												}[],
-											})
-										),
-								};
-								setCurrentProductDetail(transformedData);
-							}
-						} catch (err) {
-							handleError(err);
-						}
-					}
-					// OrderRowData로 변환하여 설정 (드롭다운 데이터 포함)
-					const rowData = convertToOrderRowData(
-						detail,
-						grade,
-						prioritiesData,
-						assistantStonesData
-					);
-					setOrderRows([rowData]);
+				} catch (e) {
+					console.error("Store grade fetch error", e);
 				}
-			} catch (err) {
-				handleError(err);
-			} finally {
-				setLoading(false);
-			}
-		};
 
+				const orderRows = convertToOrderRowData(
+					detail,
+					grade,
+					prioritiesData,
+					assistantStonesData,
+				);
+
+				// materialName, colorName으로 materials/colors 배열에서 찾아서 올바른 ID 설정
+				if (detail.materialName) {
+					const foundMaterial = materials.find(
+						(m) => m.materialName === detail.materialName,
+					);
+					if (foundMaterial) {
+						orderRows.materialId = foundMaterial.materialId.toString();
+						orderRows.materialName = foundMaterial.materialName;
+					}
+				}
+
+				if (detail.colorName) {
+					const foundColor = colors.find(
+						(c) => c.colorName === detail.colorName,
+					);
+					if (foundColor) {
+						orderRows.colorId = foundColor.colorId.toString();
+						orderRows.colorName = foundColor.colorName;
+					}
+				}
+
+				setOrderRows([orderRows]);
+
+				// 상품 상세 정보 로드
+				if (detail.productId) {
+					try {
+						const productRes = await productApi.getProduct(detail.productId);
+						if (isApiSuccess(productRes) && productRes.data) {
+							const response = productRes.data;
+							const transformedData: Product = {
+								...response,
+								productWorkGradePolicyGroupDto:
+									response.productWorkGradePolicyGroupDto.map(
+										(group: {
+											productGroupId: string;
+											productPurchasePrice: number;
+											colorId: string;
+											colorName: string;
+											note: string;
+											gradePolicyDtos?: unknown;
+											policyDtos?: unknown;
+										}) => ({
+											productGroupId: group.productGroupId,
+											productPurchasePrice: group.productPurchasePrice,
+											colorId: group.colorId,
+											colorName: group.colorName,
+											note: group.note,
+											policyDtos: (group.gradePolicyDtos ||
+												group.policyDtos ||
+												[]) as {
+												workGradePolicyId: string;
+												grade: string;
+												laborCost: number;
+												groupId: number;
+											}[],
+										}),
+									),
+							};
+							setCurrentProductDetail(transformedData);
+						}
+					} catch (err) {
+						handleError(err);
+					}
+				}
+			}
+		} catch (err) {
+			handleError(err);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	// 초기 데이터 로드
+	useEffect(() => {
 		loadInitialData();
 	}, [flowCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -628,7 +652,7 @@ const OrderUpdatePage: React.FC = () => {
 			const response = await orderApi.orderUpdate(
 				flowCode!,
 				orderStatus!,
-				orderUpdateData
+				orderUpdateData,
 			);
 
 			if (response.success) {

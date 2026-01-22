@@ -28,7 +28,7 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 			) {
 				try {
 					const blob = await productApi.getProductImageByPath(
-						currentProductDetail.productImageDtos[0].imagePath
+						currentProductDetail.productImageDtos[0].imagePath,
 					);
 					blobUrl = URL.createObjectURL(blob);
 					setImageUrl(blobUrl);
@@ -102,10 +102,6 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 											{currentProductDetail.setTypeDto?.setTypeName || "-"}
 										</span>
 									</div>
-								</div>
-
-								{/* 무게, 재질, 구매/판매가격 */}
-								<div className="info-row">
 									<div className="info-item quarter-width">
 										<span className="label">무게:</span>
 										<span className="value">
@@ -118,34 +114,7 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 											{currentProductDetail.materialDto?.materialName || "-"}
 										</span>
 									</div>
-									<div className="info-item quarter-width">
-										<span className="label">구매가:</span>
-										<span className="value">
-											{currentProductDetail.productWorkGradePolicyGroupDto &&
-											currentProductDetail.productWorkGradePolicyGroupDto
-												.length > 0
-												? currentProductDetail.productWorkGradePolicyGroupDto[0].productPurchasePrice.toLocaleString() +
-												  "원"
-												: "-"}
-										</span>
-									</div>
-									<div className="info-item quarter-width">
-										<span className="label">판매가:</span>
-										<span className="value">
-											{currentProductDetail.productWorkGradePolicyGroupDto &&
-											currentProductDetail.productWorkGradePolicyGroupDto
-												.length > 0 &&
-											currentProductDetail.productWorkGradePolicyGroupDto[0]
-												.policyDtos &&
-											currentProductDetail.productWorkGradePolicyGroupDto[0]
-												.policyDtos.length > 0
-												? currentProductDetail.productWorkGradePolicyGroupDto[0].policyDtos[0].laborCost.toLocaleString() +
-												  "원"
-												: "-"}
-										</span>
-									</div>
 								</div>
-
 								{/* 스톤 정보 */}
 								{currentProductDetail.productStoneDtos &&
 									currentProductDetail.productStoneDtos.length > 0 && (
@@ -163,7 +132,7 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 																(구매: {stone.stonePurchase.toLocaleString()}
 																원)
 															</div>
-														)
+														),
 													)}
 												</div>
 											</div>

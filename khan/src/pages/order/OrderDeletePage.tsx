@@ -44,7 +44,7 @@ export const OrderDeletedPage = () => {
 	// 검색 필터 변경 핸들러
 	const handleFilterChange = <K extends keyof SearchFilters>(
 		field: K,
-		value: SearchFilters[K]
+		value: SearchFilters[K],
 	) => {
 		setSearchFilters((prev) => ({ ...prev, [field]: value }));
 
@@ -76,7 +76,7 @@ export const OrderDeletedPage = () => {
 					filters.color,
 					filters.sortField,
 					filters.sortOrder as "ASC" | "DESC" | "",
-					page
+					page,
 				);
 
 				if (response.success && response.data) {
@@ -98,17 +98,17 @@ export const OrderDeletedPage = () => {
 				setLoading(false);
 			}
 		},
-		[] // eslint-disable-line react-hooks/exhaustive-deps
+		[], // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
 	// 검색 실행
-	const handleSearch = () => {
+	const handleSearch = async () => {
 		setCurrentPage(1);
-		loadDeleteds(searchFilters, 1);
+		await Promise.all([loadDeleteds(searchFilters, 1), fetchDropdownData()]);
 	};
 
 	// 검색 초기화
-	const handleReset = () => {
+	const handleReset = async () => {
 		const resetFilters: SearchFilters = {
 			search: "",
 			start: getLocalDate(),
@@ -122,7 +122,7 @@ export const OrderDeletedPage = () => {
 		};
 		setSearchFilters(resetFilters);
 		setCurrentPage(1);
-		loadDeleteds(resetFilters, 1);
+		await Promise.all([loadDeleteds(resetFilters, 1), fetchDropdownData()]);
 	};
 
 	// 체크박스 선택 기능 비활성화 (조회 전용)
@@ -153,7 +153,7 @@ export const OrderDeletedPage = () => {
 			const factoryResponse = await orderApi.getFilterFactories(
 				searchFilters.start,
 				searchFilters.end,
-				"DELETED"
+				"DELETED",
 			);
 			setFactories(factoryResponse.data || []);
 
@@ -161,7 +161,7 @@ export const OrderDeletedPage = () => {
 			const storeResponse = await orderApi.getFilterStores(
 				searchFilters.start,
 				searchFilters.end,
-				"DELETED"
+				"DELETED",
 			);
 			setStores(storeResponse.data || []);
 
@@ -169,13 +169,13 @@ export const OrderDeletedPage = () => {
 			const setTypeResponse = await orderApi.getFilterSetTypes(
 				searchFilters.start,
 				searchFilters.end,
-				"DELETED"
+				"DELETED",
 			);
 			setSetTypes(setTypeResponse.data || []);
 			const colorResponse = await orderApi.getFilterColors(
 				searchFilters.start,
 				searchFilters.end,
-				"DELETED"
+				"DELETED",
 			);
 			setColors(colorResponse.data || []);
 		} catch (err) {

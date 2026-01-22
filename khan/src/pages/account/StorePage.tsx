@@ -252,7 +252,6 @@ export const StorePage = () => {
 				onCreate={handleCreate}
 				onExcelDownload={handleExcel}
 				loading={loading}
-				placeholder="거래처명을 입력하세요"
 			/>
 
 			{/* 거래처 목록 */}

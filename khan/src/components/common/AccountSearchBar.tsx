@@ -17,7 +17,7 @@ export const AccountSearchBar = ({
 	onCreate,
 	onExcelDownload,
 	loading,
-	placeholder = "거래처명을 입력하세요",
+	placeholder = "검색...",
 }: AccountSearchBarProps) => {
 	const handleKeyPress = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter") {

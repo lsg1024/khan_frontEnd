@@ -260,7 +260,6 @@ export const FactoryPage = () => {
 				onCreate={handleCreate}
 				onExcelDownload={handleExcel}
 				loading={loading}
-				placeholder="제조사명을 입력하세요"
 			/>
 
 			{/* 제조사 목록 */}
