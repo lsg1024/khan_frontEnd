@@ -91,14 +91,13 @@
 }
 
 .stone-edit-actions {
-	display: flex;
-	gap: 10px;
-	justify-content: flex-end;
-	margin-top: 30px;
-	padding-top: 20px;
-	border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
 }
-
 /* 로딩 오버레이 */
 .loading-overlay {
 	position: fixed;

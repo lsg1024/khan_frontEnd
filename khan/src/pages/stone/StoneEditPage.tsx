@@ -344,21 +344,25 @@ const StoneEditPage = () => {
 
 				<div className="stone-edit-actions">
 					<button
-						className="btn-cancel"
+						className="reset-btn-common"
 						onClick={() => window.close()}
 						disabled={saving}
 					>
 						닫기
 					</button>
 					<button
-						className="delete-btn"
+						className="common-btn-common"
+						onClick={handleSave}
+						disabled={saving}
+					>
+						{saving ? "저장 중..." : "저장"}
+					</button>
+					<button
+						className="delete-btn-common"
 						onClick={handleDelete}
 						disabled={saving}
 					>
 						{saving ? "처리 중..." : "삭제"}
-					</button>
-					<button className="btn-submit" onClick={handleSave} disabled={saving}>
-						{saving ? "저장 중..." : "저장"}
 					</button>
 				</div>
 			</div>

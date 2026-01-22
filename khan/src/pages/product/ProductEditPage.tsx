@@ -499,6 +499,7 @@ function ProductEditPage() {
 						product={product}
 						showTitle={true}
 						editable={true}
+						imageFile={imageFile}
 						onProductChange={handleProductChange}
 						onFactorySelect={handleFactorySelect}
 						onImageChange={handleImageChange}

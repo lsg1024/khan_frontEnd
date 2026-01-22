@@ -8,6 +8,7 @@ import { materialApi } from "../../../../libs/api/material";
 import { setTypeApi } from "../../../../libs/api/setType";
 import { productApi } from "../../../../libs/api/product";
 import FactorySearch from "../factory/FactorySearch";
+import ImageZoomModal from "../ImageZoomModal";
 import "../../../styles/components/BasicInfo.css";
 import { useErrorHandler } from "../../../utils/errorHandler";
 
@@ -22,7 +23,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 	validationErrors = {},
 }) => {
 	const [classifications, setClassifications] = useState<ClassificationDto[]>(
-		[]
+		[],
 	);
 	const [materials, setMaterials] = useState<MaterialDto[]>([]);
 	const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
@@ -40,6 +41,9 @@ const BasicInfo: React.FC<ProductInfo> = ({
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [currentImageId, setCurrentImageId] = useState<number | null>(null);
 	const [imageLoading, setImageLoading] = useState(false);
+
+	// 이미지 확대 모달 상태
+	const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
 
 	const { handleError } = useErrorHandler();
 
@@ -87,7 +91,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 				if (firstImage.imageId && firstImage.imagePath) {
 					try {
 						const blob = await productApi.getProductImageByPath(
-							firstImage.imagePath
+							firstImage.imagePath,
 						);
 						blobUrl = URL.createObjectURL(blob);
 						setImagePreview(blobUrl);
@@ -140,7 +144,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 		try {
 			const response = await productApi.uploadProductImage(
 				product.productId.toString(),
-				imageFile
+				imageFile,
 			);
 			if (response.success) {
 				alert("이미지가 수정되었습니다.");
@@ -155,6 +159,13 @@ const BasicInfo: React.FC<ProductInfo> = ({
 			handleError(error);
 		} finally {
 			setImageLoading(false);
+		}
+	};
+
+	// 이미지 클릭 시 확대 모달 열기
+	const handleImageClick = () => {
+		if (imagePreview) {
+			setIsImageZoomOpen(true);
 		}
 	};
 
@@ -175,7 +186,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 		setImageLoading(true);
 		try {
 			const response = await productApi.deleteProductImage(
-				currentImageId.toString()
+				currentImageId.toString(),
 			);
 
 			if (response.success) {
@@ -203,7 +214,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 	// 필드 변경 핸들러
 	const handleFieldChange = (
 		field: keyof ProductData | "materialId" | "classificationId" | "setTypeId",
-		value: string
+		value: string,
 	) => {
 		if (!onProductChange) return;
 
@@ -216,7 +227,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 			}
 		} else if (field === "classificationId") {
 			const selectedClassification = classifications.find(
-				(c) => c.classificationId === value
+				(c) => c.classificationId === value,
 			);
 			if (selectedClassification) {
 				updatedProduct = { classificationDto: selectedClassification };
@@ -342,6 +353,9 @@ const BasicInfo: React.FC<ProductInfo> = ({
 									src={imagePreview}
 									alt="상품 이미지"
 									className="product-image"
+									onClick={handleImageClick}
+									style={{ cursor: "zoom-in" }}
+									title="클릭하여 이미지 확대"
 								/>
 								{/* 수정 모드이면서 + 로컬 파일이 선택되었을 때만 '저장' 버튼 표시 */}
 								{editable && imageFile && product.productId && (
@@ -432,7 +446,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 							<span
 								className="info-icon"
 								title="동일한 관련번호를 가진 상품들을 그룹화하여 목록으로 조회할 수 있습니다."
-                                style={{marginRight: "5px"}}
+								style={{ marginRight: "5px" }}
 							>
 								ⓘ
 							</span>
@@ -582,6 +596,14 @@ const BasicInfo: React.FC<ProductInfo> = ({
 					<FactorySearch
 						onClose={() => setIsFactoryModalOpen(false)}
 						onSelectFactory={handleFactorySelect}
+					/>
+				)}
+
+				{isImageZoomOpen && imagePreview && (
+					<ImageZoomModal
+						imageUrl={imagePreview}
+						altText="상품 이미지"
+						onClose={() => setIsImageZoomOpen(false)}
 					/>
 				)}
 			</div>

@@ -442,6 +442,14 @@
 	width: 100%;
 	height: 100%;
 	object-fit: contain;
+	transition:
+		transform 0.2s ease,
+		opacity 0.2s ease;
+}
+
+.image-container .product-image:hover {
+	transform: scale(1.02);
+	opacity: 0.9;
 }
 
 /* 정보 아이콘 스타일 */
