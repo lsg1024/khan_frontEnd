@@ -71,7 +71,7 @@ function ProductEditPage() {
 	const handleStoneChange = (
 		stoneId: string,
 		field: string,
-		value: string | number | boolean
+		value: string | number | boolean,
 	) => {
 		if (!product) return;
 
@@ -92,7 +92,7 @@ function ProductEditPage() {
 								return { ...policy, laborCost: Number(value) };
 							}
 							return policy;
-						}
+						},
 					);
 
 					return {
@@ -136,7 +136,7 @@ function ProductEditPage() {
 		if (!product) return;
 
 		const existingIds = product.productStoneDtos.map(
-			(stone) => parseInt(stone.productStoneId.replace(/[^0-9]/g, "")) || 0
+			(stone) => parseInt(stone.productStoneId.replace(/[^0-9]/g, "")) || 0,
 		);
 		const newId = Math.max(...existingIds, 0) + 1;
 
@@ -195,7 +195,7 @@ function ProductEditPage() {
 				return {
 					...prevProduct,
 					productStoneDtos: prevProduct.productStoneDtos.filter(
-						(stone) => stone.productStoneId !== stoneId
+						(stone) => stone.productStoneId !== stoneId,
 					),
 				};
 			});
@@ -243,7 +243,7 @@ function ProductEditPage() {
 									laborCost: number;
 									groupId: number;
 								}[],
-							})
+							}),
 						),
 				};
 				setProduct(transformedData);
@@ -295,19 +295,19 @@ function ProductEditPage() {
 								: `productWorkGradePolicyGroupDto[0].policyDtos[${order}].laborCost`;
 						errors[key] = `${g.replace("GRADE_", "")}등급 공임을 입력하세요.`;
 					}
-				}
+				},
 			);
 		}
 
 		const emptyStoneIndex = product!.productStoneDtos.findIndex(
-			(stone) => !stone.stoneId || stone.stoneId.trim() === ""
+			(stone) => !stone.stoneId || stone.stoneId.trim() === "",
 		);
 
 		if (emptyStoneIndex !== -1) {
 			alert(
 				`[No.${
 					emptyStoneIndex + 1
-				}] 스톤이 선택되지 않았습니다.\n\n스톤을 선택하거나, 해당 행을 삭제한 후 다시 시도해주세요.`
+				}] 스톤이 선택되지 않았습니다.\n\n스톤을 선택하거나, 해당 행을 삭제한 후 다시 시도해주세요.`,
 			);
 			return false; // 유효성 검사 실패 -> 저장 중단
 		}
@@ -391,7 +391,7 @@ function ProductEditPage() {
 
 			const response = await productApi.updateProduct(
 				product.productId,
-				serverData
+				serverData,
 			);
 
 			if (isApiSuccess(response)) {
@@ -433,7 +433,7 @@ function ProductEditPage() {
 
 		if (
 			!window.confirm(
-				`정말로 "${product.productName}" 상품을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
+				`정말로 "${product.productName}" 상품을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`,
 			)
 		) {
 			return;
