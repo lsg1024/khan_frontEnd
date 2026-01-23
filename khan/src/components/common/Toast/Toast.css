@@ -1,0 +1,149 @@
+.toast-container {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	z-index: 9999;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	pointer-events: none;
+}
+
+.toast {
+	min-width: 300px;
+	max-width: 500px;
+	padding: 16px 20px;
+	border-radius: 8px;
+	background: white;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	animation: slideIn 0.3s ease-out;
+	cursor: pointer;
+	pointer-events: auto;
+	position: relative;
+}
+
+.toast:hover {
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.toast--success {
+	border-left: 4px solid #1e8e3e;
+}
+
+.toast--error {
+	border-left: 4px solid #d93025;
+}
+
+.toast--warning {
+	border-left: 4px solid #f9ab00;
+}
+
+.toast--info {
+	border-left: 4px solid #1a73e8;
+}
+
+.toast-icon {
+	font-size: 20px;
+	font-weight: bold;
+	flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+}
+
+.toast--success .toast-icon {
+	color: #1e8e3e;
+	background: rgba(30, 142, 62, 0.1);
+}
+
+.toast--error .toast-icon {
+	color: #d93025;
+	background: rgba(217, 48, 37, 0.1);
+}
+
+.toast--warning .toast-icon {
+	color: #f9ab00;
+	background: rgba(249, 171, 0, 0.1);
+}
+
+.toast--info .toast-icon {
+	color: #1a73e8;
+	background: rgba(26, 115, 232, 0.1);
+}
+
+.toast-message {
+	flex: 1;
+	font-size: 14px;
+	line-height: 1.5;
+	color: #333;
+	word-break: break-word;
+}
+
+.toast-close {
+	background: none;
+	border: none;
+	font-size: 18px;
+	color: #666;
+	cursor: pointer;
+	padding: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 4px;
+	flex-shrink: 0;
+	transition: all 0.2s;
+}
+
+.toast-close:hover {
+	background: rgba(0, 0, 0, 0.05);
+	color: #333;
+}
+
+.toast-close:active {
+	background: rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideIn {
+	from {
+		transform: translateX(400px);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+@keyframes slideOut {
+	from {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateX(400px);
+		opacity: 0;
+	}
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+	.toast-container {
+		top: 10px;
+		right: 10px;
+		left: 10px;
+		align-items: stretch;
+	}
+
+	.toast {
+		min-width: auto;
+		max-width: 100%;
+	}
+}

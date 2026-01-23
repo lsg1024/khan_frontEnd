@@ -10,6 +10,7 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import { useSearchModal } from "../../hooks/useSearchModal";
 import { usePreviousRowCopy } from "../../hooks/usePreviousRowCopy";
 import { useStoneInfoManager } from "../../hooks/useStoneInfoManager";
+import { useToast } from "../../components/common/Toast/Toast";
 import {
 	addBusinessDays,
 	getLocalDate,
@@ -46,6 +47,7 @@ const MODE_TO_STATUS = {
 
 const OrderCreatePage = () => {
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 	const { mode } = useParams<{
 		mode: UpdateMode;
 	}>();
@@ -391,43 +393,43 @@ const OrderCreatePage = () => {
 		currentStep: "product" | "material" | "other" | "color"
 	): boolean => {
 		if (currentStep === "product" && !checkStoreSelected(rowId)) {
-			alert("거래처를 먼저 선택해주세요.");
+			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
 			openStoreSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "material" && !checkStoreSelected(rowId)) {
-			alert("거래처를 먼저 선택해주세요.");
+			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
 			openStoreSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "material" && !checkProductSelected(rowId)) {
-			alert("모델번호를 먼저 선택해주세요.");
+			showToast("모델번호를 먼저 선택해주세요.", "warning", 3000);
 			openProductSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "color" && !checkStoreSelected(rowId)) {
-			alert("거래처를 먼저 선택해주세요.");
+			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
 			openStoreSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "other" && !checkStoreSelected(rowId)) {
-			alert("거래처를 먼저 선택해주세요.");
+			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
 			openStoreSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "other" && !checkProductSelected(rowId)) {
-			alert("모델번호를 먼저 선택해주세요.");
+			showToast("모델번호를 먼저 선택해주세요.", "warning", 3000);
 			openProductSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "other" && !checkMaterialSelected(rowId)) {
-			alert("재질을 먼저 선택해주세요.");
+			showToast("재질을 먼저 선택해주세요.", "warning", 3000);
 			const materialSelect = document.querySelector(
 				`[data-row-id="${rowId}"][data-field="material"]`
 			) as HTMLSelectElement;
@@ -979,8 +981,10 @@ const OrderCreatePage = () => {
 		);
 
 		if (validRows.length === 0) {
-			alert(
-				"주문할 상품을 추가해주세요. (거래처, 모델번호, 재질, 색상은 필수입니다)"
+			showToast(
+				"주문할 상품을 추가해주세요. (거래처, 모델번호, 재질, 색상은 필수입니다)",
+				"error",
+				4000
 			);
 			return;
 		}

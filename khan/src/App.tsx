@@ -65,6 +65,7 @@ import "./App.css";
 import "./styles/index.css";
 import { tokenUtils } from "./utils/tokenUtils";
 import { qzTrayService } from "./service/qzTrayService";
+import { ToastProvider } from "./components/common/Toast/Toast";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -111,15 +112,16 @@ function App() {
 	}, []);
 
 	return (
-		<BrowserRouter>
-			{!isAuthenticated ? (
-				<Routes>
-					<Route path="/join" element={<JoinPage />} />
-					<Route path="/login" element={<LoginPage />} />
-					<Route path="*" element={<Navigate to="/login" replace />} />
-				</Routes>
-			) : (
-				<Routes>
+		<ToastProvider>
+			<BrowserRouter>
+				{!isAuthenticated ? (
+					<Routes>
+						<Route path="/join" element={<JoinPage />} />
+						<Route path="/login" element={<LoginPage />} />
+						<Route path="*" element={<Navigate to="/login" replace />} />
+					</Routes>
+				) : (
+					<Routes>
 					{/* Layout 없이 단독 페이지 렌더링 */}
 					<Route path="/setting-item" element={<SettingItemPopupPage />} />
 					<Route
@@ -222,7 +224,8 @@ function App() {
 					<Route path="*" element={<Navigate to="/" replace />} />
 				</Routes>
 			)}
-		</BrowserRouter>
+			</BrowserRouter>
+		</ToastProvider>
 	);
 }
 

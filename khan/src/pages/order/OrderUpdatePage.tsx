@@ -11,6 +11,7 @@ import { productApi } from "../../../libs/api/product";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { useSearchModal } from "../../hooks/useSearchModal";
 import { useStoneInfoManager } from "../../hooks/useStoneInfoManager";
+import { useToast } from "../../components/common/Toast/Toast";
 import {
 	addBusinessDays,
 	formatDateToString,
@@ -55,6 +56,7 @@ const OrderUpdatePage: React.FC = () => {
 	const stockMode = searchParams.get("mode") === "stock";
 
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 
 	// 검색 모달 상태 - 커스텀 훅 사용
 	const storeModal = useSearchModal();
@@ -242,7 +244,7 @@ const OrderUpdatePage: React.FC = () => {
 	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
 		if (storeModal.selectedRowId) {
 			if (store.accountId === undefined || store.accountId === null) {
-				alert("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.");
+				showToast("거래처 ID가 누락되었습니다. 다른 거래처를 선택해주세요.", "error", 4000);
 				return;
 			}
 
@@ -281,12 +283,12 @@ const OrderUpdatePage: React.FC = () => {
 	const handleProductSelect = (product: ProductDto) => {
 		if (productModal.selectedRowId) {
 			if (!product.productId) {
-				alert("상품 ID가 누락되었습니다. 다른 상품을 선택해주세요.");
+				showToast("상품 ID가 누락되었습니다. 다른 상품을 선택해주세요.", "error", 4000);
 				return;
 			}
 
 			if (!product.factoryId) {
-				alert("제조사 ID가 누락되었습니다. 다른 상품을 선택해주세요.");
+				showToast("제조사 ID가 누락되었습니다. 다른 상품을 선택해주세요.", "error", 4000);
 				return;
 			}
 
@@ -427,7 +429,7 @@ const OrderUpdatePage: React.FC = () => {
 	const handleFactorySelect = (factory: FactorySearchDto) => {
 		if (factoryModal.selectedRowId) {
 			if (factory.factoryId === undefined || factory.factoryId === null) {
-				alert("제조사 ID가 누락되었습니다. 다른 제조사를 선택해주세요.");
+				showToast("제조사 ID가 누락되었습니다. 다른 제조사를 선택해주세요.", "error", 4000);
 				return;
 			}
 
@@ -602,7 +604,7 @@ const OrderUpdatePage: React.FC = () => {
 	// 저장 핸들러
 	const handleSave = async () => {
 		if (!orderDetail || orderRows.length === 0) {
-			alert("저장할 주문 정보가 없습니다.");
+			showToast("저장할 주문 정보가 없습니다.", "error", 3000);
 			return;
 		}
 
@@ -637,15 +639,15 @@ const OrderUpdatePage: React.FC = () => {
 			};
 			// 필수 필드 검증
 			if (!orderUpdateData.storeId) {
-				alert("거래처 정보가 누락되었습니다.");
+				showToast("거래처 정보가 누락되었습니다.", "error", 3000);
 				return;
 			}
 			if (!orderUpdateData.factoryId) {
-				alert("제조사 정보가 누락되었습니다.");
+				showToast("제조사 정보가 누락되었습니다.", "error", 3000);
 				return;
 			}
 			if (!orderUpdateData.productId) {
-				alert("상품 정보가 누락되었습니다.");
+				showToast("상품 정보가 누락되었습니다.", "error", 3000);
 				return;
 			}
 

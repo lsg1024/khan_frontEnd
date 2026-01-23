@@ -1,5 +1,6 @@
 // 공통 에러 처리 유틸리티
 import type { ApiResponse } from "../../libs/api/config";
+import { useToast } from "../components/common/Toast/Toast";
 
 export interface ErrorHandlerOptions {
 	showAlert?: boolean;
@@ -68,13 +69,51 @@ export function handleApiError(
 }
 
 /**
- * React 컴포넌트에서 사용하기 위한 커스텀 훅
+ * React 컴포넌트에서 사용하기 위한 커스텀 훅 (Toast 알림 사용)
  */
 export function useErrorHandler() {
+	const { showToast } = useToast();
+
 	return {
-		handleError: (error: unknown) => {
-			// alert로 표시하고 setError는 사용하지 않음
-			handleApiError(error, { showAlert: true });
+		handleError: (error: unknown, context?: string) => {
+			let errorMessage = "서버와 통신 중 오류가 발생했습니다.";
+
+			// Axios 에러 처리
+			if (error && typeof error === "object" && "response" in error) {
+				const axiosError = error as {
+					response?: {
+						status?: number;
+						data?: ApiResponse;
+					};
+				};
+
+				const response = axiosError.response;
+				const responseData = response?.data;
+
+				// 서버 에러 응답: ApiResponse<T> 형식
+				if (
+					responseData &&
+					typeof responseData === "object" &&
+					"message" in responseData
+				) {
+					errorMessage = responseData.message || errorMessage;
+				}
+			}
+			// 일반 Error 객체 처리
+			else if (error instanceof Error) {
+				errorMessage = error.message || errorMessage;
+			}
+
+			// 콘솔에 에러 로그 출력
+			console.error(`[${context || "Error"}]:`, error);
+
+			// Toast로 에러 메시지 표시
+			showToast(errorMessage, "error", 5000);
 		},
 	};
 }
+
+/**
+ * @deprecated Use useErrorHandler hook instead
+ * 레거시 alert 기반 에러 처리 함수 (하위 호환성을 위해 유지)
+ */
