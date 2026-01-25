@@ -1,4 +1,4 @@
-import type { SaleOptionData } from "../../../types/sale";
+import type { SaleOptionData } from "../../../types/saleDto";
 import "../../../styles/components/sale/SaleOption.css";
 
 interface SaleOptionProps {

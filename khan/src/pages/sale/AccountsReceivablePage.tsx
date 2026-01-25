@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
-import { storeApi } from "../../../libs/api/store";
+import { storeApi } from "../../../libs/api/storeApi";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type {
 	AccountInfoDto,
 	StoreReceivableResponse,
-} from "../../types/store";
+} from "../../types/storeDto";
 import Pagination from "../../components/common/Pagination";
-import AccountsReceivableSearch from "../../components/common/sale/AccountsReceivableSearch";
-import AccountsReceivableList from "../../components/common/sale/AccountsReceivableList";
-import type { AccountsReceivableSearchFilters } from "../../components/common/sale/AccountsReceivableSearch";
-import "../../styles/pages/AccountsReceivablePage.css";
+import AccountsReceivableSearch from "../../components/account/AccountsReceivableSearch";
+import AccountsReceivableList from "../../components/account/AccountsReceivableList";
+import type { AccountsReceivableSearchFilters } from "../../components/account/AccountsReceivableSearch";
+import "../../styles/pages/sale/AccountsReceivablePage.css";
 
 export const AccountReceivablePage = () => {
 	const [stores, setStores] = useState<AccountInfoDto[]>([]);

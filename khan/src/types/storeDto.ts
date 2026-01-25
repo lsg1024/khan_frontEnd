@@ -1,4 +1,4 @@
-import type { PageInfo } from "./page";
+import type { PageInfo } from "./pageDto";
 
 // 거래처 공통 인터페이스
 export interface StoreSearchDto {

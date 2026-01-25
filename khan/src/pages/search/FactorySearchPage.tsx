@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { isApiSuccess } from "../../../libs/api/config";
-import { factoryApi } from "../../../libs/api/factory";
-import type { FactorySearchDto } from "../../types/factory";
+import { factoryApi } from "../../../libs/api/factoryApi";
+import type { FactorySearchDto } from "../../types/factoryDto";
 import FactoryList from "../../components/common/factory/FactoryList";
 import Pagination from "../../components/common/Pagination";
-import "../../styles/pages/FactorySearchPage.css";
+import "../../styles/pages/account/FactorySearchPage.css";
 
 const FactorySearchPage: React.FC = () => {
 	const [searchName, setSearchName] = useState("");

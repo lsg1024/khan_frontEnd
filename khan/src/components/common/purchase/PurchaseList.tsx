@@ -1,4 +1,4 @@
-import type { TransactionPage } from "../../../types/store";
+import type { TransactionPage } from "../../../types/storeDto";
 import { calculateTotalWeightFromPureGold } from "../../../utils/goldUtils";
 import "../../../styles/components/purchase/PurchaseList.css";
 

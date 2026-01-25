@@ -1,5 +1,5 @@
 /* StoneSearch 컴포넌트 전용 스타일 */
-@import "./searchModal.css";
+@import "./SearchModal.css";
 
 /* 스톤 검색 모달 고유 스타일 */
 .stone-search-modal {

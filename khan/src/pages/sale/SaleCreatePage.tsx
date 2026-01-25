@@ -2,26 +2,28 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getLocalDate } from "../../utils/dateUtils";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useToast } from "../../components/common/toast/Toast";
+import { useStoneInfoManager } from "../../hooks/useStoneInfoManager";
 import type {
 	SaleOptionData,
 	GoldHistoryData,
 	SaleCreateRow,
 	SalePaymentRequest,
-} from "../../types/sale";
-import type { AccountInfoDto, StoreSearchDto } from "../../types/store";
-import type { PastOrderDto } from "../../types/order";
+} from "../../types/saleDto";
+import type { AccountInfoDto, StoreSearchDto } from "../../types/storeDto";
+import type { PastOrderDto } from "../../types/orderDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
-import type { StockSaleRequest, StockRegisterRequest } from "../../types/stock";
+import type { StockSaleRequest, StockRegisterRequest } from "../../types/stockDto";
 import SaleOption from "../../components/common/sale/SaleOption";
-import AccountBalanceHistory from "../../components/common/sale/AccountBalanceHistory";
+import AccountBalanceHistory from "../../components/account/AccountBalanceHistory";
 import SaleTable from "../../components/common/sale/SaleTable";
 import StoreSearch from "../../components/common/store/StoreSearch";
-import PastOrderHistory from "../../components/common/PastOrderHistory";
-import { assistantStoneApi } from "../../../libs/api/assistantStone";
-import { orderApi } from "../../../libs/api/order";
-import { stockApi } from "../../../libs/api/stock";
-import { storeApi } from "../../../libs/api/store";
-import { materialApi } from "../../../libs/api/material";
+import PastOrderHistory from "../../components/common/order/PastOrderHistory";
+import { assistantStoneApi } from "../../../libs/api/assistantStoneApi";
+import { orderApi } from "../../../libs/api/orderApi";
+import { stockApi } from "../../../libs/api/stockApi";
+import { storeApi } from "../../../libs/api/storeApi";
+import { materialApi } from "../../../libs/api/materialApi";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 import {
 	calculatePureGoldWeightWithHarry,
@@ -29,11 +31,12 @@ import {
 } from "../../utils/goldUtils";
 import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import "../../styles/pages/sale/SaleCreatePage.css";
-import { saleApi } from "../../../libs/api/sale";
+import { saleApi } from "../../../libs/api/saleApi";
 
 export const SaleCreatePage = () => {
 	const [searchParams] = useSearchParams();
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string>("");
 	const [showStoreSearch, setShowStoreSearch] = useState<boolean>(false);
@@ -321,7 +324,7 @@ export const SaleCreatePage = () => {
 	const handleFlowCodeSearch = (rowId: string) => {
 		// 거래처가 선택되지 않았으면 경고
 		if (!saleOptions.storeId || !saleOptions.storeName) {
-			alert("거래처를 먼저 선택해주세요.");
+			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
 			return;
 		}
 
@@ -332,86 +335,6 @@ export const SaleCreatePage = () => {
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=700";
 
 		window.open(url, NAME, FEATURES);
-	};
-
-	// 스톤 정보 관리 모달 열기
-	const openStoneInfoManager = (rowId: string) => {
-		const url = `/stock/stone-info?rowId=${rowId}&origin=${window.location.origin}`;
-		const NAME = `stoneInfo_${rowId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=500";
-
-		const popup = window.open(url, NAME, FEATURES);
-		if (popup) {
-			popup.focus();
-			const handleMessage = (event: MessageEvent) => {
-				if (
-					event.data.type === "REQUEST_STONE_INFO" &&
-					event.data.rowId === rowId
-				) {
-					const row = saleRows.find((r) => r.id === rowId);
-					popup.postMessage(
-						{
-							type: "STONE_INFO_DATA",
-							stoneInfos: row?.stoneInfos || [],
-						},
-						window.location.origin
-					);
-				} else if (
-					event.data.type === "STONE_INFO_SAVE" &&
-					event.data.rowId === rowId
-				) {
-					handleRowUpdate(rowId, "stoneInfos", event.data.stoneInfos);
-
-					const calculatedStoneData = calculateStoneDetails(
-						event.data.stoneInfos
-					);
-					handleRowUpdate(
-						rowId,
-						"mainStonePrice",
-						calculatedStoneData.mainStonePrice
-					);
-					handleRowUpdate(
-						rowId,
-						"assistanceStonePrice",
-						calculatedStoneData.assistanceStonePrice
-					);
-					handleRowUpdate(
-						rowId,
-						"stoneAddLaborCost",
-						calculatedStoneData.stoneAddLaborCost
-					);
-					handleRowUpdate(
-						rowId,
-						"mainStoneCount",
-						calculatedStoneData.mainStoneCount
-					);
-					handleRowUpdate(
-						rowId,
-						"assistanceStoneCount",
-						calculatedStoneData.assistanceStoneCount
-					);
-					handleRowUpdate(
-						rowId,
-						"stoneWeightTotal",
-						calculatedStoneData.stoneWeight
-					);
-					handleRowUpdate(
-						rowId,
-						"stoneWeight",
-						calculatedStoneData.stoneWeight.toString()
-					);
-				}
-			};
-
-			window.addEventListener("message", handleMessage);
-
-			const checkClosed = setInterval(() => {
-				if (popup.closed) {
-					window.removeEventListener("message", handleMessage);
-					clearInterval(checkClosed);
-				}
-			}, 1000);
-		}
 	};
 
 	// 판매 행 업데이트 핸들러
@@ -552,6 +475,14 @@ export const SaleCreatePage = () => {
 			})
 		);
 	};
+
+	// 스톤 정보 관리 - 커스텀 훅 사용
+	const { openStoneInfoManager } = useStoneInfoManager({
+		rows: saleRows,
+		updateRow: handleRowUpdate,
+		urlType: "stock",
+		stoneWeightAsString: true,
+	});
 
 	// 행에 포커스가 활성화될 때 과거 매출 데이터 표시
 	const handleRowFocus = async (rowId: string) => {
@@ -992,7 +923,7 @@ export const SaleCreatePage = () => {
 					);
 
 					if (isDuplicate) {
-						alert("이미 선택된 재고 상품입니다.");
+						showToast("이미 선택된 재고 상품입니다.", "warning", 3000);
 						// 중복이어도 팝업은 닫기
 						if (event.source && "postMessage" in event.source) {
 							(event.source as Window).postMessage(

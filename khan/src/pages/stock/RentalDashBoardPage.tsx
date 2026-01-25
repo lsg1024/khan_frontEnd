@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { orderApi } from "../../../libs/api/order";
-import { stockApi } from "../../../libs/api/stock";
+import { orderApi } from "../../../libs/api/orderApi";
+import { stockApi } from "../../../libs/api/stockApi";
 import { getLocalDate } from "../../utils/dateUtils";
-import type { StockResponse } from "../../types/stock";
+import type { StockResponse } from "../../types/stockDto";
 import StockSearch from "../../components/common/stock/StockSearch";
 import StockList from "../../components/common/stock/StockList";
 import Pagination from "../../components/common/Pagination";

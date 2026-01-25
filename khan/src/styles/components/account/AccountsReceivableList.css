@@ -14,12 +14,6 @@
 	animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
 .loading-state p {
 	color: #6c757d;
 	font-size: 14px;

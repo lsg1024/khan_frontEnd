@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { factoryApi } from "../../../libs/api/factory";
+import { factoryApi } from "../../../libs/api/factoryApi";
 import { isApiSuccess } from "../../../libs/api/config";
 import type {
 	TransactionPage,
 	TransactionPageResponse,
-} from "../../types/store";
+} from "../../types/storeDto";
 import { getLocalDate } from "../../utils/dateUtils";
 import Pagination from "../../components/common/Pagination";
 import PurchaseList from "../../components/common/purchase/PurchaseList";
-import "../../styles/pages/AccountsReceivablePage.css";
+import "../../styles/pages/sale/AccountsReceivablePage.css";
 
 export const PurchasePage = () => {
 	const [transactions, setTransactions] = useState<TransactionPage[]>([]);

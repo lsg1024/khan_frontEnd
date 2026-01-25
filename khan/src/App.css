@@ -27,11 +27,6 @@
   margin-bottom: 1rem;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 .app-loading p {
   margin: 0;
   font-size: 1rem;

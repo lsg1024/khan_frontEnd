@@ -1,28 +1,28 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { stockApi } from "../../../libs/api/stock";
-import { materialApi } from "../../../libs/api/material";
-import { colorApi } from "../../../libs/api/color";
-import { assistantStoneApi } from "../../../libs/api/assistantStone";
-import { goldHarryApi } from "../../../libs/api/goldHarry";
-import { storeApi } from "../../../libs/api/store";
+import { stockApi } from "../../../libs/api/stockApi";
+import { materialApi } from "../../../libs/api/materialApi";
+import { colorApi } from "../../../libs/api/colorApi";
+import { assistantStoneApi } from "../../../libs/api/assistantStoneApi";
+import { goldHarryApi } from "../../../libs/api/goldHarryApi";
+import { storeApi } from "../../../libs/api/storeApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { getLocalDate } from "../../utils/dateUtils";
-import type { MaterialDto } from "../../types/material";
-import type { ColorDto } from "../../types/color";
+import type { MaterialDto } from "../../types/materialDto";
+import type { ColorDto } from "../../types/colorDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
-import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarry";
+import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarryDto";
 import type {
 	StockOrderRows,
 	StockRegisterRequest,
 	ResponseDetail,
-} from "../../types/stock";
+} from "../../types/stockDto";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
-import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto, AccountInfoDto } from "../../types/store";
-import type { ProductDto } from "../../types/product";
+import type { FactorySearchDto } from "../../types/factoryDto";
+import type { StoreSearchDto, AccountInfoDto } from "../../types/storeDto";
+import type { ProductDto } from "../../types/productDto";
 import StockTable from "../../components/common/stock/StockTable";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 

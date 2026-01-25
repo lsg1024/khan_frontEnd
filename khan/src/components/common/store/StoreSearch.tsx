@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import type { StoreSearchDto, AccountInfoDto } from "../../../types/store";
-import "../../../styles/components/storeSearch.css";
+import type { StoreSearchDto, AccountInfoDto } from "../../../types/storeDto";
+import "../../../styles/components/search/StoreSearch.css";
 
 interface StoreSearchProps {
 	onSelectStore: (store: StoreSearchDto | AccountInfoDto) => void;

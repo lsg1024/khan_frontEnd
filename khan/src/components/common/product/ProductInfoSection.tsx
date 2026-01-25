@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import type { Product } from "../../types/product";
-import type { ProductStoneDto } from "../../types/stone";
-import { productApi } from "../../../libs/api/product";
-import { AuthImage } from "../../components/common/AuthImage";
-import "../../styles/components/ProductInfoSection.css";
+import type { Product } from "../../../types/productDto";
+import type { ProductStoneDto } from "../../../types/stoneDto";
+import { productApi } from "../../../../libs/api/productApi";
+import { AuthImage } from "../AuthImage";
+import "../../../styles/components/order/ProductInfoSection.css";
 
 interface ProductInfoSectionProps {
 	currentProductDetail: Product | null;

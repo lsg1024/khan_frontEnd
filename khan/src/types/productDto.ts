@@ -1,9 +1,9 @@
-import type { SetTypeDto } from "./setType";
-import type { ClassificationDto } from "./classification";
-import type { MaterialDto } from "./material";
-import type { ProductStoneDto } from "./stone";
-import type { ProductWorkGradePolicyGroupDto } from "./price";
-import type { PageInfo } from "./page";
+import type { SetTypeDto } from "./setTypeDto";
+import type { ClassificationDto } from "./classificationDto";
+import type { MaterialDto } from "./materialDto";
+import type { ProductStoneDto } from "./stoneDto";
+import type { ProductWorkGradePolicyGroupDto } from "./priceDto";
+import type { PageInfo } from "./pageDto";
 
 // 통합된 Product 타입 (편집과 원본 통합)
 export interface ProductData {

@@ -1,5 +1,5 @@
-import type { StockResponse } from "../../../types/stock";
-import "../../../styles/components/StockList.css";
+import type { StockResponse } from "../../../types/stockDto";
+import "../../../styles/components/stock/StockList.css";
 
 interface StockListProps {
 	stocks: StockResponse[];

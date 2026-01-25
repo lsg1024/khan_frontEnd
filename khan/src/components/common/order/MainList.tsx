@@ -1,4 +1,4 @@
-import type { OrderDto } from "../../../types/order";
+import type { OrderDto } from "../../../types/orderDto";
 import { formatToLocalDate } from "../../../utils/dateUtils";
 import { AuthImage } from "../AuthImage";
 

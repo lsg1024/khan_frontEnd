@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { isApiSuccess } from "../../../libs/api/config";
-import { productApi } from "../../../libs/api/product";
+import { productApi } from "../../../libs/api/productApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import { useProductImageUpload } from "../../hooks/useProductImageUpload";
@@ -11,9 +11,9 @@ import type {
 	CreateProductRequest,
 	Product,
 	ProductData,
-} from "../../types/product";
-import type { ProductWorkGradePolicyGroupDto } from "../../types/price";
-import type { ProductStoneDto } from "../../types/stone";
+} from "../../types/productDto";
+import type { ProductWorkGradePolicyGroupDto } from "../../types/priceDto";
+import type { ProductStoneDto } from "../../types/stoneDto";
 import "../../styles/pages/product/ProductDetailPage.css";
 
 const buildCreatePayload = (p: Product): CreateProductRequest => ({

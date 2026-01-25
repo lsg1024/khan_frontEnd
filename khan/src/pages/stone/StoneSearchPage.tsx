@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { stoneApi } from "../../../libs/api/stone";
-import type { StoneSearchDto } from "../../types/stone";
+import { stoneApi } from "../../../libs/api/stoneApi";
+import type { StoneSearchDto } from "../../types/stoneDto";
 import { useErrorHandler } from "../../utils/errorHandler";
 import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/stone/StoneSearchPage.css";

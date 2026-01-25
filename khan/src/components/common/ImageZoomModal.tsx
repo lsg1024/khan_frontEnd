@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import "../../styles/components/ImageZoomModal.css";
+import "../../styles/components/common/ImageZoomModal.css";
 
 interface ImageZoomModalProps {
 	imageUrl: string;

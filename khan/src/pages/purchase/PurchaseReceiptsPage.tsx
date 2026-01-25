@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { factoryApi } from "../../../libs/api/factory";
-import type { FactoryPurchaseDto } from "../../types/factory";
+import { factoryApi } from "../../../libs/api/factoryApi";
+import type { FactoryPurchaseDto } from "../../types/factoryDto";
 import { getLocalDate } from "../../utils/dateUtils";
 import { getGoldTransferWeight } from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";

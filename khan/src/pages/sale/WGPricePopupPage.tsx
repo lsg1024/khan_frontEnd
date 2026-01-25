@@ -1,8 +1,8 @@
 import { useEffect, useState, type JSX } from "react";
 import { useParams } from "react-router-dom";
-import { saleApi } from "../../../libs/api/sale";
+import { saleApi } from "../../../libs/api/saleApi";
 import { useErrorHandler } from "../../utils/errorHandler";
-import "../../styles/pages/wgPricePopup.css";
+import "../../styles/pages/settings/WGPricePopup.css";
 
 export default function WGPricePopupPage(): JSX.Element {
 	const { saleCode, goldPrice } = useParams<{

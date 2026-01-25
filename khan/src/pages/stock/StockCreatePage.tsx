@@ -1,33 +1,36 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { orderApi } from "../../../libs/api/order";
-import { stockApi } from "../../../libs/api/stock";
-import { materialApi } from "../../../libs/api/material";
-import { colorApi } from "../../../libs/api/color";
-import { goldHarryApi } from "../../../libs/api/goldHarry";
-import { assistantStoneApi } from "../../../libs/api/assistantStone";
-import { productApi } from "../../../libs/api/product";
+import { orderApi } from "../../../libs/api/orderApi";
+import { stockApi } from "../../../libs/api/stockApi";
+import { materialApi } from "../../../libs/api/materialApi";
+import { colorApi } from "../../../libs/api/colorApi";
+import { goldHarryApi } from "../../../libs/api/goldHarryApi";
+import { assistantStoneApi } from "../../../libs/api/assistantStoneApi";
+import { productApi } from "../../../libs/api/productApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { useSearchModal } from "../../hooks/useSearchModal";
 import { usePreviousRowCopy } from "../../hooks/usePreviousRowCopy";
+import { useStoneInfoManager } from "../../hooks/useStoneInfoManager";
+import { useToast } from "../../components/common/toast/Toast";
 import { getLocalDate } from "../../utils/dateUtils";
-import type { PastOrderDto } from "../../types/order";
-import type { Product, ProductDto } from "../../types/product";
-import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto, AccountInfoDto } from "../../types/store";
-import type { StockOrderRows, StockCreateRequest } from "../../types/stock";
+import type { PastOrderDto } from "../../types/orderDto";
+import type { Product, ProductDto } from "../../types/productDto";
+import type { FactorySearchDto } from "../../types/factoryDto";
+import type { StoreSearchDto, AccountInfoDto } from "../../types/storeDto";
+import type { StockOrderRows, StockCreateRequest } from "../../types/stockDto";
 import StockTable from "../../components/common/stock/StockTable";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
-import PastOrderHistory from "../../components/common/PastOrderHistory";
-import ProductInfoSection from "../../components/common/ProductInfoSection";
+import PastOrderHistory from "../../components/common/order/PastOrderHistory";
+import ProductInfoSection from "../../components/common/product/ProductInfoSection";
 import { calculateStoneDetails } from "../../utils/calculateStone";
+import { transformProductStones } from "../../utils/productTransformations";
 import { handleApiSubmit } from "../../utils/apiSubmitHandler";
-import type { MaterialDto } from "../../types/material";
-import type { ColorDto } from "../../types/color";
+import type { MaterialDto } from "../../types/materialDto";
+import type { ColorDto } from "../../types/colorDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
-import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarry";
+import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarryDto";
 import "../../styles/pages/stock/StockCreatePage.css";
 
 type UpdateMode = "normal" | "return" | "expact";
@@ -40,6 +43,7 @@ const MODE_TO_STATUS = {
 
 export const StockCreatePage = () => {
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 	const { mode } = useParams<{
 		mode: UpdateMode;
 	}>();
@@ -160,6 +164,14 @@ export const StockCreatePage = () => {
 		updateStockRow
 	);
 
+	// 스톤 정보 관리 - 커스텀 훅 사용
+	const { openStoneInfoManager } = useStoneInfoManager({
+		rows: stockRows,
+		updateRow: updateStockRow,
+		urlType: "stock",
+		stoneWeightAsString: true,
+	});
+
 	// 상품 상세 정보 가져오기
 	const fetchProductDetail = async (
 		productId: string
@@ -199,43 +211,43 @@ export const StockCreatePage = () => {
 		currentStep: "product" | "material" | "other" | "color"
 	): boolean => {
 		if (currentStep === "product" && !checkStoreSelected(rowId)) {
-			alert("거래처를 먼저 선택해주세요.");
+			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
 			openStoreSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "material" && !checkStoreSelected(rowId)) {
-			alert("거래처를 먼저 선택해주세요.");
+			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
 			openStoreSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "material" && !checkProductSelected(rowId)) {
-			alert("모델번호를 먼저 선택해주세요.");
+			showToast("모델번호를 먼저 선택해주세요.", "warning", 3000);
 			openProductSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "color" && !checkStoreSelected(rowId)) {
-			alert("거래처를 먼저 선택해주세요.");
+			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
 			openStoreSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "other" && !checkStoreSelected(rowId)) {
-			alert("거래처를 먼저 선택해주세요.");
+			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
 			openStoreSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "other" && !checkProductSelected(rowId)) {
-			alert("모델번호를 먼저 선택해주세요.");
+			showToast("모델번호를 먼저 선택해주세요.", "warning", 3000);
 			openProductSearch(rowId);
 			return false;
 		}
 
 		if (currentStep === "other" && !checkMaterialSelected(rowId)) {
-			alert("재질을 먼저 선택해주세요.");
+			showToast("재질을 먼저 선택해주세요.", "warning", 3000);
 			const materialSelect = document.querySelector(
 				`[data-row-id="${rowId}"][data-field="material"]`
 			) as HTMLSelectElement;
@@ -333,28 +345,9 @@ export const StockCreatePage = () => {
 			updateStockRow(rowId, "productLaborCost", productLaborCost);
 
 			// 스톤 정보 변환 및 업데이트
-			const transformedStoneInfos = productDetail.productStoneDtos.map(
-				(stone) => {
-					const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
-						(policy) => policy.grade === policyGrade
-					);
-
-					const laborCost = matchingPolicy
-						? matchingPolicy.laborCost
-						: stone.stoneWorkGradePolicyDtos[0]?.laborCost || 0;
-
-					return {
-						stoneId: stone.stoneId,
-						stoneName: stone.stoneName,
-						stoneWeight: stone.stoneWeight,
-						purchaseCost: stone.stonePurchase,
-						laborCost: laborCost,
-						quantity: stone.stoneQuantity,
-						mainStone: stone.mainStone,
-						includeStone: stone.includeStone,
-						addLaborCost: 0,
-					};
-				}
+			const transformedStoneInfos = transformProductStones(
+				productDetail.productStoneDtos,
+				policyGrade
 			);
 
 			updateStockRow(rowId, "stoneInfos", transformedStoneInfos);
@@ -573,28 +566,9 @@ export const StockCreatePage = () => {
 				const storeGrade = currentRow?.grade || "1";
 				const policyGrade = `GRADE_${storeGrade}`;
 
-				const transformedStoneInfos = currentProductDetail.productStoneDtos.map(
-					(stone) => {
-						const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
-							(policy) => policy.grade === policyGrade
-						);
-
-						const laborCost = matchingPolicy
-							? matchingPolicy.laborCost
-							: stone.stoneWorkGradePolicyDtos[0]?.laborCost || 0;
-
-						return {
-							stoneId: stone.stoneId,
-							stoneName: stone.stoneName,
-							stoneWeight: stone.stoneWeight,
-							purchaseCost: stone.stonePurchase,
-							laborCost: laborCost,
-							quantity: stone.stoneQuantity,
-							mainStone: stone.mainStone,
-							includeStone: stone.includeStone,
-							addLaborCost: 0,
-						};
-					}
+				const transformedStoneInfos = transformProductStones(
+					currentProductDetail.productStoneDtos,
+					policyGrade
 				);
 
 				updateStockRow(
@@ -734,86 +708,6 @@ export const StockCreatePage = () => {
 		} else {
 			updateStockRow(id, "assistantStone", false);
 			updateStockRow(id, "assistantStoneCreateAt", "");
-		}
-	};
-
-	// 스톤 정보 관리 모달 열기
-	const openStoneInfoManager = (rowId: string) => {
-		const url = `/stock/stone-info?rowId=${rowId}&origin=${window.location.origin}`;
-		const NAME = `stoneInfo_${rowId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=500";
-
-		const popup = window.open(url, NAME, FEATURES);
-		if (popup) {
-			popup.focus();
-			const handleMessage = (event: MessageEvent) => {
-				if (
-					event.data.type === "REQUEST_STONE_INFO" &&
-					event.data.rowId === rowId
-				) {
-					const row = stockRows.find((r) => r.id === rowId);
-					popup.postMessage(
-						{
-							type: "STONE_INFO_DATA",
-							stoneInfos: row?.stoneInfos || [],
-						},
-						window.location.origin
-					);
-				} else if (
-					event.data.type === "STONE_INFO_SAVE" &&
-					event.data.rowId === rowId
-				) {
-					updateStockRow(rowId, "stoneInfos", event.data.stoneInfos);
-
-					const calculatedStoneData = calculateStoneDetails(
-						event.data.stoneInfos
-					);
-					updateStockRow(
-						rowId,
-						"mainStonePrice",
-						calculatedStoneData.mainStonePrice
-					);
-					updateStockRow(
-						rowId,
-						"assistanceStonePrice",
-						calculatedStoneData.assistanceStonePrice
-					);
-					updateStockRow(
-						rowId,
-						"stoneAddLaborCost",
-						calculatedStoneData.stoneAddLaborCost
-					);
-					updateStockRow(
-						rowId,
-						"mainStoneCount",
-						calculatedStoneData.mainStoneCount
-					);
-					updateStockRow(
-						rowId,
-						"assistanceStoneCount",
-						calculatedStoneData.assistanceStoneCount
-					);
-					updateStockRow(
-						rowId,
-						"stoneWeightTotal",
-						calculatedStoneData.stoneWeight
-					);
-					updateStockRow(
-						rowId,
-						"stoneWeight",
-						calculatedStoneData.stoneWeight.toString()
-					);
-				}
-			};
-
-			window.addEventListener("message", handleMessage);
-
-			const checkClosed = setInterval(() => {
-				if (popup.closed) {
-					window.removeEventListener("message", handleMessage);
-					clearInterval(checkClosed);
-				}
-			}, 1000);
 		}
 	};
 
@@ -1012,8 +906,10 @@ export const StockCreatePage = () => {
 		);
 
 		if (validRows.length === 0) {
-			alert(
-				"주문할 상품을 추가해주세요. (거래처, 모델번호, 재질, 색상은 필수입니다)"
+			showToast(
+				"주문할 상품을 추가해주세요. (거래처, 모델번호, 재질, 색상은 필수입니다)",
+				"error",
+				4000
 			);
 			return;
 		}

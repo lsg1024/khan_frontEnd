@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { productApi } from "../../libs/api/product";
+import { productApi } from "../../libs/api/productApi";
 import { isApiSuccess } from "../../libs/api/config";
 
 interface UseProductImageUploadProps {

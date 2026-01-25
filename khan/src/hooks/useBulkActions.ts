@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
-import { orderApi } from "../../libs/api/order";
+import { orderApi } from "../../libs/api/orderApi";
 import { useErrorHandler } from "../utils/errorHandler";
-import type { OrderDto } from "../types/order";
+import type { OrderDto } from "../types/orderDto";
 import type { SearchFilters } from "../components/common/order/OrderSearch";
 
 interface UseBulkActionsProps {

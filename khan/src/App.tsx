@@ -65,7 +65,7 @@ import "./App.css";
 import "./styles/index.css";
 import { tokenUtils } from "./utils/tokenUtils";
 import { qzTrayService } from "./service/qzTrayService";
-import { ToastProvider } from "./components/common/Toast/Toast";
+import { ToastProvider } from "./components/common/toast/Toast";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(() => {

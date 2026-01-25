@@ -76,15 +76,6 @@
 	animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
 /* 거래명세서 컨테이너 */
 .invoice-container {
 	width: 525px !important; /* 명세서 1장당 고정 넓이 */

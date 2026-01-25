@@ -1,5 +1,5 @@
-import type { SaleCreateRow } from "../../../types/sale";
-import { isSaleStatus } from "../../../types/sale";
+import type { SaleCreateRow } from "../../../types/saleDto";
+import { isSaleStatus } from "../../../types/saleDto";
 import type { AssistantStoneDto } from "../../../types/AssistantStoneDto";
 import "../../../styles/components/sale/SaleTable.css";
 

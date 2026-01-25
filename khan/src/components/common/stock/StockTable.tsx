@@ -1,9 +1,9 @@
 import React from "react";
-import type { MaterialDto } from "../../../types/material";
-import type { ColorDto } from "../../../types/color";
+import type { MaterialDto } from "../../../types/materialDto";
+import type { ColorDto } from "../../../types/colorDto";
 import type { AssistantStoneDto } from "../../../types/AssistantStoneDto";
-import type { goldHarryResponse as goldHarryDto } from "../../../types/goldHarry";
-import type { StockOrderRows } from "../../../types/stock";
+import type { goldHarryResponse as goldHarryDto } from "../../../types/goldHarryDto";
+import type { StockOrderRows } from "../../../types/stockDto";
 import "../../../styles/components/stock/StockTable.css";
 
 interface BaseStockTableProps {

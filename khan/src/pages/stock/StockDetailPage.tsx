@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { stockApi } from "../../../libs/api/stock";
-import { materialApi } from "../../../libs/api/material";
-import { colorApi } from "../../../libs/api/color";
-import { assistantStoneApi } from "../../../libs/api/assistantStone";
-import { goldHarryApi } from "../../../libs/api/goldHarry";
+import { stockApi } from "../../../libs/api/stockApi";
+import { materialApi } from "../../../libs/api/materialApi";
+import { colorApi } from "../../../libs/api/colorApi";
+import { assistantStoneApi } from "../../../libs/api/assistantStoneApi";
+import { goldHarryApi } from "../../../libs/api/goldHarryApi";
 import { useErrorHandler } from "../../utils/errorHandler";
-import type { StockOrderRows } from "../../types/stock";
-import type { MaterialDto } from "../../types/material";
-import type { ColorDto } from "../../types/color";
+import type { StockOrderRows } from "../../types/stockDto";
+import type { MaterialDto } from "../../types/materialDto";
+import type { ColorDto } from "../../types/colorDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
-import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarry";
+import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarryDto";
 import StockTable from "../../components/common/stock/StockTable";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 

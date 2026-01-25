@@ -57,15 +57,6 @@
 	margin-bottom: 16px;
 }
 
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
 /* 스톤 테이블 스타일 - 기존 StonesList와 동일 */
 .stones-list {
 	margin-bottom: 20px;

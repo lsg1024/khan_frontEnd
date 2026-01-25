@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { goldHarryApi } from "../../../libs/api/goldHarry";
+import { goldHarryApi } from "../../../libs/api/goldHarryApi";
 import { isApiSuccess } from "../../../libs/api/config";
-import type { goldHarryResponse } from "../../types/goldHarry";
-import "../../styles/components/BulkActionBar.css";
+import type { goldHarryResponse } from "../../types/goldHarryDto";
+import "../../styles/components/common/BulkActionBar.css";
 
 interface BulkActionBarProps {
 	selectedCount: number;

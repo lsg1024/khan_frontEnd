@@ -1,7 +1,7 @@
 import { useEffect, useState, type JSX } from "react";
-import { userApi } from "../../../libs/api/user";
+import { userApi } from "../../../libs/api/userApi";
 import type { UserInfo } from "../../types/userDto";
-import "../../styles/pages/userManagementPopup.css";
+import "../../styles/pages/settings/UserManagementPopup.css";
 import { useErrorHandler } from "../../utils/errorHandler";
 
 export default function UserManagementPopupPage(): JSX.Element {

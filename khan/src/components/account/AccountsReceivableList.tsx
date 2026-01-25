@@ -1,5 +1,5 @@
-import type { AccountInfoDto } from "../../../types/store";
-import "../../../styles/components/sale/AccountsReceivableList.css";
+import type { AccountInfoDto } from "../../types/storeDto";
+import "../../styles/components/account/AccountsReceivableList.css";
 
 interface AccountsReceivableListProps {
 	stores: AccountInfoDto[];

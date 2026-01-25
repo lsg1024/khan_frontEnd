@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { productApi } from "../../../libs/api/product";
+import { productApi } from "../../../libs/api/productApi";
 import { isApiSuccess } from "../../../libs/api/config";
 import { calculatePureGoldWeight } from "../../utils/goldUtils";
-import type { ProductDto } from "../../types/product";
+import type { ProductDto } from "../../types/productDto";
 import Pagination from "../../components/common/Pagination";
-import "../../styles/pages/ProductSearchPage.css";
+import "../../styles/pages/product/ProductSearchPage.css";
 
 const ProductSearchPage: React.FC = () => {
 	const [products, setProducts] = useState<ProductDto[]>([]);

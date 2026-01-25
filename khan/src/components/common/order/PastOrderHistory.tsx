@@ -1,5 +1,5 @@
-import type { PastOrderDto } from "../../types/order";
-import "../../styles/components/PastOrderHistory.css";
+import type { PastOrderDto } from "../../../types/orderDto";
+import "../../../styles/components/order/PastOrderHistory.css";
 
 interface PastOrderHistoryProps {
 	pastOrders: PastOrderDto[];

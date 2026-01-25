@@ -1,19 +1,11 @@
 /* ===== 메인 스타일 진입점 ===== */
 
-/* 1. 변수 및 전역 설정 */
-@import "./variables.css";
-@import "./global.css";
+/* 1. 변수 및 전역 설정 (base/) */
+@import "./base/variables.css";
+@import "./base/global.css";
 
-/* 2. 유틸리티 클래스 */
+/* 2. 공통 유틸리티 (utils/) */
 @import "./utils/utilities.css";
-
-/* 3. 공통 컴포넌트 */
-@import "../styles/common.css";
-@import "../styles/layout.css";
-@import "../styles/pagination.css";
-
-/* 4. 페이지별 스타일 (필요시 개별 페이지에서 import) */
-/* @import './pages/LoginPage.css'; */
-/* @import './pages/JoinPage.css'; */
-/* @import './pages/CataLogPage.css'; */
-/* @import './pages/HomePage.css'; */
+@import "./utils/common.css";
+@import "./utils/layout.css";
+@import "./utils/pagination.css";

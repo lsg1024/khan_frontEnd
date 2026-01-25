@@ -1,43 +1,43 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { orderApi } from "../../../libs/api/order";
-import { materialApi } from "../../../libs/api/material";
-import { colorApi } from "../../../libs/api/color";
-import { storeApi } from "../../../libs/api/store";
-import { priorityApi } from "../../../libs/api/priority";
-import { assistantStoneApi } from "../../../libs/api/assistantStone";
+import { orderApi } from "../../../libs/api/orderApi";
+import { materialApi } from "../../../libs/api/materialApi";
+import { colorApi } from "../../../libs/api/colorApi";
+import { storeApi } from "../../../libs/api/storeApi";
+import { priorityApi } from "../../../libs/api/priorityApi";
+import { assistantStoneApi } from "../../../libs/api/assistantStoneApi";
 import { isApiSuccess } from "../../../libs/api/config";
-import { productApi } from "../../../libs/api/product";
+import { productApi } from "../../../libs/api/productApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { useSearchModal } from "../../hooks/useSearchModal";
 import { useStoneInfoManager } from "../../hooks/useStoneInfoManager";
-import { useToast } from "../../components/common/Toast/Toast";
+import { useToast } from "../../components/common/toast/Toast";
 import {
 	addBusinessDays,
 	formatDateToString,
 	getLocalDate,
 	formatToLocalDate,
 } from "../../utils/dateUtils";
-import type { MaterialDto } from "../../types/material";
-import type { ColorDto } from "../../types/color";
+import type { MaterialDto } from "../../types/materialDto";
+import type { ColorDto } from "../../types/colorDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
-import type { Product } from "../../types/product";
+import type { Product } from "../../types/productDto";
 import type {
 	OrderRowData,
 	OrderResponseDetail,
 	OrderRequestDetail,
-} from "../../types/order";
+} from "../../types/orderDto";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import OrderTable from "../../components/common/order/OrderTable";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
-import ProductInfoSection from "../../components/common/ProductInfoSection";
-import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto, AccountInfoDto } from "../../types/store";
-import type { ProductDto } from "../../types/product";
-import "../../styles/pages/OrderCreatePage.css";
+import ProductInfoSection from "../../components/common/product/ProductInfoSection";
+import type { FactorySearchDto } from "../../types/factoryDto";
+import type { StoreSearchDto, AccountInfoDto } from "../../types/storeDto";
+import type { ProductDto } from "../../types/productDto";
+import "../../styles/pages/order/OrderCreatePage.css";
 
 type UpdateMode = "order" | "fix" | "expact";
 
@@ -669,7 +669,6 @@ const OrderUpdatePage: React.FC = () => {
 			}
 		} catch (err) {
 			handleError(err);
-			alert("주문 업데이트에 실패했습니다.");
 		} finally {
 			setLoading(false);
 		}

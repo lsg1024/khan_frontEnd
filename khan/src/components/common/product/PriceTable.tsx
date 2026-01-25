@@ -3,10 +3,10 @@ import type {
 	PriceTableProps,
 	GradePolicyDto,
 	ProductWorkGradePolicyGroupDto,
-} from "../../../types/price";
-import type { ColorDto } from "../../../types/color";
-import { colorApi } from "../../../../libs/api/color";
-import "../../../styles/components/PriceTable.css";
+} from "../../../types/priceDto";
+import type { ColorDto } from "../../../types/colorDto";
+import { colorApi } from "../../../../libs/api/colorApi";
+import "../../../styles/components/common/PriceTable.css";
 
 const GRADE_ORDER: GradePolicyDto["grade"][] = [
 	"GRADE_1",

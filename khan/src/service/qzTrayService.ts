@@ -1,4 +1,4 @@
-import { qzApi } from "../../libs/api/qz";
+import { qzApi } from "../../libs/api/qzApi";
 import type { ApiResponse } from "../../libs/api/config";
 
 const publicKey = `-----BEGIN CERTIFICATE-----

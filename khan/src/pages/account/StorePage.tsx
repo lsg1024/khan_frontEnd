@@ -1,12 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { storeApi } from "../../../libs/api/store";
+import { storeApi } from "../../../libs/api/storeApi";
 import { isApiSuccess } from "../../../libs/api/config";
-import type { StoreSearchDto } from "../../types/store";
+import type { StoreSearchDto } from "../../types/storeDto";
 import { useErrorHandler } from "../../utils/errorHandler";
+import {
+	openAccountCreatePopup,
+	openAccountDetailPopup,
+} from "../../utils/popupUtils";
 import Pagination from "../../components/common/Pagination";
-import AccountTable from "../../components/common/AccountTable";
-import AccountBulkActionBar from "../../components/common/AccountBulkActionBar";
-import AccountSearchBar from "../../components/common/AccountSearchBar";
+import AccountTable from "../../components/account/AccountTable";
+import AccountBulkActionBar from "../../components/account/AccountBulkActionBar";
+import AccountSearchBar from "../../components/account/AccountSearchBar";
 import "../../styles/pages/account/StorePage.css";
 
 export const StorePage = () => {
@@ -75,7 +79,8 @@ export const StorePage = () => {
 				event.data.type === "ACCOUNT_UPDATED"
 			) {
 				if (event.data.accountType === "store") {
-					loadStores(searchName, currentPage);
+					// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
+					setTimeout(() => loadStores(searchName, currentPage), 500);
 				}
 			}
 		};
@@ -106,15 +111,12 @@ export const StorePage = () => {
 	};
 
 	const handleDetailClick = (id: number) => {
-		const url = `/accounts/detail/${id}?type=store`;
-		const NAME = `account_detail_${id}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=800";
 		const existingPopup = accountDetailPopups.current.get(id);
 
 		if (existingPopup && !existingPopup.closed) {
 			existingPopup.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openAccountDetailPopup("store", String(id));
 			if (newPopup) {
 				accountDetailPopups.current.set(id, newPopup);
 
@@ -133,14 +135,10 @@ export const StorePage = () => {
 
 	// 생성 페이지 팝업으로 열기
 	const handleCreate = () => {
-		const url = "/accounts/detail?type=store";
-		const NAME = "account_create_store";
-		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=800";
-
 		if (accountCreatePopup.current && !accountCreatePopup.current.closed) {
 			accountCreatePopup.current.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openAccountCreatePopup("store");
 			if (newPopup) {
 				accountCreatePopup.current = newPopup;
 

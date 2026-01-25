@@ -1,12 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { factoryApi } from "../../../libs/api/factory";
+import { factoryApi } from "../../../libs/api/factoryApi";
 import { isApiSuccess } from "../../../libs/api/config";
-import type { FactorySearchDto } from "../../types/factory";
+import type { FactorySearchDto } from "../../types/factoryDto";
 import { useErrorHandler } from "../../utils/errorHandler";
+import {
+	openAccountCreatePopup,
+	openAccountDetailPopup,
+} from "../../utils/popupUtils";
 import Pagination from "../../components/common/Pagination";
-import AccountTable from "../../components/common/AccountTable";
-import AccountBulkActionBar from "../../components/common/AccountBulkActionBar";
-import AccountSearchBar from "../../components/common/AccountSearchBar";
+import AccountTable from "../../components/account/AccountTable";
+import AccountBulkActionBar from "../../components/account/AccountBulkActionBar";
+import AccountSearchBar from "../../components/account/AccountSearchBar";
 import "../../styles/pages/account/FactoryPage.css";
 
 export const FactoryPage = () => {
@@ -79,7 +83,8 @@ export const FactoryPage = () => {
 				event.data.type === "ACCOUNT_UPDATED"
 			) {
 				if (event.data.accountType === "factory") {
-					loadFactories(searchName, currentPage);
+					// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
+					setTimeout(() => loadFactories(searchName, currentPage), 500);
 				}
 			}
 		};
@@ -105,14 +110,10 @@ export const FactoryPage = () => {
 
 	// 생성 페이지 팝업으로 열기
 	const handleCreate = () => {
-		const url = "/accounts/detail?type=factory";
-		const NAME = "account_create_factory";
-		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=800";
-
 		if (accountCreatePopup.current && !accountCreatePopup.current.closed) {
 			accountCreatePopup.current.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openAccountCreatePopup("factory");
 			if (newPopup) {
 				accountCreatePopup.current = newPopup;
 
@@ -224,15 +225,12 @@ export const FactoryPage = () => {
 
 	// 상세 페이지 팝업으로 열기
 	const handleDetailClick = (id: number) => {
-		const url = `/accounts/detail/${id}?type=factory`;
-		const NAME = `account_detail_${id}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=800,height=800";
 		const existingPopup = accountDetailPopups.current.get(id);
 
 		if (existingPopup && !existingPopup.closed) {
 			existingPopup.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openAccountDetailPopup("factory", String(id));
 			if (newPopup) {
 				accountDetailPopups.current.set(id, newPopup);
 

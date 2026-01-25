@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import type { ProductInfo } from "../../types/stone";
+import type { ProductInfo } from "../../types/stoneDto";
 import { AuthImage } from "../../components/common/AuthImage";
+import { openProductDetailPopup } from "../../utils/popupUtils";
 import "../../styles/pages/stone/StoneProductsPage.css";
 
 export const StoneProductsPage = () => {
@@ -27,14 +28,7 @@ export const StoneProductsPage = () => {
 
 	// 상품 상세 페이지 열기
 	const handleProductClick = (productId: number) => {
-		const url = `/catalog/detail/${productId}`;
-		const NAME = `product_detail_${productId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-
-		const popup = window.open(url, NAME, FEATURES);
-		if (!popup) {
-			alert("팝업 차단을 해제해주세요.");
-		}
+		openProductDetailPopup(String(productId));
 	};
 
 	if (loading) {

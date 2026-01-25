@@ -1,5 +1,5 @@
-import type { StoneShapeDto } from "../../../types/stoneShape";
-import type { StoneTypeDto } from "../../../types/stoneType";
+import type { StoneShapeDto } from "../../../types/stoneShapeDto";
+import type { StoneTypeDto } from "../../../types/stoneTypeDto";
 import "../../../styles/components/stone/StoneSearchBar.css";
 
 export interface StoneSearchFilters {

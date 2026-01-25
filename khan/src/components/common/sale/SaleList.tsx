@@ -1,4 +1,4 @@
-import type { SaleRow } from "../../../types/sale";
+import type { SaleRow } from "../../../types/saleDto";
 import "../../../styles/components/sale/SaleList.css";
 
 interface SaleListProps {

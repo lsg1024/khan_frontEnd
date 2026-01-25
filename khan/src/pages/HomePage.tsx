@@ -6,7 +6,7 @@ import {startOfWeek} from "date-fns/startOfWeek";
 import { getDay } from "date-fns";
 import {ko} from "date-fns/locale/ko"; 
 import "react-big-calendar/lib/css/react-big-calendar.css"; 
-import "../../src/styles/pages/HomePage.css";
+import "../../src/styles/pages/home/HomePage.css";
 
 const locales = {
     "ko": ko,

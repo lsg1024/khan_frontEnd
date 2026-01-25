@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
-import { storeApi } from "../../../libs/api/store";
+import { storeApi } from "../../../libs/api/storeApi";
 import type {
 	StoreSearchDto,
 	StoreSearchResponse,
 	StoreReceivableResponse,
 	AccountInfoDto,
-} from "../../types/store";
+} from "../../types/storeDto";
 import StoreList from "../../components/common/store/StoreList";
 import Pagination from "../../components/common/Pagination";
-import "../../styles/pages/StoreSearchPage.css";
+import "../../styles/pages/account/StoreSearchPage.css";
 
 const StoreSearchPage: React.FC = () => {
 	const [searchParams] = useSearchParams();

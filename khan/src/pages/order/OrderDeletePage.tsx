@@ -3,11 +3,12 @@ import Pagination from "../../components/common/Pagination";
 import OrderSearch from "../../components/common/order/OrderSearch";
 import type { SearchFilters } from "../../components/common/order/OrderSearch";
 import { useErrorHandler } from "../../utils/errorHandler";
-import { orderApi } from "../../../libs/api/order";
-import type { OrderDto } from "../../types/order";
+import { orderApi } from "../../../libs/api/orderApi";
+import type { OrderDto } from "../../types/orderDto";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
-import "../../styles/pages/OrderPage.css";
+import { openProductDetailPopup } from "../../utils/popupUtils";
+import "../../styles/pages/order/OrderPage.css";
 
 export const OrderDeletedPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -250,12 +251,7 @@ export const OrderDeletedPage = () => {
 						onSelect={handleSelectDeleted}
 						onStatusChange={handleStatusChange}
 						onFactoryClick={handleFactoryClick}
-						onImageClick={(productId) => {
-							const url = `/catalog/detail/${productId}`;
-							const features =
-								"width=1400,height=900,resizable=yes,scrollbars=yes";
-							window.open(url, "product_detail", features);
-						}}
+						onImageClick={(productId) => openProductDetailPopup(productId)}
 					/>{" "}
 					{/* 페이지네이션 */}
 					<Pagination

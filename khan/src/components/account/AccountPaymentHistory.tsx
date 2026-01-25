@@ -1,5 +1,5 @@
-import type { GoldHistoryData } from "../../../types/sale";
-import "../../../styles/components/sale/AccountBalanceHistory.css";
+import type { GoldHistoryData } from "../../types/saleDto";
+import "../../styles/components/account/AccountBalanceHistory.css";
 
 interface GoldHistoryProps {
 	history: GoldHistoryData;

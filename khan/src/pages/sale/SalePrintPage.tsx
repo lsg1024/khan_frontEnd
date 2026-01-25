@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
-import { saleApi } from "../../../libs/api/sale";
-import type { SalePrintResponse, SaleItem } from "../../types/sale";
+import { saleApi } from "../../../libs/api/saleApi";
+import type { SalePrintResponse, SaleItem } from "../../types/saleDto";
 import { useErrorHandler } from "../../utils/errorHandler";
 import {
 	calculatePureGoldWeightWithHarry,

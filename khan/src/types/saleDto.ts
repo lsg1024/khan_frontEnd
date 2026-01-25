@@ -1,5 +1,5 @@
-import type { PageInfo } from "./page";
-import type { StoneInfo } from "./stone";
+import type { PageInfo } from "./pageDto";
+import type { StoneInfo } from "./stoneDto";
 
 // 구분 타입 정의
 export type SaleStatusType = "판매" | "결제" | "DC" | "WG" | "결통" | "반품";

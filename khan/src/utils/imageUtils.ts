@@ -3,7 +3,7 @@
  */
 
 import { tokenUtils } from "./tokenUtils";
-import { productApi } from "../../libs/api/product";
+import { productApi } from "../../libs/api/productApi";
 import { useState, useEffect } from "react";
 
 /**

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { tokenUtils } from "../../utils/tokenUtils";
-import { authApi } from "../../../libs/api/auth";
+import { authApi } from "../../../libs/api/authApi";
 import { extractSubdomain } from "../../../libs/domain";
 
 interface TopBarProps {

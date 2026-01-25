@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { stoneApi } from "../../../libs/api/stone";
-import type { StoneInfo } from "../../types/stone";
-import type { StoneSearchDto } from "../../types/stone";
+import { stoneApi } from "../../../libs/api/stoneApi";
+import type { StoneInfo } from "../../types/stoneDto";
+import type { StoneSearchDto } from "../../types/stoneDto";
 import StoneSearch from "../../components/common/stone/StoneSearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import "../../styles/pages/stone/StoneInfoPage.css";

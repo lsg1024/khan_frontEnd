@@ -1,18 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
-import { classificationApi } from "../../../libs/api/classification";
-import { productApi } from "../../../libs/api/product";
-import { setTypeApi } from "../../../libs/api/setType";
-import { factoryApi } from "../../../libs/api/factory";
+import { classificationApi } from "../../../libs/api/classificationApi";
+import { productApi } from "../../../libs/api/productApi";
+import { setTypeApi } from "../../../libs/api/setTypeApi";
+import { factoryApi } from "../../../libs/api/factoryApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import {
 	calculatePureGoldWeightWithHarry,
 	getGoldDonFromWeight,
 } from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";
-import type { ProductDto } from "../../types/product";
-import type { SetTypeDto } from "../../types/setType";
-import type { ClassificationDto } from "../../types/classification";
-import type { FactorySearchDto } from "../../types/factory";
+import type { ProductDto } from "../../types/productDto";
+import type { SetTypeDto } from "../../types/setTypeDto";
+import type { ClassificationDto } from "../../types/classificationDto";
+import type { FactorySearchDto } from "../../types/factoryDto";
+import {
+	openProductDetailPopup,
+	openProductCreatePopup,
+	openProductEditPopup,
+} from "../../utils/popupUtils";
 import "../../styles/pages/product/CataLogPage.css";
 
 function CataLogPage() {
@@ -73,16 +78,12 @@ function CataLogPage() {
 
 	// 상품 상세보기 팝업 열기
 	const handleProductDetailOpen = (productId: string) => {
-		const url = `/catalog/detail/${productId}`;
-		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
-		window.open(url, "product_detail", features);
+		openProductDetailPopup(productId);
 	};
 
 	// 상품 생성 팝업 열기
 	const handleProductCreateOpen = () => {
-		const url = `/catalog/create`;
-		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
-		window.open(url, "product_create", features);
+		openProductCreatePopup();
 	};
 
 	// 체크박스 클릭 핸들러
@@ -130,9 +131,7 @@ function CataLogPage() {
 			alert("수정할 상품을 선택해주세요.");
 			return;
 		}
-		const url = `/catalog/edit/${selectedProductId}`;
-		const features = "width=1400,height=900,resizable=yes,scrollbars=yes";
-		window.open(url, "product_edit", features);
+		openProductEditPopup(selectedProductId);
 	};
 
 	// 이미지 로드 함수
@@ -255,8 +254,11 @@ function CataLogPage() {
 		const handleMessage = (event: MessageEvent) => {
 			if (event.origin !== window.location.origin) return;
 
+			// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
 			if (event.data?.type === "PRODUCT_CREATED") {
-				loadProducts(searchFilters, currentPage, sortOptions);
+				setTimeout(() => {
+					loadProducts(searchFilters, currentPage, sortOptions);
+				}, 500);
 			}
 		};
 

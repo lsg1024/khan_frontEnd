@@ -5,8 +5,8 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import StoneTable from "../../components/common/stone/StoneTable";
 import PriceTable from "../../components/common/product/PriceTable";
 import ProductInfo from "../../components/common/product/BasicInfo";
-import { productApi } from "../../../libs/api/product";
-import type { Product } from "../../types/product";
+import { productApi } from "../../../libs/api/productApi";
+import type { Product } from "../../types/productDto";
 import "../../styles/pages/product/ProductDetailPage.css";
 
 function ProductDetailPage() {

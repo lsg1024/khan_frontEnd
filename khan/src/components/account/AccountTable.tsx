@@ -1,6 +1,6 @@
 import React from "react";
-import type { StoreSearchDto } from "../../types/store";
-import type { FactorySearchDto } from "../../types/factory";
+import type { StoreSearchDto } from "../../types/storeDto";
+import type { FactorySearchDto } from "../../types/factoryDto";
 
 interface Column {
 	key: string;

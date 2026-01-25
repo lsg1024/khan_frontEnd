@@ -3,9 +3,9 @@ import type {
   StoneTableProps,
   ProductStoneDto,
   StoneSearchDto,
-} from "../../../types/stone";
+} from "../../../types/stoneDto";
 import StoneSearch from "./StoneSearch";
-import "../../../styles/components/StoneTable.css";
+import "../../../styles/components/stone/StoneTable.css";
 
 const StoneTable: React.FC<StoneTableProps> = ({
   stones,

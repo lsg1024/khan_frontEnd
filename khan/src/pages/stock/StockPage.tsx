@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { orderApi } from "../../../libs/api/order";
-import { stockApi } from "../../../libs/api/stock";
+import { orderApi } from "../../../libs/api/orderApi";
+import { stockApi } from "../../../libs/api/stockApi";
 import { getLocalDate } from "../../utils/dateUtils";
-import type { StockResponse } from "../../types/stock";
+import type { StockResponse } from "../../types/stockDto";
 import StockSearch from "../../components/common/stock/StockSearch";
 import StockList from "../../components/common/stock/StockList";
 import Pagination from "../../components/common/Pagination";
@@ -15,6 +15,10 @@ import {
 	type ProductBarcodeData,
 } from "../../service/barcodePrintService";
 import { useTenant } from "../../tenant/UserTenant";
+import {
+	openStockCreatePopup,
+	openStockUpdatePopup,
+} from "../../utils/popupUtils";
 
 export const StockPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -77,15 +81,12 @@ export const StockPage = () => {
 
 	// No 클릭 시 수정 페이지 열기 (단일 선택)
 	const handleStockNoClick = (flowCode: string) => {
-		const url = `/stocks/update/${flowCode}`;
-		const NAME = `stock_update_${flowCode}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=350";
 		const existingPopup = stockUpdatePopups.current.get(flowCode);
 
 		if (existingPopup && !existingPopup.closed) {
 			existingPopup.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openStockUpdatePopup(flowCode);
 			if (newPopup) {
 				stockUpdatePopups.current.set(flowCode, newPopup);
 
@@ -169,14 +170,10 @@ export const StockPage = () => {
 	};
 
 	const handleStockCreate = () => {
-		const url = "/stocks/create/normal"; // stock mode 파라미터 추가
-		const NAME = "stockCreatePopup";
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-
 		if (stockCreationPopup.current && !stockCreationPopup.current.closed) {
 			stockCreationPopup.current.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openStockCreatePopup("normal");
 
 			if (newPopup) {
 				stockCreationPopup.current = newPopup;
@@ -500,29 +497,32 @@ export const StockPage = () => {
 		const handleMessage = (event: MessageEvent) => {
 			if (event.origin !== window.location.origin) return;
 
+			// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
+			const refreshWithDelay = () => {
+				setTimeout(() => {
+					loadStocks(searchFilters, currentPage);
+					setSelectedStocks([]); // 선택 초기화
+				}, 500);
+			};
+
 			if (event.data.type === "STOCK_CREATED") {
-				loadStocks(searchFilters, currentPage);
-				setSelectedStocks([]); // 선택 초기화
+				refreshWithDelay();
 			}
 
 			if (event.data.type === "STOCK_UPDATED") {
-				loadStocks(searchFilters, currentPage);
-				setSelectedStocks([]); // 선택 초기화
+				refreshWithDelay();
 			}
 
 			if (event.data.type === "STOCK_UPDATE_SUCCESS") {
-				loadStocks(searchFilters, currentPage);
-				setSelectedStocks([]); // 선택 초기화
+				refreshWithDelay();
 			}
 
 			if (event.data.type === "STOCK_REGISTERED") {
-				loadStocks(searchFilters, currentPage);
-				setSelectedStocks([]); // 선택 초기화
+				refreshWithDelay();
 			}
 
 			if (event.data.type === "SALES_REGISTERED") {
-				loadStocks(searchFilters, currentPage);
-				setSelectedStocks([]); // 선택 초기화
+				refreshWithDelay();
 			}
 		};
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { qzTrayService } from "../../service/qzTrayService";
-import "../../styles/components/barcodePrinterSettings.css";
+import "../../styles/components/settings/BarcodePrinterSettings.css";
 
 interface BarcodePrinterSettingsProps {
 	onPrinterChange?: (printer: string | null) => void;

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { isApiSuccess } from "../../libs/api/config";
-import { authApi } from "../../libs/api/auth";
+import { authApi } from "../../libs/api/authApi";
 import { extractSubdomain } from "../../libs/domain";
 import { tokenUtils } from "../utils/tokenUtils";
-import "../styles/pages/LoginPage.css";
+import "../styles/pages/auth/LoginPage.css";
 
 function LoginPage() {
 	const navigate = useNavigate();

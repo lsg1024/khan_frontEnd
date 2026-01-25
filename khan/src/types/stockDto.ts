@@ -1,5 +1,5 @@
-import type { StoneInfo } from "./stone";
-import type { PageInfo } from "./page";
+import type { StoneInfo } from "./stoneDto";
+import type { PageInfo } from "./pageDto";
 
 export interface StockOrderRows {
 	createAt: string;

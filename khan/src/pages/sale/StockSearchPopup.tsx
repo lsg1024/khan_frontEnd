@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { stockApi } from "../../../libs/api/stock";
+import { stockApi } from "../../../libs/api/stockApi";
 import { getLocalDate } from "../../utils/dateUtils";
-import type { StockResponse } from "../../types/stock";
+import type { StockResponse } from "../../types/stockDto";
 import { useErrorHandler } from "../../utils/errorHandler";
 import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/sale/StockSearchPopup.css";

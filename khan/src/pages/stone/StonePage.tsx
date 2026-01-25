@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { stoneApi } from "../../../libs/api/stone";
-import { stoneShapeApi } from "../../../libs/api/stoneShape";
-import { stoneTypeApi } from "../../../libs/api/stoneType";
-import type { StoneShapeDto } from "../../types/stoneShape";
-import type { StoneTypeDto } from "../../types/stoneType";
+import { stoneApi } from "../../../libs/api/stoneApi";
+import { stoneShapeApi } from "../../../libs/api/stoneShapeApi";
+import { stoneTypeApi } from "../../../libs/api/stoneTypeApi";
+import type { StoneShapeDto } from "../../types/stoneShapeDto";
+import type { StoneTypeDto } from "../../types/stoneTypeDto";
 import { isApiSuccess } from "../../../libs/api/config";
 import type {
 	StoneSearchDto,
 	ProductStoneDto,
 	ProductInfo,
-} from "../../types/stone";
-import type { PageInfo } from "../../types/page";
+} from "../../types/stoneDto";
+import type { PageInfo } from "../../types/pageDto";
 import StoneListTable from "../../components/common/stone/StoneListTable";
 import StoneSearchBar, {
 	type StoneSearchFilters,
@@ -18,6 +18,10 @@ import StoneSearchBar, {
 import Pagination from "../../components/common/Pagination";
 import { AuthImage } from "../../components/common/AuthImage";
 import { useErrorHandler } from "../../utils/errorHandler";
+import {
+	openStoneCreatePopup,
+	openProductDetailPopup,
+} from "../../utils/popupUtils";
 import "../../styles/pages/stone/StonePage.css";
 
 const convertToProductStone = (stone: StoneSearchDto): ProductStoneDto => {
@@ -151,14 +155,7 @@ export const StonePage = () => {
 
 	// 스톤 생성 핸들러
 	const handleCreateStone = () => {
-		const popup = window.open(
-			"/stone/create", // 새 라우트
-			"StoneCreateWindow", // 창 이름
-			"width=1200,height=800,scrollbars=yes,resizable=yes"
-		);
-		if (!popup) {
-			alert("팝업 차단을 해제해주세요.");
-		}
+		openStoneCreatePopup();
 	};
 
 	// 엑셀 다운로드 핸들러 (임시로 alert 사용)
@@ -197,14 +194,7 @@ export const StonePage = () => {
 
 	// 상품 상세 페이지 열기
 	const handleProductClick = (productId: number) => {
-		const url = `/product/detail/${productId}`;
-		const NAME = `product_detail_${productId}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-
-		const popup = window.open(url, NAME, FEATURES);
-		if (!popup) {
-			alert("팝업 차단을 해제해주세요.");
-		}
+		openProductDetailPopup(String(productId));
 	};
 
 	// 페이지 변경 핸들러
@@ -227,11 +217,12 @@ export const StonePage = () => {
 	useEffect(() => {
 		const onMessage = (e: MessageEvent) => {
 			if (e.origin !== window.location.origin) return;
+			// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
 			if (e.data && e.data.type === "STONE_CREATED") {
-				loadStones(searchFilters, currentPage);
+				setTimeout(() => loadStones(searchFilters, currentPage), 500);
 			}
 			if (e.data && e.data.type === "STONE_UPDATED") {
-				loadStones(searchFilters, currentPage);
+				setTimeout(() => loadStones(searchFilters, currentPage), 500);
 			}
 		};
 		window.addEventListener("message", onMessage);

@@ -1,6 +1,6 @@
 import { useState, type JSX } from "react";
 import BarcodePrinterSettings from "../../components/setting/BarcodePrinterSettings";
-import "../../styles/pages/settingsPage.css";
+import "../../styles/pages/settings/SettingsPage.css";
 
 type SettingCategory = "상품" | "주문" | "스톤" | "기타" | "사용자 관리";
 

@@ -1,8 +1,8 @@
 import React from "react";
 import { addBusinessDays, formatDateToString } from "../../../utils/dateUtils";
-import type { OrderRowData } from "../../../types/order";
-import type { ColorDto } from "../../../types/color";
-import type { MaterialDto } from "../../../types/material";
+import type { OrderRowData } from "../../../types/orderDto";
+import type { ColorDto } from "../../../types/colorDto";
+import type { MaterialDto } from "../../../types/materialDto";
 import type { AssistantStoneDto } from "../../../types/AssistantStoneDto";
 
 // 공통 Props

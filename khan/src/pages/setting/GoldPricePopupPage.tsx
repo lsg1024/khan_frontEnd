@@ -1,7 +1,7 @@
 import { useEffect, useState, type JSX } from "react";
-import { goldApi } from "../../../libs/api/gold";
+import { goldApi } from "../../../libs/api/goldApi";
 import { useErrorHandler } from "../../utils/errorHandler";
-import "../../styles/pages/goldPricePopup.css";
+import "../../styles/pages/settings/GoldPricePopup.css";
 
 export default function GoldPricePopupPage(): JSX.Element {
 	const [currentPrice, setCurrentPrice] = useState<number>(0);

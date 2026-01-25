@@ -1,6 +1,6 @@
 import React from "react";
-import "../../../styles/components/accountSearch.css";
-import type { StoreSearchDto, AccountInfoDto } from "../../../types/store";
+import "../../../styles/components/search/AccountSearch.css";
+import type { StoreSearchDto, AccountInfoDto } from "../../../types/storeDto";
 
 interface StoreListProps {
 	stores: (StoreSearchDto | AccountInfoDto)[];

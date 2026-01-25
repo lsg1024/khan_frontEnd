@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import type { ProductDto } from "../../../types/product";
-import "../../../styles/components/productSearch.css";
+import type { ProductDto } from "../../../types/productDto";
+import "../../../styles/components/search/ProductSearch.css";
 
 interface ProductSearchProps {
 	onSelectProduct: (product: ProductDto) => void;

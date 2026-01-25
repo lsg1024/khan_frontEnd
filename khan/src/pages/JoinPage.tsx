@@ -7,7 +7,7 @@ import {
 } from "../../libs/api/config";
 import { useErrorHandler } from "../utils/errorHandler";
 import { extractSubdomain } from "../../libs/domain";
-import "../styles/pages/LoginPage.css";
+import "../styles/pages/auth/JoinPage.css";
 
 function JoinPage() {
 	const navigate = useNavigate();

@@ -90,12 +90,6 @@
 	animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
 .accounts-receivable-page .loading-state p,
 .accounts-receivable-page .empty-state p {
 	color: #6c757d;

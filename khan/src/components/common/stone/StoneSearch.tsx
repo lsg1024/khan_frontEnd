@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import type { StoneSearchDto } from "../../../types/stone";
-import { stoneApi } from "../../../../libs/api/stone";
+import type { StoneSearchDto } from "../../../types/stoneDto";
+import { stoneApi } from "../../../../libs/api/stoneApi";
 import { useErrorHandler } from "../../../utils/errorHandler";
 import StonesList from "./StonesList";
 import Pagination from "../Pagination";

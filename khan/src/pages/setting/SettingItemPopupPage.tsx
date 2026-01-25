@@ -1,7 +1,7 @@
 import { useEffect, useState, type JSX } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useErrorHandler } from "../../utils/errorHandler";
-import "../../styles/pages/settingItemPopup.css";
+import "../../styles/pages/settings/SettingItemPopup.css";
 
 type ItemType =
 	| "material"
@@ -49,18 +49,18 @@ export default function SettingItemPopupPage(): JSX.Element {
 
 			switch (itemType) {
 				case "material": {
-					const { materialApi } = await import("../../../libs/api/material");
+					const { materialApi } = await import("../../../libs/api/materialApi");
 					response = await materialApi.getMaterials(actualSearchQuery);
 					break;
 				}
 				case "harry": {
-					const { goldHarryApi } = await import("../../../libs/api/goldHarry");
+					const { goldHarryApi } = await import("../../../libs/api/goldHarryApi");
 					response = await goldHarryApi.getGoldHarry();
 					break;
 				}
 				case "classification": {
 					const { classificationApi } = await import(
-						"../../../libs/api/classification"
+						"../../../libs/api/classificationApi"
 					);
 					response = await classificationApi.getClassifications(
 						actualSearchQuery
@@ -68,35 +68,35 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "color": {
-					const { colorApi } = await import("../../../libs/api/color");
+					const { colorApi } = await import("../../../libs/api/colorApi");
 					response = await colorApi.getColors(actualSearchQuery);
 					break;
 				}
 				case "setType": {
-					const { setTypeApi } = await import("../../../libs/api/setType");
+					const { setTypeApi } = await import("../../../libs/api/setTypeApi");
 					response = await setTypeApi.getSetTypes(actualSearchQuery);
 					break;
 				}
 				case "priority": {
-					const { priorityApi } = await import("../../../libs/api/priority");
+					const { priorityApi } = await import("../../../libs/api/priorityApi");
 					response = await priorityApi.getPriorities();
 					break;
 				}
 				case "stoneType": {
-					const { stoneTypeApi } = await import("../../../libs/api/stoneType");
+					const { stoneTypeApi } = await import("../../../libs/api/stoneTypeApi");
 					response = await stoneTypeApi.getStoneTypes(actualSearchQuery);
 					break;
 				}
 				case "stoneShape": {
 					const { stoneShapeApi } = await import(
-						"../../../libs/api/stoneShape"
+						"../../../libs/api/stoneShapeApi"
 					);
 					response = await stoneShapeApi.getStoneShapes(actualSearchQuery);
 					break;
 				}
 				case "assistantStone": {
 					const { assistantStoneApi } = await import(
-						"../../../libs/api/assistantStone"
+						"../../../libs/api/assistantStoneApi"
 					);
 					response = await assistantStoneApi.getAssistantStones();
 					break;
@@ -228,7 +228,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 
 			switch (itemType) {
 				case "material": {
-					const { materialApi } = await import("../../../libs/api/material");
+					const { materialApi } = await import("../../../libs/api/materialApi");
 					response = await materialApi.createMaterial({
 						name: createFormData.name,
 						goldPurityPercent: createFormData.note || "",
@@ -236,13 +236,13 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "harry": {
-					const { goldHarryApi } = await import("../../../libs/api/goldHarry");
+					const { goldHarryApi } = await import("../../../libs/api/goldHarryApi");
 					response = await goldHarryApi.createGoldHarry(createFormData.name);
 					break;
 				}
 				case "classification": {
 					const { classificationApi } = await import(
-						"../../../libs/api/classification"
+						"../../../libs/api/classificationApi"
 					);
 					response = await classificationApi.createClassification({
 						name: createFormData.name,
@@ -251,7 +251,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "color": {
-					const { colorApi } = await import("../../../libs/api/color");
+					const { colorApi } = await import("../../../libs/api/colorApi");
 					response = await colorApi.createColor({
 						name: createFormData.name,
 						note: createFormData.note || "",
@@ -259,7 +259,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "setType": {
-					const { setTypeApi } = await import("../../../libs/api/setType");
+					const { setTypeApi } = await import("../../../libs/api/setTypeApi");
 					response = await setTypeApi.createSetType({
 						name: createFormData.name,
 						note: createFormData.note,
@@ -267,7 +267,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "priority": {
-					const { priorityApi } = await import("../../../libs/api/priority");
+					const { priorityApi } = await import("../../../libs/api/priorityApi");
 					response = await priorityApi.createPriority(
 						createFormData.name,
 						Number(createFormData.note)
@@ -275,7 +275,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "stoneType": {
-					const { stoneTypeApi } = await import("../../../libs/api/stoneType");
+					const { stoneTypeApi } = await import("../../../libs/api/stoneTypeApi");
 					response = await stoneTypeApi.createStoneType({
 						name: createFormData.name,
 						note: createFormData.note,
@@ -284,7 +284,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 				}
 				case "stoneShape": {
 					const { stoneShapeApi } = await import(
-						"../../../libs/api/stoneShape"
+						"../../../libs/api/stoneShapeApi"
 					);
 					response = await stoneShapeApi.createStoneShape({
 						stoneShapeName: createFormData.name,
@@ -294,7 +294,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 				}
 				case "assistantStone": {
 					const { assistantStoneApi } = await import(
-						"../../../libs/api/assistantStone"
+						"../../../libs/api/assistantStoneApi"
 					);
 					response = await assistantStoneApi.createAssistantStone({
 						assistantStoneName: createFormData.name,
@@ -356,7 +356,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 
 			switch (itemType) {
 				case "material": {
-					const { materialApi } = await import("../../../libs/api/material");
+					const { materialApi } = await import("../../../libs/api/materialApi");
 					response = await materialApi.updateMaterial(id, {
 						name: editFormData.name,
 						goldPurityPercent: editFormData.note || "",
@@ -364,7 +364,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "harry": {
-					const { goldHarryApi } = await import("../../../libs/api/goldHarry");
+					const { goldHarryApi } = await import("../../../libs/api/goldHarryApi");
 					response = await goldHarryApi.updateGoldHarry(
 						id,
 						editFormData.name
@@ -373,7 +373,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 				}
 				case "classification": {
 					const { classificationApi } = await import(
-						"../../../libs/api/classification"
+						"../../../libs/api/classificationApi"
 					);
 					response = await classificationApi.updateClassification(id, {
 						name: editFormData.name,
@@ -382,7 +382,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "color": {
-					const { colorApi } = await import("../../../libs/api/color");
+					const { colorApi } = await import("../../../libs/api/colorApi");
 					response = await colorApi.updateColor(id, {
 						name: editFormData.name,
 						note: editFormData.note || "",
@@ -390,7 +390,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "setType": {
-					const { setTypeApi } = await import("../../../libs/api/setType");
+					const { setTypeApi } = await import("../../../libs/api/setTypeApi");
 					response = await setTypeApi.updateSetType(id, {
 						name: editFormData.name,
 						note: editFormData.note,
@@ -398,7 +398,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "priority": {
-					const { priorityApi } = await import("../../../libs/api/priority");
+					const { priorityApi } = await import("../../../libs/api/priorityApi");
 					response = await priorityApi.updatePriority(
 						id,
 						editFormData.name,
@@ -407,7 +407,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 					break;
 				}
 				case "stoneType": {
-					const { stoneTypeApi } = await import("../../../libs/api/stoneType");
+					const { stoneTypeApi } = await import("../../../libs/api/stoneTypeApi");
 					response = await stoneTypeApi.updateStoneType(id, {
 						name: editFormData.name,
 						note: editFormData.note,
@@ -416,7 +416,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 				}
 				case "stoneShape": {
 					const { stoneShapeApi } = await import(
-						"../../../libs/api/stoneShape"
+						"../../../libs/api/stoneShapeApi"
 					);
 					response = await stoneShapeApi.updateStoneShape(id, {
 						stoneShapeName: editFormData.name,
@@ -426,7 +426,7 @@ export default function SettingItemPopupPage(): JSX.Element {
 				}
 				case "assistantStone": {
 					const { assistantStoneApi } = await import(
-						"../../../libs/api/assistantStone"
+						"../../../libs/api/assistantStoneApi"
 					);
 					response = await assistantStoneApi.updateAssistantStone(id, {
 						assistantStoneName: editFormData.name,
@@ -461,29 +461,29 @@ export default function SettingItemPopupPage(): JSX.Element {
 
 			switch (itemType) {
 				case "material": {
-					const { materialApi } = await import("../../../libs/api/material");
+					const { materialApi } = await import("../../../libs/api/materialApi");
 					response = await materialApi.deleteMaterial(id);
 					break;
 				}
 				case "harry": {
-					const { goldHarryApi } = await import("../../../libs/api/goldHarry");
+					const { goldHarryApi } = await import("../../../libs/api/goldHarryApi");
 					response = await goldHarryApi.deleteGoldHarry(id);
 					return;
 				}
 				case "classification": {
 					const { classificationApi } = await import(
-						"../../../libs/api/classification"
+						"../../../libs/api/classificationApi"
 					);
 					response = await classificationApi.deleteClassification(id);
 					break;
 				}
 				case "color": {
-					const { colorApi } = await import("../../../libs/api/color");
+					const { colorApi } = await import("../../../libs/api/colorApi");
 					response = await colorApi.deleteColor(id);
 					break;
 				}
 				case "setType": {
-					const { setTypeApi } = await import("../../../libs/api/setType");
+					const { setTypeApi } = await import("../../../libs/api/setTypeApi");
 					response = await setTypeApi.deleteSetType(id);
 					break;
 				}
@@ -492,20 +492,20 @@ export default function SettingItemPopupPage(): JSX.Element {
 					return;
 				}
 				case "stoneType": {
-					const { stoneTypeApi } = await import("../../../libs/api/stoneType");
+					const { stoneTypeApi } = await import("../../../libs/api/stoneTypeApi");
 					response = await stoneTypeApi.deleteStoneType(id);
 					break;
 				}
 				case "stoneShape": {
 					const { stoneShapeApi } = await import(
-						"../../../libs/api/stoneShape"
+						"../../../libs/api/stoneShapeApi"
 					);
 					response = await stoneShapeApi.deleteStoneShape(id);
 					break;
 				}
 				case "assistantStone": {
 					const { assistantStoneApi } = await import(
-						"../../../libs/api/assistantStone"
+						"../../../libs/api/assistantStoneApi"
 					);
 					response = await assistantStoneApi.deleteAssistantStone(id);
 					break;

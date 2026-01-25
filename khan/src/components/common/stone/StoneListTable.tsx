@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import type { ProductStoneDto, ProductInfo } from "../../../types/stone";
-import "../../../styles/components/StoneListTable.css";
+import type { ProductStoneDto, ProductInfo } from "../../../types/stoneDto";
+import "../../../styles/components/stone/StoneListTable.css";
 
 interface StoneListTableProps {
 	stones: ProductStoneDto[];

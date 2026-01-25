@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { getLocalDate } from "../../utils/dateUtils";
-import { saleApi } from "../../../libs/api/sale";
-import { materialApi } from "../../../libs/api/material";
-import { assistantStoneApi } from "../../../libs/api/assistantStone";
-import { storeApi } from "../../../libs/api/store";
-import type { SaleStatusType } from "../../types/sale";
+import { saleApi } from "../../../libs/api/saleApi";
+import { materialApi } from "../../../libs/api/materialApi";
+import { assistantStoneApi } from "../../../libs/api/assistantStoneApi";
+import { storeApi } from "../../../libs/api/storeApi";
+import type { SaleStatusType } from "../../types/saleDto";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type {
 	SaleCreateRow,
 	SaleOptionData,
 	GoldHistoryData,
-} from "../../types/sale";
-import type { MaterialDto } from "../../types/material";
+} from "../../types/saleDto";
+import type { MaterialDto } from "../../types/materialDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
 import SaleTable from "../../components/common/sale/SaleTable";
 import SaleOption from "../../components/common/sale/SaleOption";
-import AccountPaymentHistory from "../../components/common/sale/AccountPaymentHistory";
+import AccountPaymentHistory from "../../components/account/AccountPaymentHistory";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 import {
 	calculatePureGoldWeight,

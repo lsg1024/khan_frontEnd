@@ -1,5 +1,5 @@
-import type { PageInfo } from "./page";
-import type { StoneInfo } from "./stone";
+import type { PageInfo } from "./pageDto";
+import type { StoneInfo } from "./stoneDto";
 
 export interface OrderResponseDetail {
     createAt: string;

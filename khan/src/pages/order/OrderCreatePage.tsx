@@ -1,41 +1,42 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { orderApi } from "../../../libs/api/order";
-import { materialApi } from "../../../libs/api/material";
-import { colorApi } from "../../../libs/api/color";
-import { priorityApi } from "../../../libs/api/priority";
-import { productApi } from "../../../libs/api/product";
-import { assistantStoneApi } from "../../../libs/api/assistantStone";
+import { orderApi } from "../../../libs/api/orderApi";
+import { materialApi } from "../../../libs/api/materialApi";
+import { colorApi } from "../../../libs/api/colorApi";
+import { priorityApi } from "../../../libs/api/priorityApi";
+import { productApi } from "../../../libs/api/productApi";
+import { assistantStoneApi } from "../../../libs/api/assistantStoneApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { useSearchModal } from "../../hooks/useSearchModal";
 import { usePreviousRowCopy } from "../../hooks/usePreviousRowCopy";
 import { useStoneInfoManager } from "../../hooks/useStoneInfoManager";
-import { useToast } from "../../components/common/Toast/Toast";
+import { useToast } from "../../components/common/toast/Toast";
 import {
 	addBusinessDays,
 	getLocalDate,
 	formatDateToString,
 } from "../../utils/dateUtils";
-import type { ColorDto } from "../../types/color";
-import type { MaterialDto } from "../../types/material";
+import type { ColorDto } from "../../types/colorDto";
+import type { MaterialDto } from "../../types/materialDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
 import type {
 	OrderRowData,
 	OrderCreateRequest,
 	PastOrderDto,
-} from "../../types/order";
-import type { Product, ProductDto } from "../../types/product";
-import type { FactorySearchDto } from "../../types/factory";
-import type { StoreSearchDto, AccountInfoDto } from "../../types/store";
+} from "../../types/orderDto";
+import type { Product, ProductDto } from "../../types/productDto";
+import type { FactorySearchDto } from "../../types/factoryDto";
+import type { StoreSearchDto, AccountInfoDto } from "../../types/storeDto";
 import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import OrderTable from "../../components/common/order/OrderTable";
-import PastOrderHistory from "../../components/common/PastOrderHistory";
-import ProductInfoSection from "../../components/common/ProductInfoSection";
+import PastOrderHistory from "../../components/common/order/PastOrderHistory";
+import ProductInfoSection from "../../components/common/product/ProductInfoSection";
 import { calculateStoneDetails } from "../../utils/calculateStone";
+import { transformProductStones } from "../../utils/productTransformations";
 import { handleApiSubmit } from "../../utils/apiSubmitHandler";
-import "../../styles/pages/OrderCreatePage.css";
+import "../../styles/pages/order/OrderCreatePage.css";
 
 type UpdateMode = "order" | "fix" | "expact";
 
@@ -268,8 +269,9 @@ const OrderCreatePage = () => {
 
 	// 스톤 정보 관리 - 커스텀 훅 사용
 	const { openStoneInfoManager } = useStoneInfoManager({
-		orderRows,
-		updateOrderRow,
+		rows: orderRows,
+		updateRow: updateOrderRow,
+		urlType: "order",
 	});
 
 	// 과거 주문 데이터 가져오기
@@ -521,27 +523,9 @@ const OrderCreatePage = () => {
 						updateOrderRow(rowId, "productLaborCost", productLaborCost);
 
 						// 스톤 정보 변환 (등급별 단가 적용)
-						const transformedStoneInfos = productDetail.productStoneDtos.map(
-							(stone) => {
-								const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
-									(policy) => policy.grade === policyGrade
-								);
-								const laborCost = matchingPolicy
-									? matchingPolicy.laborCost
-									: stone.stoneWorkGradePolicyDtos[0]?.laborCost || 0;
-
-								return {
-									stoneId: stone.stoneId,
-									stoneName: stone.stoneName,
-									stoneWeight: stone.stoneWeight,
-									purchaseCost: stone.stonePurchase,
-									laborCost: laborCost,
-									quantity: stone.stoneQuantity,
-									mainStone: stone.mainStone,
-									includeStone: stone.includeStone,
-									addLaborCost: 0,
-								};
-							}
+						const transformedStoneInfos = transformProductStones(
+							productDetail.productStoneDtos,
+							policyGrade
 						);
 
 						updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
@@ -717,28 +701,9 @@ const OrderCreatePage = () => {
 
 			// 스톤 정보 변환 및 업데이트
 			if (currentProductDetail?.productStoneDtos) {
-				const transformedStoneInfos = currentProductDetail.productStoneDtos.map(
-					(stone) => {
-						const matchingPolicy = stone.stoneWorkGradePolicyDtos.find(
-							(policy) => policy.grade === policyGrade
-						);
-
-						const laborCost = matchingPolicy
-							? matchingPolicy.laborCost
-							: stone.stoneWorkGradePolicyDtos[0]?.laborCost || 0;
-
-						return {
-							stoneId: stone.stoneId,
-							stoneName: stone.stoneName,
-							stoneWeight: stone.stoneWeight,
-							purchaseCost: stone.stonePurchase,
-							laborCost: laborCost,
-							quantity: stone.stoneQuantity,
-							mainStone: stone.mainStone,
-							includeStone: stone.includeStone,
-							addLaborCost: 0,
-						};
-					}
+				const transformedStoneInfos = transformProductStones(
+					currentProductDetail.productStoneDtos,
+					policyGrade
 				);
 
 				updateOrderRow(

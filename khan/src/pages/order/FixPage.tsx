@@ -3,13 +3,14 @@ import Pagination from "../../components/common/Pagination";
 import BulkActionBar from "../../components/common/order/BulkActionBar";
 import OrderSearch from "../../components/common/order/OrderSearch";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useToast } from "../../components/common/toast/Toast";
 import { useBulkActions } from "../../hooks/useBulkActions";
-import { fixApi } from "../../../libs/api/fix";
-import { orderApi } from "../../../libs/api/order";
+import { fixApi } from "../../../libs/api/fixApi";
+import { orderApi } from "../../../libs/api/orderApi";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import type { SearchFilters } from "../../components/common/order/OrderSearch";
-import type { FactorySearchDto } from "../../types/factory";
-import type { OrderDto } from "../../types/order";
+import type { FactorySearchDto } from "../../types/factoryDto";
+import type { OrderDto } from "../../types/orderDto";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
 import { useTenant } from "../../tenant/UserTenant";
@@ -17,7 +18,12 @@ import {
 	printDeliveryBarcode,
 	printProductBarcode,
 } from "../../service/barcodePrintService";
-import "../../styles/pages/OrderPage.css";
+import {
+	openProductDetailPopup,
+	openOrderCreatePopup,
+	openOrderUpdatePopup,
+} from "../../utils/popupUtils";
+import "../../styles/pages/order/OrderPage.css";
 
 export const FixPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -32,6 +38,7 @@ export const FixPage = () => {
 	const [colors, setColors] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 	const { tenant } = useTenant();
 
 	// 제조사 변경 관련 상태
@@ -157,13 +164,13 @@ export const FixPage = () => {
 	// 바코드 출력 핸들러
 	const handlePrintDeliveryBarcode = async () => {
 		if (selectedFix.length === 0) {
-			alert("출고 바코드를 출력할 항목을 선택해주세요.");
+			showToast("출고 바코드를 출력할 항목을 선택해주세요.", "warning", 3000);
 			return;
 		}
 
 		const printerName = localStorage.getItem("preferred_printer_name");
 		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			showToast("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)", "warning", 4000);
 			return;
 		}
 
@@ -184,21 +191,21 @@ export const FixPage = () => {
 					serialNumber: fix.flowCode || "",
 				});
 			}
-			alert(`${selectedFix.length}개의 출고 바코드 출력이 완료되었습니다.`);
+			showToast(`${selectedFix.length}개의 출고 바코드 출력이 완료되었습니다.`, "success", 3000);
 		} catch {
-			alert("바코드 출력 중 오류가 발생했습니다.");
+			showToast("바코드 출력 중 오류가 발생했습니다.", "error", 4000);
 		}
 	};
 
 	const handlePrintProductBarcode = async () => {
 		if (selectedFix.length === 0) {
-			alert("제품 바코드를 출력할 항목을 선택해주세요.");
+			showToast("제품 바코드를 출력할 항목을 선택해주세요.", "warning", 3000);
 			return;
 		}
 
 		const printerName = localStorage.getItem("preferred_printer_name");
 		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			showToast("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)", "warning", 4000);
 			return;
 		}
 
@@ -210,22 +217,17 @@ export const FixPage = () => {
 					serialNumber: flowCode,
 				});
 			}
-			alert(`${selectedFix.length}개의 제품 바코드 출력이 완료되었습니다.`);
+			showToast(`${selectedFix.length}개의 제품 바코드 출력이 완료되었습니다.`, "success", 3000);
 		} catch {
-			alert("제품 바코드 출력 기능은 준비 중입니다.");
+			showToast("제품 바코드 출력 기능은 준비 중입니다.", "info", 3000);
 		}
 	};
 
 	const handleFixCreate = () => {
-		// 수리 생성 팝업 - order_type=FIX 파라미터로 수리 주문 생성
-		const url = "/orders/create/fix";
-		const NAME = "fixCreatePopup";
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-
 		if (orderCreationPopup.current && !orderCreationPopup.current.closed) {
 			orderCreationPopup.current.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openOrderCreatePopup("fix");
 			if (newPopup) {
 				orderCreationPopup.current = newPopup;
 
@@ -257,15 +259,12 @@ export const FixPage = () => {
 			sessionStorage.setItem("tempImagePath", fixData.imagePath);
 		}
 
-		const url = `/orders/update/fix/${flowCode}`;
-		const NAME = `fixUpdate_${flowCode}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=600";
 		const existingPopup = orderUpdatePopups.current.get(flowCode);
 
 		if (existingPopup && !existingPopup.closed) {
 			existingPopup.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openOrderUpdatePopup("fix", flowCode);
 			if (newPopup) {
 				orderUpdatePopups.current.set(flowCode, newPopup);
 
@@ -287,7 +286,7 @@ export const FixPage = () => {
 			try {
 				setLoading(true);
 				await orderApi.updateOrderStatus(flowCode, newStatus);
-				alert("수리 상태가 성공적으로 변경되었습니다.");
+				showToast("수리 상태가 성공적으로 변경되었습니다.", "success", 3000);
 				await loadFixes(searchFilters, currentPage);
 			} catch (err) {
 				handleError(err);
@@ -315,7 +314,7 @@ export const FixPage = () => {
 					factory.factoryId!
 				);
 
-				alert("제조사가 성공적으로 변경되었습니다.");
+				showToast("제조사가 성공적으로 변경되었습니다.", "success", 3000);
 
 				// 현재 페이지 데이터 새로고침
 				await loadFixes(searchFilters, currentPage);
@@ -391,8 +390,11 @@ export const FixPage = () => {
 
 		const handleOrderCreated = (event: MessageEvent) => {
 			if (event.data && event.data.type === "ORDER_CREATED") {
-				loadFixes(searchFilters, 1);
-				setCurrentPage(1);
+				// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
+				setTimeout(() => {
+					loadFixes(searchFilters, 1);
+					setCurrentPage(1);
+				}, 500);
 			}
 		};
 
@@ -449,12 +451,7 @@ export const FixPage = () => {
 						onClick={handleFixClick}
 						onStatusChange={handleStatusChange}
 						onFactoryClick={handleFactoryClick}
-						onImageClick={(productId) => {
-							const url = `/catalog/detail/${productId}`;
-							const features =
-								"width=1400,height=900,resizable=yes,scrollbars=yes";
-							window.open(url, "product_detail", features);
-						}}
+						onImageClick={(productId) => openProductDetailPopup(productId)}
 					/>
 
 					{/* 하단 액션 바 */}

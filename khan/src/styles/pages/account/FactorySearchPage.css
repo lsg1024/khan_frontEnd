@@ -60,15 +60,6 @@
 	margin-bottom: 0.5rem;
 }
 
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
 /* 반응형 */
 @media (max-width: 768px) {
 	.factory-search-page {

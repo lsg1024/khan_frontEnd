@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { storeApi } from "../../../libs/api/store";
-import { factoryApi } from "../../../libs/api/factory";
-import { goldHarryApi } from "../../../libs/api/goldHarry";
-import { materialApi } from "../../../libs/api/material";
+import { storeApi } from "../../../libs/api/storeApi";
+import { factoryApi } from "../../../libs/api/factoryApi";
+import { goldHarryApi } from "../../../libs/api/goldHarryApi";
+import { materialApi } from "../../../libs/api/materialApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { isApiSuccess } from "../../../libs/api/config";
 import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import type { AccountSingleResponse } from "../../types/AccountDto";
-import type { goldHarryResponse } from "../../types/goldHarry";
-import type { MaterialDto } from "../../types/material";
+import type { goldHarryResponse } from "../../types/goldHarryDto";
+import type { MaterialDto } from "../../types/materialDto";
 import "../../styles/pages/account/AccountPage.css";
 
 type AccountType = "store" | "factory";

@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
-import type { ProductInfo, ProductData } from "../../../types/product";
-import type { ClassificationDto } from "../../../types/classification";
-import type { MaterialDto } from "../../../types/material";
-import type { SetTypeDto } from "../../../types/setType";
-import { classificationApi } from "../../../../libs/api/classification";
-import { materialApi } from "../../../../libs/api/material";
-import { setTypeApi } from "../../../../libs/api/setType";
-import { productApi } from "../../../../libs/api/product";
+import type { ProductInfo, ProductData } from "../../../types/productDto";
+import type { ClassificationDto } from "../../../types/classificationDto";
+import type { MaterialDto } from "../../../types/materialDto";
+import type { SetTypeDto } from "../../../types/setTypeDto";
+import { classificationApi } from "../../../../libs/api/classificationApi";
+import { materialApi } from "../../../../libs/api/materialApi";
+import { setTypeApi } from "../../../../libs/api/setTypeApi";
+import { productApi } from "../../../../libs/api/productApi";
 import FactorySearch from "../factory/FactorySearch";
 import ImageZoomModal from "../ImageZoomModal";
-import "../../../styles/components/BasicInfo.css";
+import "../../../styles/components/common/BasicInfo.css";
 import { useErrorHandler } from "../../../utils/errorHandler";
 
 const BasicInfo: React.FC<ProductInfo> = ({

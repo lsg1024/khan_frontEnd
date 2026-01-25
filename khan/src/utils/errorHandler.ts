@@ -1,6 +1,6 @@
 // 공통 에러 처리 유틸리티
 import type { ApiResponse } from "../../libs/api/config";
-import { useToast } from "../components/common/Toast/Toast";
+import { useToast } from "../components/common/toast/Toast";
 
 export interface ErrorHandlerOptions {
 	showAlert?: boolean;

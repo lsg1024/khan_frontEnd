@@ -1,4 +1,4 @@
-import type { StoneInfo } from "../types/stone";
+import type { StoneInfo } from "../types/stoneDto";
 
 export const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
 	const details = {

@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { stoneApi } from "../../../libs/api/stone";
-import { stoneTypeApi } from "../../../libs/api/stoneType";
-import { stoneShapeApi } from "../../../libs/api/stoneShape";
-import type { StoneTypeDto } from "../../../src/types/stoneType";
-import type { StoneShapeDto } from "../../../src/types/stoneShape";
+import { stoneApi } from "../../../libs/api/stoneApi";
+import { stoneTypeApi } from "../../../libs/api/stoneTypeApi";
+import { stoneShapeApi } from "../../../libs/api/stoneShapeApi";
+import type { StoneTypeDto } from "../../../src/types/stoneTypeDto";
+import type { StoneShapeDto } from "../../../src/types/stoneShapeDto";
 import type {
 	StoneSearchDto,
 	StoneWorkGradePolicyDto,
-} from "../../../src/types/stone";
+} from "../../../src/types/stoneDto";
 import "../../styles/pages/stone/StoneEditPage.css";
 
 const StoneEditPage = () => {

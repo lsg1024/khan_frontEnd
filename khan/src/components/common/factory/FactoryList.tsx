@@ -1,6 +1,6 @@
 import React from "react";
-import "../../../styles/components/accountSearch.css";
-import type { FactorySearchDto } from "../../../types/factory";
+import "../../../styles/components/search/AccountSearch.css";
+import type { FactorySearchDto } from "../../../types/factoryDto";
 
 interface FactoryListProps {
 	factories: FactorySearchDto[];

@@ -7,13 +7,13 @@ import { useProductImageUpload } from "../../hooks/useProductImageUpload";
 import StoneTable from "../../components/common/stone/StoneTable";
 import PriceTable from "../../components/common/product/PriceTable";
 import ProductInfo from "../../components/common/product/BasicInfo";
-import { productApi } from "../../../libs/api/product";
-import type { ProductStoneDto } from "../../types/stone";
+import { productApi } from "../../../libs/api/productApi";
+import type { ProductStoneDto } from "../../types/stoneDto";
 import type {
 	ProductData,
 	Product,
 	UpdateProductRequest,
-} from "../../types/product";
+} from "../../types/productDto";
 import "../../styles/pages/product/ProductDetailPage.css";
 
 function ProductEditPage() {

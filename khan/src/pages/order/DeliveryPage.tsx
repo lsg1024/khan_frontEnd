@@ -4,12 +4,13 @@ import BulkActionBar from "../../components/common/order/BulkActionBar";
 import OrderSearch from "../../components/common/order/OrderSearch";
 import type { SearchFilters } from "../../components/common/order/OrderSearch";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useToast } from "../../components/common/toast/Toast";
 import { useBulkActions } from "../../hooks/useBulkActions";
-import { deliveryApi } from "../../../libs/api/delivery";
-import { orderApi } from "../../../libs/api/order";
+import { deliveryApi } from "../../../libs/api/deliveryApi";
+import { orderApi } from "../../../libs/api/orderApi";
 import FactorySearch from "../../components/common/factory/FactorySearch";
-import type { FactorySearchDto } from "../../types/factory";
-import type { OrderDto } from "../../types/order";
+import type { FactorySearchDto } from "../../types/factoryDto";
+import type { OrderDto } from "../../types/orderDto";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
 import { useTenant } from "../../tenant/UserTenant";
@@ -17,7 +18,8 @@ import {
 	printDeliveryBarcode,
 	printProductBarcode,
 } from "../../service/barcodePrintService";
-import "../../styles/pages/OrderPage.css";
+import { openProductDetailPopup } from "../../utils/popupUtils";
+import "../../styles/pages/order/OrderPage.css";
 
 export const ExpactPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -32,6 +34,7 @@ export const ExpactPage = () => {
 	const [colors, setColors] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 	const { tenant } = useTenant();
 
 	// 제조사 변경 관련 상태
@@ -140,11 +143,11 @@ export const ExpactPage = () => {
 			try {
 				setLoading(true);
 				await orderApi.updateOrderStatus(flowCode, newStatus);
-				alert("출고 상태가 성공적으로 변경되었습니다.");
+				showToast("출고 상태가 성공적으로 변경되었습니다.", "success", 3000);
 				await loadExpacts(searchFilters, currentPage);
 			} catch (err) {
 				handleError(err);
-				alert("출고 상태 변경에 실패했습니다.");
+				showToast("출고 상태 변경에 실패했습니다.", "error", 3000);
 			} finally {
 				setLoading(false);
 			}
@@ -175,7 +178,7 @@ export const ExpactPage = () => {
 					factory.factoryId!
 				);
 
-				alert("제조사가 성공적으로 변경되었습니다.");
+				showToast("제조사가 성공적으로 변경되었습니다.", "success", 3000);
 
 				// 현재 페이지 데이터 새로고침
 				await loadExpacts(searchFilters, currentPage);
@@ -185,7 +188,7 @@ export const ExpactPage = () => {
 				setSelectedExpactForFactory("");
 			} catch (err) {
 				handleError(err);
-				alert("제조사 변경에 실패했습니다.");
+				showToast("제조사 변경에 실패했습니다.", "error", 3000);
 			} finally {
 				setLoading(false);
 			}
@@ -257,13 +260,13 @@ export const ExpactPage = () => {
 	// 바코드 출력 핸들러
 	const handlePrintDeliveryBarcode = async () => {
 		if (selectedExpect.length === 0) {
-			alert("출고 바코드를 출력할 항목을 선택해주세요.");
+			showToast("출고 바코드를 출력할 항목을 선택해주세요.", "warning", 3000);
 			return;
 		}
 
 		const printerName = localStorage.getItem("preferred_printer_name");
 		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			showToast("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)", "warning", 4000);
 			return;
 		}
 
@@ -284,21 +287,21 @@ export const ExpactPage = () => {
 					serialNumber: expect.flowCode || "",
 				});
 			}
-			alert(`${selectedExpect.length}개의 출고 바코드 출력이 완료되었습니다.`);
+			showToast(`${selectedExpect.length}개의 출고 바코드 출력이 완료되었습니다.`, "success", 3000);
 		} catch {
-			alert("바코드 출력 중 오류가 발생했습니다.");
+			showToast("바코드 출력 중 오류가 발생했습니다.", "error", 4000);
 		}
 	};
 
 	const handlePrintProductBarcode = async () => {
 		if (selectedExpect.length === 0) {
-			alert("제품 바코드를 출력할 항목을 선택해주세요.");
+			showToast("제품 바코드를 출력할 항목을 선택해주세요.", "warning", 3000);
 			return;
 		}
 
 		const printerName = localStorage.getItem("preferred_printer_name");
 		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
+			showToast("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)", "warning", 4000);
 			return;
 		}
 
@@ -310,9 +313,9 @@ export const ExpactPage = () => {
 					serialNumber: flowCode,
 				});
 			}
-			alert(`${selectedExpect.length}개의 제품 바코드 출력이 완료되었습니다.`);
+			showToast(`${selectedExpect.length}개의 제품 바코드 출력이 완료되었습니다.`, "success", 3000);
 		} catch {
-			alert("제품 바코드 출력 기능은 준비 중입니다.");
+			showToast("제품 바코드 출력 기능은 준비 중입니다.", "info", 3000);
 		}
 	};
 
@@ -371,11 +374,11 @@ export const ExpactPage = () => {
 		const handleMessage = (event: MessageEvent) => {
 			// 기존 메시지 타입 처리
 			if (event.data?.type === "STOCK_REGISTER_COMPLETED") {
-				alert("재고등록이 완료되었습니다.");
+				showToast("재고등록이 완료되었습니다.", "success", 3000);
 				setSelectedExpect([]);
 				loadExpacts(searchFilters, currentPage);
 			} else if (event.data?.type === "SALES_REGISTER_COMPLETED") {
-				alert("판매등록이 완료되었습니다.");
+				showToast("판매등록이 완료되었습니다.", "success", 3000);
 				setSelectedExpect([]);
 				loadExpacts(searchFilters, currentPage);
 			}
@@ -464,12 +467,7 @@ export const ExpactPage = () => {
 						onClick={handleExpactClick}
 						onStatusChange={handleStatusChange}
 						onFactoryClick={handleFactoryClick}
-						onImageClick={(productId) => {
-							const url = `/catalog/detail/${productId}`;
-							const features =
-								"width=1400,height=900,resizable=yes,scrollbars=yes";
-							window.open(url, "product_detail", features);
-						}}
+						onImageClick={(productId) => openProductDetailPopup(productId)}
 					/>
 
 					{/* 하단 액션 바 */}

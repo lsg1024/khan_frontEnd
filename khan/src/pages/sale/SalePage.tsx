@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { saleApi } from "../../../libs/api/sale";
+import { saleApi } from "../../../libs/api/saleApi";
 import { getLocalDate } from "../../utils/dateUtils";
-import type { SaleRow } from "../../types/sale";
+import type { SaleRow } from "../../types/saleDto";
 import SaleSearch from "../../components/common/sale/SaleSearch";
 import SaleList from "../../components/common/sale/SaleList";
 import Pagination from "../../components/common/Pagination";
@@ -15,6 +15,10 @@ import {
 	type ProductBarcodeData,
 } from "../../service/barcodePrintService";
 import { useTenant } from "../../tenant/UserTenant";
+import {
+	openSaleCreatePopup,
+	openSaleDetailPopup,
+} from "../../utils/popupUtils";
 
 export const SalePage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
@@ -107,15 +111,12 @@ export const SalePage = () => {
 	// No 클릭 시 상세보기 페이지 열기
 	const handleSaleNoClick = (flowCode: string, orderStatus: string) => {
 		const enumStatus = convertSaleTypeToEnum(orderStatus);
-		const url = `/sales/detail/${enumStatus}/${flowCode}`;
-		const NAME = `sale_detail_${flowCode}`;
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=500";
 		const existingPopup = saleDetailPopups.current.get(flowCode);
 
 		if (existingPopup && !existingPopup.closed) {
 			existingPopup.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openSaleDetailPopup(enumStatus, flowCode);
 			if (newPopup) {
 				saleDetailPopups.current.set(flowCode, newPopup);
 
@@ -139,14 +140,10 @@ export const SalePage = () => {
 
 	// 판매 생성
 	const handleSaleCreate = () => {
-		const url = "/sales/create";
-		const NAME = "saleCreateWindow";
-		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
-
 		if (saleCreatePopup.current && !saleCreatePopup.current.closed) {
 			saleCreatePopup.current.focus();
 		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
+			const newPopup = openSaleCreatePopup();
 			if (newPopup) {
 				saleCreatePopup.current = newPopup;
 

@@ -1,5 +1,5 @@
 import React from "react";
-import "../../../styles/components/BulkActionBar.css";
+import "../../../styles/components/common/BulkActionBar.css";
 
 interface StockBulkActionBarProps {
 	selectedCount: number;
