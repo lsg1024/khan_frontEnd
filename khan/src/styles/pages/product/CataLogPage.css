@@ -489,8 +489,8 @@
 /* 대형 화면 (1200px ~ 1399px) */
 @media (max-width: 1399px) and (min-width: 1200px) {
 	.products-grid {
-		grid-template-columns: repeat(4, 1fr);
-		gap: var(--spacing-lg);
+		grid-template-columns: repeat(5, 1fr);
+		gap: var(--spacing-md);
 	}
 
 	.catalog-product-image {
@@ -503,7 +503,7 @@
 @media (max-width: 1199px) and (min-width: 992px) {
 	.products-grid {
 		grid-template-columns: repeat(4, 1fr); /* 4개 */
-		gap: var(--spacing-lg);
+		gap: var(--spacing-md);
 	}
 
 	.catalog-product-image {
