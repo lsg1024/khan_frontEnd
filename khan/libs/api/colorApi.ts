@@ -1,6 +1,6 @@
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { ColorDto } from "../../src/types/color";
+import type { ColorDto } from "../../src/types/colorDto";
 
 type ColorResponseSingle = ColorDto;
 type ColorResponseList = ColorDto[];

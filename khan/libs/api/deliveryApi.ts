@@ -2,7 +2,7 @@ import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
 import type {
 	OrderSearchResponse,
-} from "../../src/types/order";
+} from "../../src/types/orderDto";
 
 export const deliveryApi = {
 	// Expact 주문 목록 조회 (페이징 및 검색 옵션 지원)

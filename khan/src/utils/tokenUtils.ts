@@ -85,4 +85,47 @@ export const tokenUtils = {
 
 		return (decoded.userId as string) || (decoded.sub as string) || null;
 	},
+
+	// 토큰에서 테넌트 ID 추출
+	getTenantId: (): string | null => {
+		const token = localStorage.getItem("app:accessToken");
+		if (!token) return null;
+
+		const decoded = tokenUtils.decodeToken(token);
+		if (!decoded) return null;
+
+		return (decoded.tenantId as string) || (decoded.tenant as string) || null;
+	},
+
+	// 현재 서브도메인과 토큰의 테넌트가 일치하는지 확인
+	// 일치하지 않으면 토큰을 제거하고 false 반환
+	validateTenant: (currentSubdomain: string): boolean => {
+		const token = localStorage.getItem("app:accessToken");
+		if (!token) return false;
+
+		const decoded = tokenUtils.decodeToken(token);
+		if (!decoded) {
+			tokenUtils.removeToken();
+			return false;
+		}
+
+		const tokenTenantId =
+			(decoded.tenantId as string) || (decoded.tenant as string);
+
+		// 테넌트 ID가 없거나 현재 서브도메인과 일치하면 유효
+		if (!tokenTenantId || !currentSubdomain) {
+			return true;
+		}
+
+		// 테넌트가 일치하지 않으면 토큰 제거
+		if (tokenTenantId !== currentSubdomain) {
+			console.warn(
+				`테넌트 불일치 감지: 토큰(${tokenTenantId}) !== 현재(${currentSubdomain})`
+			);
+			tokenUtils.removeToken();
+			return false;
+		}
+
+		return true;
+	},
 };

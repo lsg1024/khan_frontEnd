@@ -4,7 +4,7 @@ import type { ApiResponse } from "./config";
 import type {
 	StoneSearchResponse,
 	StoneCreateRequest,
-} from "../../src/types/stone";
+} from "../../src/types/stoneDto";
 
 export const stoneApi = {
 	// 스톤 검색 (페이징 지원)

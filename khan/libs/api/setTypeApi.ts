@@ -1,6 +1,6 @@
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { SetTypeDto, SetTypeRequest } from "../../src/types/setType";
+import type { SetTypeDto, SetTypeRequest } from "../../src/types/setTypeDto";
 
 type SetTypeResponseSingle = SetTypeDto;
 type SetTypeResponseList = SetTypeDto[];

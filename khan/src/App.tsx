@@ -66,11 +66,24 @@ import "./styles/index.css";
 import { tokenUtils } from "./utils/tokenUtils";
 import { qzTrayService } from "./service/qzTrayService";
 import { ToastProvider } from "./components/common/toast/Toast";
+import { extractSubdomain } from "../libs/domain";
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(() => {
 		const token = tokenUtils.getToken();
-		return !!token;
+		if (!token) return false;
+
+		// 토큰이 있으면 현재 서브도메인과 테넌트 일치 여부 확인
+		const currentSubdomain = extractSubdomain(window.location.hostname);
+		const isValidTenant = tokenUtils.validateTenant(currentSubdomain);
+
+		// 테넌트 불일치 시 로그인 페이지로 리다이렉트
+		if (!isValidTenant) {
+			console.log("테넌트 불일치로 인해 로그인 페이지로 이동합니다.");
+			return false;
+		}
+
+		return true;
 	});
 
 	const handleLogout = () => {

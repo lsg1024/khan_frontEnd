@@ -7,7 +7,7 @@ import type {
 	PastOrderDto,
 	OrderResponseDetail,
 	OrderRequestDetail,
-} from "../../src/types/order";
+} from "../../src/types/orderDto";
 
 export const orderApi = {
 	getOrder: async (

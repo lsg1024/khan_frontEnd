@@ -1,6 +1,6 @@
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { goldHarryResponse } from "../../src/types/goldHarry";
+import type { goldHarryResponse } from "../../src/types/goldHarryDto";
 
 export const goldHarryApi = {
 	getGoldHarry: async (): Promise<ApiResponse<goldHarryResponse[]>> => {

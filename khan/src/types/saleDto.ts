@@ -1,5 +1,6 @@
 import type { PageInfo } from "./pageDto";
 import type { StoneInfo } from "./stoneDto";
+import type { StatusHistory } from "./orderDto";
 
 // 구분 타입 정의
 export type SaleStatusType = "판매" | "결제" | "DC" | "WG" | "결통" | "반품";
@@ -47,6 +48,7 @@ export interface SaleRow {
 	stoneAddLaborCost: number;
 	mainStoneQuantity: number;
 	assistanceStoneQuantity: number;
+	statusHistory?: StatusHistory[];
 }
 
 // 상세 조회

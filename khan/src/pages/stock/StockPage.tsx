@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { orderApi } from "../../../libs/api/orderApi";
 import { stockApi } from "../../../libs/api/stockApi";
 import { getLocalDate } from "../../utils/dateUtils";
@@ -9,12 +9,9 @@ import Pagination from "../../components/common/Pagination";
 import StockBulkActionBar from "../../components/common/stock/StockBulkActionBar";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
-import {
-	printDeliveryBarcode,
-	printProductBarcode,
-	type ProductBarcodeData,
-} from "../../service/barcodePrintService";
-import { useTenant } from "../../tenant/UserTenant";
+import { usePopupManager } from "../../hooks/usePopupManager";
+import { useBarcodeHandler } from "../../hooks/useBarcodeHandler";
+import { useWindowMessage } from "../../hooks/useWindowMessage";
 import {
 	openStockCreatePopup,
 	openStockUpdatePopup,
@@ -34,14 +31,33 @@ export const StockPage = () => {
 	const [orderStatus] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
-	const { tenant } = useTenant();
 
 	// 체크박스 선택 관련 상태 (다중 선택 허용)
 	const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
 
-	const stockCreationPopup = useRef<Window | null>(null);
-	const stockUpdatePopups = useRef<Map<string, Window>>(new Map());
-	const stockSalesPopup = useRef<Window | null>(null);
+	// 팝업 관리
+	const { openSinglePopup, openMultiPopup } = usePopupManager();
+	const { openSinglePopup: openSalesPopup } = usePopupManager();
+
+	// 바코드 출력
+	const { printDeliveryBarcodes, printProductBarcodes } = useBarcodeHandler({
+		items: stocks,
+		dataMapper: (item, subdomain) => ({
+			subdomain,
+			productName: item.productName || "",
+			material: item.materialName || "",
+			color: item.colorName || "",
+			weight: item.goldWeight?.toString() || "",
+			size: item.productSize || "",
+			assistantStoneName: item.assistantStoneName || "",
+			mainStoneMemo: item.mainStoneNote || "",
+			assistantStoneMemo: item.assistanceStoneNote || "",
+			serialNumber: item.flowCode || "",
+		}),
+	});
+
+	// 윈도우 메시지 통신
+	const { on: onMessage, clear: clearMessages } = useWindowMessage();
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
@@ -81,64 +97,15 @@ export const StockPage = () => {
 
 	// No 클릭 시 수정 페이지 열기 (단일 선택)
 	const handleStockNoClick = (flowCode: string) => {
-		const existingPopup = stockUpdatePopups.current.get(flowCode);
-
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.focus();
-		} else {
-			const newPopup = openStockUpdatePopup(flowCode);
-			if (newPopup) {
-				stockUpdatePopups.current.set(flowCode, newPopup);
-
-				// 팝업 닫힘 감지
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						clearInterval(checkClosed);
-						stockUpdatePopups.current.delete(flowCode);
-					}
-				}, 1000);
-			}
-		}
+		openMultiPopup(flowCode, () => openStockUpdatePopup(flowCode));
 	};
 
 	// 시리얼번호 클릭 시 바코드 출력 확인
-	const handleSerialClick = async (flowCode: string) => {
+	const handleSerialClick = (flowCode: string) => {
 		if (!confirm("바코드를 출력하시겠습니까?")) {
 			return;
 		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
-			return;
-		}
-
-		try {
-			const stock = stocks.find((s) => s.flowCode === flowCode);
-			if (!stock) {
-				alert("재고 정보를 찾을 수 없습니다.");
-				return;
-			}
-
-			const barcodeData: ProductBarcodeData = {
-				subdomain: tenant || "",
-				productName: stock.productName || "",
-				material: stock.materialName || "",
-				color: stock.colorName || "",
-				weight: stock.goldWeight?.toString() || "",
-				size: stock.productSize || "",
-				assistantStoneName: stock.assistantStoneName || "",
-				mainStoneMemo: stock.mainStoneNote || "",
-				assistantStoneMemo: stock.assistanceStoneNote || "",
-				serialNumber: stock.flowCode || "",
-			};
-
-			await printDeliveryBarcode(printerName, barcodeData);
-			alert("바코드가 출력되었습니다.");
-		} catch (error) {
-			console.error("바코드 출력 실패:", error);
-			alert("바코드 출력에 실패했습니다.");
-		}
+		printDeliveryBarcodes([flowCode]);
 	};
 
 	// 검색 실행
@@ -170,26 +137,7 @@ export const StockPage = () => {
 	};
 
 	const handleStockCreate = () => {
-		if (stockCreationPopup.current && !stockCreationPopup.current.closed) {
-			stockCreationPopup.current.focus();
-		} else {
-			const newPopup = openStockCreatePopup("normal");
-
-			if (newPopup) {
-				stockCreationPopup.current = newPopup;
-
-				// 팝업 닫힘 감지를 위한 인터벌 설정 (참조 정리만 수행)
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						// 참조만 정리하고 새로고침은 메시지 이벤트에서만 처리
-						clearInterval(checkClosed);
-						stockCreationPopup.current = null;
-					}
-				}, 1000);
-			} else {
-				alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
-			}
-		}
+		openSinglePopup(() => openStockCreatePopup("normal"));
 	};
 
 	// 벌크 액션 핸들러들
@@ -201,26 +149,7 @@ export const StockPage = () => {
 		const NAME = `saleCreatePopup`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
 
-		// 이미 열린 판매 팝업이 있으면 포커스만
-		if (stockSalesPopup.current && !stockSalesPopup.current.closed) {
-			stockSalesPopup.current.focus();
-			return;
-		}
-
-		const newPopup = window.open(url, NAME, FEATURES);
-		if (newPopup) {
-			stockSalesPopup.current = newPopup;
-
-			// 팝업 닫힘 감지
-			const checkClosed = setInterval(() => {
-				if (newPopup.closed) {
-					clearInterval(checkClosed);
-					stockSalesPopup.current = null;
-				}
-			}, 1000);
-		} else {
-			alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
-		}
+		openSalesPopup(() => window.open(url, NAME, FEATURES));
 	};
 
 	const handleRentalRegister = () => {
@@ -323,73 +252,12 @@ export const StockPage = () => {
 	};
 
 	// 바코드 출력 핸들러
-	const handlePrintDeliveryBarcode = async () => {
-		if (selectedStocks.length === 0) {
-			alert("바코드를 출력할 재고를 선택해주세요.");
-			return;
-		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
-			return;
-		}
-
-		try {
-			for (const flowCode of selectedStocks) {
-				const stock = stocks.find((s) => s.flowCode === flowCode);
-				if (!stock) continue;
-
-				const barcodeData: ProductBarcodeData = {
-					subdomain: tenant || "",
-					productName: stock.productName || "",
-					material: stock.materialName || "",
-					color: stock.colorName || "",
-					weight: stock.goldWeight?.toString() || "",
-					size: stock.productSize || "",
-					assistantStoneName: stock.assistantStoneName || "",
-					mainStoneMemo: stock.mainStoneNote || "",
-					assistantStoneMemo: stock.assistanceStoneNote || "",
-					serialNumber: stock.flowCode || "",
-				};
-
-				await printDeliveryBarcode(printerName, barcodeData);
-			}
-			alert(`${selectedStocks.length}개의 바코드가 출력되었습니다.`);
-		} catch (error) {
-			console.error("바코드 출력 실패:", error);
-			alert("바코드 출력에 실패했습니다.");
-		}
+	const handlePrintDeliveryBarcode = () => {
+		printDeliveryBarcodes(selectedStocks);
 	};
 
-	const handlePrintProductBarcode = async () => {
-		if (selectedStocks.length === 0) {
-			alert("바코드를 출력할 재고를 선택해주세요.");
-			return;
-		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
-			return;
-		}
-
-		try {
-			for (const flowCode of selectedStocks) {
-				const stock = stocks.find((s) => s.flowCode === flowCode);
-				if (!stock) continue;
-
-				const barcodeData: ProductBarcodeData = {
-					subdomain: tenant || "",
-					productName: stock.productName || "",
-					serialNumber: stock.flowCode || "",
-				};
-
-				await printProductBarcode(printerName, barcodeData);
-			}
-		} catch (error) {
-			console.error("바코드 출력 실패:", error);
-		}
+	const handlePrintProductBarcode = () => {
+		printProductBarcodes(selectedStocks);
 	};
 
 	// 재고 데이터 로드 함수
@@ -494,41 +362,19 @@ export const StockPage = () => {
 		fetchDropdownData();
 
 		// 메시지 이벤트 리스너 등록
-		const handleMessage = (event: MessageEvent) => {
-			if (event.origin !== window.location.origin) return;
-
-			// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
-			const refreshWithDelay = () => {
-				setTimeout(() => {
-					loadStocks(searchFilters, currentPage);
-					setSelectedStocks([]); // 선택 초기화
-				}, 500);
-			};
-
-			if (event.data.type === "STOCK_CREATED") {
-				refreshWithDelay();
-			}
-
-			if (event.data.type === "STOCK_UPDATED") {
-				refreshWithDelay();
-			}
-
-			if (event.data.type === "STOCK_UPDATE_SUCCESS") {
-				refreshWithDelay();
-			}
-
-			if (event.data.type === "STOCK_REGISTERED") {
-				refreshWithDelay();
-			}
-
-			if (event.data.type === "SALES_REGISTERED") {
-				refreshWithDelay();
-			}
+		const refreshData = () => {
+			loadStocks(searchFilters, currentPage);
+			setSelectedStocks([]);
 		};
 
-		window.addEventListener("message", handleMessage);
+		onMessage("STOCK_CREATED", refreshData, 500);
+		onMessage("STOCK_UPDATED", refreshData, 500);
+		onMessage("STOCK_UPDATE_SUCCESS", refreshData, 500);
+		onMessage("STOCK_REGISTERED", refreshData, 500);
+		onMessage("SALES_REGISTERED", refreshData, 500);
+
 		return () => {
-			window.removeEventListener("message", handleMessage);
+			clearMessages();
 		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 

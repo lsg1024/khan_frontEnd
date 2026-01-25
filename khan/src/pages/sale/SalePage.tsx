@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { saleApi } from "../../../libs/api/saleApi";
 import { getLocalDate } from "../../utils/dateUtils";
 import type { SaleRow } from "../../types/saleDto";
@@ -9,12 +9,9 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import type { SaleSearchFilters } from "../../components/common/sale/SaleSearch";
 import SaleBulkActionBar from "../../components/common/sale/SaleBulkActionBar";
 import "../../styles/pages/sale/SalePage.css";
-import {
-	printDeliveryBarcode,
-	printProductBarcode,
-	type ProductBarcodeData,
-} from "../../service/barcodePrintService";
-import { useTenant } from "../../tenant/UserTenant";
+import { usePopupManager } from "../../hooks/usePopupManager";
+import { useBarcodeHandler } from "../../hooks/useBarcodeHandler";
+import { useWindowMessage } from "../../hooks/useWindowMessage";
 import {
 	openSaleCreatePopup,
 	openSaleDetailPopup,
@@ -28,11 +25,33 @@ export const SalePage = () => {
 	const [totalElements, setTotalElements] = useState(0);
 	const [sales, setSales] = useState<SaleRow[]>([]);
 	const [selected, setSelected] = useState<string[]>([]);
-	const saleCreatePopup = useRef<Window | null>(null);
 	const { handleError } = useErrorHandler();
-	const { tenant } = useTenant();
 
-	const saleDetailPopups = useRef<Map<string, Window>>(new Map());
+	// 팝업 관리
+	const { openSinglePopup, openMultiPopup } = usePopupManager();
+
+	// 바코드 출력
+	const { printDeliveryBarcodes, printProductBarcodes } = useBarcodeHandler({
+		items: sales as unknown as { flowCode: string }[],
+		dataMapper: (item, subdomain) => {
+			const sale = item as unknown as SaleRow;
+			return {
+				subdomain,
+				productName: sale.productName || "",
+				material: sale.materialName || "",
+				color: sale.colorName || "",
+				weight: sale.pureGoldWeight?.toString() || "",
+				size: "",
+				assistantStoneName: sale.assistantName || "",
+				mainStoneMemo: "",
+				assistantStoneMemo: "",
+				serialNumber: sale.flowCode || "",
+			};
+		},
+	});
+
+	// 윈도우 메시지 통신
+	const { on: onMessage, clear: clearMessages } = useWindowMessage();
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SaleSearchFilters>({
@@ -111,24 +130,7 @@ export const SalePage = () => {
 	// No 클릭 시 상세보기 페이지 열기
 	const handleSaleNoClick = (flowCode: string, orderStatus: string) => {
 		const enumStatus = convertSaleTypeToEnum(orderStatus);
-		const existingPopup = saleDetailPopups.current.get(flowCode);
-
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.focus();
-		} else {
-			const newPopup = openSaleDetailPopup(enumStatus, flowCode);
-			if (newPopup) {
-				saleDetailPopups.current.set(flowCode, newPopup);
-
-				// 팝업 닫힘 감지 (메시지로 저장 여부 확인)
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						clearInterval(checkClosed);
-						saleDetailPopups.current.delete(flowCode);
-					}
-				}, 1000);
-			}
-		}
+		openMultiPopup(flowCode, () => openSaleDetailPopup(enumStatus, flowCode));
 	};
 
 	// 검색 실행
@@ -140,21 +142,7 @@ export const SalePage = () => {
 
 	// 판매 생성
 	const handleSaleCreate = () => {
-		if (saleCreatePopup.current && !saleCreatePopup.current.closed) {
-			saleCreatePopup.current.focus();
-		} else {
-			const newPopup = openSaleCreatePopup();
-			if (newPopup) {
-				saleCreatePopup.current = newPopup;
-
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						clearInterval(checkClosed);
-						saleCreatePopup.current = null;
-					}
-				}, 1000);
-			}
-		}
+		openSinglePopup(() => openSaleCreatePopup());
 	};
 
 	// 검색 초기화
@@ -231,113 +219,20 @@ export const SalePage = () => {
 	};
 
 	// 시리얼번호 클릭 시 바코드 출력 확인
-	const handleSerialClick = async (flowCode: string) => {
+	const handleSerialClick = (flowCode: string) => {
 		if (!confirm("바코드를 출력하시겠습니까?")) {
 			return;
 		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
-			return;
-		}
-
-		try {
-			const sale = sales.find((s) => s.flowCode === flowCode);
-			if (!sale) {
-				alert("판매 정보를 찾을 수 없습니다.");
-				return;
-			}
-
-			const barcodeData: ProductBarcodeData = {
-				subdomain: tenant || "",
-				productName: sale.productName || "",
-				material: sale.materialName || "",
-				color: sale.colorName || "",
-				weight: sale.pureGoldWeight?.toString() || "",
-				size: "",
-				assistantStoneName: sale.assistantName || "",
-				mainStoneMemo: "",
-				assistantStoneMemo: "",
-				serialNumber: sale.flowCode || "",
-			};
-
-			await printDeliveryBarcode(printerName, barcodeData);
-			alert("바코드가 출력되었습니다.");
-		} catch (error) {
-			console.error("바코드 출력 실패:", error);
-			alert("바코드 출력에 실패했습니다.");
-		}
+		printDeliveryBarcodes([flowCode]);
 	};
 
 	// 바코드 출력 핸들러
-	const handlePrintDeliveryBarcode = async () => {
-		if (selected.length === 0) {
-			alert("바코드를 출력할 판매를 선택해주세요.");
-			return;
-		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
-			return;
-		}
-
-		try {
-			for (const flowCode of selected) {
-				const sale = sales.find((s) => s.flowCode.toString() === flowCode);
-				if (!sale) continue;
-
-				const barcodeData: ProductBarcodeData = {
-					subdomain: tenant || "",
-					productName: sale.productName || "",
-					material: sale.materialName || "",
-					color: sale.colorName || "",
-					weight: sale.pureGoldWeight?.toString() || "",
-					size: "",
-					assistantStoneName: sale.assistantName || "",
-					mainStoneMemo: "",
-					assistantStoneMemo: "",
-					serialNumber: sale.flowCode || "",
-				};
-
-				await printDeliveryBarcode(printerName, barcodeData);
-			}
-			alert(`${selected.length}개의 바코드가 출력되었습니다.`);
-		} catch (error) {
-			console.error("바코드 출력 실패:", error);
-			alert("바코드 출력에 실패했습니다.");
-		}
+	const handlePrintDeliveryBarcode = () => {
+		printDeliveryBarcodes(selected);
 	};
 
-	const handlePrintProductBarcode = async () => {
-		if (selected.length === 0) {
-			alert("바코드를 출력할 판매를 선택해주세요.");
-			return;
-		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			alert("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)");
-			return;
-		}
-
-		try {
-			for (const flowCode of selected) {
-				const sale = sales.find((s) => s.flowCode.toString() === flowCode);
-				if (!sale) continue;
-
-				const barcodeData: ProductBarcodeData = {
-					subdomain: tenant,
-					productName: sale.productName || "",
-					serialNumber: sale.flowCode || "",
-				};
-
-				await printProductBarcode(printerName, barcodeData);
-			}
-		} catch (error) {
-			console.error("바코드 출력 실패:", error);
-		}
+	const handlePrintProductBarcode = () => {
+		printProductBarcodes(selected);
 	};
 
 	// 반품 처리 - SaleDetailPage 팝업으로 열기
@@ -380,24 +275,7 @@ export const SalePage = () => {
 		const NAME = "sale_return_bulk";
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1400,height=800";
 
-		const existingPopup = saleDetailPopups.current.get("bulk_return");
-
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.focus();
-		} else {
-			const newPopup = window.open(url, NAME, FEATURES);
-			if (newPopup) {
-				saleDetailPopups.current.set("bulk_return", newPopup);
-
-				// 팝업 닫힘 감지 (메시지로 저장 여부 확인)
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						clearInterval(checkClosed);
-						saleDetailPopups.current.delete("bulk_return");
-					}
-				}, 1000);
-			}
-		}
+		openMultiPopup("bulk_return", () => window.open(url, NAME, FEATURES));
 
 		// 선택 해제
 		setSelected([]);
@@ -453,22 +331,15 @@ export const SalePage = () => {
 		loadSales(searchFilters, 1);
 
 		// 메시지 이벤트 리스너 등록 (상세보기 팝업에서 저장 완료 시 새로고침)
-		const handleMessage = (event: MessageEvent) => {
-			if (event.origin !== window.location.origin) return;
-
-			// 저장이 완료된 경우에만 새로고침
-			if (
-				event.data.type === "SALE_SAVED" ||
-				event.data.type === "SALES_REGISTERED"
-			) {
-				loadSales(searchFilters, currentPage);
-			}
+		const refreshData = () => {
+			loadSales(searchFilters, currentPage);
 		};
 
-		window.addEventListener("message", handleMessage);
+		onMessage("SALE_SAVED", refreshData, 500);
+		onMessage("SALES_REGISTERED", refreshData, 500);
 
 		return () => {
-			window.removeEventListener("message", handleMessage);
+			clearMessages();
 		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 

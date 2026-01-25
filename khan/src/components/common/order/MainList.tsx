@@ -1,6 +1,7 @@
 import type { OrderDto } from "../../../types/orderDto";
 import { formatToLocalDate } from "../../../utils/dateUtils";
 import { AuthImage } from "../AuthImage";
+import StatusHistoryTooltip from "../StatusHistoryTooltip";
 
 interface MainListProps {
 	dtos: OrderDto[];
@@ -108,16 +109,18 @@ const MainList = ({
 						</td>
 						<td className="product-name-order">{dto.productName}</td>
 						<td className="info-cell">
-							<div className="info-row-order">
-								<span className="info-value">
-									{formatToLocalDate(dto.createAt)}
-								</span>
-							</div>
-							<div className="info-row-order">
-								<span className="info-value-expect">
-									{formatToLocalDate(dto.shippingAt)}
-								</span>
-							</div>
+							<StatusHistoryTooltip statusHistory={dto.statusHistory}>
+								<div className="info-row-order">
+									<span className="info-value">
+										{formatToLocalDate(dto.createAt)}
+									</span>
+								</div>
+								<div className="info-row-order">
+									<span className="info-value-expect">
+										{formatToLocalDate(dto.shippingAt)}
+									</span>
+								</div>
+							</StatusHistoryTooltip>
 						</td>
 						<td className="order-status-cell">{dto.orderStatus}</td>
 						<td>{dto.storeName}</td>

@@ -1,4 +1,5 @@
 import type { StockResponse } from "../../../types/stockDto";
+import StatusHistoryTooltip from "../StatusHistoryTooltip";
 import "../../../styles/components/stock/StockList.css";
 
 interface StockListProps {
@@ -168,28 +169,12 @@ export const StockList = ({
 								</div>
 							</td>
 							<td className="date-cell">
-								<div className="info-row-order">
-									<span>
-										{stock.createAt
-											? (() => {
-													const date = new Date(stock.createAt);
-													const year = date.getFullYear();
-													const month = String(date.getMonth() + 1).padStart(
-														2,
-														"0"
-													);
-													const day = String(date.getDate()).padStart(2, "0");
-													return `${year}-${month}-${day}`;
-											  })()
-											: "-"}
-									</span>
-								</div>
-								{showShippingAt && (
+								<StatusHistoryTooltip statusHistory={stock.statusHistory}>
 									<div className="info-row-order">
-										<span style={{ color: "red" }}>
-											{stock.shippingAt
+										<span>
+											{stock.createAt
 												? (() => {
-														const date = new Date(stock.shippingAt);
+														const date = new Date(stock.createAt);
 														const year = date.getFullYear();
 														const month = String(date.getMonth() + 1).padStart(
 															2,
@@ -201,7 +186,25 @@ export const StockList = ({
 												: "-"}
 										</span>
 									</div>
-								)}
+									{showShippingAt && (
+										<div className="info-row-order">
+											<span style={{ color: "red" }}>
+												{stock.shippingAt
+													? (() => {
+															const date = new Date(stock.shippingAt);
+															const year = date.getFullYear();
+															const month = String(date.getMonth() + 1).padStart(
+																2,
+																"0"
+															);
+															const day = String(date.getDate()).padStart(2, "0");
+															return `${year}-${month}-${day}`;
+													  })()
+													: "-"}
+											</span>
+										</div>
+									)}
+								</StatusHistoryTooltip>
 							</td>
 							<td
 								className="size-note-content"

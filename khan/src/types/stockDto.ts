@@ -1,5 +1,6 @@
 import type { StoneInfo } from "./stoneDto";
 import type { PageInfo } from "./pageDto";
+import type { StatusHistory } from "./orderDto";
 
 export interface StockOrderRows {
 	createAt: string;
@@ -202,6 +203,7 @@ export interface StockResponse {
 	stoneWeight: string;
 	productPurchaseCost: number;
 	stonePurchaseCost: number;
+	statusHistory?: StatusHistory[];
 }
 
 export interface StockResponseDetail {

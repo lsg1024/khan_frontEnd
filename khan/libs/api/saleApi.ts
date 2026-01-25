@@ -4,14 +4,14 @@ import { v4 as uuidv4 } from "uuid";
 import type {
 	StockRegisterRequest,
 	StockSaleRequest,
-} from "../../src/types/stock";
+} from "../../src/types/stockDto";
 import type {
 	SaleSearchResponse,
 	SaleDetailResponse,
 	SaleUpdateRequest,
 	SalePaymentRequest,
 	SalePrintResponse,
-} from "../../src/types/sale";
+} from "../../src/types/saleDto";
 
 export const saleApi = {
 	getSale: async (

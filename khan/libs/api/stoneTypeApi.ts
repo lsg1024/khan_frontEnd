@@ -1,6 +1,6 @@
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { StoneTypeDto, StoneTypeRequest } from "../../src/types/stoneType";
+import type { StoneTypeDto, StoneTypeRequest } from "../../src/types/stoneTypeDto";
 
 type StoneTypeResponseSingle = StoneTypeDto;
 type StoneTypeResponseList = StoneTypeDto[];

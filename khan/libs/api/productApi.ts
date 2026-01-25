@@ -1,12 +1,12 @@
 // libs/api/product.ts
 import { apiRequest, api } from "./config";
 import type { ApiResponse } from "./config";
-import type { ProductSearchResponse } from "../../src/types/product";
+import type { ProductSearchResponse } from "../../src/types/productDto";
 import type {
 	Product,
 	CreateProductRequest,
 	UpdateProductRequest,
-} from "../../src/types/product";
+} from "../../src/types/productDto";
 
 export const productApi = {
 	// 상품 목록 조회 (페이징 및 검색 옵션 지원)

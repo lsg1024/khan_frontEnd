@@ -1,10 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Pagination from "../../components/common/Pagination";
 import BulkActionBar from "../../components/common/order/BulkActionBar";
 import OrderSearch from "../../components/common/order/OrderSearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { useToast } from "../../components/common/toast/Toast";
 import { useBulkActions } from "../../hooks/useBulkActions";
+import { usePopupManager } from "../../hooks/usePopupManager";
+import { useBarcodeHandler } from "../../hooks/useBarcodeHandler";
+import { useWindowMessage } from "../../hooks/useWindowMessage";
 import { fixApi } from "../../../libs/api/fixApi";
 import { orderApi } from "../../../libs/api/orderApi";
 import FactorySearch from "../../components/common/factory/FactorySearch";
@@ -13,11 +16,6 @@ import type { FactorySearchDto } from "../../types/factoryDto";
 import type { OrderDto } from "../../types/orderDto";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
-import { useTenant } from "../../tenant/UserTenant";
-import {
-	printDeliveryBarcode,
-	printProductBarcode,
-} from "../../service/barcodePrintService";
 import {
 	openProductDetailPopup,
 	openOrderCreatePopup,
@@ -39,16 +37,34 @@ export const FixPage = () => {
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
 	const { showToast } = useToast();
-	const { tenant } = useTenant();
+
+	// 팝업 관리
+	const { openSinglePopup, openMultiPopup, singlePopupRef, multiPopupsRef } = usePopupManager();
+
+	// 바코드 출력
+	const { printDeliveryBarcodes, printProductBarcodes } = useBarcodeHandler({
+		items: fixes,
+		dataMapper: (item, subdomain) => ({
+			subdomain,
+			productName: item.productName || "",
+			material: item.materialName || "",
+			color: item.colorName || "",
+			weight: item.productWeight?.toString() || "",
+			size: item.productSize || "",
+			mainStoneMemo: item.mainStoneNote || "",
+			assistantStoneMemo: item.assistanceStoneNote || "",
+			assistantStoneName: "",
+			serialNumber: item.flowCode || "",
+		}),
+	});
+
+	// 윈도우 메시지 통신
+	const { on: onMessage, clear: clearMessages } = useWindowMessage();
 
 	// 제조사 변경 관련 상태
 	const [isFactorySearchOpen, setIsFactorySearchOpen] = useState(false);
 	const [selectedFixForFactory, setSelectedFixForFactory] =
 		useState<string>("");
-
-	// 체크박스 선택 관련 상태 (단일 선택만 허용)
-	const orderCreationPopup = useRef<Window | null>(null);
-	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
@@ -162,83 +178,16 @@ export const FixPage = () => {
 	});
 
 	// 바코드 출력 핸들러
-	const handlePrintDeliveryBarcode = async () => {
-		if (selectedFix.length === 0) {
-			showToast("출고 바코드를 출력할 항목을 선택해주세요.", "warning", 3000);
-			return;
-		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			showToast("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)", "warning", 4000);
-			return;
-		}
-
-		try {
-			for (const flowCode of selectedFix) {
-				const fix = fixes.find((f) => f.flowCode === flowCode);
-				if (!fix) continue;
-
-				await printDeliveryBarcode(printerName, {
-					subdomain: tenant || "",
-					productName: fix.productName || "",
-					material: fix.materialName || "",
-					color: fix.colorName || "",
-					weight: fix.productWeight?.toString() || "",
-					size: fix.productSize || "",
-					mainStoneMemo: fix.mainStoneNote || "",
-					assistantStoneMemo: fix.assistanceStoneNote || "",
-					serialNumber: fix.flowCode || "",
-				});
-			}
-			showToast(`${selectedFix.length}개의 출고 바코드 출력이 완료되었습니다.`, "success", 3000);
-		} catch {
-			showToast("바코드 출력 중 오류가 발생했습니다.", "error", 4000);
-		}
+	const handlePrintDeliveryBarcode = () => {
+		printDeliveryBarcodes(selectedFix);
 	};
 
-	const handlePrintProductBarcode = async () => {
-		if (selectedFix.length === 0) {
-			showToast("제품 바코드를 출력할 항목을 선택해주세요.", "warning", 3000);
-			return;
-		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			showToast("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)", "warning", 4000);
-			return;
-		}
-
-		try {
-			for (const flowCode of selectedFix) {
-				await printProductBarcode(printerName, {
-					subdomain: tenant || "",
-					productName: "",
-					serialNumber: flowCode,
-				});
-			}
-			showToast(`${selectedFix.length}개의 제품 바코드 출력이 완료되었습니다.`, "success", 3000);
-		} catch {
-			showToast("제품 바코드 출력 기능은 준비 중입니다.", "info", 3000);
-		}
+	const handlePrintProductBarcode = () => {
+		printProductBarcodes(selectedFix);
 	};
 
 	const handleFixCreate = () => {
-		if (orderCreationPopup.current && !orderCreationPopup.current.closed) {
-			orderCreationPopup.current.focus();
-		} else {
-			const newPopup = openOrderCreatePopup("fix");
-			if (newPopup) {
-				orderCreationPopup.current = newPopup;
-
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						clearInterval(checkClosed);
-						orderCreationPopup.current = null;
-					}
-				}, 1000);
-			}
-		}
+		openSinglePopup(() => openOrderCreatePopup("fix"));
 	};
 
 	const handleSelectFix = (flowCode: string, checked: boolean) => {
@@ -259,23 +208,7 @@ export const FixPage = () => {
 			sessionStorage.setItem("tempImagePath", fixData.imagePath);
 		}
 
-		const existingPopup = orderUpdatePopups.current.get(flowCode);
-
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.focus();
-		} else {
-			const newPopup = openOrderUpdatePopup("fix", flowCode);
-			if (newPopup) {
-				orderUpdatePopups.current.set(flowCode, newPopup);
-
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						orderUpdatePopups.current.delete(flowCode);
-						clearInterval(checkClosed);
-					}
-				}, 1000);
-			}
-		}
+		openMultiPopup(flowCode, () => openOrderUpdatePopup("fix", flowCode));
 	};
 
 	// 수리 상태 변경
@@ -379,44 +312,33 @@ export const FixPage = () => {
 	useEffect(() => {
 		const initializeData = async () => {
 			setCurrentPage(1);
-
 			await Promise.all([loadFixes(searchFilters, 1), fetchDropdownData()]);
 		};
 
-		const creationPopupRef = orderCreationPopup;
-		const updatePopupsRef = orderUpdatePopups;
-
 		initializeData();
 
-		const handleOrderCreated = (event: MessageEvent) => {
-			if (event.data && event.data.type === "ORDER_CREATED") {
-				// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
-				setTimeout(() => {
-					loadFixes(searchFilters, 1);
-					setCurrentPage(1);
-				}, 500);
-			}
-		};
+		// 메시지 이벤트 등록
+		onMessage("ORDER_CREATED", () => {
+			loadFixes(searchFilters, 1);
+			setCurrentPage(1);
+		}, 500);
 
-		window.addEventListener("message", handleOrderCreated);
+		onMessage("ORDER_UPDATED", () => {
+			loadFixes(searchFilters, currentPage);
+		}, 500);
+
+		// useBulkActions의 메시지 핸들러도 등록
 		window.addEventListener("message", handleBulkActionMessage);
 
 		return () => {
-			window.removeEventListener("message", handleOrderCreated);
+			clearMessages();
 			window.removeEventListener("message", handleBulkActionMessage);
-			// 주문 생성 팝업 정리
-			if (creationPopupRef.current && !creationPopupRef.current.closed) {
-				creationPopupRef.current = null;
+
+			// 팝업 참조 정리
+			if (singlePopupRef.current && !singlePopupRef.current.closed) {
+				singlePopupRef.current = null;
 			}
-
-			// 주문 상세 팝업들 정리
-			updatePopupsRef.current.forEach((popup) => {
-				if (popup && !popup.closed) {
-					// 팝업 참조만 제거 (실제 창은 닫지 않음)
-				}
-			});
-			updatePopupsRef.current.clear();
-
+			multiPopupsRef.current.clear();
 			cleanupPopups();
 		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps

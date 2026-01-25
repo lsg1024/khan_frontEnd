@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { orderApi } from "../../../libs/api/orderApi";
 import Pagination from "../../components/common/Pagination";
 import BulkActionBar from "../../components/common/order/BulkActionBar";
@@ -6,17 +6,15 @@ import FactorySearch from "../../components/common/factory/FactorySearch";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { useToast } from "../../components/common/toast/Toast";
 import { useBulkActions } from "../../hooks/useBulkActions";
+import { usePopupManager } from "../../hooks/usePopupManager";
+import { useBarcodeHandler } from "../../hooks/useBarcodeHandler";
+import { useWindowMessage } from "../../hooks/useWindowMessage";
 import type { OrderDto } from "../../types/orderDto";
 import type { FactorySearchDto } from "../../types/factoryDto";
 import OrderSearch from "../../components/common/order/OrderSearch";
 import type { SearchFilters } from "../../components/common/order/OrderSearch";
 import MainList from "../../components/common/order/MainList";
 import { getLocalDate } from "../../utils/dateUtils";
-import { useTenant } from "../../tenant/UserTenant";
-import {
-	printDeliveryBarcode,
-	printProductBarcode,
-} from "../../service/barcodePrintService";
 import {
 	openProductDetailPopup,
 	openOrderCreatePopup,
@@ -46,10 +44,29 @@ export const OrderPage = () => {
 
 	const { handleError } = useErrorHandler();
 	const { showToast } = useToast();
-	const { tenant } = useTenant();
 
-	const orderCreationPopup = useRef<Window | null>(null);
-	const orderUpdatePopups = useRef<Map<string, Window>>(new Map());
+	// 팝업 관리
+	const { openSinglePopup, openMultiPopup, singlePopupRef, multiPopupsRef } = usePopupManager();
+
+	// 바코드 출력
+	const { printDeliveryBarcodes, printProductBarcodes } = useBarcodeHandler({
+		items: orders,
+		dataMapper: (item, subdomain) => ({
+			subdomain,
+			productName: item.productName || "",
+			material: item.materialName || "",
+			color: item.colorName || "",
+			weight: item.productWeight?.toString() || "",
+			size: item.productSize || "",
+			mainStoneMemo: item.mainStoneNote || "",
+			assistantStoneMemo: item.assistanceStoneNote || "",
+			assistantStoneName: "",
+			serialNumber: item.flowCode || "",
+		}),
+	});
+
+	// 윈도우 메시지 통신
+	const { on: onMessage, clear: clearMessages } = useWindowMessage();
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
@@ -80,21 +97,7 @@ export const OrderPage = () => {
 	const prevEnd = () => searchFilters.end;
 
 	const handleOrderCreate = () => {
-		if (orderCreationPopup.current && !orderCreationPopup.current.closed) {
-			orderCreationPopup.current.focus();
-		} else {
-			const newPopup = openOrderCreatePopup("order");
-			if (newPopup) {
-				orderCreationPopup.current = newPopup;
-
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						clearInterval(checkClosed);
-						orderCreationPopup.current = null;
-					}
-				}, 1000);
-			}
-		}
+		openSinglePopup(() => openOrderCreatePopup("order"));
 	};
 
 	const handleExcelDownload = async () => {
@@ -148,23 +151,7 @@ export const OrderPage = () => {
 			sessionStorage.setItem("tempImagePath", orderData.imagePath);
 		}
 
-		const existingPopup = orderUpdatePopups.current.get(flowCode);
-
-		if (existingPopup && !existingPopup.closed) {
-			existingPopup.focus();
-		} else {
-			const newPopup = openOrderUpdatePopup("order", flowCode);
-			if (newPopup) {
-				orderUpdatePopups.current.set(flowCode, newPopup);
-
-				const checkClosed = setInterval(() => {
-					if (newPopup.closed) {
-						orderUpdatePopups.current.delete(flowCode);
-						clearInterval(checkClosed);
-					}
-				}, 1000);
-			}
-		}
+		openMultiPopup(flowCode, () => openOrderUpdatePopup("order", flowCode));
 	};
 
 	// 주문 상태 변경
@@ -372,66 +359,12 @@ export const OrderPage = () => {
 	};
 
 	// 바코드 출력 핸들러
-	const handlePrintDeliveryBarcode = async () => {
-		if (selectedOrders.length === 0) {
-			showToast("출고 바코드를 출력할 항목을 선택해주세요.", "warning", 3000);
-			return;
-		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			showToast("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)", "warning", 4000);
-			return;
-		}
-
-		try {
-			for (const flowCode of selectedOrders) {
-				const order = orders.find((o) => o.flowCode === flowCode);
-				if (!order) continue;
-
-				await printDeliveryBarcode(printerName, {
-					subdomain: tenant || "",
-					productName: order.productName || "",
-					material: order.materialName || "",
-					color: order.colorName || "",
-					weight: order.productWeight?.toString() || "",
-					size: order.productSize || "",
-					mainStoneMemo: order.mainStoneNote || "",
-					assistantStoneMemo: order.assistanceStoneNote || "",
-					assistantStoneName: "",
-					serialNumber: order.flowCode || "",
-				});
-			}
-			showToast(`${selectedOrders.length}개의 출고 바코드 출력이 완료되었습니다.`, "success", 3000);
-		} catch {
-			showToast("바코드 출력 중 오류가 발생했습니다.", "error", 4000);
-		}
+	const handlePrintDeliveryBarcode = () => {
+		printDeliveryBarcodes(selectedOrders);
 	};
 
-	const handlePrintProductBarcode = async () => {
-		if (selectedOrders.length === 0) {
-			showToast("제품 바코드를 출력할 항목을 선택해주세요.", "warning", 3000);
-			return;
-		}
-
-		const printerName = localStorage.getItem("preferred_printer_name");
-		if (!printerName) {
-			showToast("프린터를 먼저 설정해주세요. (설정 > 바코드 프린터 설정)", "warning", 4000);
-			return;
-		}
-
-		try {
-			for (const flowCode of selectedOrders) {
-				await printProductBarcode(printerName, {
-					subdomain: tenant || "",
-					productName: "",
-					serialNumber: flowCode,
-				});
-			}
-			showToast(`${selectedOrders.length}개의 제품 바코드 출력이 완료되었습니다.`, "success", 3000);
-		} catch {
-			showToast("제품 바코드 출력 기능은 준비 중입니다.", "info", 3000);
-		}
+	const handlePrintProductBarcode = () => {
+		printProductBarcodes(selectedOrders);
 	};
 
 	const fetchDropdownData = async () => {
@@ -477,45 +410,31 @@ export const OrderPage = () => {
 			await Promise.all([loadOrders(searchFilters, 1), fetchDropdownData()]);
 		};
 
-		const creationPopupRef = orderCreationPopup;
-		const updatePopupsRef = orderUpdatePopups;
-
 		initializeData();
 
-		const handleOrderCreated = (event: MessageEvent) => {
-			if (event.data && event.data.type === "ORDER_CREATED") {
-				// 서버 트랜잭션 커밋 완료 대기 후 주문 목록 새로고침
-				setTimeout(() => {
-					loadOrders(searchFilters, 1);
-					setCurrentPage(1);
-				}, 500);
-			}
-		};
+		// 메시지 이벤트 등록
+		onMessage("ORDER_CREATED", () => {
+			loadOrders(searchFilters, 1);
+			setCurrentPage(1);
+		}, 500);
 
-		const handleOrderUpdated = (event: MessageEvent) => {
-			if (event.data && event.data.type === "ORDER_UPDATED") {
-				// 서버 트랜잭션 커밋 완료 대기 후 주문 목록 새로고침 (현재 페이지 유지)
-				setTimeout(() => {
-					loadOrders(searchFilters, currentPage);
-				}, 500);
-			}
-		};
+		onMessage("ORDER_UPDATED", () => {
+			loadOrders(searchFilters, currentPage);
+		}, 500);
 
-		window.addEventListener("message", handleOrderCreated);
-		window.addEventListener("message", handleOrderUpdated);
+		// useBulkActions의 메시지 핸들러도 등록
 		window.addEventListener("message", handleBulkActionMessage);
 
 		return () => {
-			window.removeEventListener("message", handleOrderCreated);
-			window.removeEventListener("message", handleOrderUpdated);
+			clearMessages();
 			window.removeEventListener("message", handleBulkActionMessage);
 
-			if (creationPopupRef.current && !creationPopupRef.current.closed) {
-				creationPopupRef.current = null;
+			// 팝업 정리
+			if (singlePopupRef.current && !singlePopupRef.current.closed) {
+				singlePopupRef.current = null;
 			}
 
-			updatePopupsRef.current.clear();
-
+			multiPopupsRef.current.clear();
 			cleanupPopups();
 		};
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps

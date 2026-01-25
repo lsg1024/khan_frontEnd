@@ -1,6 +1,11 @@
 import { qzApi } from "../../libs/api/qzApi";
 import type { ApiResponse } from "../../libs/api/config";
 
+// 초기화 상태 플래그
+let isInitialized = false;
+let isInitializing = false;
+let initializePromise: Promise<boolean> | null = null;
+
 const publicKey = `-----BEGIN CERTIFICATE-----
 MIIEATCCAumgAwIBAgIUbOahxVI8LS8+0fNiN9nfTj+LM5kwDQYJKoZIhvcNAQEL
 BQAwgY4xCzAJBgNVBAYTAktSMQ4wDAYDVQQIDAVTZW91bDETMBEGA1UEBwwKRG9u
@@ -27,6 +32,12 @@ fx/3dE+MkSH63WR74CibNrEfXtAI
 -----END CERTIFICATE-----`;
 
 const initialize = (): void => {
+	// 이미 초기화되었으면 스킵
+	if (isInitialized) {
+		console.log("QZ Tray가 이미 초기화되어 있습니다.");
+		return;
+	}
+
 	if (typeof qz === "undefined") {
 		console.error("QZ Tray 스크립트가 로드되지 않아 초기화할 수 없습니다.");
 		return;
@@ -62,6 +73,8 @@ const initialize = (): void => {
 				});
 		};
 	});
+
+	isInitialized = true;
 };
 
 /**
@@ -285,69 +298,89 @@ const printImageBase64 = async (
  * @returns Promise<boolean> 성공 여부
  */
 const autoInitializeAndConnect = async (): Promise<boolean> => {
-	try {
-		console.log("🔄 QZ Tray 자동 초기화 시작...");
+	// 이미 초기화 중이면 진행 중인 Promise 반환
+	if (isInitializing && initializePromise) {
+		console.log("QZ Tray 초기화가 이미 진행 중입니다. 기존 작업을 기다립니다.");
+		return initializePromise;
+	}
 
-		// 1. QZ Tray 초기화
-		initialize();
+	// 이미 초기화 완료되고 연결된 상태면 즉시 반환
+	if (isInitialized && typeof qz !== "undefined" && qz.websocket.isActive()) {
+		console.log("QZ Tray가 이미 초기화되어 연결되어 있습니다.");
+		return true;
+	}
 
-		// 2. QZ Tray 연결
-		const isConnected = await connect();
-		if (!isConnected) {
-			console.warn("⚠️ QZ Tray 연결 실패 - QZ Tray가 실행 중인지 확인하세요.");
-			return false;
-		}
+	isInitializing = true;
 
-		// 3. localStorage에서 저장된 프린터 확인
-		const savedPrinter = localStorage.getItem("preferred_printer_name");
+	initializePromise = (async () => {
+		try {
+			console.log("🔄 QZ Tray 자동 초기화 시작...");
 
-		if (savedPrinter) {
-			console.log(`✅ 저장된 프린터 사용: ${savedPrinter}`);
-			// 프린터가 실제로 존재하는지 확인
+			// 1. QZ Tray 초기화
+			initialize();
+
+			// 2. QZ Tray 연결
+			const isConnected = await connect();
+			if (!isConnected) {
+				console.warn("⚠️ QZ Tray 연결 실패 - QZ Tray가 실행 중인지 확인하세요.");
+				return false;
+			}
+
+			// 3. localStorage에서 저장된 프린터 확인
+			const savedPrinter = localStorage.getItem("preferred_printer_name");
+
+			if (savedPrinter) {
+				console.log(`✅ 저장된 프린터 사용: ${savedPrinter}`);
+				// 프린터가 실제로 존재하는지 확인
+				const printers = await findPrinters();
+				if (printers.includes(savedPrinter)) {
+					console.log(`✅ 프린터 [${savedPrinter}] 연결 준비 완료`);
+					return true;
+				} else {
+					console.warn(
+						`⚠️ 저장된 프린터 [${savedPrinter}]를 찾을 수 없습니다. 기본 프린터를 검색합니다.`
+					);
+					localStorage.removeItem("preferred_printer_name");
+				}
+			}
+
+			// 4. 기본 프린터 자동 검색 및 설정
+			const defaultPrinterName = "Argox OS-214 plus series PPLB";
+			console.log(`🔍 기본 프린터 검색 중: ${defaultPrinterName}`);
+
 			const printers = await findPrinters();
-			if (printers.includes(savedPrinter)) {
-				console.log(`✅ 프린터 [${savedPrinter}] 연결 준비 완료`);
+			console.log(`📋 사용 가능한 프린터 목록:`, printers);
+
+			// 대소문자 구분 없이 부분 일치 검색
+			const foundPrinter = printers.find(
+				(printer) =>
+					printer.toLowerCase().includes("argox") &&
+					printer.toLowerCase().includes("os-214")
+			);
+
+			if (foundPrinter) {
+				console.log(`✅ 기본 프린터 발견: ${foundPrinter}`);
+				localStorage.setItem("preferred_printer_name", foundPrinter);
+				console.log(`💾 프린터가 자동으로 저장되었습니다: ${foundPrinter}`);
 				return true;
 			} else {
 				console.warn(
-					`⚠️ 저장된 프린터 [${savedPrinter}]를 찾을 수 없습니다. 기본 프린터를 검색합니다.`
+					`⚠️ 기본 프린터 [${defaultPrinterName}]를 찾을 수 없습니다.`
 				);
-				localStorage.removeItem("preferred_printer_name");
+				console.log(
+					"ℹ️ 설정 > 바코드 프린터 설정에서 수동으로 프린터를 선택해주세요."
+				);
+				return false;
 			}
-		}
-
-		// 4. 기본 프린터 자동 검색 및 설정
-		const defaultPrinterName = "Argox OS-214 plus series PPLB";
-		console.log(`🔍 기본 프린터 검색 중: ${defaultPrinterName}`);
-
-		const printers = await findPrinters();
-		console.log(`📋 사용 가능한 프린터 목록:`, printers);
-
-		// 대소문자 구분 없이 부분 일치 검색
-		const foundPrinter = printers.find(
-			(printer) =>
-				printer.toLowerCase().includes("argox") &&
-				printer.toLowerCase().includes("os-214")
-		);
-
-		if (foundPrinter) {
-			console.log(`✅ 기본 프린터 발견: ${foundPrinter}`);
-			localStorage.setItem("preferred_printer_name", foundPrinter);
-			console.log(`💾 프린터가 자동으로 저장되었습니다: ${foundPrinter}`);
-			return true;
-		} else {
-			console.warn(
-				`⚠️ 기본 프린터 [${defaultPrinterName}]를 찾을 수 없습니다.`
-			);
-			console.log(
-				"ℹ️ 설정 > 바코드 프린터 설정에서 수동으로 프린터를 선택해주세요."
-			);
+		} catch (error) {
+			console.error("❌ QZ Tray 자동 초기화 중 오류 발생:", error);
 			return false;
+		} finally {
+			isInitializing = false;
 		}
-	} catch (error) {
-		console.error("❌ QZ Tray 자동 초기화 중 오류 발생:", error);
-		return false;
-	}
+	})();
+
+	return initializePromise;
 };
 
 /**

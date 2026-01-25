@@ -1,4 +1,5 @@
 import type { SaleRow } from "../../../types/saleDto";
+import StatusHistoryTooltip from "../StatusHistoryTooltip";
 import "../../../styles/components/sale/SaleList.css";
 
 interface SaleListProps {
@@ -129,18 +130,20 @@ export const SaleList = ({
 								</button>
 							</td>
 							<td className="date-cell" title={sale.createAt}>
-								{sale.createAt
-									? (() => {
-											const date = new Date(sale.createAt);
-											const year = String(date.getFullYear()).slice(-2); // 연도 2자리
-											const month = String(date.getMonth() + 1).padStart(
-												2,
-												"0"
-											);
-											const day = String(date.getDate()).padStart(2, "0");
-											return `${year}-${month}-${day}`;
-									  })()
-									: "-"}
+								<StatusHistoryTooltip statusHistory={sale.statusHistory}>
+									{sale.createAt
+										? (() => {
+												const date = new Date(sale.createAt);
+												const year = String(date.getFullYear()).slice(-2); // 연도 2자리
+												const month = String(date.getMonth() + 1).padStart(
+													2,
+													"0"
+												);
+												const day = String(date.getDate()).padStart(2, "0");
+												return `${year}-${month}-${day}`;
+										  })()
+										: "-"}
+								</StatusHistoryTooltip>
 							</td>
 							<td className="sale-type-cell" title={sale.saleType}>
 								{saleTypeMap[sale.saleType] || sale.saleType}

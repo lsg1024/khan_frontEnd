@@ -20,7 +20,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: var(--spacing-md) var(--spacing-lg);
+	padding: var(--spacing-xs) var(--spacing-lg);
 	background: linear-gradient(
 		135deg,
 		var(--primary-color),
@@ -41,7 +41,7 @@
 
 .top-bar-left h2 {
 	margin: 0;
-	font-size: 1.5rem;
+	font-size: 1rem;
 	font-weight: var(--font-weight-bold);
 	color: var(--text-white);
 }
@@ -265,17 +265,17 @@
 	display: flex;
 	align-items: center;
 	gap: var(--spacing-xs);
-	font-size: var(--font-size-sm);
+	font-size: 0.75rem;
 	color: rgba(255, 255, 255, 0.9);
 	font-weight: var(--font-weight-medium);
 	background-color: rgba(255, 255, 255, 0.1);
-	padding: var(--spacing-xs) var(--spacing-sm);
+	padding: 0.125rem 0.125rem;
 	border-radius: var(--border-radius);
 	border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .user-icon {
-	font-size: 0.9rem;
+	font-size: 0.5rem;
 }
 
 .user-nickname {
@@ -288,7 +288,7 @@
 	background-color: transparent;
 	padding: var(--spacing-xs) var(--spacing-sm);
 	border-radius: var(--border-radius);
-	font-size: var(--font-size-sm);
+	font-size: 0.75rem;
 	transition: var(--transition-fast);
 }
 

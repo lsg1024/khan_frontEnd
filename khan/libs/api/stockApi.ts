@@ -7,7 +7,7 @@ import type {
 	StockUpdateRequest,
 	StockRentalRequest,
 	ResponseDetail,
-} from "../../src/types/stock";
+} from "../../src/types/stockDto";
 
 export const stockApi = {
 	// 등록 전 조회

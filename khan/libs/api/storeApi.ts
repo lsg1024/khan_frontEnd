@@ -6,7 +6,7 @@ import type {
 	StoreReceivableResponse,
 	StoreReceivableSaleLogResponse,
 	AccountInfoDto,
-} from "../../src/types/store";
+} from "../../src/types/storeDto";
 import type {
 	AccountSingleResponse,
 	StoreCreateRequest,

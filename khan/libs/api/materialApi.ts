@@ -1,7 +1,7 @@
 // libs/api/material.ts
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { MaterialDto } from "../../src/types/material";
+import type { MaterialDto } from "../../src/types/materialDto";
 
 export const materialApi = {
     // 재질 목록 조회

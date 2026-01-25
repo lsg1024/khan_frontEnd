@@ -1,6 +1,14 @@
 import type { PageInfo } from "./pageDto";
 import type { StoneInfo } from "./stoneDto";
 
+// 상태 이력 타입
+export interface StatusHistory {
+	phase: string;
+	kind: string;
+	statusCreateAt: string;
+	statusCreateBy: string;
+}
+
 export interface OrderResponseDetail {
     createAt: string;
     shippingAt: string;
@@ -99,6 +107,7 @@ export interface OrderDto {
 	imagePath: string;
 	productStatus: string;
 	orderStatus: string;
+	statusHistory?: StatusHistory[];
 }
 
 // 주문 생성 요청 데이터 (백엔드 JSON 구조와 정확히 일치)

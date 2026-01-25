@@ -4,13 +4,13 @@ import type { ApiResponse } from "./config";
 import type {
 	FactorySearchResponse,
 	FactoryPurchaseResponse,
-} from "../../src/types/factory";
+} from "../../src/types/factoryDto";
 import type {
 	AccountSingleResponse,
 	FactoryCreateRequest,
 	FactoryUpdateRequest,
 } from "../../src/types/AccountDto";
-import type { TransactionPageResponse } from "../../src/types/store";
+import type { TransactionPageResponse } from "../../src/types/storeDto";
 
 export const factoryApi = {
 	// 제조사 검색 (페이징 지원)
