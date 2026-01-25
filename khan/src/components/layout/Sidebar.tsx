@@ -10,6 +10,7 @@ interface SidebarItem {
 
 interface SidebarProps {
 	isOpen?: boolean;
+	onClose?: () => void;
 }
 
 const sidebarItems: SidebarItem[] = [
@@ -82,13 +83,15 @@ const sidebarItems: SidebarItem[] = [
 	{ path: "/settings", label: "기초 관리", icon: "⚙️" }
 ];
 
-export const Sidebar = ({ isOpen = true }: SidebarProps) => {
+export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
 	const handleNavigation = (path: string) => {
 		navigate(path);
+		// 모바일에서 메뉴 선택 시 사이드바 닫기
+		onClose?.();
 	};
 
 	const toggleExpanded = (path: string) => {

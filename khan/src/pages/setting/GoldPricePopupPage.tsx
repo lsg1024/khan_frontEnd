@@ -70,6 +70,20 @@ export default function GoldPricePopupPage(): JSX.Element {
 		}
 	};
 
+	// 금 시세 로그 페이지로 이동
+	const handleOpenLogPage = () => {
+		const width = 600;
+		const height = 600;
+		const left = window.screenX + (window.outerWidth - width) / 2;
+		const top = window.screenY + (window.outerHeight - height) / 2;
+
+		window.open(
+			`/gold-price-log`,
+			`gold_price_log_popup`,
+			`width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+		);
+	};
+
 	useEffect(() => {
 		fetchCurrentPrice();
 	}, []);
@@ -83,7 +97,16 @@ export default function GoldPricePopupPage(): JSX.Element {
 			<div className="popup-content">
 				{/* 현재 금 시세 표시 */}
 				<div className="current-price-section">
-					<div className="section-title">현재 금 시세</div>
+					<div className="section-header">
+						<div className="section-title">현재 금 시세</div>
+						<button
+							className="btn-log-small"
+							onClick={handleOpenLogPage}
+							disabled={loading}
+						>
+							변경 내역
+						</button>
+					</div>
 					<div className="price-display">
 						{loading ? (
 							<span className="loading-text">로딩 중...</span>
@@ -130,17 +153,6 @@ export default function GoldPricePopupPage(): JSX.Element {
 				<div className="info-message">
 					<span className="info-icon">ℹ️</span>
 					<span>설정된 금 시세는 상품의 시세가 계산에 사용됩니다.</span>
-				</div>
-
-				{/* 버튼 영역 */}
-				<div className="button-group">
-					<button
-						className="btn-cancel"
-						onClick={() => window.close()}
-						disabled={loading}
-					>
-						닫기
-					</button>
 				</div>
 			</div>
 		</div>

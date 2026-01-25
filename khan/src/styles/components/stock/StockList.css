@@ -3,12 +3,11 @@
 	overflow-x: auto;
 	background-color: white;
 	border-radius: 8px;
-	overflow: hidden;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	max-width: 1200px;
-	min-width: 1200px;
 	margin: 0 auto;
 	width: 100%;
+	-webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
 }
 
 .stock-table {
@@ -314,14 +313,71 @@
 	color: #0056b3;
 }
 
+/* 태블릿 (1199px 이하) */
+@media (max-width: 1199px) {
+	.stock-list {
+		max-width: 100%;
+		border-radius: 4px;
+	}
+}
+
+/* 모바일 (768px 이하) */
 @media (max-width: 768px) {
+	.stock-list {
+		border-radius: 0;
+		box-shadow: none;
+	}
+
 	.stock-table {
-		font-size: 12px;
-		min-width: 1400px;
+		font-size: 10px;
+		min-width: 1000px; /* 가로 스크롤 유도 */
 	}
 
 	.stock-table th,
 	.stock-table td {
-		padding: 6px;
+		padding: 4px;
+	}
+
+	/* 셀 크기 축소 */
+	.serial-cell {
+		width: 50px;
+		min-width: 50px;
+	}
+
+	.order-cell {
+		width: 25px;
+		min-width: 25px;
+	}
+
+	.size-note-cell,
+	.size-note-content {
+		min-width: 40px;
+	}
+
+	.stone-note-cell,
+	.stone-note-content {
+		min-width: 60px;
+	}
+
+	/* 툴팁 비활성화 (터치 디바이스) */
+	.stock-table td[title]:hover::after,
+	.stock-table td[title]:hover::before {
+		display: none;
+	}
+}
+
+/* 작은 모바일 (480px 이하) */
+@media (max-width: 480px) {
+	.stock-table {
+		font-size: 9px;
+	}
+
+	.stock-table th,
+	.stock-table td {
+		padding: 3px;
+	}
+
+	.serial-btn {
+		font-size: 9px;
 	}
 }

@@ -178,3 +178,144 @@
 	border-top: 1px solid #efefef;
 	background-color: white !important;
 }
+
+/* 태블릿 반응형 (1024px 이하) */
+@media (max-width: 1024px) {
+	.search-products-grid {
+		grid-template-columns: repeat(4, 1fr);
+	}
+
+	.search-product-modal-content {
+		width: 95%;
+		height: 85vh;
+	}
+}
+
+/* 모바일 반응형 (768px 이하) */
+@media (max-width: 768px) {
+	.product-search-page {
+		height: auto;
+		min-height: 100vh;
+	}
+
+	.product-search-header {
+		padding: 10px 12px;
+	}
+
+	.product-search-header h2 {
+		font-size: 14px;
+	}
+
+	.search-products-grid {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 6px;
+		padding: 6px;
+		align-content: start;
+	}
+
+	.search-product-modal-content {
+		width: 100%;
+		max-width: 100%;
+		height: 100%;
+		border-radius: 0;
+	}
+
+	.search-product-card {
+		width: 100%;
+	}
+
+	.search-product-image {
+		height: 110px;
+		padding: 4px;
+	}
+
+	.search-product-info {
+		padding: 6px;
+	}
+
+	.search-product-name {
+		font-size: 12px;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+	}
+
+	.search-product-details {
+		font-size: 9px;
+	}
+
+	.search-detail-row {
+		padding: 1px 0;
+	}
+
+	.search-labor-cost,
+	.search-selling-price {
+		font-size: 9px;
+	}
+
+	.pagination-footer-product {
+		padding: 8px;
+	}
+
+	.product-no-image span {
+		font-size: 1.2rem;
+	}
+
+	.product-no-image p {
+		font-size: 9px;
+	}
+}
+
+/* 작은 모바일 (480px 이하) */
+@media (max-width: 480px) {
+	.product-search-header {
+		padding: 8px 10px;
+	}
+
+	.product-search-header h2 {
+		font-size: 12px;
+	}
+
+	.search-products-grid {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 4px;
+		padding: 4px;
+	}
+
+	.search-product-card {
+		border-radius: 4px;
+	}
+
+	.search-product-image {
+		height: 90px;
+		padding: 2px;
+	}
+
+	.search-product-info {
+		padding: 4px;
+	}
+
+	.search-product-name {
+		font-size: 11px;
+	}
+
+	.search-product-details {
+		font-size: 8px;
+	}
+
+	.search-labor-cost,
+	.search-selling-price {
+		font-size: 8px;
+	}
+
+	.pagination-footer-product {
+		padding: 6px;
+	}
+
+	.product-no-image span {
+		font-size: 1rem;
+	}
+
+	.product-no-image p {
+		font-size: 8px;
+	}
+}

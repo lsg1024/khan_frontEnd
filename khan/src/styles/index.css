@@ -9,3 +9,4 @@
 @import "./utils/common.css";
 @import "./utils/layout.css";
 @import "./utils/pagination.css";
+@import "./utils/responsive.css"; /* 모바일 반응형 스타일 */

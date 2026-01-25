@@ -27,3 +27,38 @@
 }
 
 /* Spinner는 global.css에 정의됨 */
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+	.stock-create-page {
+		padding: 8px;
+		overflow-x: auto;
+	}
+
+	.form-actions {
+		flex-wrap: wrap;
+		gap: 8px;
+		padding: 8px 0;
+	}
+
+	.form-actions button {
+		flex: 1 1 calc(50% - 4px);
+		min-width: 100px;
+		font-size: 13px;
+		padding: 10px 12px;
+	}
+
+	.loading-container {
+		min-height: 200px;
+	}
+}
+
+@media (max-width: 480px) {
+	.stock-create-page {
+		padding: 5px;
+	}
+
+	.form-actions button {
+		flex: 1 1 100%;
+	}
+}

@@ -63,6 +63,23 @@
 	/* 레이아웃 - 컨텐츠 최대 너비 */
 	--content-max-width-desktop: 1400px;
 	--content-max-width-tablet: 1200px;
+
+	/* 반응형 브레이크포인트 */
+	--breakpoint-xl: 1200px;
+	--breakpoint-lg: 1024px;
+	--breakpoint-md: 768px;
+	--breakpoint-sm: 480px;
+
+	/* 모바일 폰트 크기 */
+	--font-size-mobile-base: 14px;
+	--font-size-mobile-sm: 12px;
+	--font-size-mobile-xs: 10px;
+
+	/* 모바일 간격 */
+	--spacing-mobile-xs: 4px;
+	--spacing-mobile-sm: 8px;
+	--spacing-mobile-md: 12px;
+	--spacing-mobile-lg: 16px;
 }
 
 /* ===== 다크 모드 지원 ===== */

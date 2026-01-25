@@ -53,3 +53,63 @@
 	font-size: 16px;
 	margin: 0;
 }
+
+/* 모바일 반응형 */
+@media (max-width: 1024px) {
+	.sale-create-top-row {
+		flex-direction: column;
+	}
+
+	.product-image-section {
+		flex: none;
+		width: 100%;
+		margin-right: 0;
+		margin-bottom: 8px;
+		max-height: 200px;
+	}
+
+	.sale-create-top-row .sale-option-container {
+		flex: none;
+		width: 100%;
+		margin-right: 0;
+		margin-bottom: 8px;
+	}
+
+	.sale-create-top-row .gold-history-container {
+		width: 100%;
+	}
+}
+
+@media (max-width: 768px) {
+	.sale-create-page {
+		padding: 10px;
+		overflow-x: auto;
+	}
+
+	.sale-create-top-row {
+		margin-bottom: 4px;
+	}
+
+	.product-image-section {
+		max-height: 150px;
+	}
+
+	.product-image-placeholder {
+		padding: 15px;
+		max-height: 150px;
+	}
+
+	.product-image-placeholder p {
+		font-size: 14px;
+	}
+}
+
+@media (max-width: 480px) {
+	.sale-create-page {
+		padding: 8px;
+	}
+
+	.product-image-section {
+		max-height: 120px;
+	}
+}

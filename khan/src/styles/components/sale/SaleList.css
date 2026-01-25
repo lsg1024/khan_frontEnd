@@ -249,14 +249,84 @@
 	color: var(--text-color);
 }
 
+/* 태블릿 (1199px 이하) */
+@media (max-width: 1199px) {
+	.sale-list {
+		max-width: 100%;
+		border-radius: 4px;
+	}
+}
+
+/* 모바일 (768px 이하) */
 @media (max-width: 768px) {
+	.sale-list {
+		border-radius: 0;
+		box-shadow: none;
+	}
+
 	.sale-table {
-		font-size: 12px;
-		min-width: 1400px;
+		font-size: 10px;
+		min-width: 900px; /* 가로 스크롤 유도 */
 	}
 
 	.sale-table th,
 	.sale-table td {
-		padding: 6px;
+		padding: 3px 2px;
+	}
+
+	/* 셀 크기 축소 */
+	.no-cell {
+		width: 25px;
+		min-width: 25px;
+	}
+
+	.date-cell {
+		width: 50px;
+		max-width: 80px !important;
+	}
+
+	.store-cell {
+		width: 60px;
+		min-width: 60px;
+	}
+
+	.sale-code-cell {
+		width: 50px;
+		max-width: 80px;
+	}
+
+	.product-cell {
+		width: 80px;
+		min-width: 80px;
+	}
+
+	.note-cell {
+		width: 60px;
+		min-width: 60px;
+	}
+
+	/* 로딩/빈 데이터 메시지 */
+	.loading-message,
+	.no-data-message {
+		padding: 40px 15px;
+		font-size: 14px;
+	}
+}
+
+/* 작은 모바일 (480px 이하) */
+@media (max-width: 480px) {
+	.sale-table {
+		font-size: 9px;
+	}
+
+	.sale-table th,
+	.sale-table td {
+		padding: 2px;
+	}
+
+	.loading-message,
+	.no-data-message {
+		padding: 30px 10px;
+		font-size: 12px;
 	}
 }

@@ -40,11 +40,39 @@
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.gold-price-popup .section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
 .gold-price-popup .section-title {
 	font-size: 14px;
 	font-weight: 500;
 	color: #666;
-	margin-bottom: 12px;
+	margin-bottom: 0;
+}
+
+.gold-price-popup .btn-log-small {
+	padding: 6px 12px;
+	background-color: #6c757d;
+	color: #fff;
+	border: none;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.gold-price-popup .btn-log-small:hover:not(:disabled) {
+	background-color: #5a6268;
+}
+
+.gold-price-popup .btn-log-small:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
 }
 
 .gold-price-popup .price-display {
@@ -77,6 +105,10 @@
 	border-radius: 8px;
 	padding: 24px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.gold-price-popup .new-price-section .section-title {
+	margin-bottom: 12px;
 }
 
 .gold-price-popup .input-with-button {
@@ -187,6 +219,15 @@
 	cursor: pointer;
 	transition: all 0.2s;
 	border: none;
+}
+
+.gold-price-popup .btn-log {
+	background-color: #6c757d;
+	color: #fff;
+}
+
+.gold-price-popup .btn-log:hover:not(:disabled) {
+	background-color: #5a6268;
 }
 
 .gold-price-popup .btn-cancel {

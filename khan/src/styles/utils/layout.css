@@ -52,23 +52,28 @@
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	width: 32px;
-	height: 32px;
-	background: transparent;
-	border: none;
+	width: 36px;
+	height: 36px;
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.2);
 	cursor: pointer;
-	padding: 4px;
+	padding: 6px;
 	border-radius: var(--border-radius);
 	transition: background-color 0.2s ease;
+	flex-shrink: 0;
 }
 
 .sidebar-toggle-btn:hover {
-	background-color: rgba(255, 255, 255, 0.1);
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-toggle-btn:active {
+	background-color: rgba(255, 255, 255, 0.3);
 }
 
 .hamburger-line {
 	display: block;
-	width: 20px;
+	width: 18px;
 	height: 2px;
 	background-color: var(--text-white);
 	margin: 2px 0;
@@ -523,5 +528,135 @@
 @media screen and (max-width: 1024px) {
 	.mobile-menu-toggle {
 		display: block;
+	}
+}
+
+/* ===== 모바일 사이드바 (767px 이하) ===== */
+@media screen and (max-width: 767px) {
+	/* 사이드바 전체 화면 오버레이 */
+	.sidebar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 100vh;
+		width: 280px;
+		max-width: 85vw;
+		z-index: 1000;
+		box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+		transform: translateX(-100%);
+	}
+
+	.sidebar.open {
+		transform: translateX(0);
+	}
+
+	.sidebar.closed {
+		transform: translateX(-100%);
+	}
+
+	/* 사이드바 오버레이 배경 */
+	.sidebar-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		background-color: rgba(0, 0, 0, 0.5);
+		z-index: 999;
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.3s ease, visibility 0.3s ease;
+	}
+
+	.sidebar-overlay.visible {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	/* 레이아웃 바디 */
+	.layout-body {
+		flex-direction: column;
+	}
+
+	/* 메인 컨텐츠 전체 너비 */
+	.main-content {
+		width: 100%;
+		overflow-x: auto;
+	}
+
+	/* TopBar 모바일 스타일 */
+	.top-bar {
+		position: sticky;
+		top: 0;
+		z-index: 100;
+	}
+
+	.top-bar-left {
+		gap: 8px;
+	}
+
+	.top-bar-left h2 {
+		font-size: 14px;
+		max-width: 150px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	/* 토큰 타이머 숨김 (작은 화면) */
+	.token-timer {
+		min-width: auto;
+		padding: 4px 8px;
+	}
+
+	.timer-text {
+		display: none;
+	}
+
+	.timer-icon {
+		font-size: 16px;
+	}
+
+	/* 로그아웃 버튼 */
+	.btn-outline-light {
+		padding: 4px 8px;
+		font-size: 11px;
+	}
+}
+
+/* ===== 작은 모바일 (480px 이하) ===== */
+@media screen and (max-width: 480px) {
+	.sidebar {
+		width: 100%;
+		max-width: 280px;
+	}
+
+	.top-bar-left h2 {
+		font-size: 12px;
+		max-width: 100px;
+	}
+
+	.sidebar-toggle-btn {
+		width: 32px;
+		height: 32px;
+		padding: 4px;
+	}
+
+	.hamburger-line {
+		width: 16px;
+		height: 2px;
+	}
+}
+
+/* 모바일에서 사이드바 토글 버튼 강조 */
+@media screen and (max-width: 767px) {
+	.sidebar-toggle-btn {
+		background: rgba(255, 255, 255, 0.15);
+		border: 1px solid rgba(255, 255, 255, 0.3);
+	}
+
+	.sidebar-toggle-btn:active {
+		background-color: rgba(255, 255, 255, 0.35);
+		transform: scale(0.95);
 	}
 }

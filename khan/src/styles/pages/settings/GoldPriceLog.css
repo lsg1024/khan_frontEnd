@@ -1,0 +1,224 @@
+.gold-price-log-page {
+	width: 100%;
+	height: 100vh;
+	background-color: #f5f5f5;
+	display: flex;
+	flex-direction: column;
+}
+
+.gold-price-log-page .log-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: #fff;
+	padding: 16px 24px;
+	border-bottom: 1px solid #e0e0e0;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.gold-price-log-page .log-header h2 {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	color: #333;
+}
+
+.gold-price-log-page .btn-back {
+	padding: 8px 16px;
+	background-color: #f5f5f5;
+	color: #666;
+	border: none;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.gold-price-log-page .btn-back:hover {
+	background-color: #e0e0e0;
+}
+
+.gold-price-log-page .log-content {
+	flex: 1;
+	padding: 20px;
+	overflow-y: auto;
+}
+
+/* 로딩 상태 */
+.gold-price-log-page .loading-state,
+.gold-price-log-page .empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 200px;
+	color: #666;
+}
+
+.gold-price-log-page .spinner {
+	width: 32px;
+	height: 32px;
+	border: 3px solid #f3f3f3;
+	border-top: 3px solid #d4af37;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin-bottom: 12px;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* 테이블 컨테이너 */
+.gold-price-log-page .log-table-container {
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	overflow: hidden;
+}
+
+/* 테이블 스타일 */
+.gold-price-log-page .log-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+
+.gold-price-log-page .log-table thead {
+	background-color: #f8f9fa;
+	border-bottom: 2px solid #e0e0e0;
+}
+
+.gold-price-log-page .log-table th {
+	padding: 12px 16px;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	white-space: nowrap;
+}
+
+.gold-price-log-page .log-table tbody tr {
+	border-bottom: 1px solid #f0f0f0;
+	transition: background-color 0.2s;
+}
+
+.gold-price-log-page .log-table tbody tr:hover {
+	background-color: #fafafa;
+}
+
+.gold-price-log-page .log-table td {
+	padding: 12px 16px;
+	text-align: center;
+	color: #333;
+}
+
+/* 컬럼별 스타일 */
+.gold-price-log-page .col-no {
+	width: 60px;
+	color: #999;
+	font-size: 13px;
+}
+
+.gold-price-log-page .col-price {
+	font-weight: 600;
+	color: #d4af37;
+	font-size: 15px;
+}
+
+.gold-price-log-page .col-change {
+	width: 100px;
+}
+
+.gold-price-log-page .change-up {
+	color: #dc3545;
+	font-weight: 500;
+}
+
+.gold-price-log-page .change-down {
+	color: #007bff;
+	font-weight: 500;
+}
+
+.gold-price-log-page .change-neutral {
+	color: #999;
+}
+
+.gold-price-log-page .col-date {
+	color: #666;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+	.gold-price-log-page .log-header {
+		padding: 12px 16px;
+	}
+
+	.gold-price-log-page .log-header h2 {
+		font-size: 16px;
+	}
+
+	.gold-price-log-page .btn-back {
+		padding: 6px 12px;
+		font-size: 13px;
+	}
+
+	.gold-price-log-page .log-content {
+		padding: 12px;
+	}
+
+	.gold-price-log-page .log-table {
+		font-size: 12px;
+	}
+
+	.gold-price-log-page .log-table th,
+	.gold-price-log-page .log-table td {
+		padding: 10px 8px;
+	}
+
+	.gold-price-log-page .col-price {
+		font-size: 13px;
+	}
+
+	.gold-price-log-page .col-date {
+		font-size: 11px;
+	}
+}
+
+@media (max-width: 480px) {
+	.gold-price-log-page .log-header {
+		padding: 10px 12px;
+	}
+
+	.gold-price-log-page .log-header h2 {
+		font-size: 14px;
+	}
+
+	.gold-price-log-page .log-content {
+		padding: 8px;
+	}
+
+	.gold-price-log-page .log-table {
+		font-size: 11px;
+	}
+
+	.gold-price-log-page .log-table th,
+	.gold-price-log-page .log-table td {
+		padding: 8px 6px;
+	}
+
+	.gold-price-log-page .col-no {
+		width: 40px;
+	}
+
+	.gold-price-log-page .col-change {
+		width: 70px;
+	}
+}
