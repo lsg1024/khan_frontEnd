@@ -127,6 +127,22 @@ export const orderApi = {
 		return apiRequest.patch("order/orders/factory", requestBody, { params });
 	},
 
+	// 판매처 변경
+	updateOrderStore: async (
+		flowCode: string,
+		storeId: number,
+		storeName: string
+	): Promise<ApiResponse<string>> => {
+		const requestBody = {
+			storeId: storeId,
+			storeName: storeName,
+		};
+		const params = {
+			id: flowCode,
+		};
+		return apiRequest.patch("order/orders/store", requestBody, { params });
+	},
+
 	// 주문 생성
 	createOrder: async (
 		orderType: string,

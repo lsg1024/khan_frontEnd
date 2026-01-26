@@ -6,12 +6,14 @@ interface StoreSearchProps {
 	onSelectStore: (store: StoreSearchDto | AccountInfoDto) => void;
 	onClose?: () => void;
 	useReceivableApi?: boolean; // 미수 금액 포함 API 사용 여부
+	initialSearch?: string; // 초기 검색어 (팝업 열릴 때 자동 검색)
 }
 
 const StoreSearch: React.FC<StoreSearchProps> = ({
 	onSelectStore,
 	onClose,
 	useReceivableApi: useReceivableApi = false,
+	initialSearch = "",
 }) => {
 	// 함수들을 ref로 저장하여 리렌더링 시에도 동일한 참조 유지
 	const onSelectStoreRef = useRef(onSelectStore);
@@ -25,10 +27,12 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 
 	// 컴포넌트가 마운트되면 자동으로 팝업 열기
 	useEffect(() => {
-		// 팝업 창 열기 (useReceivableApi 파라미터 전달)
-		const url = useReceivableApi
-			? "/store-search?useReceivable=true"
-			: "/store-search";
+		// 팝업 창 열기 (useReceivableApi, initialSearch 파라미터 전달)
+		const params = new URLSearchParams();
+		if (useReceivableApi) params.set("useReceivable", "true");
+		if (initialSearch) params.set("search", initialSearch);
+		const queryString = params.toString();
+		const url = `/store-search${queryString ? `?${queryString}` : ""}`;
 
 		// 새 팝업 열기 - 같은 이름으로 열면 기존 팝업이 자동으로 대체됨
 		const popup = window.open(
@@ -66,7 +70,7 @@ const StoreSearch: React.FC<StoreSearchProps> = ({
 			window.removeEventListener("message", handleMessage);
 			clearInterval(checkClosed);
 		};
-	}, [useReceivableApi]); // useReceivableApi 의존성 추가
+	}, [useReceivableApi, initialSearch]);
 
 	return null; // 실제 UI는 팝업에서 렌더링
 };

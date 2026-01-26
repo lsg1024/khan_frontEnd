@@ -245,6 +245,30 @@ export const SaleCreatePage = () => {
 		setShowStoreSearch(false);
 	};
 
+	// 거래처 직접 검색 (Enter 키)
+	const handleDirectStoreSearch = async (searchTerm: string) => {
+		try {
+			const response = await storeApi.getStores(searchTerm, 1, 50);
+			const stores = response.data?.content || [];
+
+			// 완전 일치 검사 (대소문자 무시)
+			const exactMatch = stores.find(
+				(store) =>
+					store.accountName.toLowerCase() === searchTerm.toLowerCase()
+			);
+
+			if (exactMatch) {
+				await handleStoreSelect(exactMatch);
+			} else if (stores.length > 0) {
+				handleCustomerSearchOpen();
+			} else {
+				showToast("검색 결과가 없습니다.", "warning", 2000);
+			}
+		} catch (err) {
+			handleError(err);
+		}
+	};
+
 	// 기존 판매장 확인 및 사용자 선택 처리
 	const checkAndConfirmExistingSale = async (
 		storeId: string
@@ -1388,6 +1412,7 @@ export const SaleCreatePage = () => {
 						options={saleOptions}
 						onOptionChange={handleOptionChange}
 						onCustomerSearchOpen={handleCustomerSearchOpen}
+						onDirectStoreSearch={handleDirectStoreSearch}
 						disabled={loading}
 						hasWGStatus={hasWGStatus}
 						isStoreLoadedFromApi={isStoreLoadedFromApi}

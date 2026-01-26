@@ -52,6 +52,12 @@ const StatusHistoryTooltip = ({
 								<span className="status-phase">{history.phase}</span>
 								<span className="status-arrow">→</span>
 								<span className="status-kind">{history.kind}</span>
+								{history.content && (
+									<>
+										<span className="status-divider">|</span>
+										<span className="status-content">{history.content}</span>
+									</>
+								)}
 								<span className="status-divider">|</span>
 								<span className="status-date">{history.statusCreateAt}</span>
 								<span className="status-divider">|</span>

@@ -6,6 +6,8 @@ import { colorApi } from "../../../libs/api/colorApi";
 import { priorityApi } from "../../../libs/api/priorityApi";
 import { productApi } from "../../../libs/api/productApi";
 import { assistantStoneApi } from "../../../libs/api/assistantStoneApi";
+import { storeApi } from "../../../libs/api/storeApi";
+import { factoryApi } from "../../../libs/api/factoryApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { useSearchModal } from "../../hooks/useSearchModal";
 import { usePreviousRowCopy } from "../../hooks/usePreviousRowCopy";
@@ -204,7 +206,7 @@ const OrderCreatePage = () => {
 							stoneAddLaborCost: "",
 							mainStoneCount: "",
 							assistanceStoneCount: "",
-							stoneWeightTotal: "",
+							stoneWeightTotal: 0,
 							createAt: currentDate,
 							shippingAt: deliveryDate,
 							// 보조석 관련 필드들을 서버 데이터 기반으로 초기화
@@ -444,353 +446,417 @@ const OrderCreatePage = () => {
 	};
 
 	// 거래처 검색 모달 열기
-	const openStoreSearch = (rowId: string) => {
-		storeModal.openModal(rowId);
+	const openStoreSearch = (rowId: string, initialSearch?: string) => {
+		storeModal.openModal(rowId, initialSearch ? { search: initialSearch } : {});
 	};
 
-	// 거래처 선택 처리
-	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
-		if (storeModal.selectedRowId) {
-			const storeIdValue = store.accountId?.toString();
-			const rowId = storeModal.selectedRowId;
-			const newGrade = store.grade || "1";
+	// 거래처 직접 검색 (Enter 키로 검색 후 완전 일치 시 자동 선택)
+	// 반환값: true = 성공(자동 선택됨), false = 실패(팝업 열림 또는 결과 없음)
+	const handleDirectStoreSearch = async (
+		rowId: string,
+		searchTerm: string
+	): Promise<boolean> => {
+		try {
+			const response = await storeApi.getStores(searchTerm, 1, 50);
+			const stores = response.data?.content || [];
 
-			updateOrderRow(rowId, "storeId", storeIdValue);
-			updateOrderRow(rowId, "storeName", store.accountName || "");
-			updateOrderRow(rowId, "storeHarry", store.goldHarryLoss || "");
-			updateOrderRow(rowId, "storeGrade", newGrade);
+			// 완전 일치 검사 (대소문자 무시)
+			const exactMatch = stores.find(
+				(store) =>
+					store.accountName.toLowerCase() === searchTerm.toLowerCase()
+			);
 
-			// 거래처 선택 시 productId가 있으면 상품 정보 자동 로드
-			const currentRow = orderRows.find((r) => r.id === rowId);
-			if (currentRow?.productId) {
-				try {
-					const productDetail = await fetchProductDetail(currentRow.productId);
-					if (productDetail) {
-						setCurrentProductDetail(productDetail);
+			if (exactMatch) {
+				// 완전 일치 시 자동 선택
+				await applyStoreSelection(rowId, exactMatch);
+				return true; // 성공
+			} else {
+				// 일치 항목 없거나 결과 없으면 검색어와 함께 팝업 열기
+				openStoreSearch(rowId, searchTerm);
+				return false;
+			}
+		} catch (err) {
+			handleError(err);
+			return false;
+		}
+	};
 
-						const policyGrade = `GRADE_${newGrade}`;
+	// 거래처 선택 적용 (실제 row 업데이트 로직)
+	const applyStoreSelection = async (
+		rowId: string,
+		store: StoreSearchDto | AccountInfoDto
+	) => {
+		const storeIdValue = store.accountId?.toString();
+		const newGrade = store.grade || "1";
 
-						// 상품 기본 정보
-						updateOrderRow(
-							rowId,
-							"productFactoryName",
-							productDetail.productFactoryName || ""
-						);
-						updateOrderRow(rowId, "factoryId", productDetail.factoryId);
-						updateOrderRow(rowId, "factoryName", productDetail.factoryName);
-						updateOrderRow(
-							rowId,
-							"classificationId",
-							productDetail.classificationDto?.classificationId || ""
-						);
-						updateOrderRow(
-							rowId,
-							"classificationName",
-							productDetail.classificationDto?.classificationName || ""
-						);
-						updateOrderRow(
-							rowId,
-							"setTypeId",
-							productDetail.setTypeDto?.setTypeId || ""
-						);
-						updateOrderRow(
-							rowId,
-							"setTypeName",
-							productDetail.setTypeDto?.setTypeName || ""
-						);
+		updateOrderRow(rowId, "storeId", storeIdValue);
+		updateOrderRow(rowId, "storeName", store.accountName || "");
+		updateOrderRow(rowId, "storeHarry", store.goldHarryLoss || "");
+		updateOrderRow(rowId, "storeGrade", newGrade);
 
-						let productLaborCost = 0;
-						let matchingColorName = "";
+		// 거래처 선택 시 productId가 있으면 상품 정보 자동 로드
+		const currentRow = orderRows.find((r) => r.id === rowId);
+		if (currentRow?.productId) {
+			try {
+				const productDetail = await fetchProductDetail(currentRow.productId);
+				if (productDetail) {
+					setCurrentProductDetail(productDetail);
 
-						console.log("상품 상세 정보:", productDetail);
-						for (const priceGroup of productDetail.productWorkGradePolicyGroupDto) {
-							const matchingPolicy = priceGroup.policyDtos?.find(
-								(policy) => {
-									console.log("검사 중인 등급 정책:", policy, policyGrade);
-									return policy.grade === policyGrade;
-								}
-							);
-							if (matchingPolicy) {
-								console.log("일치하는 정책 발견:", matchingPolicy);
-								productLaborCost = matchingPolicy.laborCost || 0;
-								matchingColorName = priceGroup.colorName;
-								break;
-							}
-						}
+					const policyGrade = `GRADE_${newGrade}`;
 
+					// 상품 기본 정보
+					updateOrderRow(
+						rowId,
+						"productFactoryName",
+						productDetail.productFactoryName || ""
+					);
+					updateOrderRow(rowId, "factoryId", productDetail.factoryId);
+					updateOrderRow(rowId, "factoryName", productDetail.factoryName);
+					updateOrderRow(
+						rowId,
+						"classificationId",
+						productDetail.classificationDto?.classificationId || ""
+					);
+					updateOrderRow(
+						rowId,
+						"classificationName",
+						productDetail.classificationDto?.classificationName || ""
+					);
+					updateOrderRow(
+						rowId,
+						"setTypeId",
+						productDetail.setTypeDto?.setTypeId || ""
+					);
+					updateOrderRow(
+						rowId,
+						"setTypeName",
+						productDetail.setTypeDto?.setTypeName || ""
+					);
 
-						// 상품 단가 설정
-						updateOrderRow(rowId, "productLaborCost", productLaborCost);
+					let productLaborCost = 0;
+					let matchingColorName = "";
 
-						// 스톤 정보 변환 (등급별 단가 적용)
-						const transformedStoneInfos = transformProductStones(
-							productDetail.productStoneDtos,
-							policyGrade
+					for (const priceGroup of productDetail.productWorkGradePolicyGroupDto) {
+						const matchingPolicy = priceGroup.policyDtos?.find(
+							(policy) => policy.grade === policyGrade
 						);
-
-						updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
-
-						// 알 가격 계산
-						const calculatedStoneData = calculateStoneDetails(
-							transformedStoneInfos
-						);
-						updateOrderRow(
-							rowId,
-							"mainStonePrice",
-							calculatedStoneData.mainStonePrice
-						);
-						updateOrderRow(
-							rowId,
-							"assistanceStonePrice",
-							calculatedStoneData.assistanceStonePrice
-						);
-						updateOrderRow(
-							rowId,
-							"stoneAddLaborCost",
-							calculatedStoneData.stoneAddLaborCost
-						);
-						updateOrderRow(
-							rowId,
-							"mainStoneCount",
-							calculatedStoneData.mainStoneCount
-						);
-						updateOrderRow(
-							rowId,
-							"assistanceStoneCount",
-							calculatedStoneData.assistanceStoneCount
-						);
-						updateOrderRow(
-							rowId,
-							"stoneWeightTotal",
-							calculatedStoneData.stoneWeight
-						);
-						updateOrderRow(
-							rowId,
-							"stoneWeight",
-							calculatedStoneData.stoneWeight
-						);
-
-						// 재질 자동 선택
-						if (productDetail.materialDto?.materialName) {
-							const foundMaterial = materials.find(
-								(m) =>
-									m.materialName === productDetail.materialDto?.materialName
-							);
-							if (foundMaterial) {
-								updateOrderRow(rowId, "materialId", foundMaterial.materialId);
-								updateOrderRow(
-									rowId,
-									"materialName",
-									foundMaterial.materialName
-								);
-							}
-						}
-
-						// 색상 자동 선택
-						if (matchingColorName) {
-							const foundColor = colors.find(
-								(c) => c.colorName === matchingColorName
-							);
-							if (foundColor) {
-								updateOrderRow(rowId, "colorId", foundColor.colorId);
-								updateOrderRow(rowId, "colorName", foundColor.colorName);
-							}
-						} else if (colors.length > 0) {
-							updateOrderRow(rowId, "colorId", colors[0].colorId || "1");
-							updateOrderRow(rowId, "colorName", colors[0].colorName);
+						if (matchingPolicy) {
+							productLaborCost = matchingPolicy.laborCost || 0;
+							matchingColorName = priceGroup.colorName;
+							break;
 						}
 					}
-				} catch (err) {
-					console.error("상품 정보 자동 로드 실패:", err);
+
+					// 상품 단가 설정
+					updateOrderRow(rowId, "productLaborCost", productLaborCost);
+
+					// 스톤 정보 변환 (등급별 단가 적용)
+					const transformedStoneInfos = transformProductStones(
+						productDetail.productStoneDtos,
+						policyGrade
+					);
+
+					updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
+
+					// 알 가격 계산
+					const calculatedStoneData =
+						calculateStoneDetails(transformedStoneInfos);
+					updateOrderRow(
+						rowId,
+						"mainStonePrice",
+						calculatedStoneData.mainStonePrice
+					);
+					updateOrderRow(
+						rowId,
+						"assistanceStonePrice",
+						calculatedStoneData.assistanceStonePrice
+					);
+					updateOrderRow(
+						rowId,
+						"stoneAddLaborCost",
+						calculatedStoneData.stoneAddLaborCost
+					);
+					updateOrderRow(
+						rowId,
+						"mainStoneCount",
+						calculatedStoneData.mainStoneCount
+					);
+					updateOrderRow(
+						rowId,
+						"assistanceStoneCount",
+						calculatedStoneData.assistanceStoneCount
+					);
+					updateOrderRow(
+						rowId,
+						"stoneWeightTotal",
+						calculatedStoneData.stoneWeight
+					);
+					updateOrderRow(rowId, "stoneWeight", calculatedStoneData.stoneWeight);
+
+					// 재질 자동 선택
+					if (productDetail.materialDto?.materialName) {
+						const foundMaterial = materials.find(
+							(m) => m.materialName === productDetail.materialDto?.materialName
+						);
+						if (foundMaterial) {
+							updateOrderRow(rowId, "materialId", foundMaterial.materialId);
+							updateOrderRow(rowId, "materialName", foundMaterial.materialName);
+						}
+					}
+
+					// 색상 자동 선택
+					if (matchingColorName) {
+						const foundColor = colors.find(
+							(c) => c.colorName === matchingColorName
+						);
+						if (foundColor) {
+							updateOrderRow(rowId, "colorId", foundColor.colorId);
+							updateOrderRow(rowId, "colorName", foundColor.colorName);
+						}
+					} else if (colors.length > 0) {
+						updateOrderRow(rowId, "colorId", colors[0].colorId || "1");
+						updateOrderRow(rowId, "colorName", colors[0].colorName);
+					}
 				}
+			} catch (err) {
+				console.error("상품 정보 자동 로드 실패:", err);
 			}
+		}
+	};
+
+	// 거래처 선택 처리 (팝업에서 선택 시)
+	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
+		if (storeModal.selectedRowId) {
+			await applyStoreSelection(storeModal.selectedRowId, store);
 		}
 		storeModal.handleSelect();
 	};
 
 	// 제조사 검색 모달 열기
-	const openFactorySearch = (rowId: string) => {
-		factoryModal.openModal(rowId);
+	const openFactorySearch = (rowId: string, initialSearch?: string) => {
+		factoryModal.openModal(rowId, initialSearch ? { search: initialSearch } : {});
 	};
 
-	// 제조사 선택 처리
+	// 제조사 직접 검색 (Enter 키로 검색 후 완전 일치 시 자동 선택)
+	// 반환값: true = 성공(자동 선택됨), false = 실패(팝업 열림 또는 결과 없음)
+	const handleDirectFactorySearch = async (
+		rowId: string,
+		searchTerm: string
+	): Promise<boolean> => {
+		try {
+			const response = await factoryApi.getFactories(searchTerm, 1, false, 50);
+			const factories = response.data?.content || [];
+
+			// 완전 일치 검사 (대소문자 무시)
+			const exactMatch = factories.find(
+				(factory) =>
+					factory.factoryName.toLowerCase() === searchTerm.toLowerCase()
+			);
+
+			if (exactMatch) {
+				// 완전 일치 시 자동 선택
+				applyFactorySelection(rowId, exactMatch);
+				return true; // 성공
+			} else {
+				// 일치 항목 없거나 결과 없으면 검색어와 함께 팝업 열기
+				openFactorySearch(rowId, searchTerm);
+				return false;
+			}
+		} catch (err) {
+			handleError(err);
+			return false;
+		}
+	};
+
+	// 제조사 선택 적용 (실제 row 업데이트 로직)
+	const applyFactorySelection = (rowId: string, factory: FactorySearchDto) => {
+		updateOrderRow(rowId, "factoryId", factory.factoryId?.toString());
+		updateOrderRow(rowId, "factoryName", factory.factoryName || "");
+	};
+
+	// 제조사 선택 처리 (팝업에서 선택 시)
 	const handleFactorySelect = (factory: FactorySearchDto) => {
 		if (factoryModal.selectedRowId) {
-			updateOrderRow(
-				factoryModal.selectedRowId,
-				"factoryId",
-				factory.factoryId?.toString()
-			);
-			updateOrderRow(
-				factoryModal.selectedRowId,
-				"factoryName",
-				factory.factoryName || ""
-			);
+			applyFactorySelection(factoryModal.selectedRowId, factory);
 		}
 		factoryModal.handleSelect();
 	};
 
 	// 상품 검색 모달 열기
-	const openProductSearch = (rowId: string) => {
+	const openProductSearch = (rowId: string, initialSearch?: string) => {
 		if (!validateSequence(rowId, "product")) {
 			return;
 		}
 		const row = orderRows.find((r) => r.id === rowId);
 		const grade = row?.storeGrade || "1";
-		productModal.openModal(rowId, { grade: grade });
+		productModal.openModal(rowId, { grade: grade, search: initialSearch || "" });
 	};
 
-	// 상품 선택 처리
+	// 상품 직접 검색 (Enter 키로 검색 후 완전 일치 시 자동 선택)
+	// 반환값: true = 성공(자동 선택됨), false = 실패(팝업 열림 또는 결과 없음)
+	const handleDirectProductSearch = async (
+		rowId: string,
+		searchTerm: string
+	): Promise<boolean> => {
+		// 순서 검증 (거래처 먼저 선택)
+		if (!validateSequence(rowId, "product")) {
+			return false;
+		}
+
+		try {
+			const row = orderRows.find((r) => r.id === rowId);
+			const grade = row?.storeGrade || "1";
+
+			const response = await productApi.getProducts(
+				searchTerm,
+				undefined,
+				undefined,
+				undefined,
+				1,
+				50,
+				undefined,
+				undefined,
+				grade
+			);
+			const products = response.data?.content || [];
+
+			// 완전 일치 검사 (모델번호 기준, 대소문자 무시)
+			const exactMatch = products.find(
+				(product) =>
+					product.productName.toLowerCase() === searchTerm.toLowerCase()
+			);
+
+			if (exactMatch) {
+				// 완전 일치 시 자동 선택
+				await applyProductSelection(rowId, exactMatch);
+				return true; // 성공
+			} else {
+				// 일치 항목 없거나 결과 없으면 검색어와 함께 팝업 열기
+				openProductSearch(rowId, searchTerm);
+				return false;
+			}
+		} catch (err) {
+			handleError(err);
+			return false;
+		}
+	};
+
+	// 상품 선택 적용 (실제 row 업데이트 로직)
+	const applyProductSelection = async (rowId: string, product: ProductDto) => {
+		const productIdValue = product.productId;
+		const factoryIdValue = product.factoryId;
+
+		const productDetail = await fetchProductDetail(productIdValue);
+		setCurrentProductDetail(productDetail);
+
+		// 현재 행의 storeGrade 가져오기
+		const currentRow = orderRows.find((r) => r.id === rowId);
+		const storeGrade = currentRow?.storeGrade || "1";
+		const policyGrade = `GRADE_${storeGrade}`;
+
+		updateOrderRow(rowId, "productId", productIdValue);
+		updateOrderRow(rowId, "productName", product.productName || "");
+		updateOrderRow(
+			rowId,
+			"productFactoryName",
+			product.productFactoryName || ""
+		);
+		updateOrderRow(
+			rowId,
+			"classificationId",
+			productDetail?.classificationDto.classificationId || ""
+		);
+		updateOrderRow(
+			rowId,
+			"classificationName",
+			productDetail?.classificationDto.classificationName || ""
+		);
+		updateOrderRow(
+			rowId,
+			"setTypeId",
+			productDetail?.setTypeDto.setTypeId || ""
+		);
+		updateOrderRow(
+			rowId,
+			"setTypeName",
+			productDetail?.setTypeDto.setTypeName || ""
+		);
+		updateOrderRow(rowId, "factoryId", factoryIdValue);
+		updateOrderRow(rowId, "factoryName", product.factoryName || "");
+		updateOrderRow(rowId, "productLaborCost", product.productLaborCost || 0);
+
+		// 스톤 정보 변환 및 업데이트
+		if (productDetail?.productStoneDtos) {
+			const transformedStoneInfos = transformProductStones(
+				productDetail.productStoneDtos,
+				policyGrade
+			);
+
+			updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
+
+			// 알 가격 및 개수 계산
+			const calculatedStoneData = calculateStoneDetails(transformedStoneInfos);
+
+			updateOrderRow(
+				rowId,
+				"mainStonePrice",
+				calculatedStoneData.mainStonePrice
+			);
+			updateOrderRow(
+				rowId,
+				"assistanceStonePrice",
+				calculatedStoneData.assistanceStonePrice
+			);
+			updateOrderRow(
+				rowId,
+				"stoneAddLaborCost",
+				calculatedStoneData.stoneAddLaborCost
+			);
+			updateOrderRow(
+				rowId,
+				"mainStoneCount",
+				calculatedStoneData.mainStoneCount
+			);
+			updateOrderRow(
+				rowId,
+				"assistanceStoneCount",
+				calculatedStoneData.assistanceStoneCount
+			);
+			updateOrderRow(rowId, "stoneWeight", calculatedStoneData.stoneWeight);
+			updateOrderRow(
+				rowId,
+				"stoneWeightTotal",
+				calculatedStoneData.stoneWeight
+			);
+		}
+
+		// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
+		if (product.productMaterial) {
+			const foundMaterial = materials.find(
+				(m) => m.materialName === product.productMaterial
+			);
+			if (foundMaterial) {
+				updateOrderRow(rowId, "materialId", foundMaterial.materialId.toString());
+				updateOrderRow(rowId, "materialName", foundMaterial.materialName);
+			}
+		}
+
+		// productColor 값이 있으면 자동으로 드롭다운에서 선택
+		if (product.productColor) {
+			const foundColor = colors.find(
+				(c) => c.colorName === product.productColor
+			);
+			if (foundColor) {
+				updateOrderRow(rowId, "colorId", foundColor.colorId.toString());
+				updateOrderRow(rowId, "colorName", foundColor.colorName);
+			}
+		}
+	};
+
+	// 상품 선택 처리 (팝업에서 선택 시)
 	const handleProductSelect = async (product: ProductDto) => {
 		if (productModal.selectedRowId) {
-			const productIdValue = product.productId;
-			const factoryIdValue = product.factoryId;
-
-			const currentProductDetail = await fetchProductDetail(productIdValue);
-			setCurrentProductDetail(currentProductDetail);
-
-			// 현재 행의 storeGrade 가져오기
-			const currentRow = orderRows.find(
-				(r) => r.id === productModal.selectedRowId
-			);
-			const storeGrade = currentRow?.storeGrade || "1";
-			const policyGrade = `GRADE_${storeGrade}`;
-
-			updateOrderRow(productModal.selectedRowId, "productId", productIdValue);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"productName",
-				product.productName || ""
-			);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"productFactoryName",
-				product.productFactoryName || ""
-			);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"classificationId",
-				currentProductDetail?.classificationDto.classificationId || ""
-			);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"classificationName",
-				currentProductDetail?.classificationDto.classificationName || ""
-			);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"setTypeId",
-				currentProductDetail?.setTypeDto.setTypeId || ""
-			);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"setTypeName",
-				currentProductDetail?.setTypeDto.setTypeName || ""
-			);
-			updateOrderRow(productModal.selectedRowId, "factoryId", factoryIdValue);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"factoryName",
-				product.factoryName || ""
-			);
-			updateOrderRow(
-				productModal.selectedRowId,
-				"productLaborCost",
-				product.productLaborCost || 0
-			);
-
-			// 스톤 정보 변환 및 업데이트
-			if (currentProductDetail?.productStoneDtos) {
-				const transformedStoneInfos = transformProductStones(
-					currentProductDetail.productStoneDtos,
-					policyGrade
-				);
-
-				updateOrderRow(
-					productModal.selectedRowId,
-					"stoneInfos",
-					transformedStoneInfos
-				);
-
-				// 알 가격 및 개수 계산
-				const calculatedStoneData = calculateStoneDetails(
-					transformedStoneInfos
-				);
-
-				updateOrderRow(
-					productModal.selectedRowId,
-					"mainStonePrice",
-					calculatedStoneData.mainStonePrice
-				);
-				updateOrderRow(
-					productModal.selectedRowId,
-					"assistanceStonePrice",
-					calculatedStoneData.assistanceStonePrice
-				);
-				updateOrderRow(
-					productModal.selectedRowId,
-					"stoneAddLaborCost",
-					calculatedStoneData.stoneAddLaborCost
-				);
-				updateOrderRow(
-					productModal.selectedRowId,
-					"mainStoneCount",
-					calculatedStoneData.mainStoneCount
-				);
-				updateOrderRow(
-					productModal.selectedRowId,
-					"assistanceStoneCount",
-					calculatedStoneData.assistanceStoneCount
-				);
-				updateOrderRow(
-					productModal.selectedRowId,
-					"stoneWeight",
-					calculatedStoneData.stoneWeight
-				);
-				updateOrderRow(
-					productModal.selectedRowId,
-					"stoneWeightTotal",
-					calculatedStoneData.stoneWeight
-				);
-			}
-
-			// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
-			if (product.productMaterial) {
-				const foundMaterial = materials.find(
-					(m) => m.materialName === product.productMaterial
-				);
-				if (foundMaterial) {
-					updateOrderRow(
-						productModal.selectedRowId,
-						"materialId",
-						foundMaterial.materialId.toString()
-					);
-					updateOrderRow(
-						productModal.selectedRowId,
-						"materialName",
-						foundMaterial.materialName
-					);
-				}
-			}
-
-			// productColor 값이 있으면 자동으로 드롭다운에서 선택
-			if (product.productColor) {
-				const foundColor = colors.find(
-					(c) => c.colorName === product.productColor
-				);
-				if (foundColor) {
-					updateOrderRow(
-						productModal.selectedRowId,
-						"colorId",
-						foundColor.colorId.toString()
-					);
-					updateOrderRow(
-						productModal.selectedRowId,
-						"colorName",
-						foundColor.colorName
-					);
-				}
-			}
+			await applyProductSelection(productModal.selectedRowId, product);
 		}
 		productModal.handleSelect();
 	};
@@ -1002,8 +1068,9 @@ const OrderCreatePage = () => {
 					assistanceStoneNote: row.assistanceStoneNote,
 					assistantStone: row.assistantStone,
 					assistantStoneId: row.assistantStoneId || "1",
+					assistantStoneName: row.assistantStoneName || "",
 					assistantStoneCreateAt: row.assistantStoneCreateAt,
-					createAt: currentDate,
+					createAt: row.createAt,
 					shippingAt: shippingAtFormatted,
 					stoneInfos: row.stoneInfos,
 					stoneAddLaborCost: Number(row.stoneAddLaborCost) || 0,
@@ -1078,6 +1145,9 @@ const OrderCreatePage = () => {
 				onStoreSearchOpen={openStoreSearch}
 				onProductSearchOpen={openProductSearch}
 				onFactorySearchOpen={openFactorySearch}
+				onDirectStoreSearch={handleDirectStoreSearch}
+				onDirectProductSearch={handleDirectProductSearch}
+				onDirectFactorySearch={handleDirectFactorySearch}
 				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
 				onAddOrderRow={addOrderRow}
 				onStoneInfoOpen={openStoneInfoManager}
@@ -1108,6 +1178,7 @@ const OrderCreatePage = () => {
 				<StoreSearch
 					onSelectStore={handleStoreSelect}
 					onClose={storeModal.closeModal}
+					initialSearch={storeModal.additionalParams.search || ""}
 				/>
 			)}
 
@@ -1115,6 +1186,7 @@ const OrderCreatePage = () => {
 				<FactorySearch
 					onSelectFactory={handleFactorySelect}
 					onClose={factoryModal.closeModal}
+					initialSearch={factoryModal.additionalParams.search || ""}
 				/>
 			)}
 
@@ -1123,6 +1195,7 @@ const OrderCreatePage = () => {
 					onSelectProduct={handleProductSelect}
 					onClose={productModal.closeModal}
 					grade={productModal.additionalParams.grade || "1"}
+					initialSearch={productModal.additionalParams.search || ""}
 				/>
 			)}
 		</div>

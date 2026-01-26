@@ -7,18 +7,20 @@ import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/product/ProductSearchPage.css";
 
 const ProductSearchPage: React.FC = () => {
-	const [products, setProducts] = useState<ProductDto[]>([]);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
-	const [searchTerm, setSearchTerm] = useState("");
-	const [currentPage, setCurrentPage] = useState(1);
-	const [totalPages, setTotalPages] = useState(0);
-	const [totalElements, setTotalElements] = useState(0);
-	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 	const [searchParams] = useState(
 		() => new URLSearchParams(window.location.search)
 	);
 	const grade = searchParams.get("grade") || "1";
+	const initialSearch = searchParams.get("search") || ""; // 초기 검색어
+
+	const [products, setProducts] = useState<ProductDto[]>([]);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+	const [searchTerm, setSearchTerm] = useState(initialSearch);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(0);
+	const [totalElements, setTotalElements] = useState(0);
+	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
 	const size = 12;
 
@@ -89,10 +91,10 @@ const ProductSearchPage: React.FC = () => {
 		}
 	}, []);
 
-	// 초기 데이터 로드
+	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
 	useEffect(() => {
-		performSearch("", 1);
-	}, [performSearch]);
+		performSearch(initialSearch, 1);
+	}, [performSearch, initialSearch]);
 
 	// 검색 실행
 	const handleSearch = () => {

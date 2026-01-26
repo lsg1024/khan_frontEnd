@@ -60,6 +60,14 @@
 	color: #ffd700;
 }
 
+.status-content {
+	color: #fff;
+	font-weight: 400;
+	max-width: 300px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .status-divider {
 	color: #666;
 }

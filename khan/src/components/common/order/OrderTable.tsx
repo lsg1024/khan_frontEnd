@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { addBusinessDays, formatDateToString } from "../../../utils/dateUtils";
 import type { OrderRowData } from "../../../types/orderDto";
 import type { ColorDto } from "../../../types/colorDto";
@@ -39,6 +39,11 @@ interface CreateModeProps extends BaseOrderTableProps {
 	onStoreSearchOpen?: (rowId: string) => void;
 	onProductSearchOpen?: (rowId: string) => void;
 	onFactorySearchOpen?: (rowId: string) => void;
+
+	// 직접 입력 검색 핸들러 (선택적) - 반환값: true = 성공 (다음 컬럼으로 이동), false = 실패
+	onDirectStoreSearch?: (rowId: string, searchTerm: string) => Promise<boolean>;
+	onDirectProductSearch?: (rowId: string, searchTerm: string) => Promise<boolean>;
+	onDirectFactorySearch?: (rowId: string, searchTerm: string) => Promise<boolean>;
 }
 
 // Update 모드 전용 Props
@@ -158,6 +163,147 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 		}
 	};
 
+	// 직접 검색 안전 호출 함수들 - boolean 반환 (성공=true, 실패=false)
+	const safeOnDirectStoreSearch = async (rowId: string, searchTerm: string): Promise<boolean> => {
+		if ("onDirectStoreSearch" in props && props.onDirectStoreSearch) {
+			return await props.onDirectStoreSearch(rowId, searchTerm);
+		}
+		return false;
+	};
+
+	const safeOnDirectProductSearch = async (
+		rowId: string,
+		searchTerm: string
+	): Promise<boolean> => {
+		if ("onDirectProductSearch" in props && props.onDirectProductSearch) {
+			return await props.onDirectProductSearch(rowId, searchTerm);
+		}
+		return false;
+	};
+
+	const safeOnDirectFactorySearch = async (
+		rowId: string,
+		searchTerm: string
+	): Promise<boolean> => {
+		if ("onDirectFactorySearch" in props && props.onDirectFactorySearch) {
+			return await props.onDirectFactorySearch(rowId, searchTerm);
+		}
+		return false;
+	};
+
+	// 검색어 입력 상태 (기존 row.storeName과 분리)
+	const [searchInputs, setSearchInputs] = useState<{
+		[rowId: string]: {
+			storeName?: string;
+			productName?: string;
+			factoryName?: string;
+		};
+	}>({});
+
+	// 검색 중 상태 (loading indicator)
+	const [searchingField, setSearchingField] = useState<{
+		[rowId: string]: "store" | "product" | "factory" | null;
+	}>({});
+
+	// 검색어 변경 핸들러
+	const handleSearchInputChange = (
+		rowId: string,
+		field: "storeName" | "productName" | "factoryName",
+		value: string
+	) => {
+		setSearchInputs((prev) => ({
+			...prev,
+			[rowId]: {
+				...prev[rowId],
+				[field]: value,
+			},
+		}));
+	};
+
+	// 다음 입력 필드로 포커스 이동
+	const focusNextField = (rowId: string, currentField: "store" | "product" | "factory") => {
+		// 컬럼 순서: 거래처(store) → 모델번호(product) → 제조사(factory) → 재질(material)
+		const nextFieldMap: Record<string, string> = {
+			store: `product-input-${rowId}`,
+			product: `factory-input-${rowId}`,
+			factory: `material-select-${rowId}`,
+		};
+
+		const nextElementId = nextFieldMap[currentField];
+		if (nextElementId) {
+			setTimeout(() => {
+				const nextElement = document.getElementById(nextElementId);
+				if (nextElement) {
+					nextElement.focus();
+				}
+			}, 100);
+		}
+	};
+
+	// Enter 키 핸들러
+	const handleSearchKeyDown = async (
+		e: React.KeyboardEvent<HTMLInputElement>,
+		rowId: string,
+		field: "store" | "product" | "factory"
+	) => {
+		// IME 조합 중이면 무시 (한글 입력 완료 후에만 처리)
+		if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+			e.preventDefault();
+
+			const fieldMap = {
+				store: "storeName",
+				product: "productName",
+				factory: "factoryName",
+			} as const;
+
+			const searchTerm = searchInputs[rowId]?.[fieldMap[field]]?.trim();
+			if (!searchTerm) return;
+
+			setSearchingField((prev) => ({ ...prev, [rowId]: field }));
+
+			try {
+				let success = false;
+				switch (field) {
+					case "store":
+						success = await safeOnDirectStoreSearch(rowId, searchTerm);
+						break;
+					case "product":
+						success = await safeOnDirectProductSearch(rowId, searchTerm);
+						break;
+					case "factory":
+						success = await safeOnDirectFactorySearch(rowId, searchTerm);
+						break;
+				}
+
+				// 검색 성공 시 다음 필드로 포커스 이동
+				if (success) {
+					focusNextField(rowId, field);
+				}
+			} finally {
+				setSearchingField((prev) => ({ ...prev, [rowId]: null }));
+				// 검색어 초기화
+				setSearchInputs((prev) => ({
+					...prev,
+					[rowId]: { ...prev[rowId], [fieldMap[field]]: undefined },
+				}));
+			}
+		}
+	};
+
+	// 포커스 해제 시 검색어 초기화
+	const handleSearchBlur = (
+		rowId: string,
+		field: "storeName" | "productName" | "factoryName"
+	) => {
+		// 약간의 지연 후 초기화 (클릭 이벤트와 충돌 방지)
+		setTimeout(() => {
+			setSearchInputs((prev) => ({
+				...prev,
+				[rowId]: { ...prev[rowId], [field]: undefined },
+			}));
+		}, 200);
+	};
+
 	const handleIntegerChange = (
 		id: string,
 		field: keyof OrderRowData,
@@ -255,21 +401,24 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								<td className="order-create-table-store-cell">
 									<div className="search-field-container">
 										<input
+											id={`store-input-${row.id}`}
 											type="text"
-											value={row.storeName}
-											readOnly
+											value={
+												searchInputs[row.id]?.storeName ?? row.storeName
+											}
 											placeholder="거래처"
 											disabled={!safeIsRowInputEnabled(index) || isStockStatus}
-											onClick={() => {
-												if (
-													mode === "create" &&
-													safeIsRowInputEnabled(index) &&
-													!row.storeName &&
-													!isStockStatus
-												) {
-													safeOnRequiredFieldClick(row.id, "store");
-												}
-											}}
+											onChange={(e) =>
+												handleSearchInputChange(
+													row.id,
+													"storeName",
+													e.target.value
+												)
+											}
+											onKeyDown={(e) =>
+												handleSearchKeyDown(e, row.id, "store")
+											}
+											onBlur={() => handleSearchBlur(row.id, "storeName")}
 											onFocus={() => {
 												if (
 													mode === "create" &&
@@ -281,13 +430,19 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											}}
 										/>
 										<span
-											className="search-icon"
+											className={`search-icon ${
+												searchingField[row.id] === "store" ? "loading" : ""
+											}`}
 											onClick={() => {
-												if (safeIsRowInputEnabled(index) && !isStockStatus) {
+												if (
+													searchingField[row.id] !== "store" &&
+													safeIsRowInputEnabled(index) &&
+													!isStockStatus
+												) {
 													safeOnStoreSearchOpen(row.id);
 												} else if (isStockStatus) {
 													alert("재고 상태에서는 수정할 수 없습니다.");
-												} else {
+												} else if (searchingField[row.id] !== "store") {
 													alert("이전 주문장을 완성해 주세요.");
 												}
 											}}
@@ -302,28 +457,31 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 														: "pointer",
 											}}
 										>
-											🔍
+											{searchingField[row.id] === "store" ? "⏳" : "🔍"}
 										</span>
 									</div>
 								</td>
 								<td className="order-create-table-model-cell">
 									<div className="search-field-container">
 										<input
+											id={`product-input-${row.id}`}
 											type="text"
-											value={row.productName}
-											readOnly
+											value={
+												searchInputs[row.id]?.productName ?? row.productName
+											}
 											placeholder="모델번호"
 											disabled={!safeIsRowInputEnabled(index) || isStockStatus}
-											onClick={() => {
-												if (
-													mode === "create" &&
-													safeIsRowInputEnabled(index) &&
-													!row.productName &&
-													!isStockStatus
-												) {
-													safeOnRequiredFieldClick(row.id, "product");
-												}
-											}}
+											onChange={(e) =>
+												handleSearchInputChange(
+													row.id,
+													"productName",
+													e.target.value
+												)
+											}
+											onKeyDown={(e) =>
+												handleSearchKeyDown(e, row.id, "product")
+											}
+											onBlur={() => handleSearchBlur(row.id, "productName")}
 											onFocus={() => {
 												if (
 													mode === "create" &&
@@ -335,13 +493,19 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											}}
 										/>
 										<span
-											className="search-icon"
+											className={`search-icon ${
+												searchingField[row.id] === "product" ? "loading" : ""
+											}`}
 											onClick={() => {
-												if (safeIsRowInputEnabled(index) && !isStockStatus) {
+												if (
+													searchingField[row.id] !== "product" &&
+													safeIsRowInputEnabled(index) &&
+													!isStockStatus
+												) {
 													safeOnProductSearchOpen(row.id);
 												} else if (isStockStatus) {
 													alert("재고 상태에서는 수정할 수 없습니다.");
-												} else {
+												} else if (searchingField[row.id] !== "product") {
 													alert("이전 주문장을 완성해 주세요.");
 												}
 											}}
@@ -356,27 +520,55 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 														: "pointer",
 											}}
 										>
-											🔍
+											{searchingField[row.id] === "product" ? "⏳" : "🔍"}
 										</span>
 									</div>
 								</td>
 								<td className="order-create-table-factory-cell">
 									<div className="search-field-container">
 										<input
+											id={`factory-input-${row.id}`}
 											type="text"
-											value={row.factoryName}
-											readOnly
+											value={
+												searchInputs[row.id]?.factoryName ?? row.factoryName
+											}
 											placeholder="제조사"
-											disabled={isStockStatus}
+											disabled={!safeIsRowInputEnabled(index) || isStockStatus}
+											onChange={(e) =>
+												handleSearchInputChange(
+													row.id,
+													"factoryName",
+													e.target.value
+												)
+											}
+											onKeyDown={(e) =>
+												handleSearchKeyDown(e, row.id, "factory")
+											}
+											onBlur={() => handleSearchBlur(row.id, "factoryName")}
+											onFocus={() => {
+												if (
+													mode === "create" &&
+													safeIsRowInputEnabled(index) &&
+													!isStockStatus
+												) {
+													safeOnRowFocus(row.id);
+												}
+											}}
 										/>
 										<span
-											className="search-icon"
+											className={`search-icon ${
+												searchingField[row.id] === "factory" ? "loading" : ""
+											}`}
 											onClick={() => {
-												if (safeIsRowInputEnabled(index) && !isStockStatus) {
+												if (
+													searchingField[row.id] !== "factory" &&
+													safeIsRowInputEnabled(index) &&
+													!isStockStatus
+												) {
 													safeOnFactorySearchOpen(row.id);
 												} else if (isStockStatus) {
 													alert("재고 상태에서는 수정할 수 없습니다.");
-												} else {
+												} else if (searchingField[row.id] !== "factory") {
 													alert("이전 주문장을 완성해 주세요.");
 												}
 											}}
@@ -391,12 +583,13 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 														: "pointer",
 											}}
 										>
-											🔍
+											{searchingField[row.id] === "factory" ? "⏳" : "🔍"}
 										</span>
 									</div>
 								</td>
 								<td className="order-create-table-material-cell">
 									<select
+										id={`material-select-${row.id}`}
 										value={row.materialId}
 										onChange={(e) => {
 											if (
@@ -746,11 +939,11 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								<td className="order-create-table-stone-weight-cell">
 									<input
 										type="text"
-										value={row.stoneWeightTotal.toString()}
+										value={row.stoneWeightTotal === "" ? "0.000" : Number(row.stoneWeightTotal).toFixed(3)}
 										onChange={(e) =>
 											onRowUpdate(row.id, "stoneWeightTotal", e.target.value)
 										}
-										placeholder="0"
+										placeholder="0.000"
 										disabled={loading || !safeIsRowInputEnabled(index)}
 										onFocus={() => {
 											if (mode === "create" && safeIsRowInputEnabled(index)) {

@@ -168,7 +168,7 @@ export const StockList = ({
 									</span>
 								</div>
 							</td>
-							<td className="date-cell">
+							<td className={`date-cell ${stock.statusHistory && stock.statusHistory.length > 0 ? 'has-history' : ''}`}>
 								<StatusHistoryTooltip statusHistory={stock.statusHistory}>
 									<div className="info-row-order">
 										<span>

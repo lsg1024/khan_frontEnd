@@ -5,11 +5,13 @@ import "../../../styles/components/search/FactorySearch.css";
 interface FactorySearchProps {
 	onSelectFactory: (factory: FactorySearchDto) => void;
 	onClose?: () => void;
+	initialSearch?: string; // 초기 검색어 (팝업 열릴 때 자동 검색)
 }
 
 const FactorySearch: React.FC<FactorySearchProps> = ({
 	onSelectFactory,
-	onClose
+	onClose,
+	initialSearch = "",
 }) => {
 	// 함수들을 ref로 저장하여 리렌더링 시에도 동일한 참조 유지
 	const onSelectFactoryRef = useRef(onSelectFactory);
@@ -23,9 +25,13 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
 
 	// 컴포넌트가 마운트되면 자동으로 팝업 열기
 	useEffect(() => {
-		// 팝업 창 열기
+		// 팝업 창 열기 (initialSearch 파라미터 전달)
+		const params = new URLSearchParams();
+		if (initialSearch) params.set("search", initialSearch);
+		const queryString = params.toString();
+		const url = `/factory-search${queryString ? `?${queryString}` : ""}`;
 		const popup = window.open(
-			"/factory-search",
+			url,
 			"factorySearch",
 			"width=1000,height=450,scrollbars=yes,resizable=yes"
 		);
@@ -53,7 +59,7 @@ const FactorySearch: React.FC<FactorySearchProps> = ({
 			window.removeEventListener("message", handleMessage);
 			clearInterval(checkClosed);
 		};
-	}, []); 
+	}, [initialSearch]);
 
 	return null;
 };

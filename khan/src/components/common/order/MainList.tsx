@@ -108,7 +108,7 @@ const MainList = ({
 							</button>
 						</td>
 						<td className="product-name-order">{dto.productName}</td>
-						<td className="info-cell">
+						<td className={`info-cell ${dto.statusHistory && dto.statusHistory.length > 0 ? 'has-history' : ''}`}>
 							<StatusHistoryTooltip statusHistory={dto.statusHistory}>
 								<div className="info-row-order">
 									<span className="info-value">

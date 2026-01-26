@@ -1,4 +1,4 @@
-import type { PageInfo } from "./page";
+import type { PageInfo } from "./pageDto";
 
 export interface FactorySearchDto {
 	factoryId?: number;

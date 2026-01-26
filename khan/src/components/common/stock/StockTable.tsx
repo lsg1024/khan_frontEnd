@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import type { MaterialDto } from "../../../types/materialDto";
 import type { ColorDto } from "../../../types/colorDto";
 import type { AssistantStoneDto } from "../../../types/AssistantStoneDto";
@@ -44,6 +44,11 @@ interface CreateModeProps extends BaseStockTableProps {
 	onStoreSearchOpen?: (rowId: string) => void;
 	onProductSearchOpen?: (rowId: string) => void;
 	onFactorySearchOpen?: (rowId: string) => void;
+
+	// 직접 입력 검색 핸들러 (선택적) - 반환값: true = 성공 (다음 컬럼으로 이동), false = 실패
+	onDirectStoreSearch?: (rowId: string, searchTerm: string) => Promise<boolean>;
+	onDirectProductSearch?: (rowId: string, searchTerm: string) => Promise<boolean>;
+	onDirectFactorySearch?: (rowId: string, searchTerm: string) => Promise<boolean>;
 }
 
 // Update 모드 전용 Props
@@ -173,6 +178,147 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 		}
 	};
 
+	// 직접 검색 안전 호출 함수들 - boolean 반환 (성공=true, 실패=false)
+	const safeOnDirectStoreSearch = async (rowId: string, searchTerm: string): Promise<boolean> => {
+		if ("onDirectStoreSearch" in props && props.onDirectStoreSearch) {
+			return await props.onDirectStoreSearch(rowId, searchTerm);
+		}
+		return false;
+	};
+
+	const safeOnDirectProductSearch = async (
+		rowId: string,
+		searchTerm: string
+	): Promise<boolean> => {
+		if ("onDirectProductSearch" in props && props.onDirectProductSearch) {
+			return await props.onDirectProductSearch(rowId, searchTerm);
+		}
+		return false;
+	};
+
+	const safeOnDirectFactorySearch = async (
+		rowId: string,
+		searchTerm: string
+	): Promise<boolean> => {
+		if ("onDirectFactorySearch" in props && props.onDirectFactorySearch) {
+			return await props.onDirectFactorySearch(rowId, searchTerm);
+		}
+		return false;
+	};
+
+	// 검색어 입력 상태 (기존 row.storeName과 분리)
+	const [searchInputs, setSearchInputs] = useState<{
+		[rowId: string]: {
+			storeName?: string;
+			productName?: string;
+			factoryName?: string;
+		};
+	}>({});
+
+	// 검색 중 상태 (loading indicator)
+	const [searchingField, setSearchingField] = useState<{
+		[rowId: string]: "store" | "product" | "factory" | null;
+	}>({});
+
+	// 검색어 변경 핸들러
+	const handleSearchInputChange = (
+		rowId: string,
+		field: "storeName" | "productName" | "factoryName",
+		value: string
+	) => {
+		setSearchInputs((prev) => ({
+			...prev,
+			[rowId]: {
+				...prev[rowId],
+				[field]: value,
+			},
+		}));
+	};
+
+	// 다음 입력 필드로 포커스 이동
+	const focusNextField = (rowId: string, currentField: "store" | "product" | "factory") => {
+		// 컬럼 순서: 거래처(store) → 모델번호(product) → 제조사(factory) → 재질(material)
+		const nextFieldMap: Record<string, string> = {
+			store: `stock-product-input-${rowId}`,
+			product: `stock-factory-input-${rowId}`,
+			factory: `stock-material-select-${rowId}`,
+		};
+
+		const nextElementId = nextFieldMap[currentField];
+		if (nextElementId) {
+			setTimeout(() => {
+				const nextElement = document.getElementById(nextElementId);
+				if (nextElement) {
+					nextElement.focus();
+				}
+			}, 100);
+		}
+	};
+
+	// Enter 키 핸들러
+	const handleSearchKeyDown = async (
+		e: React.KeyboardEvent<HTMLInputElement>,
+		rowId: string,
+		field: "store" | "product" | "factory"
+	) => {
+		// IME 조합 중이면 무시 (한글 입력 완료 후에만 처리)
+		if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+			e.preventDefault();
+
+			const fieldMap = {
+				store: "storeName",
+				product: "productName",
+				factory: "factoryName",
+			} as const;
+
+			const searchTerm = searchInputs[rowId]?.[fieldMap[field]]?.trim();
+			if (!searchTerm) return;
+
+			setSearchingField((prev) => ({ ...prev, [rowId]: field }));
+
+			try {
+				let success = false;
+				switch (field) {
+					case "store":
+						success = await safeOnDirectStoreSearch(rowId, searchTerm);
+						break;
+					case "product":
+						success = await safeOnDirectProductSearch(rowId, searchTerm);
+						break;
+					case "factory":
+						success = await safeOnDirectFactorySearch(rowId, searchTerm);
+						break;
+				}
+
+				// 검색 성공 시 다음 필드로 포커스 이동
+				if (success) {
+					focusNextField(rowId, field);
+				}
+			} finally {
+				setSearchingField((prev) => ({ ...prev, [rowId]: null }));
+				// 검색어 초기화
+				setSearchInputs((prev) => ({
+					...prev,
+					[rowId]: { ...prev[rowId], [fieldMap[field]]: undefined },
+				}));
+			}
+		}
+	};
+
+	// 포커스 해제 시 검색어 초기화
+	const handleSearchBlur = (
+		rowId: string,
+		field: "storeName" | "productName" | "factoryName"
+	) => {
+		// 약간의 지연 후 초기화 (클릭 이벤트와 충돌 방지)
+		setTimeout(() => {
+			setSearchInputs((prev) => ({
+				...prev,
+				[rowId]: { ...prev[rowId], [field]: undefined },
+			}));
+		}, 200);
+	};
+
 	return (
 		<div className="stock-table-container">
 			<table className="stock-update-table">
@@ -288,9 +434,11 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="search-type-cell">
 									<div className="search-field-container">
 										<input
+											id={`stock-store-input-${row.id}`}
 											type="text"
-											value={row.storeName}
-											readOnly
+											value={
+												searchInputs[row.id]?.storeName ?? row.storeName
+											}
 											placeholder="거래처"
 											disabled={
 												!safeIsRowInputEnabled(index) ||
@@ -301,15 +449,17 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											style={{
 												backgroundColor: isCreateMode ? "white" : "#f5f5f5",
 											}}
-											onClick={() => {
-												if (
-													mode === "create" &&
-													safeIsRowInputEnabled(index) &&
-													!row.storeName
-												) {
-													safeOnRequiredFieldClick(row.id, "store");
-												}
-											}}
+											onChange={(e) =>
+												handleSearchInputChange(
+													row.id,
+													"storeName",
+													e.target.value
+												)
+											}
+											onKeyDown={(e) =>
+												handleSearchKeyDown(e, row.id, "store")
+											}
+											onBlur={() => handleSearchBlur(row.id, "storeName")}
 											onFocus={() => {
 												if (mode === "create" && safeIsRowInputEnabled(index)) {
 													safeOnRowFocus(row.id);
@@ -318,11 +468,16 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										/>
 										{isCreateMode && (
 											<span
-												className="search-icon"
+												className={`search-icon ${
+													searchingField[row.id] === "store" ? "loading" : ""
+												}`}
 												onClick={() => {
-													if (safeIsRowInputEnabled(index)) {
+													if (
+														searchingField[row.id] !== "store" &&
+														safeIsRowInputEnabled(index)
+													) {
 														safeOnStoreSearchOpen(row.id);
-													} else {
+													} else if (searchingField[row.id] !== "store") {
 														alert("이전 주문장을 완성해 주세요.");
 													}
 												}}
@@ -333,7 +488,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 														: "pointer",
 												}}
 											>
-												🔍
+												{searchingField[row.id] === "store" ? "⏳" : "🔍"}
 											</span>
 										)}
 									</div>
@@ -342,9 +497,11 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="search-type-cell">
 									<div className="search-field-container">
 										<input
+											id={`stock-product-input-${row.id}`}
 											type="text"
-											value={row.productName}
-											readOnly
+											value={
+												searchInputs[row.id]?.productName ?? row.productName
+											}
 											placeholder="모델번호"
 											disabled={
 												!safeIsRowInputEnabled(index) ||
@@ -355,15 +512,17 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											style={{
 												backgroundColor: isCreateMode ? "white" : "#f5f5f5",
 											}}
-											onClick={() => {
-												if (
-													mode === "create" &&
-													safeIsRowInputEnabled(index) &&
-													!row.productName
-												) {
-													safeOnRequiredFieldClick(row.id, "product");
-												}
-											}}
+											onChange={(e) =>
+												handleSearchInputChange(
+													row.id,
+													"productName",
+													e.target.value
+												)
+											}
+											onKeyDown={(e) =>
+												handleSearchKeyDown(e, row.id, "product")
+											}
+											onBlur={() => handleSearchBlur(row.id, "productName")}
 											onFocus={() => {
 												if (mode === "create" && safeIsRowInputEnabled(index)) {
 													safeOnRowFocus(row.id);
@@ -372,11 +531,16 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										/>
 										{isCreateMode && (
 											<span
-												className="search-icon"
+												className={`search-icon ${
+													searchingField[row.id] === "product" ? "loading" : ""
+												}`}
 												onClick={() => {
-													if (safeIsRowInputEnabled(index)) {
+													if (
+														searchingField[row.id] !== "product" &&
+														safeIsRowInputEnabled(index)
+													) {
 														safeOnProductSearchOpen(row.id);
-													} else {
+													} else if (searchingField[row.id] !== "product") {
 														alert("이전 주문장을 완성해 주세요.");
 													}
 												}}
@@ -387,7 +551,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 														: "pointer",
 												}}
 											>
-												🔍
+												{searchingField[row.id] === "product" ? "⏳" : "🔍"}
 											</span>
 										)}
 									</div>
@@ -395,22 +559,50 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="search-type-cell">
 									<div className="search-field-container">
 										<input
+											id={`stock-factory-input-${row.id}`}
 											type="text"
-											value={row.factoryName}
-											readOnly
+											value={
+												searchInputs[row.id]?.factoryName ?? row.factoryName
+											}
 											placeholder="제조사"
-											disabled={isReadOnlyMode || isDetailMode || isSaleMode}
+											disabled={
+												!safeIsRowInputEnabled(index) ||
+												isReadOnlyMode ||
+												isDetailMode ||
+												isSaleMode
+											}
 											style={{
 												backgroundColor: isCreateMode ? "white" : "#f5f5f5",
+											}}
+											onChange={(e) =>
+												handleSearchInputChange(
+													row.id,
+													"factoryName",
+													e.target.value
+												)
+											}
+											onKeyDown={(e) =>
+												handleSearchKeyDown(e, row.id, "factory")
+											}
+											onBlur={() => handleSearchBlur(row.id, "factoryName")}
+											onFocus={() => {
+												if (mode === "create" && safeIsRowInputEnabled(index)) {
+													safeOnRowFocus(row.id);
+												}
 											}}
 										/>
 										{isCreateMode && (
 											<span
-												className="search-icon"
+												className={`search-icon ${
+													searchingField[row.id] === "factory" ? "loading" : ""
+												}`}
 												onClick={() => {
-													if (safeIsRowInputEnabled(index)) {
+													if (
+														searchingField[row.id] !== "factory" &&
+														safeIsRowInputEnabled(index)
+													) {
 														safeOnFactorySearchOpen(row.id);
-													} else {
+													} else if (searchingField[row.id] !== "factory") {
 														alert("이전 주문장을 완성해 주세요.");
 													}
 												}}
@@ -421,13 +613,14 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 														: "pointer",
 												}}
 											>
-												🔍
+												{searchingField[row.id] === "factory" ? "⏳" : "🔍"}
 											</span>
 										)}
 									</div>
 								</td>
 								<td className="drop-down-cell">
 									<select
+										id={`stock-material-select-${row.id}`}
 										value={row.materialId}
 										onFocus={() => {
 											if (!isReadOnlyMode && !isDetailMode && !isSaleMode) {

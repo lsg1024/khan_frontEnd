@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { orderApi } from "../../../libs/api/orderApi";
 import { stockApi } from "../../../libs/api/stockApi";
+import { storeApi } from "../../../libs/api/storeApi";
+import { factoryApi } from "../../../libs/api/factoryApi";
 import { materialApi } from "../../../libs/api/materialApi";
 import { colorApi } from "../../../libs/api/colorApi";
 import { goldHarryApi } from "../../../libs/api/goldHarryApi";
@@ -444,260 +446,313 @@ export const StockCreatePage = () => {
 	};
 
 	// 검색 컴포넌트 핸들러들
-	const openStoreSearch = (rowId: string) => {
-		storeModal.openModal(rowId);
+	const openStoreSearch = (rowId: string, initialSearch?: string) => {
+		storeModal.openModal(rowId, initialSearch ? { search: initialSearch } : {});
+	};
+
+	// 거래처 선택 적용 함수 (공통 로직)
+	const applyStoreSelection = async (
+		rowId: string,
+		store: StoreSearchDto | AccountInfoDto
+	) => {
+		const storeIdValue = store.accountId?.toString();
+		const newGrade = store.grade || "1";
+
+		updateStockRow(rowId, "storeId", storeIdValue);
+		updateStockRow(rowId, "storeName", store.accountName || "");
+		updateStockRow(rowId, "storeHarry", store.goldHarryLoss || "");
+		updateStockRow(rowId, "grade", newGrade);
+
+		// 거래처 변경 시 이미 선택된 상품이 있으면 새로운 등급으로 알 단가 재계산
+		const currentRow = stockRows.find((r) => r.id === rowId);
+		if (currentRow?.productId) {
+			await updateProductDetail(currentRow.productId, rowId, newGrade);
+		}
 	};
 
 	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
 		if (storeModal.selectedRowId) {
-			const storeIdValue = store.accountId?.toString();
-			const rowId = storeModal.selectedRowId;
-			const newGrade = store.grade || "1";
-
-			updateStockRow(rowId, "storeId", storeIdValue);
-			updateStockRow(rowId, "storeName", store.accountName || "");
-			updateStockRow(rowId, "storeHarry", store.goldHarryLoss || "");
-			updateStockRow(rowId, "grade", newGrade);
-
-			// 거래처 변경 시 이미 선택된 상품이 있으면 새로운 등급으로 알 단가 재계산
-			const currentRow = stockRows.find((r) => r.id === rowId);
-			if (currentRow?.productId) {
-				// 새로운 등급을 직접 전달하여 상품 상세 정보 재계산
-				await updateProductDetail(currentRow.productId, rowId, newGrade);
-			}
+			await applyStoreSelection(storeModal.selectedRowId, store);
 		}
 		storeModal.handleSelect();
 	};
 
-	const openFactorySearch = (rowId: string) => {
-		factoryModal.openModal(rowId);
+	// 거래처 직접 검색 (Enter 키)
+	// 반환값: true = 성공(자동 선택됨), false = 실패(팝업 열림 또는 결과 없음)
+	const handleDirectStoreSearch = async (rowId: string, searchTerm: string): Promise<boolean> => {
+		try {
+			const response = await storeApi.getStores(searchTerm, 1, 50);
+			const stores = response.data?.content || [];
+
+			// 완전 일치 검사 (대소문자 무시)
+			const exactMatch = stores.find(
+				(store) =>
+					store.accountName.toLowerCase() === searchTerm.toLowerCase()
+			);
+
+			if (exactMatch) {
+				await applyStoreSelection(rowId, exactMatch);
+				return true; // 성공
+			} else {
+				// 일치 항목 없거나 결과 없으면 검색어와 함께 팝업 열기
+				openStoreSearch(rowId, searchTerm);
+				return false;
+			}
+		} catch (err) {
+			handleError(err);
+			return false;
+		}
+	};
+
+	const openFactorySearch = (rowId: string, initialSearch?: string) => {
+		factoryModal.openModal(rowId, initialSearch ? { search: initialSearch } : {});
+	};
+
+	// 제조사 선택 적용 함수 (공통 로직)
+	const applyFactorySelection = (rowId: string, factory: FactorySearchDto) => {
+		updateStockRow(rowId, "factoryId", factory.factoryId?.toString());
+		updateStockRow(rowId, "factoryName", factory.factoryName || "");
 	};
 
 	const handleFactorySelect = (factory: FactorySearchDto) => {
 		if (factoryModal.selectedRowId) {
-			updateStockRow(
-				factoryModal.selectedRowId,
-				"factoryId",
-				factory.factoryId?.toString()
-			);
-			updateStockRow(
-				factoryModal.selectedRowId,
-				"factoryName",
-				factory.factoryName || ""
-			);
+			applyFactorySelection(factoryModal.selectedRowId, factory);
 		}
 		factoryModal.handleSelect();
 	};
 
-	const openProductSearch = (rowId: string) => {
+	// 제조사 직접 검색 (Enter 키)
+	// 반환값: true = 성공(자동 선택됨), false = 실패(팝업 열림 또는 결과 없음)
+	const handleDirectFactorySearch = async (
+		rowId: string,
+		searchTerm: string
+	): Promise<boolean> => {
+		try {
+			const response = await factoryApi.getFactories(searchTerm, 1, false, 50);
+			const factories = response.data?.content || [];
+
+			// 완전 일치 검사 (대소문자 무시)
+			const exactMatch = factories.find(
+				(factory) =>
+					factory.factoryName.toLowerCase() === searchTerm.toLowerCase()
+			);
+
+			if (exactMatch) {
+				applyFactorySelection(rowId, exactMatch);
+				return true; // 성공
+			} else {
+				// 일치 항목 없거나 결과 없으면 검색어와 함께 팝업 열기
+				openFactorySearch(rowId, searchTerm);
+				return false;
+			}
+		} catch (err) {
+			handleError(err);
+			return false;
+		}
+	};
+
+	const openProductSearch = (rowId: string, initialSearch?: string) => {
 		if (!validateSequence(rowId, "product")) {
 			return;
 		}
 		const row = stockRows.find((r) => r.id === rowId);
 		const grade = row?.grade || "1";
-		productModal.openModal(rowId, { grade: grade });
+		productModal.openModal(rowId, { grade: grade, search: initialSearch || "" });
+	};
+
+	// 상품 선택 적용 함수 (공통 로직)
+	const applyProductSelection = async (rowId: string, product: ProductDto) => {
+		const productIdValue = product.productId;
+		const factoryIdValue = product.factoryId;
+
+		// 상품 상세 정보를 먼저 가져오기
+		const productDetail = await fetchProductDetail(productIdValue);
+		setCurrentProductDetail(productDetail);
+
+		// 기본 상품 정보 업데이트
+		updateStockRow(rowId, "productId", productIdValue);
+		updateStockRow(rowId, "productName", product.productName || "");
+		updateStockRow(
+			rowId,
+			"productFactoryName",
+			product.productFactoryName || ""
+		);
+		updateStockRow(rowId, "factoryId", factoryIdValue);
+		updateStockRow(rowId, "factoryName", product.factoryName || "");
+		updateStockRow(rowId, "productLaborCost", product.productLaborCost || 0);
+		updateStockRow(
+			rowId,
+			"productPurchaseCost",
+			product.productPurchaseCost || 0
+		);
+
+		// classification과 setType 정보 설정
+		if (productDetail) {
+			updateStockRow(
+				rowId,
+				"classificationId",
+				productDetail.classificationDto?.classificationId || ""
+			);
+			updateStockRow(
+				rowId,
+				"classificationName",
+				productDetail.classificationDto?.classificationName || ""
+			);
+			updateStockRow(
+				rowId,
+				"setTypeId",
+				productDetail.setTypeDto?.setTypeId || ""
+			);
+			updateStockRow(
+				rowId,
+				"setTypeName",
+				productDetail.setTypeDto?.setTypeName || ""
+			);
+
+			// stoneInfos 설정 (등급에 맞는 단가 적용)
+			const currentRow = stockRows.find((r) => r.id === rowId);
+			const storeGrade = currentRow?.grade || "1";
+			const policyGrade = `GRADE_${storeGrade}`;
+
+			const transformedStoneInfos = transformProductStones(
+				productDetail.productStoneDtos,
+				policyGrade
+			);
+
+			updateStockRow(rowId, "stoneInfos", transformedStoneInfos);
+
+			// stoneInfos로부터 알 가격과 개수 계산 (등급별 단가 반영)
+			const calculatedStoneData = calculateStoneDetails(transformedStoneInfos);
+
+			updateStockRow(
+				rowId,
+				"mainStonePrice",
+				calculatedStoneData.mainStonePrice
+			);
+			updateStockRow(
+				rowId,
+				"mainStoneCount",
+				calculatedStoneData.mainStoneCount
+			);
+			updateStockRow(
+				rowId,
+				"assistanceStonePrice",
+				calculatedStoneData.assistanceStonePrice
+			);
+			updateStockRow(
+				rowId,
+				"assistanceStoneCount",
+				calculatedStoneData.assistanceStoneCount
+			);
+			updateStockRow(
+				rowId,
+				"stoneAddLaborCost",
+				calculatedStoneData.stoneAddLaborCost
+			);
+			updateStockRow(
+				rowId,
+				"stoneWeightTotal",
+				calculatedStoneData.stoneWeight
+			);
+			updateStockRow(rowId, "stoneWeight", calculatedStoneData.stoneWeight.toString());
+		} else {
+			// productDetail이 없으면 product.productStones로 fallback
+			const mainStone = product.productStones.find((stone) => stone.mainStone);
+			const mainStonePrice = mainStone
+				? (mainStone.laborCost || 0) * (mainStone.stoneQuantity || 0)
+				: 0;
+			const mainStoneCount = mainStone?.stoneQuantity || 0;
+
+			updateStockRow(rowId, "mainStonePrice", mainStonePrice);
+			updateStockRow(rowId, "mainStoneCount", mainStoneCount);
+
+			const assistanceStone = product.productStones.find(
+				(stone) => !stone.mainStone
+			);
+			const assistanceStonePrice = assistanceStone
+				? (assistanceStone.laborCost || 0) * (assistanceStone.stoneQuantity || 0)
+				: 0;
+			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
+
+			updateStockRow(rowId, "assistanceStonePrice", assistanceStonePrice);
+			updateStockRow(rowId, "assistanceStoneCount", assistanceStoneCount);
+		}
+
+		// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
+		if (product.productMaterial) {
+			const foundMaterial = materials.find(
+				(m) => m.materialName === product.productMaterial
+			);
+			if (foundMaterial) {
+				updateStockRow(rowId, "materialId", foundMaterial.materialId);
+				updateStockRow(rowId, "materialName", foundMaterial.materialName);
+			}
+		}
+
+		// productColor 값이 있으면 자동으로 드롭다운에서 선택
+		if (product.productColor) {
+			const foundColor = colors.find(
+				(c) => c.colorName === product.productColor
+			);
+			if (foundColor) {
+				updateStockRow(rowId, "colorId", foundColor.colorId);
+				updateStockRow(rowId, "colorName", foundColor.colorName);
+			}
+		}
 	};
 
 	const handleProductSelect = async (product: ProductDto) => {
 		if (productModal.selectedRowId) {
-			const productIdValue = product.productId;
-			const factoryIdValue = product.factoryId;
-
-			// 상품 상세 정보를 먼저 가져오기
-			const currentProductDetail = await fetchProductDetail(productIdValue);
-			setCurrentProductDetail(currentProductDetail);
-
-			// 기본 상품 정보 업데이트
-			updateStockRow(productModal.selectedRowId, "productId", productIdValue);
-			updateStockRow(
-				productModal.selectedRowId,
-				"productName",
-				product.productName || ""
-			);
-			updateStockRow(
-				productModal.selectedRowId,
-				"productFactoryName",
-				product.productFactoryName || ""
-			);
-			updateStockRow(productModal.selectedRowId, "factoryId", factoryIdValue);
-			updateStockRow(
-				productModal.selectedRowId,
-				"factoryName",
-				product.factoryName || ""
-			);
-			updateStockRow(
-				productModal.selectedRowId,
-				"productLaborCost",
-				product.productLaborCost || 0
-			);
-			updateStockRow(
-				productModal.selectedRowId,
-				"productPurchaseCost",
-				product.productPurchaseCost || 0
-			);
-
-			// classification과 setType 정보 설정
-			if (currentProductDetail) {
-				updateStockRow(
-					productModal.selectedRowId,
-					"classificationId",
-					currentProductDetail.classificationDto?.classificationId || ""
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"classificationName",
-					currentProductDetail.classificationDto?.classificationName || ""
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"setTypeId",
-					currentProductDetail.setTypeDto?.setTypeId || ""
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"setTypeName",
-					currentProductDetail.setTypeDto?.setTypeName || ""
-				);
-
-				// stoneInfos 설정 (등급에 맞는 단가 적용)
-				const currentRow = stockRows.find(
-					(r) => r.id === productModal.selectedRowId
-				);
-				const storeGrade = currentRow?.grade || "1";
-				const policyGrade = `GRADE_${storeGrade}`;
-
-				const transformedStoneInfos = transformProductStones(
-					currentProductDetail.productStoneDtos,
-					policyGrade
-				);
-
-				updateStockRow(
-					productModal.selectedRowId,
-					"stoneInfos",
-					transformedStoneInfos
-				);
-
-				// stoneInfos로부터 알 가격과 개수 계산 (등급별 단가 반영)
-				const calculatedStoneData = calculateStoneDetails(
-					transformedStoneInfos
-				);
-
-				updateStockRow(
-					productModal.selectedRowId,
-					"mainStonePrice",
-					calculatedStoneData.mainStonePrice
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"mainStoneCount",
-					calculatedStoneData.mainStoneCount
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"assistanceStonePrice",
-					calculatedStoneData.assistanceStonePrice
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"assistanceStoneCount",
-					calculatedStoneData.assistanceStoneCount
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"stoneAddLaborCost",
-					calculatedStoneData.stoneAddLaborCost
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"stoneWeightTotal",
-					calculatedStoneData.stoneWeight
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"stoneWeight",
-					calculatedStoneData.stoneWeight.toString()
-				);
-			} else {
-				// productDetail이 없으면 product.productStones로 fallback
-				const mainStone = product.productStones.find(
-					(stone) => stone.mainStone
-				);
-				const mainStonePrice = mainStone
-					? (mainStone.laborCost || 0) * (mainStone.stoneQuantity || 0)
-					: 0;
-				const mainStoneCount = mainStone?.stoneQuantity || 0;
-
-				updateStockRow(
-					productModal.selectedRowId,
-					"mainStonePrice",
-					mainStonePrice
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"mainStoneCount",
-					mainStoneCount
-				);
-
-				const assistanceStone = product.productStones.find(
-					(stone) => !stone.mainStone
-				);
-				const assistanceStonePrice = assistanceStone
-					? (assistanceStone.laborCost || 0) *
-					  (assistanceStone.stoneQuantity || 0)
-					: 0;
-				const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
-
-				updateStockRow(
-					productModal.selectedRowId,
-					"assistanceStonePrice",
-					assistanceStonePrice
-				);
-				updateStockRow(
-					productModal.selectedRowId,
-					"assistanceStoneCount",
-					assistanceStoneCount
-				);
-			}
-
-			// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
-			if (product.productMaterial) {
-				const foundMaterial = materials.find(
-					(m) => m.materialName === product.productMaterial
-				);
-				if (foundMaterial) {
-					updateStockRow(
-						productModal.selectedRowId,
-						"materialId",
-						foundMaterial.materialId
-					);
-					updateStockRow(
-						productModal.selectedRowId,
-						"materialName",
-						foundMaterial.materialName
-					);
-				}
-			}
-
-			// productColor 값이 있으면 자동으로 드롭다운에서 선택
-			if (product.productColor) {
-				const foundColor = colors.find(
-					(c) => c.colorName === product.productColor
-				);
-				if (foundColor) {
-					updateStockRow(
-						productModal.selectedRowId,
-						"colorId",
-						foundColor.colorId
-					);
-					updateStockRow(
-						productModal.selectedRowId,
-						"colorName",
-						foundColor.colorName
-					);
-				}
-			}
+			await applyProductSelection(productModal.selectedRowId, product);
 		}
 		productModal.handleSelect();
+	};
+
+	// 상품 직접 검색 (Enter 키)
+	// 반환값: true = 성공(자동 선택됨), false = 실패(팝업 열림 또는 결과 없음)
+	const handleDirectProductSearch = async (
+		rowId: string,
+		searchTerm: string
+	): Promise<boolean> => {
+		// 거래처 선택 여부 확인
+		if (!validateSequence(rowId, "product")) {
+			return false;
+		}
+
+		try {
+			const row = stockRows.find((r) => r.id === rowId);
+			const grade = row?.grade || "1";
+			const response = await productApi.getProducts(
+				searchTerm,
+				undefined,
+				undefined,
+				undefined,
+				1,
+				50,
+				undefined,
+				undefined,
+				grade
+			);
+			const products = response.data?.content || [];
+
+			// 완전 일치 검사 (모델번호 기준, 대소문자 무시)
+			const exactMatch = products.find(
+				(product) =>
+					product.productName.toLowerCase() === searchTerm.toLowerCase()
+			);
+
+			if (exactMatch) {
+				await applyProductSelection(rowId, exactMatch);
+				return true; // 성공
+			} else {
+				// 일치 항목 없거나 결과 없으면 검색어와 함께 팝업 열기
+				openProductSearch(rowId, searchTerm);
+				return false;
+			}
+		} catch (err) {
+			handleError(err);
+			return false;
+		}
 	};
 
 	// 보조석 입고 여부 변경 핸들러
@@ -1037,6 +1092,9 @@ export const StockCreatePage = () => {
 				onStoreSearchOpen={openStoreSearch}
 				onProductSearchOpen={openProductSearch}
 				onFactorySearchOpen={openFactorySearch}
+				onDirectStoreSearch={handleDirectStoreSearch}
+				onDirectProductSearch={handleDirectProductSearch}
+				onDirectFactorySearch={handleDirectFactorySearch}
 				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
 				onAddStockRow={() => {}}
 				onStoneInfoOpen={openStoneInfoManager}
@@ -1067,6 +1125,7 @@ export const StockCreatePage = () => {
 				<StoreSearch
 					onSelectStore={handleStoreSelect}
 					onClose={storeModal.closeModal}
+					initialSearch={storeModal.additionalParams.search || ""}
 				/>
 			)}
 
@@ -1074,6 +1133,7 @@ export const StockCreatePage = () => {
 				<FactorySearch
 					onSelectFactory={handleFactorySelect}
 					onClose={factoryModal.closeModal}
+					initialSearch={factoryModal.additionalParams.search || ""}
 				/>
 			)}
 
@@ -1082,6 +1142,7 @@ export const StockCreatePage = () => {
 					onSelectProduct={handleProductSelect}
 					onClose={productModal.closeModal}
 					grade={productModal.additionalParams.grade || "1"}
+					initialSearch={productModal.additionalParams.search || ""}
 				/>
 			)}
 		</div>

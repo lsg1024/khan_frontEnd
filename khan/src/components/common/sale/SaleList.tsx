@@ -129,12 +129,12 @@ export const SaleList = ({
 									{rowNumber}
 								</button>
 							</td>
-							<td className="date-cell" title={sale.createAt}>
-								<StatusHistoryTooltip statusHistory={sale.statusHistory}>
+							<td className={`date-cell ${sale.statusHistories && sale.statusHistories.length > 0 ? 'has-history' : ''}`}>
+								<StatusHistoryTooltip statusHistory={sale.statusHistories}>
 									{sale.createAt
 										? (() => {
 												const date = new Date(sale.createAt);
-												const year = String(date.getFullYear()).slice(-2); // 연도 2자리
+												const year = String(date.getFullYear()).slice(-2);
 												const month = String(date.getMonth() + 1).padStart(
 													2,
 													"0"

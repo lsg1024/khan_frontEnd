@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { SaleOptionData } from "../../../types/saleDto";
 import "../../../styles/components/sale/SaleOption.css";
 
@@ -8,6 +9,7 @@ interface SaleOptionProps {
 		value: SaleOptionData[K]
 	) => void;
 	onCustomerSearchOpen: () => void;
+	onDirectStoreSearch?: (searchTerm: string) => Promise<void>;
 	disabled?: boolean;
 	hasWGStatus: boolean;
 	isStoreLoadedFromApi?: boolean;
@@ -18,11 +20,45 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 	options,
 	onOptionChange,
 	onCustomerSearchOpen,
+	onDirectStoreSearch,
 	disabled = false,
 	hasWGStatus,
 	isStoreLoadedFromApi = false,
 	isMarketPriceLocked = false,
 }) => {
+	// 검색어 입력 상태
+	const [storeSearchInput, setStoreSearchInput] = useState<string>("");
+	const [isSearching, setIsSearching] = useState(false);
+
+	// 검색어 입력 핸들러
+	const handleStoreInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setStoreSearchInput(e.target.value);
+	};
+
+	// Enter 키 핸들러
+	const handleStoreKeyDown = async (
+		e: React.KeyboardEvent<HTMLInputElement>
+	) => {
+		if (e.key === "Enter" && !e.nativeEvent.isComposing && onDirectStoreSearch) {
+			const searchTerm = storeSearchInput.trim();
+			if (searchTerm) {
+				setIsSearching(true);
+				try {
+					await onDirectStoreSearch(searchTerm);
+				} finally {
+					setIsSearching(false);
+				}
+			}
+		}
+	};
+
+	// 포커스 아웃 시 검색어 초기화
+	const handleStoreBlur = () => {
+		setTimeout(() => {
+			setStoreSearchInput("");
+		}, 200);
+	};
+
 	return (
 		<div className="sale-option-container">
 			{/* 첫째 줄 */}
@@ -100,18 +136,28 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 					<div className="sale-option-field-search-container">
 						<input
 							type="text"
-							value={options.storeName}
-							readOnly
-							placeholder="거래처 검색"
+							value={storeSearchInput || options.storeName}
+							readOnly={isStoreLoadedFromApi || disabled}
+							placeholder="거래처 검색 (Enter로 검색)"
 							disabled={disabled}
-							onClick={isStoreLoadedFromApi ? undefined : onCustomerSearchOpen}
-							style={{ backgroundColor: "#f5f5f5", color: "#000" }}
+							onChange={handleStoreInputChange}
+							onKeyDown={handleStoreKeyDown}
+							onBlur={handleStoreBlur}
+							onClick={
+								isStoreLoadedFromApi || !onDirectStoreSearch
+									? onCustomerSearchOpen
+									: undefined
+							}
+							style={{
+								backgroundColor: isStoreLoadedFromApi ? "#f5f5f5" : undefined,
+								color: "#000",
+							}}
 							title={`거래처 ID: ${options.storeId || "미설정"}`}
 						/>
 						<button
 							className="btn-search"
 							onClick={onCustomerSearchOpen}
-							disabled={disabled || isStoreLoadedFromApi}
+							disabled={disabled || isStoreLoadedFromApi || isSearching}
 							style={{
 								opacity: isStoreLoadedFromApi ? 0.5 : 1,
 								cursor: isStoreLoadedFromApi ? "not-allowed" : "pointer",

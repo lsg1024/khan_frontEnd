@@ -6,12 +6,14 @@ interface ProductSearchProps {
 	onSelectProduct: (product: ProductDto) => void;
 	onClose?: () => void;
 	grade?: string;
+	initialSearch?: string; // 초기 검색어 (팝업 열릴 때 자동 검색)
 }
 
 const ProductSearch: React.FC<ProductSearchProps> = ({
 	onSelectProduct,
 	onClose,
 	grade: grade = "1",
+	initialSearch = "",
 }) => {
 	// 함수들을 ref로 저장하여 리렌더링 시에도 동일한 참조 유지
 	const onSelectProductRef = useRef(onSelectProduct);
@@ -23,9 +25,12 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
 	});
 
 	useEffect(() => {
-		// 팝업 창 열기
+		// 팝업 창 열기 (grade, initialSearch 파라미터 전달)
+		const params = new URLSearchParams();
+		params.set("grade", grade);
+		if (initialSearch) params.set("search", initialSearch);
 		const popup = window.open(
-			`/product-search?grade=${grade}`,
+			`/product-search?${params.toString()}`,
 			"productSearch",
 			"width=1200,height=750,scrollbars=yes,resizable=yes"
 		);
@@ -55,7 +60,7 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
 			window.removeEventListener("message", handleMessage);
 			clearInterval(checkClosed);
 		};
-	}, []); // 빈 의존성 배열로 한 번만 실행
+	}, [grade, initialSearch]);
 
 	return null; // 실제 UI는 팝업에서 렌더링
 };

@@ -268,6 +268,19 @@
 
 /* 로딩 스피너 - global.css에 정의됨 */
 
+/* ===== 상태 히스토리 표시 스타일 ===== */
+.has-history {
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-underline-offset: 2px;
+	color: #0066cc;
+}
+
+.has-history:hover {
+	color: #004499;
+}
+
 /* ===== 모달 공통 스타일 ===== */
 .modal-overlay {
 	position: fixed;

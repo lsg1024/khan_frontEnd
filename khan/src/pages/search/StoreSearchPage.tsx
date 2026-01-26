@@ -15,8 +15,9 @@ import "../../styles/pages/account/StoreSearchPage.css";
 const StoreSearchPage: React.FC = () => {
 	const [searchParams] = useSearchParams();
 	const useReceivable = searchParams.get("useReceivable") === "true"; // URL 파라미터 확인
+	const initialSearch = searchParams.get("search") || ""; // 초기 검색어
 
-	const [searchName, setSearchName] = useState("");
+	const [searchName, setSearchName] = useState(initialSearch);
 	const [stores, setStores] = useState<(StoreSearchDto | AccountInfoDto)[]>([]);
 	const [loading, setLoading] = useState(false);
 
@@ -95,10 +96,10 @@ const StoreSearchPage: React.FC = () => {
 		[useReceivable]
 	);
 
-	// 초기 데이터 로드
+	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
 	useEffect(() => {
-		performSearch("", 1);
-	}, [performSearch]);
+		performSearch(initialSearch, 1);
+	}, [performSearch, initialSearch]);
 
 	// 검색 처리
 	const handleSearch = () => {

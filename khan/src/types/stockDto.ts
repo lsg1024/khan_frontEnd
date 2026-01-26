@@ -244,6 +244,7 @@ export interface StockUpdateRequest {
 	productPurchaseCost: number;
 	productLaborCost: number;
 	productAddLaborCost: number;
+	storeHarry: string;
 	goldWeight: string;
 	stoneWeight: string;
 	mainStoneNote: string;

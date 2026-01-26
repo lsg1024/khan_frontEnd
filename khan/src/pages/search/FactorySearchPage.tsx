@@ -7,7 +7,13 @@ import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/account/FactorySearchPage.css";
 
 const FactorySearchPage: React.FC = () => {
-	const [searchName, setSearchName] = useState("");
+	// URL 파라미터에서 초기 검색어 읽기
+	const [searchParams] = useState(
+		() => new URLSearchParams(window.location.search)
+	);
+	const initialSearch = searchParams.get("search") || "";
+
+	const [searchName, setSearchName] = useState(initialSearch);
 	const [factories, setFactories] = useState<FactorySearchDto[]>([]);
 	const [loading, setLoading] = useState(false);
 
@@ -57,10 +63,10 @@ const FactorySearchPage: React.FC = () => {
 		}
 	}, []);
 
-	// 초기 데이터 로드
+	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
 	useEffect(() => {
-		performSearch("", 1);
-	}, [performSearch]);
+		performSearch(initialSearch, 1);
+	}, [performSearch, initialSearch]);
 
 	// 검색 처리
 	const handleSearch = () => {

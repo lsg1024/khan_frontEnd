@@ -48,7 +48,7 @@ export interface SaleRow {
 	stoneAddLaborCost: number;
 	mainStoneQuantity: number;
 	assistanceStoneQuantity: number;
-	statusHistory?: StatusHistory[];
+	statusHistories?: StatusHistory[];
 }
 
 // 상세 조회
@@ -117,6 +117,7 @@ export interface SaleCreateRow {
 }
 
 export interface SaleUpdateRequest {
+	createAt?: string;
 	productSize?: string;
 	isProductWeightSale: boolean;
 	productPurchaseCost?: number;

@@ -5,6 +5,7 @@ import type { StoneInfo } from "./stoneDto";
 export interface StatusHistory {
 	phase: string;
 	kind: string;
+	content?: string;
 	statusCreateAt: string;
 	statusCreateBy: string;
 }
@@ -63,7 +64,9 @@ export interface OrderRequestDetail {
 	productLaborCost: number;
 	productAddLaborCost: number;
 	materialId: string;
+	materialName: string;
 	colorId: string;
+	colorName: string;
 	priorityName: string;
 	stoneWeight: number;
 	mainStoneNote: string;
@@ -140,6 +143,7 @@ export interface OrderCreateRequest {
 	assistanceStoneNote: string;
 	assistantStone: boolean;
 	assistantStoneId: string;
+	assistantStoneName: string;
 	assistantStoneCreateAt: string;
 	createAt: string;
 	shippingAt: string;

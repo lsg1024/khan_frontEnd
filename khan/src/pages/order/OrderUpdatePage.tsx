@@ -215,8 +215,8 @@ const OrderUpdatePage: React.FC = () => {
 
 	// 스톤 정보 관리 - 커스텀 훅 사용
 	const { openStoneInfoManager } = useStoneInfoManager({
-		orderRows,
-		updateOrderRow,
+		rows: orderRows,
+		updateRow: updateOrderRow,
 	});
 
 	const isInitialMount = useRef(true);
@@ -463,25 +463,25 @@ const OrderUpdatePage: React.FC = () => {
 			// 2. 기초 데이터 State 설정 (드롭다운 옵션들)
 			let prioritiesData: { priorityName: string; priorityDate: number }[] = [];
 			let assistantStonesData: AssistantStoneDto[] = [];
+			let materialsData: MaterialDto[] = [];
+			let colorsData: ColorDto[] = [];
 
 			if (materialRes.success) {
-				setMaterials(
-					(materialRes.data || []).map((m) => ({
-						materialId: m.materialId?.toString() || "",
-						materialName: m.materialName,
-						materialGoldPurityPercent: m.materialGoldPurityPercent || "",
-					})),
-				);
+				materialsData = (materialRes.data || []).map((m) => ({
+					materialId: m.materialId?.toString() || "",
+					materialName: m.materialName,
+					materialGoldPurityPercent: m.materialGoldPurityPercent || "",
+				}));
+				setMaterials(materialsData);
 			}
 
 			if (colorRes.success) {
-				setColors(
-					(colorRes.data || []).map((c) => ({
-						colorId: c.colorId?.toString() || "",
-						colorName: c.colorName,
-						colorNote: c.colorNote || "",
-					})),
-				);
+				colorsData = (colorRes.data || []).map((c) => ({
+					colorId: c.colorId?.toString() || "",
+					colorName: c.colorName,
+					colorNote: c.colorNote || "",
+				}));
+				setColors(colorsData);
 			}
 
 			if (priorityRes.success) {
@@ -524,9 +524,9 @@ const OrderUpdatePage: React.FC = () => {
 					assistantStonesData,
 				);
 
-				// materialName, colorName으로 materials/colors 배열에서 찾아서 올바른 ID 설정
+				// materialName, colorName으로 로컬 변수(materialsData/colorsData)에서 찾아서 올바른 ID 설정
 				if (detail.materialName) {
-					const foundMaterial = materials.find(
+					const foundMaterial = materialsData.find(
 						(m) => m.materialName === detail.materialName,
 					);
 					if (foundMaterial) {
@@ -536,7 +536,7 @@ const OrderUpdatePage: React.FC = () => {
 				}
 
 				if (detail.colorName) {
-					const foundColor = colors.find(
+					const foundColor = colorsData.find(
 						(c) => c.colorName === detail.colorName,
 					);
 					if (foundColor) {
@@ -624,7 +624,9 @@ const OrderUpdatePage: React.FC = () => {
 				productLaborCost: currentRow.productLaborCost,
 				productAddLaborCost: currentRow.productAddLaborCost,
 				materialId: currentRow.materialId,
+				materialName: currentRow.materialName,
 				colorId: currentRow.colorId,
+				colorName: currentRow.colorName,
 				priorityName: currentRow.priorityName,
 				stoneWeight: Number(currentRow.stoneWeightTotal),
 				mainStoneNote: currentRow.mainStoneNote,
