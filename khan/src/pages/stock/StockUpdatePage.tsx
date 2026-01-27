@@ -64,7 +64,9 @@ const StockUpdatePage: React.FC = () => {
 
 	// 스톤 정보 관리 모달 열기
 	const openStoneInfoManager = (rowId: string) => {
-		const url = `/stock/stone-info?rowId=${rowId}&origin=${window.location.origin}`;
+		const row = stockRows.find((r) => r.id === rowId);
+		const factoryIdParam = row?.factoryId ? `&factoryId=${row.factoryId}` : "";
+		const url = `/stock/stone-info?rowId=${rowId}&origin=${window.location.origin}${factoryIdParam}`;
 		const NAME = `stoneInfo_${rowId}`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=500";
 
@@ -75,7 +77,6 @@ const StockUpdatePage: React.FC = () => {
 					event.data.type === "REQUEST_STONE_INFO" &&
 					event.data.rowId === rowId
 				) {
-					const row = stockRows.find((r) => r.id === rowId);
 					popup.postMessage(
 						{
 							type: "STONE_INFO_DATA",

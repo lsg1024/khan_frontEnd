@@ -1,0 +1,523 @@
+/* 공장별 스톤 조각료 관리 페이지 스타일 */
+
+.factory-stone-price-page {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100vh;
+	background: #f5f5f5;
+	overflow: hidden;
+}
+
+.factory-stone-price-page .page-header {
+	background: white;
+	padding: 1rem 1.5rem;
+	border-bottom: 2px solid #e0e0e0;
+}
+
+.factory-stone-price-page .page-header h1 {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: #333;
+}
+
+/* 검색 섹션 */
+.factory-stone-price-page .search-section {
+	background: white;
+	padding: 1rem 1.5rem;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.factory-stone-price-page .search-row {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-end;
+	flex-wrap: wrap;
+}
+
+.factory-stone-price-page .search-group {
+	flex: 1;
+	min-width: 200px;
+	max-width: 300px;
+}
+
+.factory-stone-price-page .search-group label {
+	display: block;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: #555;
+	margin-bottom: 0.5rem;
+}
+
+.factory-stone-price-page .search-input-wrapper {
+	position: relative;
+}
+
+.factory-stone-price-page .search-input {
+	width: 100%;
+	padding: 0.6rem 0.75rem;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	transition: border-color 0.2s;
+	box-sizing: border-box;
+}
+
+.factory-stone-price-page .search-input:focus {
+	outline: none;
+	border-color: #1976d2;
+	box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.factory-stone-price-page .search-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	background: white;
+	border: 1px solid #ddd;
+	border-top: none;
+	border-radius: 0 0 4px 4px;
+	max-height: 200px;
+	overflow-y: auto;
+	z-index: 100;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.factory-stone-price-page .dropdown-item {
+	padding: 0.6rem 0.75rem;
+	cursor: pointer;
+	font-size: 0.9rem;
+	transition: background 0.15s;
+}
+
+.factory-stone-price-page .dropdown-item:hover {
+	background: #f5f5f5;
+}
+
+.factory-stone-price-page .dropdown-backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 99;
+}
+
+.factory-stone-price-page .button-group {
+	display: flex;
+	gap: 0.5rem;
+	flex-shrink: 0;
+}
+
+.factory-stone-price-page .current-filter {
+	margin-top: 0.75rem;
+	padding: 0.5rem 0.75rem;
+	background: #e3f2fd;
+	border-radius: 4px;
+	font-size: 0.85rem;
+	color: #1976d2;
+}
+
+/* 테이블 컨테이너 */
+.factory-stone-price-page .price-table-container {
+	flex: 1;
+	overflow-y: auto;
+	padding: 1rem 1.5rem;
+	background: white;
+	margin-top: 1rem;
+	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.factory-stone-price-page .loading-state,
+.factory-stone-price-page .empty-state {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 200px;
+	font-size: 0.95rem;
+	color: #888;
+}
+
+/* 테이블 스타일 */
+.factory-stone-price-page .price-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+}
+
+.factory-stone-price-page .price-table thead {
+	background: #f9f9f9;
+	position: sticky;
+	top: 0;
+}
+
+.factory-stone-price-page .price-table th {
+	padding: 0.75rem 0.5rem;
+	text-align: center;
+	font-weight: 600;
+	color: #333;
+	border-bottom: 2px solid #e0e0e0;
+	white-space: nowrap;
+}
+
+.factory-stone-price-page .price-table td {
+	padding: 0.65rem 0.5rem;
+	border-bottom: 1px solid #e8e8e8;
+	text-align: center;
+	color: #555;
+}
+
+.factory-stone-price-page .price-table tbody tr:hover {
+	background: #f5f9ff;
+}
+
+.factory-stone-price-page .price-table td.amount {
+	font-weight: 600;
+	color: #1976d2;
+	text-align: right;
+	padding-right: 1rem;
+}
+
+.factory-stone-price-page .action-btn {
+	padding: 0.35rem 0.75rem;
+	font-size: 0.8rem;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.factory-stone-price-page .action-btn.edit {
+	background: #e3f2fd;
+	color: #1976d2;
+	margin-right: 10px;
+}
+
+.factory-stone-price-page .action-btn.edit:hover {
+	background: #1976d2;
+	color: white;
+}
+
+.factory-stone-price-page .action-btn.history {
+	background: #fff3e0;
+	color: #f57c00;
+}
+
+.factory-stone-price-page .action-btn.history:hover {
+	background: #f57c00;
+	color: white;
+}
+
+/* 모달 스타일 */
+.factory-stone-price-page .modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.factory-stone-price-page .modal-content {
+	background: white;
+	border-radius: 8px;
+	width: 90%;
+	max-width: 500px;
+	max-height: 90vh;
+	overflow-y: auto;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.factory-stone-price-page .modal-content.history-modal {
+	max-width: 700px;
+}
+
+.factory-stone-price-page .modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1rem 1.5rem;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.factory-stone-price-page .modal-header h3 {
+	margin: 0;
+	font-size: 1.2rem;
+	font-weight: 600;
+	color: #333;
+}
+
+.factory-stone-price-page .close-btn {
+	background: none;
+	border: none;
+	font-size: 1.5rem;
+	color: #999;
+	cursor: pointer;
+	padding: 0;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	transition: all 0.2s;
+}
+
+.factory-stone-price-page .close-btn:hover {
+	background: #f5f5f5;
+	color: #333;
+}
+
+.factory-stone-price-page .modal-body {
+	padding: 1.5rem;
+}
+
+.factory-stone-price-page .modal-body .form-group {
+	margin-bottom: 1rem;
+}
+
+.factory-stone-price-page .modal-body .form-group:last-child {
+	margin-bottom: 0;
+}
+
+.factory-stone-price-page .modal-body label {
+	display: block;
+	font-size: 0.85rem;
+	font-weight: 500;
+	color: #555;
+	margin-bottom: 0.4rem;
+}
+
+.factory-stone-price-page .modal-body label .required {
+	color: #dc3545;
+	margin-left: 2px;
+}
+
+.factory-stone-price-page .modal-body input,
+.factory-stone-price-page .modal-body textarea {
+	width: 100%;
+	padding: 0.6rem 0.75rem;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	transition: border-color 0.2s;
+	box-sizing: border-box;
+}
+
+.factory-stone-price-page .modal-body input:focus,
+.factory-stone-price-page .modal-body textarea:focus {
+	outline: none;
+	border-color: #1976d2;
+	box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.factory-stone-price-page .modal-body input:disabled {
+	background: #f5f5f5;
+	color: #888;
+	cursor: not-allowed;
+}
+
+.factory-stone-price-page .modal-body textarea {
+	resize: vertical;
+	min-height: 60px;
+}
+
+.factory-stone-price-page .form-row {
+	display: flex;
+	gap: 1rem;
+}
+
+.factory-stone-price-page .form-group.half {
+	flex: 1;
+}
+
+.factory-stone-price-page .modal-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	background: white;
+	border: 1px solid #ddd;
+	border-top: none;
+	border-radius: 0 0 4px 4px;
+	max-height: 150px;
+	overflow-y: auto;
+	z-index: 1001;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.factory-stone-price-page .modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	padding: 1rem 1.5rem;
+	border-top: 1px solid #e0e0e0;
+	background: #fafafa;
+}
+
+/* 이력 테이블 */
+.factory-stone-price-page .history-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.85rem;
+}
+
+.factory-stone-price-page .history-table th {
+	padding: 0.6rem 0.5rem;
+	text-align: center;
+	font-weight: 600;
+	color: #333;
+	background: #f5f5f5;
+	border-bottom: 2px solid #e0e0e0;
+}
+
+.factory-stone-price-page .history-table td {
+	padding: 0.5rem;
+	text-align: center;
+	border-bottom: 1px solid #e8e8e8;
+	color: #555;
+}
+
+.factory-stone-price-page .history-table tr.current {
+	background: #e8f5e9;
+}
+
+.factory-stone-price-page .history-table tr.current td {
+	font-weight: 500;
+	color: #2e7d32;
+}
+
+.factory-stone-price-page .history-table td.amount {
+	font-weight: 600;
+	color: #1976d2;
+}
+
+/* 버튼 스타일 */
+.factory-stone-price-page .common-btn-common {
+	padding: 0.5rem 1rem;
+	font-size: 0.85rem;
+	background: #1976d2;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.factory-stone-price-page .common-btn-common:hover {
+	background: #1565c0;
+}
+
+.factory-stone-price-page .common-btn-common:disabled {
+	background: #bdbdbd;
+	cursor: not-allowed;
+}
+
+.factory-stone-price-page .reset-btn-common {
+	padding: 0.5rem 1rem;
+	font-size: 0.85rem;
+	background: #f5f5f5;
+	color: #555;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.factory-stone-price-page .reset-btn-common:hover {
+	background: #e0e0e0;
+}
+
+.factory-stone-price-page .delete-btn-common {
+	padding: 0.5rem 1rem;
+	font-size: 0.85rem;
+	border: 1px solid #dc3545;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+
+/* 반응형 */
+@media (max-width: 768px) {
+	.factory-stone-price-page .page-header {
+		padding: 0.75rem 1rem;
+	}
+
+	.factory-stone-price-page .page-header h1 {
+		font-size: 1.25rem;
+	}
+
+	.factory-stone-price-page .search-section {
+		padding: 0.75rem 1rem;
+	}
+
+	.factory-stone-price-page .search-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.factory-stone-price-page .search-group {
+		max-width: none;
+	}
+
+	.factory-stone-price-page .button-group {
+		justify-content: flex-end;
+	}
+
+	.factory-stone-price-page .price-table-container {
+		margin: 0.5rem;
+		padding: 0.75rem;
+	}
+
+	.factory-stone-price-page .price-table {
+		font-size: 0.8rem;
+	}
+
+	.factory-stone-price-page .price-table th,
+	.factory-stone-price-page .price-table td {
+		padding: 0.5rem 0.25rem;
+	}
+
+	.factory-stone-price-page .price-table .action-cell {
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.factory-stone-price-page .action-btn {
+		padding: 0.25rem 0.5rem;
+		font-size: 0.75rem;
+	}
+
+	.factory-stone-price-page .modal-content {
+		width: 95%;
+		max-height: 85vh;
+	}
+
+	.factory-stone-price-page .form-row {
+		flex-direction: column;
+		gap: 0;
+	}
+}
+
+@media (max-width: 480px) {
+	.factory-stone-price-page .page-header h1 {
+		font-size: 1.1rem;
+	}
+
+	.factory-stone-price-page .price-table th:nth-child(5),
+	.factory-stone-price-page .price-table td:nth-child(5),
+	.factory-stone-price-page .price-table th:nth-child(6),
+	.factory-stone-price-page .price-table td:nth-child(6),
+	.factory-stone-price-page .price-table th:nth-child(7),
+	.factory-stone-price-page .price-table td:nth-child(7) {
+		display: none;
+	}
+}

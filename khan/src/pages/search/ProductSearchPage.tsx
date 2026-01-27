@@ -131,7 +131,7 @@ const ProductSearchPage: React.FC = () => {
 		return productCost + stoneCost;
 	};
 
-	// 총 판매가 계산
+	// 총 판매가 계산 (상품 판매가 + 스톤 판매가)
 	const calculateTotalLaborCost = (product: ProductDto): number => {
 		const productCost = parseInt(product.productLaborCost) || 0;
 		const stoneCost = product.productStones.reduce((sum, stone) => {

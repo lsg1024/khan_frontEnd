@@ -1,20 +1,30 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
 import StoneTable from "../../components/common/stone/StoneTable";
 import PriceTable from "../../components/common/product/PriceTable";
 import ProductInfo from "../../components/common/product/BasicInfo";
+import RelatedProducts from "../../components/common/product/RelatedProducts";
+import type { RelatedProductItem } from "../../components/common/product/RelatedProducts";
 import { productApi } from "../../../libs/api/productApi";
 import type { Product } from "../../types/productDto";
 import "../../styles/pages/product/ProductDetailPage.css";
 
 function ProductDetailPage() {
 	const { productId } = useParams<{ productId: string }>();
+	const navigate = useNavigate();
 	const [product, setProduct] = useState<Product | null>(null);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string>("");
+	const [relatedProducts, setRelatedProducts] = useState<RelatedProductItem[]>([]);
+	const [relatedProductsLoading, setRelatedProductsLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+
+	// 관련 상품 클릭 핸들러
+	const handleRelatedProductClick = (targetProductId: string) => {
+		navigate(`/catalog/detail/${targetProductId}`);
+	};
 
 	// 읽기 전용 모드 - 모든 핸들러 비활성화
 	const handleFactorySelect = () => {
@@ -42,8 +52,8 @@ function ProductDetailPage() {
 	};
 
 	// 상품 상세 정보 로드
-	const loadProductDetail = async () => {
-		if (!productId) {
+	const loadProductDetail = async (id: string) => {
+		if (!id) {
 			setError("상품 ID가 없습니다.");
 			setLoading(false);
 			return;
@@ -53,7 +63,7 @@ function ProductDetailPage() {
 			setLoading(true);
 			setError("");
 
-			const response = await productApi.getProduct(productId);
+			const response = await productApi.getProduct(id);
 
 			if (isApiSuccess(response) && response.data) {
 				const transformedData: Product = {
@@ -96,9 +106,52 @@ function ProductDetailPage() {
 		}
 	};
 
+	// 관련 상품 로드
+	const loadRelatedProducts = async (currentProductId: string) => {
+		if (!currentProductId) {
+			setRelatedProducts([]);
+			return;
+		}
+
+		setRelatedProductsLoading(true);
+		try {
+			const response = await productApi.getRelatedProducts(currentProductId);
+			if (isApiSuccess(response) && response.data) {
+				setRelatedProducts(response.data.map(item => ({
+					productId: String(item.productId),
+					productName: item.productName,
+					productFactoryName: "",
+					factoryName: "",
+					imagePath: item.imagePath || undefined,
+				})));
+			} else {
+				setRelatedProducts([]);
+			}
+		} catch (err) {
+			console.error("관련 상품 로드 실패:", err);
+			setRelatedProducts([]);
+		} finally {
+			setRelatedProductsLoading(false);
+		}
+	};
+
 	useEffect(() => {
-		loadProductDetail();
+		if (!productId) return;
+		// productId 변경 시 상태 초기화 후 다시 로드
+		setProduct(null);
+		setLoading(true);
+		setRelatedProducts([]);
+		loadProductDetail(productId);
 	}, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+	// 상품이 로드되면 관련 상품 조회 (관련번호가 있는 경우에만)
+	useEffect(() => {
+		if (product?.productId && product?.productRelatedNumber) {
+			loadRelatedProducts(product.productId);
+		} else {
+			setRelatedProducts([]);
+		}
+	}, [product?.productId, product?.productRelatedNumber]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 로딩 상태
 	if (loading) {
@@ -133,8 +186,9 @@ function ProductDetailPage() {
 			<div className="detail-content">
 				{/* 상단 섹션: 기본정보와 이미지 */}
 				<div className="top-section">
-					{/* 기본 정보 섹션 */}
+					{/* 기본 정보 섹션 - key로 productId 변경 시 리마운트 */}
 					<ProductInfo
+						key={product.productId}
 						product={product}
 						showTitle={true}
 						editable={false}
@@ -143,6 +197,16 @@ function ProductDetailPage() {
 						onImageChange={handleImageChange}
 					/>
 				</div>
+
+				{/* 관련 상품 섹션 */}
+				<RelatedProducts
+					key={`related-${product.productId}`}
+					relatedNumber={product.productRelatedNumber || ""}
+					products={relatedProducts}
+					currentProductId={product.productId}
+					loading={relatedProductsLoading}
+					onProductClick={handleRelatedProductClick}
+				/>
 
 				{/* 가격 정보 섹션 */}
 				<PriceTable

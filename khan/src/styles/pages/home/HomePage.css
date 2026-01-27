@@ -8,6 +8,352 @@
 	transition: var(--transition-base);
 }
 
+/* ===== 대시보드 섹션 ===== */
+.dashboard-section {
+	margin-bottom: var(--spacing-lg);
+}
+
+.dashboard-cards {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 16px;
+}
+
+.dashboard-card {
+	background-color: var(--bg-primary);
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	overflow: hidden;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card .card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 12px;
+	background-color: #f8f9fa;
+	border-bottom: 1px solid #dee2e6;
+}
+
+.dashboard-card .card-header h3 {
+	margin: 0;
+	font-size: 13px;
+	font-weight: 600;
+	color: #333;
+}
+
+.dashboard-card .card-header .detail-link {
+	background: none;
+	border: none;
+	color: #007bff;
+	font-size: 12px;
+	cursor: pointer;
+	padding: 2px 8px;
+	border-radius: 3px;
+	transition: all 0.2s;
+}
+
+.dashboard-card .card-header .detail-link:hover {
+	background-color: #007bff;
+	color: white;
+}
+
+.dashboard-card .card-body {
+	padding: 0;
+	min-height: 150px;
+}
+
+.dashboard-card .card-loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 150px;
+	color: #666;
+	font-size: 13px;
+}
+
+/* 대시보드 테이블 */
+.dashboard-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 12px;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+	padding: 6px 10px;
+	text-align: center;
+	border-bottom: 1px solid #eee;
+}
+
+.dashboard-table th {
+	background-color: #fafafa;
+	font-weight: 600;
+	color: #555;
+	border-bottom: 1px solid #dee2e6;
+}
+
+.dashboard-table tbody tr:hover {
+	background-color: #f8f9fa;
+}
+
+/* 넓은 카드 (거래처별 통계 등) */
+.dashboard-card-wide {
+	grid-column: span 2;
+}
+
+/* 요약 통계 스타일 */
+.summary-stats {
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.stat-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 12px;
+	background-color: #f8f9fa;
+	border-radius: 4px;
+}
+
+.stat-label {
+	font-size: 13px;
+	color: #666;
+	font-weight: 500;
+}
+
+.stat-value {
+	font-size: 14px;
+	font-weight: 600;
+	color: #333;
+}
+
+.stat-value.highlight {
+	color: #28a745;
+}
+
+.stat-value.warning {
+	color: #dc3545;
+}
+
+/* 테이블 셀 강조 */
+.dashboard-table td.highlight {
+	color: #28a745;
+	font-weight: 600;
+}
+
+/* 거래처별 통계 테이블 */
+.store-stats-table {
+	font-size: 11px;
+}
+
+.store-stats-table th,
+.store-stats-table td {
+	padding: 6px 8px;
+	white-space: nowrap;
+}
+
+.store-stats-table td.highlight {
+	color: #28a745;
+	font-weight: 600;
+}
+
+.dashboard-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.dashboard-table .product-name,
+.dashboard-table .store-name {
+	text-align: left;
+	color: #007bff;
+	font-weight: 500;
+	font-size: 0.75rem;
+}
+
+.dashboard-table .no-data {
+	text-align: center;
+	color: #999;
+	padding: 20px;
+}
+
+/* 재고 상세보기 모달 */
+.stock-detail-filters {
+	margin-bottom: 16px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid #eee;
+}
+
+.stock-detail-filters .filter-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+}
+
+.stock-detail-filters .search-input-group {
+	display: flex;
+	gap: 8px;
+}
+
+.stock-detail-filters .search-input {
+	padding: 8px 12px;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	font-size: 13px;
+	width: 200px;
+}
+
+.stock-detail-filters .search-input:focus {
+	outline: none;
+	border-color: #007bff;
+}
+
+.stock-detail-filters .search-btn {
+	padding: 8px 16px;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	font-size: 13px;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.stock-detail-filters .search-btn:hover {
+	background-color: #0056b3;
+}
+
+.stock-detail-filters .filter-select-group {
+	display: flex;
+	gap: 8px;
+}
+
+.stock-detail-filters .filter-select {
+	padding: 8px 12px;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	font-size: 13px;
+	min-width: 120px;
+	background-color: white;
+	cursor: pointer;
+}
+
+.stock-detail-filters .filter-select:focus {
+	outline: none;
+	border-color: #007bff;
+}
+
+.stock-detail-table-container {
+	overflow-x: auto;
+	max-height: 450px;
+	overflow-y: auto;
+}
+
+.stock-detail-table {
+	font-size: 11px;
+}
+
+.stock-detail-table th,
+.stock-detail-table td {
+	padding: 6px 8px;
+	white-space: nowrap;
+}
+
+/* 페이지네이션 스타일 - stock-detail용 */
+.pagination-footer-stock-detail {
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid #eee;
+}
+
+/* ===== 스케줄 관리 툴바 ===== */
+.schedule-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 16px;
+	background-color: #f8f9fa;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	gap: 12px;
+}
+
+.schedule-toolbar-title {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: #333;
+}
+
+.schedule-toolbar-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.schedule-select {
+	padding: 6px 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-size: 13px;
+	background-color: white;
+	min-width: 80px;
+	cursor: pointer;
+}
+
+.schedule-select:focus {
+	outline: none;
+	border-color: #007bff;
+}
+
+.schedule-select-wide {
+	min-width: 100px;
+}
+
+.schedule-toolbar-btn {
+	padding: 6px 12px;
+	border: none;
+	border-radius: 4px;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+	white-space: nowrap;
+}
+
+.schedule-toolbar-btn.schedule-btn-search {
+	background-color: #007bff;
+	color: white;
+}
+
+.schedule-toolbar-btn.schedule-btn-search:hover {
+	background-color: #0056b3;
+}
+
+.schedule-toolbar-btn.btn-refresh {
+	background-color: #28a745;
+	color: white;
+}
+
+.schedule-toolbar-btn.btn-refresh:hover {
+	background-color: #1e7e34;
+}
+
+.schedule-toolbar-btn.btn-register {
+	background-color: #6f42c1;
+	color: white;
+}
+
+.schedule-toolbar-btn.btn-register:hover {
+	background-color: #5a32a3;
+}
+
 /* 캘린더 컨테이너 */
 .calendar-container {
 	background-color: var(--bg-primary);
@@ -334,7 +680,40 @@
 }
 
 /* 반응형 디자인 */
+@media (max-width: 1200px) {
+	.dashboard-cards {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
 @media (max-width: 768px) {
+	.dashboard-cards {
+		grid-template-columns: 1fr;
+	}
+
+	.stock-detail-filters .filter-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.stock-detail-filters .search-input-group {
+		width: 100%;
+	}
+
+	.stock-detail-filters .search-input {
+		flex: 1;
+		width: auto;
+	}
+
+	.stock-detail-filters .filter-select-group {
+		flex-wrap: wrap;
+	}
+
+	.stock-detail-filters .filter-select {
+		flex: 1;
+		min-width: 100px;
+	}
+
 	.home-page-content {
 		padding: 0 var(--spacing-md);
 		margin: 0.5rem auto 0;
@@ -449,4 +828,573 @@
 
 .debug-info strong {
 	color: var(--primary-color);
+}
+
+/* ===== 일정 모달 스타일 ===== */
+.schedule-modal {
+	max-width: 500px;
+	width: 90%;
+}
+
+.schedule-modal-body {
+	padding: 20px;
+}
+
+.schedule-form {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.schedule-form .form-group {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.schedule-form .form-group label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #333;
+}
+
+.schedule-form .form-input,
+.schedule-form .form-select,
+.schedule-form .form-textarea {
+	padding: 10px 12px;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	font-size: 14px;
+	transition: border-color 0.2s;
+}
+
+.schedule-form .form-input:focus,
+.schedule-form .form-select:focus,
+.schedule-form .form-textarea:focus {
+	outline: none;
+	border-color: #007bff;
+}
+
+.schedule-form .form-textarea {
+	resize: vertical;
+	min-height: 80px;
+}
+
+.schedule-form .checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.schedule-form .checkbox-label input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	cursor: pointer;
+}
+
+.schedule-form .form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+.schedule-form .datetime-inputs {
+	display: flex;
+	gap: 8px;
+}
+
+.schedule-form .datetime-inputs input {
+	flex: 1;
+}
+
+.schedule-form .view-value {
+	padding: 10px 12px;
+	background-color: #f8f9fa;
+	border-radius: 4px;
+	font-size: 14px;
+	color: #333;
+	min-height: 40px;
+	display: flex;
+	align-items: center;
+}
+
+/* 색상 선택 */
+.schedule-form .color-picker {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.schedule-form .color-option {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	border: 2px solid transparent;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.schedule-form .color-option:hover {
+	transform: scale(1.1);
+}
+
+.schedule-form .color-option.selected {
+	border-color: #333;
+	box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
+}
+
+.schedule-form .color-preview {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
+/* 일정 모달 푸터 */
+.schedule-modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 16px 20px;
+	border-top: 1px solid #dee2e6;
+}
+
+.schedule-modal-footer .btn {
+	padding: 10px 20px;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.schedule-modal-footer .btn-primary {
+	background-color: #007bff;
+	color: white;
+	border: none;
+}
+
+.schedule-modal-footer .btn-primary:hover {
+	background-color: #0056b3;
+}
+
+.schedule-modal-footer .btn-primary:disabled {
+	background-color: #ccc;
+	cursor: not-allowed;
+}
+
+.schedule-modal-footer .btn-secondary {
+	background-color: #6c757d;
+	color: white;
+	border: none;
+}
+
+.schedule-modal-footer .btn-secondary:hover {
+	background-color: #545b62;
+}
+
+.schedule-modal-footer .btn-danger {
+	background-color: #dc3545;
+	color: white;
+	border: none;
+}
+
+.schedule-modal-footer .btn-danger:hover {
+	background-color: #c82333;
+}
+
+.schedule-modal-footer .btn-danger:disabled {
+	background-color: #ccc;
+	cursor: not-allowed;
+}
+
+/* 캘린더 이벤트 스타일 */
+.rbc-event {
+	cursor: pointer;
+}
+
+.rbc-event:hover {
+	opacity: 1 !important;
+	filter: brightness(1.1);
+}
+
+/* 반응형 - 일정 모달 */
+@media (max-width: 576px) {
+	.schedule-modal {
+		width: 95%;
+		max-width: none;
+	}
+
+	.schedule-form .form-row {
+		grid-template-columns: 1fr;
+	}
+
+	.schedule-form .datetime-inputs {
+		flex-direction: column;
+	}
+}
+
+/* 반응형 - 스케줄 툴바 */
+@media (max-width: 768px) {
+	.schedule-toolbar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.schedule-toolbar-title {
+		text-align: center;
+		margin-bottom: 8px;
+	}
+
+	.schedule-toolbar-controls {
+		justify-content: center;
+	}
+}
+
+@media (max-width: 576px) {
+	.schedule-toolbar-controls {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.schedule-select {
+		width: 100%;
+	}
+
+	.schedule-toolbar-btn {
+		width: 100%;
+		justify-content: center;
+	}
+}
+
+/* ===== 거래처별 거래 통계 모달 필터 스타일 ===== */
+.store-stats-filters {
+	margin-bottom: 16px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid #eee;
+}
+
+.store-stats-filters .filter-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: flex-end;
+	margin-bottom: 12px;
+}
+
+.store-stats-filters .filter-row.filter-row-center {
+	justify-content: center;
+}
+
+.store-stats-filters .filter-row:last-child {
+	margin-bottom: 0;
+}
+
+.store-stats-filters .filter-group {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.store-stats-filters .filter-group label {
+	font-size: 12px;
+	font-weight: 600;
+	color: #666;
+}
+
+.store-stats-filters .filter-input {
+	padding: 6px 10px;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	font-size: 13px;
+	min-width: 120px;
+}
+
+.store-stats-filters .filter-input:focus {
+	outline: none;
+	border-color: #007bff;
+}
+
+.store-stats-filters .filter-select {
+	padding: 6px 10px;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	font-size: 13px;
+	min-width: 100px;
+	background-color: white;
+	cursor: pointer;
+}
+
+.store-stats-filters .filter-select:focus {
+	outline: none;
+	border-color: #007bff;
+}
+
+.store-stats-filters .date-range {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.store-stats-filters .date-range span {
+	color: #666;
+}
+
+.store-stats-filters .filter-buttons {
+	display: flex;
+	gap: 8px;
+	align-items: flex-end;
+}
+
+/* 거래처별 통계 테이블 - 그룹 헤더 */
+.store-stats-table thead .header-group-row th {
+	background-color: #e9ecef;
+	border-bottom: 2px solid #dee2e6;
+	font-weight: 700;
+	text-align: center;
+	padding: 8px 6px;
+}
+
+.store-stats-table thead .header-group-row th.header-group {
+	background-color: #d1e3f0;
+	border-left: 1px solid #b8d4e8;
+}
+
+.store-stats-table thead .header-group-row th.header-group:nth-child(even) {
+	background-color: #e8f0e4;
+	border-left: 1px solid #c8dcc0;
+}
+
+.store-stats-table thead .header-sub-row th {
+	background-color: #f8f9fa;
+	font-weight: 600;
+	font-size: 10px;
+	padding: 4px 4px;
+	text-align: center;
+	border-bottom: 1px solid #dee2e6;
+}
+
+.store-stats-table tbody td {
+	text-align: right;
+	padding: 6px 6px;
+	font-size: 11px;
+	border-bottom: 1px solid #eee;
+}
+
+.store-stats-table tbody td.store-name-cell {
+	text-align: left;
+	font-weight: 500;
+	color: #007bff;
+	white-space: nowrap;
+}
+
+.store-stats-table tbody td.highlight {
+	color: #28a745;
+	font-weight: 600;
+}
+
+.store-stats-table tbody tr:hover {
+	background-color: #f8f9fa;
+}
+
+/* 종합 합계 행 */
+.store-stats-table tbody tr.totals-row {
+	background-color: #fff3cd;
+	font-weight: 700;
+	border-top: 2px solid #dee2e6;
+}
+
+.store-stats-table tbody tr.totals-row:hover {
+	background-color: #fff3cd;
+}
+
+.store-stats-table tbody tr.totals-row td {
+	padding: 8px 6px;
+	border-bottom: none;
+}
+
+.store-stats-table tbody tr.totals-row td.totals-label {
+	text-align: center;
+	color: #856404;
+	font-weight: 700;
+}
+
+/* 반응형 - 거래처별 통계 필터 */
+@media (max-width: 768px) {
+	.store-stats-filters .filter-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.store-stats-filters .filter-group {
+		width: 100%;
+	}
+
+	.store-stats-filters .filter-input,
+	.store-stats-filters .filter-select {
+		width: 100%;
+	}
+
+	.store-stats-filters .date-range {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.store-stats-filters .filter-buttons {
+		justify-content: flex-end;
+	}
+}
+
+/* ===== 인쇄용 스타일 (A4) ===== */
+@media print {
+	/* 페이지 설정 - A4 */
+	@page {
+		size: A4 landscape;
+		margin: 10mm;
+	}
+
+	/* 전체 페이지 숨김 */
+	body * {
+		visibility: hidden;
+	}
+
+	/* 모달과 테이블만 표시 */
+	.modal-overlay,
+	.modal-overlay *,
+	.modal-content,
+	.modal-content * {
+		visibility: visible;
+	}
+
+	/* 모달 오버레이 스타일 초기화 */
+	.modal-overlay {
+		position: absolute;
+		background: white !important;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: auto;
+		height: auto;
+		overflow: visible;
+	}
+
+	/* 모달 콘텐츠 스타일 초기화 */
+	.modal-content {
+		position: relative;
+		width: 100% !important;
+		max-width: none !important;
+		max-height: none !important;
+		margin: 0;
+		padding: 0;
+		box-shadow: none !important;
+		border: none !important;
+		background: white !important;
+	}
+
+	/* 모달 헤더 스타일 */
+	.modal-header {
+		padding: 5mm 0 3mm 0;
+		border-bottom: 1px solid #333;
+		margin-bottom: 3mm;
+	}
+
+	.modal-header h2 {
+		font-size: 14pt;
+		margin: 0;
+	}
+
+	/* 닫기 버튼 숨김 */
+	.modal-close-button {
+		display: none !important;
+	}
+
+	/* 필터 영역 전체 숨김 (검색창 + 조건창) */
+	.store-stats-filters {
+		display: none !important;
+	}
+
+	/* 테이블 컨테이너 */
+	.stock-detail-table-container {
+		overflow: visible !important;
+		max-height: none !important;
+	}
+
+	/* 테이블 스타일 */
+	.store-stats-table {
+		width: 100%;
+		font-size: 7pt;
+		border-collapse: collapse;
+	}
+
+	.store-stats-table th,
+	.store-stats-table td {
+		border: 1px solid #333 !important;
+		padding: 2px 3px !important;
+	}
+
+	.store-stats-table thead .header-group-row th {
+		background-color: #ddd !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+
+	.store-stats-table thead .header-group-row th.header-group {
+		background-color: #ccc !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+
+	.store-stats-table thead .header-sub-row th {
+		background-color: #eee !important;
+		font-size: 6pt;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+
+	.store-stats-table tbody td {
+		font-size: 7pt;
+	}
+
+	.store-stats-table tbody td.store-name-cell {
+		font-weight: 600;
+	}
+
+	.store-stats-table tbody td.highlight {
+		font-weight: 700;
+	}
+
+	/* 합계 행 */
+	.store-stats-table tbody tr.totals-row {
+		background-color: #ffe599 !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+
+	.store-stats-table tbody tr.totals-row td {
+		font-weight: 700;
+	}
+
+	/* 모달 바디 */
+	.modal-body {
+		padding: 0 !important;
+		overflow: visible !important;
+	}
+
+	/* 페이지 나눔 방지 */
+	.store-stats-table {
+		page-break-inside: auto;
+	}
+
+	.store-stats-table tr {
+		page-break-inside: avoid;
+		page-break-after: auto;
+	}
+
+	.store-stats-table thead {
+		display: table-header-group;
+	}
 }

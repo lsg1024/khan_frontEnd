@@ -113,14 +113,14 @@
 .stone-table th:nth-child(2),
 .stone-table td:nth-child(2) {
 	/* 메인구분 */
-	width: 7%;
+	width: 2%;
 	min-width: 55px;
 }
 
 .stone-table th:nth-child(3),
 .stone-table td:nth-child(3) {
 	/* 적용 */
-	width: 7%;
+	width: 2%;
 	min-width: 55px;
 }
 
@@ -134,47 +134,42 @@
 .stone-table th:nth-child(5),
 .stone-table td:nth-child(5) {
 	/* 알수 */
-	width: 7%;
+	width: 4%;
 	min-width: 55px;
 }
 
 .stone-table th:nth-child(6),
 .stone-table td:nth-child(6) {
 	/* 개당중량 */
-	width: 7%;
+	width: 4%;
 	min-width: 55px;
 }
 
 .stone-table th:nth-child(7),
 .stone-table td:nth-child(7) {
 	/* 구매단가 */
-	width: 8%;
-	min-width: 55px;
-}
-
-.stone-table th:nth-child(8),
-.stone-table td:nth-child(8) {
-	width: 24%;
-	min-width: 55px;
-}
-.stone-table th:nth-child(9),
-.stone-table td:nth-child(9) {
-	width: 15% !important;
-	min-width: 55px !important;
-}
-.stone-table th:nth-child(10),
-.stone-table td:nth-child(10) {
 	width: 5%;
 	min-width: 55px;
 }
 
+.stone-table th:nth-child(8),
+.stone-table td:nth-child(8),
+.stone-table th:nth-child(9),
+.stone-table td:nth-child(9),
+.stone-table th:nth-child(10),
+.stone-table td:nth-child(10),
 .stone-table th:nth-child(11),
-.stone-table td:nth-child(11),
+.stone-table td:nth-child(11) {
+	/* 등급별 판매 단가 (1~4등급) */
+	width: 6%;
+	min-width: 55px;
+}
+
 .stone-table th:nth-child(12),
 .stone-table td:nth-child(12) {
 	/* 비고 */
-	width: 6% !important;
-	min-width: 55px !important;
+	width: 10%;
+	min-width: 55px;
 }
 
 /* 스톤명 입력 컨테이너 */
@@ -284,30 +279,30 @@
 	box-shadow: none !important;
 }
 
-/* 소계 및 합계 행 스타일 */
-.total-row {
+/* 소계 및 합계 행 스타일 (StoneTable 전용) */
+.stone-table .stone-total-row {
 	background-color: #fff3cd !important;
 	font-weight: bold;
 	color: #000 !important;
 }
 
-.total-row:hover {
+.stone-table .stone-total-row:hover {
 	background-color: #fff3cd !important;
 }
 
-.total-cell {
+.stone-table .stone-total-cell {
 	background-color: #ffeaa7;
 	font-weight: bold;
 	color: #000 !important;
 }
 
-.manual-total-row {
+.stone-table .stone-manual-total-row {
 	background-color: #e9ecef !important;
 	font-weight: bold;
 	color: #000 !important;
 }
 
-.manual-total-row:hover {
+.stone-table .stone-manual-total-row:hover {
 	background-color: #e9ecef !important;
 }
 

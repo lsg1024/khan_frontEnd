@@ -34,6 +34,8 @@ interface UseStoneInfoManagerProps<T extends StoneInfoRow> {
 	urlType?: StoneInfoManagerUrlType;
 	/** stoneWeight를 문자열로 저장할지 여부 (Stock, Sale은 true) */
 	stoneWeightAsString?: boolean;
+	/** 가격 계산 건너뛰기 여부 (수리 모드에서 사용) */
+	skipPriceCalculation?: boolean;
 }
 
 interface UseStoneInfoManagerResult {
@@ -66,6 +68,7 @@ export function useStoneInfoManager<T extends StoneInfoRow>({
 	updateRow,
 	urlType = "order",
 	stoneWeightAsString = false,
+	skipPriceCalculation = false,
 }: UseStoneInfoManagerProps<T>): UseStoneInfoManagerResult {
 	const rowsRef = useRef<T[]>(rows);
 
@@ -114,20 +117,21 @@ export function useStoneInfoManager<T extends StoneInfoRow>({
 						// 스톤 정보 변경 시 알 단가 자동 계산
 						const calculatedStoneData = calculateStoneDetails(stoneInfos);
 
+						// 수리 모드에서는 가격 0으로 설정, 그 외에는 계산된 값 사용
 						updateRow(
 							rowId,
 							"mainStonePrice" as keyof T,
-							calculatedStoneData.mainStonePrice
+							skipPriceCalculation ? 0 : calculatedStoneData.mainStonePrice
 						);
 						updateRow(
 							rowId,
 							"assistanceStonePrice" as keyof T,
-							calculatedStoneData.assistanceStonePrice
+							skipPriceCalculation ? 0 : calculatedStoneData.assistanceStonePrice
 						);
 						updateRow(
 							rowId,
 							"stoneAddLaborCost" as keyof T,
-							calculatedStoneData.stoneAddLaborCost
+							skipPriceCalculation ? 0 : calculatedStoneData.stoneAddLaborCost
 						);
 						updateRow(
 							rowId,
@@ -164,7 +168,7 @@ export function useStoneInfoManager<T extends StoneInfoRow>({
 				}, 1000);
 			}
 		},
-		[updateRow, urlType, stoneWeightAsString]
+		[updateRow, urlType, stoneWeightAsString, skipPriceCalculation]
 	);
 
 	return { openStoneInfoManager };

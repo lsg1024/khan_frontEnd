@@ -33,7 +33,15 @@ const StoneSearch: React.FC<StoneSearchProps> = ({
 		setError("");
 
 		try {
-			const response = await stoneApi.getStones(term, page);
+			const response = await stoneApi.getStones(
+				term,
+				page,
+				12, // size
+				undefined, // shape
+				undefined, // type
+				undefined, // sortField
+				undefined // sortOrder
+			);
 
 			if (response.success && response.data) {
 				const pageData = response.data.page;

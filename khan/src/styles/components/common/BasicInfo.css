@@ -124,6 +124,7 @@
 	border-radius: 4px;
 	border: 1px solid #dee2e6;
 	height: 100%;
+	min-height: 80px;
 }
 
 /* 편집 가능한 필드 스타일 */
@@ -465,4 +466,368 @@
 
 .info-icon:hover {
 	color: #0056b3;
+}
+
+/* ===== 이미지 캐러셀 스타일 ===== */
+.image-carousel-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	box-sizing: border-box;
+}
+
+/* 메인 캐러셀 영역 */
+.carousel-main {
+	position: relative;
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 150px;
+}
+
+/* 이미지 래퍼 */
+.carousel-image-wrapper {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border-radius: 8px;
+	background-color: #f8f9fa;
+}
+
+/* 캐러셀 이미지 */
+.carousel-image {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+	cursor: pointer;
+	transition: transform 0.2s ease;
+}
+
+.carousel-image:hover {
+	transform: scale(1.02);
+}
+
+/* 좌우 네비게이션 버튼 */
+.carousel-nav-btn {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 32px;
+	height: 50px;
+	border: none;
+	border-radius: 50%;
+	background-color: rgba(0, 0, 0, 0.5);
+	color: white;
+	font-size: 20px;
+	font-weight: bold;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	z-index: 10;
+	line-height: 1;
+}
+
+.carousel-nav-btn:hover {
+	background-color: rgba(0, 0, 0, 0.7);
+	transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-nav-btn.prev {
+	left: 5px;
+}
+
+.carousel-nav-btn.next {
+	right: 5px;
+}
+
+/* 이미지 삭제 버튼 */
+.carousel-remove-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	width: 25px;
+	height: 50px;
+	border: none;
+	border-radius: 50%;
+	background-color: rgba(220, 53, 69, 0.9);
+	color: white;
+	font-size: 18px;
+	font-weight: bold;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	z-index: 10;
+}
+
+.carousel-image-wrapper:hover .carousel-remove-btn {
+	opacity: 1;
+}
+
+.carousel-remove-btn:hover {
+	background-color: #c82333;
+	transform: scale(1.1);
+}
+
+/* NEW 배지 */
+.carousel-badge {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	font-size: 10px;
+	font-weight: bold;
+	padding: 3px 8px;
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	z-index: 10;
+}
+
+.carousel-badge.new {
+	background-color: #28a745;
+	color: white;
+}
+
+/* 하단 영역 (인디케이터 + 추가 버튼) */
+.carousel-bottom {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 16px;
+	margin-top: 12px;
+	padding: 8px 0;
+}
+
+/* 인디케이터 (점) */
+.carousel-indicators {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+}
+
+.carousel-dot {
+	width: 10px;
+	height: 10px;
+	border: 2px solid #ccc;
+	border-radius: 50%;
+	background-color: transparent;
+	cursor: pointer;
+	padding: 0;
+	transition: all 0.2s ease;
+}
+
+.carousel-dot:hover {
+	border-color: #007bff;
+	background-color: rgba(0, 123, 255, 0.2);
+}
+
+.carousel-dot.active {
+	border-color: #007bff;
+	background-color: #007bff;
+}
+
+/* 이미지 추가 버튼 */
+.carousel-add-button {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 6px 12px;
+	border: 1px solid #007bff;
+	border-radius: 6px;
+	background-color: #f0f7ff;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-size: 12px;
+	color: #007bff;
+	font-weight: 500;
+}
+
+.carousel-add-button:hover {
+	background-color: #007bff;
+	color: white;
+}
+
+.carousel-add-button .add-icon {
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 1;
+}
+
+.carousel-add-button .add-text {
+	font-size: 11px;
+}
+
+/* 이미지 카운트 */
+.carousel-count {
+	text-align: center;
+	font-size: 11px;
+	color: #666;
+	margin-top: 4px;
+}
+
+/* 이미지 없을 때 */
+.carousel-empty {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	min-height: 150px;
+}
+
+.carousel-empty img {
+	max-width: 80px;
+	opacity: 0.5;
+}
+
+.carousel-add-btn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	padding: 12px 20px;
+	border: 2px dashed #007bff;
+	border-radius: 8px;
+	background-color: #f0f7ff;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.carousel-add-btn:hover {
+	background-color: #e0f0ff;
+	border-color: #0056b3;
+	transform: scale(1.02);
+}
+
+.carousel-add-btn .add-icon {
+	font-size: 24px;
+	color: #007bff;
+	line-height: 1;
+}
+
+.carousel-add-btn .add-text {
+	font-size: 11px;
+	color: #666;
+}
+
+/* 이미지 로딩 */
+.image-loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	color: #666;
+	font-size: 12px;
+}
+
+/* 반응형 디자인 - 캐러셀 */
+@media (max-width: 768px) {
+	.carousel-nav-btn {
+		width: 28px;
+		height: 28px;
+		font-size: 16px;
+	}
+
+	.carousel-remove-btn {
+		width: 24px;
+		height: 24px;
+		font-size: 14px;
+		opacity: 1;
+	}
+
+	.carousel-badge {
+		font-size: 9px;
+		padding: 2px 6px;
+	}
+
+	.carousel-bottom {
+		gap: 12px;
+		margin-top: 8px;
+	}
+
+	.carousel-dot {
+		width: 8px;
+		height: 8px;
+	}
+
+	.carousel-indicators {
+		gap: 6px;
+	}
+
+	.carousel-add-button {
+		padding: 5px 10px;
+		font-size: 11px;
+	}
+
+	.carousel-add-button .add-icon {
+		font-size: 12px;
+	}
+
+	.carousel-add-button .add-text {
+		font-size: 10px;
+	}
+
+	.carousel-count {
+		font-size: 10px;
+	}
+}
+
+@media (max-width: 480px) {
+	.carousel-main {
+		min-height: 120px;
+	}
+
+	.carousel-nav-btn {
+		width: 24px;
+		height: 24px;
+		font-size: 14px;
+	}
+
+	.carousel-nav-btn.prev {
+		left: 2px;
+	}
+
+	.carousel-nav-btn.next {
+		right: 2px;
+	}
+
+	.carousel-bottom {
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.carousel-add-button {
+		padding: 4px 8px;
+	}
+
+	.carousel-empty img {
+		max-width: 60px;
+	}
+
+	.carousel-add-btn {
+		padding: 8px 16px;
+	}
+
+	.carousel-add-btn .add-icon {
+		font-size: 20px;
+	}
+
+	.carousel-add-btn .add-text {
+		font-size: 10px;
+	}
 }

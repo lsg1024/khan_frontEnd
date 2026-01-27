@@ -290,7 +290,9 @@ const StockRegisterPage: React.FC = () => {
 
 	// 스톤 정보 관리 팝업 열기
 	const openStoneInfoManager = (rowId: string) => {
-		const url = `/orders/stone-info?rowId=${rowId}&origin=${POPUP_ORIGIN}`;
+		const row = stockRows.find((r) => r.id === rowId);
+		const factoryIdParam = row?.factoryId ? `&factoryId=${row.factoryId}` : "";
+		const url = `/orders/stone-info?rowId=${rowId}&origin=${POPUP_ORIGIN}${factoryIdParam}`;
 		const NAME = `stoneInfo_${rowId}`;
 		const FEATURES = "resizable=yes,scrollbars=yes,width=1200,height=400";
 		const popup = window.open(url, NAME, FEATURES);

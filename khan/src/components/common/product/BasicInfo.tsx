@@ -12,15 +12,31 @@ import ImageZoomModal from "../ImageZoomModal";
 import "../../../styles/components/common/BasicInfo.css";
 import { useErrorHandler } from "../../../utils/errorHandler";
 
+// 이미지 미리보기 타입 정의
+interface ImagePreviewItem {
+	id: string;
+	url: string;
+	isLocal: boolean;
+	localIndex?: number;
+	serverId?: string;
+}
+
+// 기본값 상수 (참조 안정성 보장)
+const EMPTY_IMAGE_FILES: File[] = [];
+const EMPTY_VALIDATION_ERRORS: Record<string, string> = {};
+
 const BasicInfo: React.FC<ProductInfo> = ({
 	product,
 	showTitle = true,
 	editable = true,
-	imageFile, // 부모로부터 받은 Props 사용 (로컬 State 선언 제거)
+	imageFiles = EMPTY_IMAGE_FILES,
 	onProductChange,
 	onFactorySelect,
-	onImageChange,
-	validationErrors = {},
+	onImageAdd,
+	onImageRemove,
+	onServerImageRemove,
+	validationErrors = EMPTY_VALIDATION_ERRORS,
+	maxImages = 5,
 }) => {
 	const [classifications, setClassifications] = useState<ClassificationDto[]>(
 		[],
@@ -29,26 +45,22 @@ const BasicInfo: React.FC<ProductInfo> = ({
 	const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
 	const [loading, setLoading] = useState(false);
 
-	// 각 드롭다운의 로딩 상태
 	const [materialsLoaded, setMaterialsLoaded] = useState(false);
 	const [classificationsLoaded, setClassificationsLoaded] = useState(false);
 	const [setTypesLoaded, setSetTypesLoaded] = useState(false);
 
-	// 제조사 검색 모달 상태
 	const [isFactoryModalOpen, setIsFactoryModalOpen] = useState(false);
 
-	// 이미지 관련 State (imageFile은 Props 사용하므로 제거됨)
-	const [imagePreview, setImagePreview] = useState<string | null>(null);
-	const [currentImageId, setCurrentImageId] = useState<number | null>(null);
+	const [imagePreviews, setImagePreviews] = useState<ImagePreviewItem[]>([]);
 	const [imageLoading, setImageLoading] = useState(false);
+	const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-	// 이미지 확대 모달 상태
 	const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
+	const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null);
 
 	const { handleError } = useErrorHandler();
 
-	// 제조사 선택 핸들러
-	const handleFactorySelect = (factory: {
+	const handleFactorySelectInternal = (factory: {
 		factoryId?: number;
 		factoryName: string;
 	}) => {
@@ -72,135 +84,126 @@ const BasicInfo: React.FC<ProductInfo> = ({
 		setIsFactoryModalOpen(true);
 	};
 
-	// 이미지 로드 및 미리보기 처리 (통합)
+	// 이미지 로드 및 미리보기 처리
 	useEffect(() => {
-		// 1. 로컬 파일(imageFile Prop)이 있으면 최우선으로 미리보기 표시
-		if (imageFile) {
-			const objectUrl = URL.createObjectURL(imageFile);
-			setImagePreview(objectUrl);
-			setCurrentImageId(null); // 로컬 파일이므로 서버 ID는 없음
+		let isMounted = true;
+		const blobUrls: string[] = [];
 
-			return () => URL.revokeObjectURL(objectUrl);
-		}
+		const loadImages = async () => {
+			setImageLoading(true);
+			setCurrentImageIndex(0); // 인덱스 초기화
+			const previews: ImagePreviewItem[] = [];
 
-		// 2. 로컬 파일이 없고 서버 데이터가 있는 경우 서버 이미지 로드
-		let blobUrl: string | null = null;
-		const loadServerImage = async () => {
+			// 1. 로컬 파일들 미리보기 생성
+			imageFiles.forEach((file, index) => {
+				const objectUrl = URL.createObjectURL(file);
+				blobUrls.push(objectUrl);
+				previews.push({
+					id: `local-${index}`,
+					url: objectUrl,
+					isLocal: true,
+					localIndex: index,
+				});
+			});
+
+			// 2. 서버 이미지 로드
 			if (product.productImageDtos && product.productImageDtos.length > 0) {
-				const firstImage = product.productImageDtos[0];
-				if (firstImage.imageId && firstImage.imagePath) {
-					try {
-						const blob = await productApi.getProductImageByPath(
-							firstImage.imagePath,
-						);
-						blobUrl = URL.createObjectURL(blob);
-						setImagePreview(blobUrl);
-						setCurrentImageId(parseInt(firstImage.imageId));
-					} catch {
-						setImagePreview(null);
+				for (const serverImage of product.productImageDtos) {
+					if (serverImage.imageId && serverImage.imagePath) {
+						try {
+							const blob = await productApi.getProductImageByPath(
+								serverImage.imagePath,
+							);
+							const blobUrl = URL.createObjectURL(blob);
+							blobUrls.push(blobUrl);
+							previews.push({
+								id: `server-${serverImage.imageId}`,
+								url: blobUrl,
+								isLocal: false,
+								serverId: serverImage.imageId,
+							});
+						} catch {
+							console.error("서버 이미지 로드 실패:", serverImage.imageId);
+							// 이미지 로드 실패해도 계속 진행
+						}
 					}
 				}
-			} else {
-				// 이미지 없음
-				setImagePreview(null);
-				setCurrentImageId(null);
+			}
+
+			if (isMounted) {
+				setImagePreviews(previews);
+				setImageLoading(false);
 			}
 		};
 
-		loadServerImage();
+		loadImages();
 
 		return () => {
-			if (blobUrl) URL.revokeObjectURL(blobUrl);
+			isMounted = false;
+			blobUrls.forEach((url) => URL.revokeObjectURL(url));
 		};
-	}, [imageFile, product.productImageDtos]);
+	}, [imageFiles, product.productImageDtos]);
 
 	// 이미지 파일 선택 핸들러
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
+		const files = e.target.files;
+		if (!files || files.length === 0) return;
 
-		if (!file.type.startsWith("image/")) {
-			alert("이미지 파일만 업로드 가능합니다.");
+		const currentTotal =
+			imageFiles.length + (product.productImageDtos?.length || 0);
+		const remainingSlots = maxImages - currentTotal;
+
+		if (remainingSlots <= 0) {
+			alert(`최대 ${maxImages}개의 이미지만 업로드할 수 있습니다.`);
 			return;
 		}
 
-		if (file.size > 5 * 1024 * 1024) {
-			alert("이미지 크기는 5MB를 초과할 수 없습니다.");
-			return;
-		}
+		const filesToAdd = Array.from(files).slice(0, remainingSlots);
 
-		// 부모 컴포넌트에 파일 전달 (로컬 상태 업데이트 안 함)
-		if (onImageChange) {
-			onImageChange(file);
-		}
-	};
-
-	// 이미지 업로드/수정 (수정 페이지용)
-	const handleImageUpload = async () => {
-		// Props인 imageFile 사용
-		if (!imageFile || !product.productId) return;
-
-		setImageLoading(true);
-		try {
-			const response = await productApi.uploadProductImage(
-				product.productId.toString(),
-				imageFile,
-			);
-			if (response.success) {
-				alert("이미지가 수정되었습니다.");
-				// 성공 시 파일 선택 해제 (부모 상태 초기화)
-				if (onImageChange) {
-					onImageChange(null);
-				}
-				// 페이지 새로고침 로직이 필요하다면 여기에 추가 (혹은 상태 업데이트)
-				window.location.reload();
+		for (const file of filesToAdd) {
+			if (!file.type.startsWith("image/")) {
+				alert("이미지 파일만 업로드 가능합니다.");
+				continue;
 			}
-		} catch (error) {
-			handleError(error);
-		} finally {
-			setImageLoading(false);
-		}
-	};
 
-	// 이미지 클릭 시 확대 모달 열기
-	const handleImageClick = () => {
-		if (imagePreview) {
-			setIsImageZoomOpen(true);
-		}
-	};
-
-	// 이미지 삭제 (로컬 취소 또는 서버 삭제)
-	const handleImageDelete = async () => {
-		// 1. 방금 선택한 로컬 파일이 있는 경우 -> 선택 취소
-		if (imageFile) {
-			if (onImageChange) {
-				onImageChange(null);
+			if (file.size > 5 * 1024 * 1024) {
+				alert(`${file.name}: 이미지 크기는 5MB를 초과할 수 없습니다.`);
+				continue;
 			}
-			return;
+
+			if (onImageAdd) {
+				onImageAdd(file);
+			}
 		}
 
-		// 2. 서버에 저장된 이미지가 있는 경우 -> API 호출
-		if (!currentImageId) return;
+		e.target.value = "";
+	};
+
+	// 로컬 이미지 삭제
+	const handleLocalImageRemove = (localIndex: number) => {
+		if (onImageRemove) {
+			onImageRemove(localIndex);
+		}
+	};
+
+	// 서버 이미지 삭제
+	const handleServerImageRemove = async (imageId: string) => {
 		if (!confirm("이미지를 삭제하시겠습니까?")) return;
 
 		setImageLoading(true);
 		try {
-			const response = await productApi.deleteProductImage(
-				currentImageId.toString(),
-			);
+			const response = await productApi.deleteProductImage(imageId);
 
 			if (response.success) {
 				alert("이미지가 삭제되었습니다.");
-				setImagePreview(null);
-				setCurrentImageId(null);
 
-				if (onImageChange) {
-					onImageChange(null);
+				if (onServerImageRemove) {
+					onServerImageRemove(imageId);
 				}
 
-				if (window.opener && !window.opener.closed) {
-					window.opener.location.reload();
-				}
+				setImagePreviews((prev) =>
+					prev.filter((p) => p.serverId !== imageId),
+				);
 			} else {
 				alert(response.message || "이미지 삭제에 실패했습니다.");
 			}
@@ -210,6 +213,36 @@ const BasicInfo: React.FC<ProductInfo> = ({
 			setImageLoading(false);
 		}
 	};
+
+	// 이미지 클릭 시 확대 모달 열기
+	const handleImageClick = (imageUrl: string) => {
+		setZoomImageUrl(imageUrl);
+		setIsImageZoomOpen(true);
+	};
+
+	// 캐러셀 네비게이션
+	const goToPrevImage = () => {
+		setCurrentImageIndex((prev) =>
+			prev === 0 ? imagePreviews.length - 1 : prev - 1
+		);
+	};
+
+	const goToNextImage = () => {
+		setCurrentImageIndex((prev) =>
+			prev === imagePreviews.length - 1 ? 0 : prev + 1
+		);
+	};
+
+	const goToImage = (index: number) => {
+		setCurrentImageIndex(index);
+	};
+
+	// 이미지 삭제 시 인덱스 조정
+	useEffect(() => {
+		if (currentImageIndex >= imagePreviews.length && imagePreviews.length > 0) {
+			setCurrentImageIndex(imagePreviews.length - 1);
+		}
+	}, [imagePreviews.length, currentImageIndex]);
 
 	// 필드 변경 핸들러
 	const handleFieldChange = (
@@ -244,7 +277,6 @@ const BasicInfo: React.FC<ProductInfo> = ({
 		onProductChange(updatedProduct);
 	};
 
-	// 데이터 로드 함수들
 	const loadMaterials = useCallback(async () => {
 		if (materialsLoaded) return;
 		setLoading(true);
@@ -313,64 +345,135 @@ const BasicInfo: React.FC<ProductInfo> = ({
 		}
 	}, [editable, loadMaterials, loadClassifications, loadSetTypes]);
 
+	const totalImageCount =
+		imageFiles.length + (product.productImageDtos?.length || 0);
+	const canAddMore = totalImageCount < maxImages;
+
 	return (
 		<div className="top-section">
 			<div className="image-section">
 				{imageLoading ? (
 					<div className="image-loading">로딩 중...</div>
 				) : (
-					<div className="image-container">
-						{editable && (
-							<div className="image-button-group">
-								{/* 이미지가 없을 때만 추가 버튼 노출 */}
-								{!imagePreview && (
-									<label className="image-icon-btn add" title="이미지 업로드">
-										➕
+					<div className="image-carousel-container">
+						{imagePreviews.length > 0 ? (
+							<>
+								{/* 메인 이미지 영역 */}
+								<div className="carousel-main">
+									{/* 이전 버튼 */}
+									{imagePreviews.length > 1 && (
+										<button
+											type="button"
+											className="carousel-nav-btn prev"
+											onClick={goToPrevImage}
+											title="이전 이미지"
+										>
+											‹
+										</button>
+									)}
+
+									{/* 현재 이미지 */}
+									<div className="carousel-image-wrapper">
+										<img
+											src={imagePreviews[currentImageIndex]?.url}
+											alt="상품 이미지"
+											className="carousel-image"
+											onClick={() =>
+												handleImageClick(imagePreviews[currentImageIndex]?.url)
+											}
+											title="클릭하여 이미지 확대"
+										/>
+										{editable && (
+											<button
+												type="button"
+												className="carousel-remove-btn"
+												onClick={() => {
+													const preview = imagePreviews[currentImageIndex];
+													if (preview.isLocal) {
+														handleLocalImageRemove(preview.localIndex!);
+													} else {
+														handleServerImageRemove(preview.serverId!);
+													}
+												}}
+												title="이미지 삭제"
+											>
+												×
+											</button>
+										)}
+										{imagePreviews[currentImageIndex]?.isLocal && (
+											<span className="carousel-badge new">NEW</span>
+										)}
+									</div>
+
+									{/* 다음 버튼 */}
+									{imagePreviews.length > 1 && (
+										<button
+											type="button"
+											className="carousel-nav-btn next"
+											onClick={goToNextImage}
+											title="다음 이미지"
+										>
+											›
+										</button>
+									)}
+								</div>
+
+								{/* 하단 영역: 인디케이터 + 추가 버튼 */}
+								<div className="carousel-bottom">
+									{/* 인디케이터 (점) */}
+									<div className="carousel-indicators">
+										{imagePreviews.map((_, index) => (
+											<button
+												key={index}
+												type="button"
+												className={`carousel-dot ${
+													index === currentImageIndex ? "active" : ""
+												}`}
+												onClick={() => goToImage(index)}
+												title={`이미지 ${index + 1}`}
+											/>
+										))}
+									</div>
+
+									{/* 이미지 추가 버튼 */}
+									{editable && canAddMore && (
+										<label className="carousel-add-button" title="이미지 추가">
+											<span className="add-icon">+</span>
+											<span className="add-text">추가</span>
+											<input
+												type="file"
+												accept="image/*"
+												multiple
+												onChange={handleImageChange}
+												style={{ display: "none" }}
+											/>
+										</label>
+									)}
+								</div>
+
+								{/* 이미지 카운트 */}
+								<div className="carousel-count">
+									{currentImageIndex + 1} / {imagePreviews.length}
+									{editable && ` (최대 ${maxImages})`}
+								</div>
+							</>
+						) : (
+							<div className="carousel-empty">
+								<img src="/images/not_ready.png" alt="이미지 없음" />
+								{editable && canAddMore && (
+									<label className="carousel-add-btn" title="이미지 추가">
+										<span className="add-icon">+</span>
+										<span className="add-text">이미지 추가</span>
 										<input
 											type="file"
 											accept="image/*"
+											multiple
 											onChange={handleImageChange}
 											style={{ display: "none" }}
 										/>
 									</label>
 								)}
-								{/* 이미지가 있을 때(미리보기 포함) 삭제 버튼 노출 */}
-								{imagePreview && (
-									<button
-										type="button"
-										className="image-icon-btn delete"
-										onClick={handleImageDelete}
-										title="이미지 삭제"
-									>
-										🗑️
-									</button>
-								)}
 							</div>
-						)}
-						{imagePreview ? (
-							<>
-								<img
-									src={imagePreview}
-									alt="상품 이미지"
-									className="product-image"
-									onClick={handleImageClick}
-									style={{ cursor: "zoom-in" }}
-									title="클릭하여 이미지 확대"
-								/>
-								{/* 수정 모드이면서 + 로컬 파일이 선택되었을 때만 '저장' 버튼 표시 */}
-								{editable && imageFile && product.productId && (
-									<button
-										type="button"
-										className="image-save-btn"
-										onClick={handleImageUpload}
-										style={{ marginTop: "10px" }}
-									>
-										저장
-									</button>
-								)}
-							</>
-						) : (
-							<img src="/images/not_ready.png" alt="이미지 없음" />
 						)}
 					</div>
 				)}
@@ -595,13 +698,13 @@ const BasicInfo: React.FC<ProductInfo> = ({
 				{isFactoryModalOpen && (
 					<FactorySearch
 						onClose={() => setIsFactoryModalOpen(false)}
-						onSelectFactory={handleFactorySelect}
+						onSelectFactory={handleFactorySelectInternal}
 					/>
 				)}
 
-				{isImageZoomOpen && imagePreview && (
+				{isImageZoomOpen && zoomImageUrl && (
 					<ImageZoomModal
-						imageUrl={imagePreview}
+						imageUrl={zoomImageUrl}
 						altText="상품 이미지"
 						onClose={() => setIsImageZoomOpen(false)}
 					/>

@@ -269,11 +269,12 @@ const OrderCreatePage = () => {
 		updateOrderRow
 	);
 
-	// 스톤 정보 관리 - 커스텀 훅 사용
+	// 스톤 정보 관리 - 커스텀 훅 사용 (수리 모드에서는 가격 계산 건너뛰기)
 	const { openStoneInfoManager } = useStoneInfoManager({
 		rows: orderRows,
 		updateRow: updateOrderRow,
 		urlType: "order",
+		skipPriceCalculation: orderStatus === "FIX",
 	});
 
 	// 과거 주문 데이터 가져오기
@@ -547,8 +548,8 @@ const OrderCreatePage = () => {
 						}
 					}
 
-					// 상품 단가 설정
-					updateOrderRow(rowId, "productLaborCost", productLaborCost);
+					// 상품 단가 설정 (수리 모드에서는 0으로 설정)
+					updateOrderRow(rowId, "productLaborCost", orderStatus === "FIX" ? 0 : productLaborCost);
 
 					// 스톤 정보 변환 (등급별 단가 적용)
 					const transformedStoneInfos = transformProductStones(
@@ -558,23 +559,23 @@ const OrderCreatePage = () => {
 
 					updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
 
-					// 알 가격 계산
+					// 알 가격 계산 (수리 모드에서는 0으로 설정)
 					const calculatedStoneData =
 						calculateStoneDetails(transformedStoneInfos);
 					updateOrderRow(
 						rowId,
 						"mainStonePrice",
-						calculatedStoneData.mainStonePrice
+						orderStatus === "FIX" ? 0 : calculatedStoneData.mainStonePrice
 					);
 					updateOrderRow(
 						rowId,
 						"assistanceStonePrice",
-						calculatedStoneData.assistanceStonePrice
+						orderStatus === "FIX" ? 0 : calculatedStoneData.assistanceStonePrice
 					);
 					updateOrderRow(
 						rowId,
 						"stoneAddLaborCost",
-						calculatedStoneData.stoneAddLaborCost
+						orderStatus === "FIX" ? 0 : calculatedStoneData.stoneAddLaborCost
 					);
 					updateOrderRow(
 						rowId,
@@ -783,7 +784,8 @@ const OrderCreatePage = () => {
 		);
 		updateOrderRow(rowId, "factoryId", factoryIdValue);
 		updateOrderRow(rowId, "factoryName", product.factoryName || "");
-		updateOrderRow(rowId, "productLaborCost", product.productLaborCost || 0);
+		// 수리 모드에서는 상품 단가 0으로 설정
+		updateOrderRow(rowId, "productLaborCost", orderStatus === "FIX" ? 0 : (product.productLaborCost || 0));
 
 		// 스톤 정보 변환 및 업데이트
 		if (productDetail?.productStoneDtos) {
@@ -794,23 +796,23 @@ const OrderCreatePage = () => {
 
 			updateOrderRow(rowId, "stoneInfos", transformedStoneInfos);
 
-			// 알 가격 및 개수 계산
+			// 알 가격 및 개수 계산 (수리 모드에서는 가격 0으로 설정)
 			const calculatedStoneData = calculateStoneDetails(transformedStoneInfos);
 
 			updateOrderRow(
 				rowId,
 				"mainStonePrice",
-				calculatedStoneData.mainStonePrice
+				orderStatus === "FIX" ? 0 : calculatedStoneData.mainStonePrice
 			);
 			updateOrderRow(
 				rowId,
 				"assistanceStonePrice",
-				calculatedStoneData.assistanceStonePrice
+				orderStatus === "FIX" ? 0 : calculatedStoneData.assistanceStonePrice
 			);
 			updateOrderRow(
 				rowId,
 				"stoneAddLaborCost",
-				calculatedStoneData.stoneAddLaborCost
+				orderStatus === "FIX" ? 0 : calculatedStoneData.stoneAddLaborCost
 			);
 			updateOrderRow(
 				rowId,

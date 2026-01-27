@@ -319,6 +319,10 @@
 	max-width: 1200px;
 }
 
+.modal-content-xl {
+	max-width: 1400px;
+}
+
 .modal-header {
 	display: flex;
 	justify-content: space-between;

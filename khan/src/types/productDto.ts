@@ -26,11 +26,14 @@ export interface ProductInfo {
 	product: ProductData;
 	showTitle?: boolean;
 	editable?: boolean;
-	imageFile?: File | null;
+	imageFiles?: File[]; // 여러 이미지 지원
 	onProductChange?: (updatedProduct: Partial<ProductData>) => void;
 	onFactorySelect?: (factoryId: number, factoryName: string) => void;
-	onImageChange?: (file: File | null) => void;
+	onImageAdd?: (file: File) => void; // 이미지 추가
+	onImageRemove?: (index: number) => void; // 로컬 이미지 삭제 (인덱스 기반)
+	onServerImageRemove?: (imageId: string) => void; // 서버 이미지 삭제
 	validationErrors?: Record<string, string>;
+	maxImages?: number; // 최대 이미지 개수 (기본값: 5)
 }
 
 export interface Product extends ProductData {
@@ -136,4 +139,13 @@ export interface ProductDto {
 		imagePath: string;
 	} | null;
 	productStones: ProductStone[];
+}
+
+// 상품 이미지 응답 DTO (다중 이미지 지원)
+export interface ProductImageDto {
+	imageId: string;
+	imageName: string;
+	imageOriginName: string;
+	imagePath: string;
+	imageMain: boolean;
 }

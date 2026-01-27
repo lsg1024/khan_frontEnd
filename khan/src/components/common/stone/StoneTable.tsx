@@ -602,9 +602,9 @@ const StoneTable: React.FC<StoneTableProps> = ({
 
           {/* 소계 행 */}
           {showTotalRow && (
-            <tr className="total-row">
+            <tr className="stone-total-row">
               <td colSpan={4}>소계</td>
-              <td className="total-cell">
+              <td className="stone-total-cell">
                 {stones
                   .filter((stone) => stone.includeStone)
                   .reduce((sum, stone) => sum + stone.stoneQuantity, 0)}
@@ -621,7 +621,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
                     .toLocaleString()}
                 </span>
               </td>
-              <td className="total-cell">
+              <td className="stone-total-cell">
                 {stones
                   .filter((stone) => stone.includeStone)
                   .reduce(
@@ -632,7 +632,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
                   .toLocaleString()}
               </td>
               {[1, 2, 3, 4].map((gradeNum) => (
-                <td key={gradeNum} className="total-cell">
+                <td key={gradeNum} className="stone-total-cell">
                   {stones
                     .filter((stone) => stone.includeStone)
                     .reduce((sum, stone) => {

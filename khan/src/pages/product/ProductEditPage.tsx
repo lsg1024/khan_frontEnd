@@ -24,13 +24,13 @@ function ProductEditPage() {
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string>
 	>({});
-	const [imageFile, setImageFile] = useState<File | null>(null);
+	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const { handleError } = useErrorHandler();
 
 	// 이미지 업로드 훅 사용
-	const { uploadImage, uploading } = useProductImageUpload({
+	const { uploadImages, deleteImage, uploading } = useProductImageUpload({
 		onError: (errorMsg) => {
-			alert(`이미지 업로드에 실패했습니다: ${errorMsg}`);
+			alert(`이미지 처리에 실패했습니다: ${errorMsg}`);
 		},
 	});
 
@@ -62,9 +62,33 @@ function ProductEditPage() {
 		}
 	};
 
-	// 이미지 변경 핸들러
-	const handleImageChange = (file: File | null) => {
-		setImageFile(file);
+	// 이미지 추가 핸들러
+	const handleImageAdd = (file: File) => {
+		setImageFiles((prev) => [...prev, file]);
+	};
+
+	// 로컬 이미지 삭제 핸들러 (인덱스 기반)
+	const handleImageRemove = (index: number) => {
+		setImageFiles((prev) => prev.filter((_, i) => i !== index));
+	};
+
+	// 서버 이미지 삭제 핸들러
+	const handleServerImageRemove = async (imageId: string) => {
+		if (!window.confirm("이 이미지를 삭제하시겠습니까?")) return;
+
+		const success = await deleteImage(imageId);
+		if (success && product) {
+			// 상품의 이미지 목록에서 삭제된 이미지 제거
+			setProduct((prev) => {
+				if (!prev) return prev;
+				return {
+					...prev,
+					productImageDtos: prev.productImageDtos.filter(
+						(img) => img.imageId !== imageId
+					),
+				};
+			});
+		}
 	};
 
 	// 스톤 정보 변경 핸들러
@@ -395,9 +419,9 @@ function ProductEditPage() {
 			);
 
 			if (isApiSuccess(response)) {
-				// 이미지 업로드 (이미지 파일이 있을 경우)
-				if (imageFile && product.productId) {
-					await uploadImage(product.productId, imageFile);
+				// 새로운 이미지 업로드 (이미지 파일이 있을 경우)
+				if (imageFiles.length > 0 && product.productId) {
+					await uploadImages(product.productId, imageFiles);
 				}
 
 				await handleApiSubmit({
@@ -408,7 +432,7 @@ function ProductEditPage() {
 					autoClose: false,
 				});
 
-				setImageFile(null);
+				setImageFiles([]);
 				loadProductDetail();
 
 				// 부모 창 새로고침
@@ -499,11 +523,14 @@ function ProductEditPage() {
 						product={product}
 						showTitle={true}
 						editable={true}
-						imageFile={imageFile}
+						imageFiles={imageFiles}
 						onProductChange={handleProductChange}
 						onFactorySelect={handleFactorySelect}
-						onImageChange={handleImageChange}
+						onImageAdd={handleImageAdd}
+						onImageRemove={handleImageRemove}
+						onServerImageRemove={handleServerImageRemove}
 						validationErrors={validationErrors}
+						maxImages={5}
 					/>
 				</div>
 

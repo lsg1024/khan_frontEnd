@@ -330,10 +330,11 @@ const StoneInfoPage: React.FC = () => {
 		const popupUrl = `/stone-search?parentOrigin=${encodeURIComponent(
 			window.location.origin,
 		)}&stoneIndex=${index}`;
+
 		const popup = window.open(
 			popupUrl,
 			`stoneSearch_${index}`,
-			"width=800,height=600,scrollbars=yes,resizable=yes",
+			"width=900,height=600,scrollbars=yes,resizable=yes",
 		);
 
 		if (popup) {

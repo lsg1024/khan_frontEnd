@@ -79,11 +79,11 @@ const ProductCreatePage = () => {
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string>
 	>({});
-	const [imageFile, setImageFile] = useState<File | null>(null);
+	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const { handleError } = useErrorHandler();
 
 	// 이미지 업로드 훅 사용
-	const { uploadImage, uploading } = useProductImageUpload({
+	const { uploadImages, uploading } = useProductImageUpload({
 		onError: (errorMsg) => {
 			alert(`상품은 생성되었으나 이미지 업로드에 실패했습니다: ${errorMsg}`);
 		},
@@ -154,8 +154,14 @@ const ProductCreatePage = () => {
 	const handleProductChange = (updated: Partial<ProductData>) =>
 		setProduct((prev) => ({ ...prev, ...updated }));
 
-	const handleImageChange = (file: File | null) => {
-		setImageFile(file);
+	// 이미지 추가
+	const handleImageAdd = (file: File) => {
+		setImageFiles((prev) => [...prev, file]);
+	};
+
+	// 로컬 이미지 삭제 (인덱스 기반)
+	const handleImageRemove = (index: number) => {
+		setImageFiles((prev) => prev.filter((_, i) => i !== index));
 	};
 
 	const handlePriceGroupChange = (updated: ProductWorkGradePolicyGroupDto[]) =>
@@ -252,8 +258,8 @@ const ProductCreatePage = () => {
 
 			if (isApiSuccess(res)) {
 				const createdProductId = String(res.data);
-				if (imageFile && createdProductId) {
-					await uploadImage(createdProductId, imageFile);
+				if (imageFiles.length > 0 && createdProductId) {
+					await uploadImages(createdProductId, imageFiles);
 				}
 
 				const { factoryId, factoryName } = product;
@@ -264,7 +270,7 @@ const ProductCreatePage = () => {
 					setProduct({ ...EMPTY_PRODUCT, factoryId, factoryName });
 					setValidationErrors({});
 					setError("");
-					setImageFile(null);
+					setImageFiles([]);
 				} else {
 					await handleApiSubmit({
 						promises: [Promise.resolve(res)],
@@ -301,11 +307,13 @@ const ProductCreatePage = () => {
 						product={product}
 						showTitle
 						editable
-						imageFile={imageFile}
+						imageFiles={imageFiles}
 						onProductChange={handleProductChange}
 						onFactorySelect={handleFactorySelect}
-						onImageChange={handleImageChange}
+						onImageAdd={handleImageAdd}
+						onImageRemove={handleImageRemove}
 						validationErrors={validationErrors}
+						maxImages={5}
 					/>
 				</div>
 

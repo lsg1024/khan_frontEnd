@@ -78,6 +78,8 @@
 	color: #495057;
 }
 
+/* Note: Grid has 8 columns: 스톤명, 무게, 구매단가, 1등급, 2등급, 3등급, 4등급, 선택 */
+
 .table-header span,
 .table-row span {
 	padding: 0.25rem 0.5rem;

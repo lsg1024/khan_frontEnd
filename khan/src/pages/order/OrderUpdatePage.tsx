@@ -213,10 +213,11 @@ const OrderUpdatePage: React.FC = () => {
 		factoryModal.openModal(rowId);
 	};
 
-	// 스톤 정보 관리 - 커스텀 훅 사용
+	// 스톤 정보 관리 - 커스텀 훅 사용 (수리 모드에서는 가격 계산 건너뛰기)
 	const { openStoneInfoManager } = useStoneInfoManager({
 		rows: orderRows,
 		updateRow: updateOrderRow,
+		skipPriceCalculation: orderStatus === "FIX",
 	});
 
 	const isInitialMount = useRef(true);
@@ -326,10 +327,11 @@ const OrderUpdatePage: React.FC = () => {
 				"factoryName",
 				product.factoryName || "",
 			);
+			// 수리 모드에서는 가격 0으로 설정
 			updateOrderRow(
 				productModal.selectedRowId,
 				"productLaborCost",
-				product.productLaborCost || 0,
+				orderStatus === "FIX" ? 0 : (product.productLaborCost || 0),
 			);
 
 			const mainStone = product.productStones.find((stone) => stone.mainStone);
@@ -342,7 +344,7 @@ const OrderUpdatePage: React.FC = () => {
 			updateOrderRow(
 				productModal.selectedRowId,
 				"mainStonePrice",
-				mainStonePrice,
+				orderStatus === "FIX" ? 0 : mainStonePrice,
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
@@ -355,15 +357,14 @@ const OrderUpdatePage: React.FC = () => {
 			);
 
 			const assistanceStonePrice = assistanceStone
-				? (assistanceStone.laborCost || 0) *
-					(assistanceStone.stoneQuantity || 0)
+				? (assistanceStone.laborCost || 0) * (assistanceStone.stoneQuantity || 0)
 				: 0;
 			const assistanceStoneCount = assistanceStone?.stoneQuantity || 0;
 
 			updateOrderRow(
 				productModal.selectedRowId,
 				"assistanceStonePrice",
-				assistanceStonePrice,
+				orderStatus === "FIX" ? 0 : assistanceStonePrice,
 			);
 			updateOrderRow(
 				productModal.selectedRowId,
