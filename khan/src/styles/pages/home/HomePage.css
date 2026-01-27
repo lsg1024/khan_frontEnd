@@ -174,10 +174,12 @@
 	font-size: 0.75rem;
 }
 
-.dashboard-table .no-data {
+.dashboard-table .no-data,
+.card-body > .no-data {
 	text-align: center;
 	color: #999;
 	padding: 20px;
+	font-size: 12px;
 }
 
 /* 재고 상세보기 모달 */
