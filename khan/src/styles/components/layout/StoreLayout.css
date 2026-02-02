@@ -1,0 +1,92 @@
+/* 판매처 전용 레이아웃 - 쇼핑몰 스타일 */
+
+.store-layout {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	background: #fff;
+}
+
+/* 헤더 */
+.store-header {
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 32px;
+	height: 64px;
+	background: #fff;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.store-header-left {
+	display: flex;
+	align-items: center;
+}
+
+.store-logo {
+	font-size: 22px;
+	font-weight: 700;
+	color: #222;
+	margin: 0;
+	letter-spacing: -0.5px;
+}
+
+.store-header-right {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.store-user-name {
+	font-size: 14px;
+	color: #555;
+	font-weight: 500;
+}
+
+.store-logout-btn {
+	padding: 8px 18px;
+	font-size: 13px;
+	font-weight: 500;
+	color: #555;
+	background: transparent;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.store-logout-btn:hover {
+	color: #222;
+	border-color: #222;
+	background: #fafafa;
+}
+
+/* 메인 영역 */
+.store-main {
+	flex: 1;
+	background: #fafafa;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+	.store-header {
+		padding: 0 16px;
+		height: 56px;
+	}
+
+	.store-logo {
+		font-size: 18px;
+	}
+
+	.store-user-name {
+		display: none;
+	}
+
+	.store-logout-btn {
+		padding: 6px 14px;
+		font-size: 12px;
+	}
+}

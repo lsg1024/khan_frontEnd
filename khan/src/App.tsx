@@ -10,6 +10,9 @@ import { useState, useEffect } from "react";
 import JoinPage from "./pages/JoinPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
+import StoreLayout from "./components/layout/StoreLayout";
+import StoreCatalogPage from "./pages/store/StoreCatalogPage";
+import StoreCatalogDetailPage from "./pages/store/StoreCatalogDetailPage";
 import CataLogPage from "./pages/product/CataLogPage";
 import ProductCreatePage from "./pages/product/ProductCreatePage";
 import ProductDetailPage from "./pages/product/ProductDetailPage";
@@ -87,6 +90,9 @@ function App() {
 		return true;
 	});
 
+	// STORE 역할 여부 상태
+	const [isStoreRole, setIsStoreRole] = useState(() => tokenUtils.isStoreRole());
+
 	const handleLogout = () => {
 		setIsAuthenticated(false);
 	};
@@ -110,6 +116,7 @@ function App() {
 		const handleTokenChange = () => {
 			const hasToken = tokenUtils.hasToken();
 			setIsAuthenticated(hasToken);
+			setIsStoreRole(tokenUtils.isStoreRole());
 		};
 
 		const handleTokenExpired = () => {
@@ -134,7 +141,28 @@ function App() {
 						<Route path="/login" element={<LoginPage />} />
 						<Route path="*" element={<Navigate to="/login" replace />} />
 					</Routes>
+				) : isStoreRole ? (
+					// STORE 역할 전용 라우트
+					<Routes>
+						<Route
+							element={
+								<StoreLayout onLogout={handleLogout}>
+									<Outlet />
+								</StoreLayout>
+							}
+						>
+							<Route path="/store/catalog" element={<StoreCatalogPage />} />
+							<Route
+								path="/store/catalog/:productId"
+								element={<StoreCatalogDetailPage />}
+							/>
+						</Route>
+						<Route path="/login" element={<Navigate to="/store/catalog" replace />} />
+						<Route path="/join" element={<Navigate to="/store/catalog" replace />} />
+						<Route path="*" element={<Navigate to="/store/catalog" replace />} />
+					</Routes>
 				) : (
+					// 일반 사용자 라우트
 					<Routes>
 					{/* Layout 없이 단독 페이지 렌더링 */}
 					<Route path="/setting-item" element={<SettingItemPopupPage />} />

@@ -1,0 +1,487 @@
+/* 쇼핑몰 스타일 카탈로그 */
+
+.shop-catalog {
+	max-width: 1400px;
+	margin: 0 auto;
+	padding: 0 20px;
+}
+
+/* 헤더 */
+.shop-header {
+	padding: 32px 0 24px;
+	border-bottom: 1px solid #f0f0f0;
+	margin-bottom: 20px;
+}
+
+.shop-title {
+	font-size: 28px;
+	font-weight: 700;
+	color: #222;
+	margin: 0 0 8px;
+	letter-spacing: -0.5px;
+}
+
+.shop-subtitle {
+	font-size: 14px;
+	color: #888;
+	margin: 0;
+}
+
+.shop-subtitle strong {
+	color: #ff6b35;
+	font-weight: 600;
+}
+
+/* 카테고리 탭 */
+.shop-tabs {
+	display: flex;
+	gap: 8px;
+	padding: 16px 0;
+	border-bottom: 1px solid #f0f0f0;
+	overflow-x: auto;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.shop-tabs::-webkit-scrollbar {
+	display: none;
+}
+
+.shop-tab {
+	flex-shrink: 0;
+	padding: 10px 20px;
+	font-size: 14px;
+	font-weight: 500;
+	color: #666;
+	background: #fff;
+	border: 1px solid #e5e5e5;
+	border-radius: 24px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+}
+
+.shop-tab:hover {
+	color: #333;
+	border-color: #ccc;
+	background: #fafafa;
+}
+
+.shop-tab.active {
+	color: #fff;
+	background: #222;
+	border-color: #222;
+}
+
+/* 필터 바 */
+.shop-filter-bar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 16px 0;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.shop-search-box {
+	position: relative;
+	flex: 1;
+	max-width: 360px;
+}
+
+.shop-search-box .search-icon {
+	position: absolute;
+	left: 14px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 18px;
+	height: 18px;
+	color: #999;
+}
+
+.shop-search-box input {
+	width: 100%;
+	padding: 12px 16px 12px 44px;
+	font-size: 14px;
+	border: 1px solid #e5e5e5;
+	border-radius: 8px;
+	background: #f9f9f9;
+	transition: all 0.2s ease;
+}
+
+.shop-search-box input:focus {
+	outline: none;
+	border-color: #222;
+	background: #fff;
+}
+
+.shop-search-box input::placeholder {
+	color: #aaa;
+}
+
+.shop-filter-options {
+	display: flex;
+	gap: 10px;
+}
+
+.shop-filter-options select {
+	padding: 10px 32px 10px 14px;
+	font-size: 13px;
+	color: #444;
+	border: 1px solid #e5e5e5;
+	border-radius: 6px;
+	background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 12px center;
+	cursor: pointer;
+	appearance: none;
+	-webkit-appearance: none;
+}
+
+.shop-filter-options select:focus {
+	outline: none;
+	border-color: #222;
+}
+
+/* 로딩 */
+.shop-loading {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 80px 0;
+	gap: 16px;
+}
+
+.shop-spinner {
+	width: 40px;
+	height: 40px;
+	border: 3px solid #f0f0f0;
+	border-top-color: #222;
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+.shop-loading p {
+	font-size: 14px;
+	color: #888;
+	margin: 0;
+}
+
+/* 상품 그리드 */
+.shop-grid {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 20px;
+	padding: 24px 0;
+}
+
+/* 상품 카드 */
+.shop-card {
+	position: relative;
+	background: #fff;
+	border-radius: 12px;
+	overflow: hidden;
+	cursor: pointer;
+	transition: all 0.25s ease;
+}
+
+.shop-card:hover {
+	transform: translateY(-4px);
+}
+
+.shop-card:hover .shop-card-image img {
+	transform: scale(1.05);
+}
+
+/* 순위 배지 */
+.shop-rank {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	font-weight: 700;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.7);
+	border-radius: 6px;
+	z-index: 10;
+}
+
+/* 카드 이미지 */
+.shop-card-image {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 1;
+	background: #f5f5f5;
+	overflow: hidden;
+}
+
+.shop-card-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.4s ease;
+}
+
+.shop-no-image {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #f9f9f9;
+}
+
+.shop-no-image svg {
+	width: 48px;
+	height: 48px;
+	color: #ddd;
+}
+
+/* 재질 태그 */
+.shop-material-tag {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	padding: 5px 10px;
+	font-size: 11px;
+	font-weight: 600;
+	color: #996515;
+	background: rgba(255, 248, 220, 0.95);
+	border-radius: 4px;
+	backdrop-filter: blur(4px);
+}
+
+/* 카드 정보 */
+.shop-card-info {
+	padding: 14px;
+}
+
+.shop-card-name {
+	font-size: 14px;
+	font-weight: 500;
+	color: #222;
+	margin: 0 0 10px;
+	line-height: 1.4;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	min-height: 40px;
+}
+
+/* 무게 정보 */
+.shop-card-weight {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	margin-bottom: 10px;
+}
+
+.weight-value {
+	font-size: 18px;
+	font-weight: 700;
+	color: #ff6b35;
+}
+
+.weight-gram {
+	font-size: 12px;
+	color: #999;
+}
+
+/* 스톤 칩 */
+.shop-card-stones {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
+.stone-chip {
+	padding: 3px 8px;
+	font-size: 11px;
+	color: #666;
+	background: #f5f5f5;
+	border-radius: 4px;
+}
+
+.stone-chip.main {
+	color: #996515;
+	background: #fff8dc;
+}
+
+.stone-more {
+	padding: 3px 8px;
+	font-size: 11px;
+	color: #999;
+	background: #f0f0f0;
+	border-radius: 4px;
+}
+
+/* 메모 */
+.shop-card-note {
+	font-size: 12px;
+	color: #999;
+	margin: 0;
+	line-height: 1.4;
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+/* 빈 상태 */
+.shop-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 100px 20px;
+	text-align: center;
+}
+
+.shop-empty svg {
+	width: 64px;
+	height: 64px;
+	color: #ddd;
+	margin-bottom: 20px;
+}
+
+.shop-empty h3 {
+	font-size: 18px;
+	font-weight: 600;
+	color: #333;
+	margin: 0 0 8px;
+}
+
+.shop-empty p {
+	font-size: 14px;
+	color: #999;
+	margin: 0;
+}
+
+/* 페이지네이션 */
+.shop-pagination {
+	padding: 40px 0;
+}
+
+/* 반응형 */
+@media (max-width: 1200px) {
+	.shop-grid {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
+
+@media (max-width: 992px) {
+	.shop-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.shop-filter-bar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.shop-search-box {
+		max-width: none;
+	}
+
+	.shop-filter-options {
+		justify-content: flex-end;
+	}
+}
+
+@media (max-width: 768px) {
+	.shop-catalog {
+		padding: 0 16px;
+	}
+
+	.shop-header {
+		padding: 24px 0 16px;
+	}
+
+	.shop-title {
+		font-size: 22px;
+	}
+
+	.shop-tabs {
+		margin: 0 -16px;
+		padding: 12px 16px;
+	}
+
+	.shop-tab {
+		padding: 8px 16px;
+		font-size: 13px;
+	}
+
+	.shop-grid {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 12px;
+	}
+
+	.shop-card-info {
+		padding: 12px;
+	}
+
+	.shop-card-name {
+		font-size: 13px;
+		min-height: 36px;
+	}
+
+	.weight-value {
+		font-size: 16px;
+	}
+}
+
+@media (max-width: 480px) {
+	.shop-grid {
+		gap: 10px;
+	}
+
+	.shop-rank {
+		width: 24px;
+		height: 24px;
+		font-size: 11px;
+		top: 8px;
+		left: 8px;
+	}
+
+	.shop-card-info {
+		padding: 10px;
+	}
+
+	.shop-card-name {
+		font-size: 12px;
+		margin-bottom: 6px;
+	}
+
+	.shop-card-weight {
+		margin-bottom: 6px;
+	}
+
+	.weight-value {
+		font-size: 15px;
+	}
+
+	.weight-gram {
+		font-size: 11px;
+	}
+
+	.stone-chip,
+	.stone-more {
+		font-size: 10px;
+		padding: 2px 6px;
+	}
+
+	.shop-material-tag {
+		font-size: 10px;
+		padding: 4px 8px;
+	}
+}

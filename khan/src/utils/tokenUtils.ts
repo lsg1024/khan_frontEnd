@@ -97,6 +97,30 @@ export const tokenUtils = {
 		return (decoded.tenantId as string) || (decoded.tenant as string) || null;
 	},
 
+	// 토큰에서 역할(role) 추출
+	getRole: (): string | null => {
+		const token = localStorage.getItem("app:accessToken");
+		if (!token) return null;
+
+		const decoded = tokenUtils.decodeToken(token);
+		if (!decoded) return null;
+
+		// role 또는 roles 배열에서 추출
+		if (decoded.role) {
+			return decoded.role as string;
+		}
+		if (decoded.roles && Array.isArray(decoded.roles)) {
+			return decoded.roles[0] as string;
+		}
+		return null;
+	},
+
+	// STORE 역할인지 확인
+	isStoreRole: (): boolean => {
+		const role = tokenUtils.getRole();
+		return role === "STORE" || role === "ROLE_STORE";
+	},
+
 	// 현재 서브도메인과 토큰의 테넌트가 일치하는지 확인
 	// 일치하지 않으면 토큰을 제거하고 false 반환
 	validateTenant: (currentSubdomain: string): boolean => {
