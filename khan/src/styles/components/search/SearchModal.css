@@ -492,6 +492,7 @@
 	width: 100%;
 	flex-direction: row;
 	justify-content: center;
+	align-items: center;
 }
 
 .filter-group-common label {
@@ -649,7 +650,7 @@ input.filter-group-common:focus {
 	background-color: #b52a37;
 }
 
-.delete-btn-common:disabled,	
+.delete-btn-common:disabled,
 .reset-btn-common:disabled,
 .common-btn-common:disabled {
 	opacity: 0.6;

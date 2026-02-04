@@ -100,13 +100,13 @@ const ProductSearchPage: React.FC = () => {
 				setLoading(false);
 			}
 		},
-		[handleError],
+		[], // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
 	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
 	useEffect(() => {
 		performSearch(initialSearch, 1, "", "", "DESC");
-	}, [performSearch, initialSearch]);
+	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 검색 실행
 	const handleSearch = () => {

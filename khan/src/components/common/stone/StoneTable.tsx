@@ -253,6 +253,21 @@ const StoneTable: React.FC<StoneTableProps> = ({
         )}
       </div>
       <table className="stone-table">
+        <colgroup>
+          <col style={{ width: "4%" }} />      {/* No */}
+          <col style={{ width: "6%" }} />      {/* 메인 */}
+          <col style={{ width: "6%" }} />      {/* 적용 */}
+          <col style={{ width: "20%" }} />     {/* 스톤명 */}
+          <col style={{ width: "5%" }} />      {/* 알수 */}
+          <col style={{ width: "4%" }} />      {/* 개당중량 */}
+          <col style={{ width: "6%" }} />      {/* 구매단가 */}
+          <col style={{ width: "6%" }} />      {/* 1등급 */}
+          <col style={{ width: "6%" }} />      {/* 2등급 */}
+          <col style={{ width: "6%" }} />      {/* 3등급 */}
+          <col style={{ width: "6%" }} />      {/* 4등급 */}
+          <col style={{ width: "14%" }} />     {/* 비고 */}
+          {editable && onDeleteStone && <col style={{ width: "4%" }} />}  {/* 삭제 */}
+        </colgroup>
         <thead>
           <tr>
             <th>No</th>

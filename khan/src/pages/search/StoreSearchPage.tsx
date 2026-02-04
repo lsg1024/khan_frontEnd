@@ -92,13 +92,13 @@ const StoreSearchPage: React.FC = () => {
 				setLoading(false);
 			}
 		},
-		[useReceivable, handleError]
+		[useReceivable] // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
 	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
 	useEffect(() => {
 		performSearch(initialSearch, 1);
-	}, [performSearch, initialSearch]);
+	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 검색 처리
 	const handleSearch = () => {
