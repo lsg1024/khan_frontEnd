@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { classificationApi } from "../../../libs/api/classificationApi";
+import { catalogApi } from "../../../libs/api/catalogApi";
 import { productApi } from "../../../libs/api/productApi";
-import { setTypeApi } from "../../../libs/api/setTypeApi";
-import { factoryApi } from "../../../libs/api/factoryApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import {
 	calculatePureGoldWeightWithHarry,
@@ -10,9 +8,6 @@ import {
 } from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";
 import type { ProductDto } from "../../types/productDto";
-import type { SetTypeDto } from "../../types/setTypeDto";
-import type { ClassificationDto } from "../../types/classificationDto";
-import type { FactorySearchDto } from "../../types/factoryDto";
 import {
 	openProductDetailPopup,
 	openProductCreatePopup,
@@ -28,30 +23,25 @@ function CataLogPage() {
 	const [totalElements, setTotalElements] = useState(0);
 	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 	const [selectedProductId, setSelectedProductId] = useState<string | null>(
-		null
+		null,
 	);
 	const { handleError } = useErrorHandler();
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState({
-		name: "",
-		factory: "",
-		classification: "",
-		setType: "",
+		search: "",
+		searchField: "",
+		searchMin: "",
+		searchMax: "",
 	});
 
 	// 정렬 관련 상태
 	const [sortOptions, setSortOptions] = useState({
 		sortField: "",
-		sort: "",
+		sortOrder: "",
 	});
 
-	// 드롭다운 데이터
-	const [factories, setFactories] = useState<FactorySearchDto[]>([]);
-	const [classifications, setClassifications] = useState<ClassificationDto[]>(
-		[]
-	);
-	const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
+	// 드롭다운 로딩 상태
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 
 	// 총 판매가 계산 (상품 판매가 + 스톤 판매가)
@@ -67,11 +57,11 @@ function CataLogPage() {
 	const calculateTotalGoldPrice = (product: ProductDto): number => {
 		const pureGoldWeight = calculatePureGoldWeightWithHarry(
 			product.productWeight,
-			product.productMaterial
+			product.productMaterial,
 		);
 
 		const goldCost = Math.ceil(
-			pureGoldWeight * (product.productGoldPrice || 0)
+			pureGoldWeight * (product.productGoldPrice || 0),
 		);
 		return goldCost;
 	};
@@ -98,7 +88,7 @@ function CataLogPage() {
 			return;
 		}
 		const selectedProduct = products.find(
-			(p) => p.productId === selectedProductId
+			(p) => p.productId === selectedProductId,
 		);
 		const productName = selectedProduct
 			? encodeURIComponent(selectedProduct.productName)
@@ -115,7 +105,7 @@ function CataLogPage() {
 			return;
 		}
 		const selectedProduct = products.find(
-			(p) => p.productId === selectedProductId
+			(p) => p.productId === selectedProductId,
 		);
 		const productName = selectedProduct
 			? encodeURIComponent(selectedProduct.productName)
@@ -150,7 +140,7 @@ function CataLogPage() {
 				} catch (error) {
 					console.error(
 						`이미지 로드 실패 (productId: ${product.productId}):`,
-						error
+						error,
 					);
 					// 로드 실패 시 기본 이미지 사용
 					newImageUrls[product.productId] = "/images/not_ready.png";
@@ -166,22 +156,20 @@ function CataLogPage() {
 		async (
 			filters: typeof searchFilters,
 			page: number = 1,
-			sortOpts: typeof sortOptions = sortOptions
+			sortOpts: typeof sortOptions = sortOptions,
 		) => {
 			setLoading(true);
 
 			try {
-				const response = await productApi.getProducts(
-					filters.name || undefined,
-					filters.factory || undefined,
-					filters.classification || undefined,
-					filters.setType || undefined,
-					page,
-					undefined,
-					sortOpts.sortField || undefined,
-					sortOpts.sort || undefined,
-					undefined
-				);
+				const response = await productApi.getProducts({
+					search: filters.search || undefined,
+					searchField: filters.searchField || undefined,
+					searchMin: filters.searchMin || undefined,
+					searchMax: filters.searchMax || undefined,
+					sortField: sortOpts.sortField || undefined,
+					sortOrder: sortOpts.sortOrder || undefined,
+					page: page,
+				});
 
 				if (response.success && response.data) {
 					const pageData = response.data.page;
@@ -207,13 +195,13 @@ function CataLogPage() {
 				setLoading(false);
 			}
 		},
-		[loadProductImages]
+		[loadProductImages],
 	);
 
 	// 검색 필터 변경 핸들러
 	const handleFilterChange = (
 		field: keyof typeof searchFilters,
-		value: string
+		value: string,
 	) => {
 		setSearchFilters((prev) => ({ ...prev, [field]: value }));
 	};
@@ -227,14 +215,14 @@ function CataLogPage() {
 	// 검색 초기화
 	const handleResetSearch = () => {
 		const resetFilters = {
-			name: "",
-			factory: "",
-			classification: "",
-			setType: "",
+			search: "",
+			searchField: "",
+			searchMin: "",
+			searchMax: "",
 		};
 		const resetSort = {
 			sortField: "",
-			sort: "",
+			sortOrder: "",
 		};
 		setSearchFilters(resetFilters);
 		setSortOptions(resetSort);
@@ -246,8 +234,33 @@ function CataLogPage() {
 		handleProductCreateOpen();
 	};
 
-	const handleExcel = () => {
-		alert("엑셀 다운로드 기능은 아직 구현되지 않았습니다.");
+	const handleExcel = async () => {
+		try {
+			setLoading(true);
+			const response = await catalogApi.downloadExcel(
+				searchFilters.search,
+				searchFilters.searchField === "classification"
+					? searchFilters.search
+					: undefined,
+				searchFilters.searchField === "setType"
+					? searchFilters.search
+					: undefined,
+			);
+
+			const url = window.URL.createObjectURL(new Blob([response.data]));
+			const link = document.createElement("a");
+			link.href = url;
+			const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+			link.setAttribute("download", `상품카탈로그_${today}.xlsx`);
+			document.body.appendChild(link);
+			link.click();
+			link.parentNode?.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		} catch {
+			alert("엑셀 다운로드에 실패했습니다.");
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	useEffect(() => {
@@ -271,48 +284,16 @@ function CataLogPage() {
 	// 컴포넌트 마운트시 초기 데이터 로드
 	useEffect(() => {
 		setCurrentPage(1);
-
-		// 드롭다운 데이터 로드
-		const loadDropdowns = async () => {
-			setDropdownLoading(true);
-			try {
-				const [factoriesRes, classificationsRes, setTypesRes] =
-					await Promise.all([
-						factoryApi.getFactories("", 1, true),
-						classificationApi.getClassifications(),
-						setTypeApi.getSetTypes(),
-					]);
-
-				if (factoriesRes.success && factoriesRes.data?.content) {
-					setFactories(factoriesRes.data.content);
-				}
-
-				if (classificationsRes.success && classificationsRes.data) {
-					setClassifications(classificationsRes.data);
-				}
-
-				if (setTypesRes.success && setTypesRes.data) {
-					setSetTypes(setTypesRes.data);
-				}
-			} catch (error) {
-				console.error("드롭다운 데이터 로드 실패:", error);
-			} finally {
-				setDropdownLoading(false);
-			}
-		};
+		setDropdownLoading(false);
 
 		// 초기 로드 - 빈 필터로 전체 상품 로드
 		const initialLoad = async () => {
 			setLoading(true);
 
 			try {
-				const response = await productApi.getProducts(
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					1
-				);
+				const response = await productApi.getProducts({
+					page: 1,
+				});
 
 				if (response.success && response.data) {
 					const pageData = response.data.page;
@@ -340,7 +321,6 @@ function CataLogPage() {
 			}
 		};
 
-		loadDropdowns();
 		initialLoad();
 	}, [loadProductImages]); // 빈 의존성 배열로 마운트 시 한 번만 실행
 
@@ -362,132 +342,137 @@ function CataLogPage() {
 			<div className="search-section-common">
 				<div className="search-filters-common">
 					<div className="filter-row-common">
-						<div className="filter-group-common">
-							<select
-								id="factory"
-								value={searchFilters.factory}
-								onChange={(e) => handleFilterChange("factory", e.target.value)}
-								disabled={dropdownLoading}
-							>
-								<option value="">제조사</option>
-								{factories.map((factory) => (
-									<option key={factory.factoryId} value={factory.factoryName}>
-										{factory.factoryName}
-									</option>
-								))}
-							</select>
-						</div>
-						<div className="filter-group-common">
-							<select
-								id="classification"
-								value={searchFilters.classification}
-								onChange={(e) =>
-									handleFilterChange("classification", e.target.value)
-								}
-								disabled={dropdownLoading}
-							>
-								<option value="">분류</option>
-								{classifications.map((classification) => (
-									<option
-										key={classification.classificationId}
-										value={classification.classificationId}
-									>
-										{classification.classificationName}
-									</option>
-								))}
-							</select>
-						</div>
-						<div className="filter-group-common">
-							<select
-								id="setType"
-								value={searchFilters.setType}
-								onChange={(e) => handleFilterChange("setType", e.target.value)}
-								disabled={dropdownLoading}
-							>
-								<option value="">세트</option>
-								{setTypes.map((setType) => (
-									<option key={setType.setTypeId} value={setType.setTypeId}>
-										{setType.setTypeName}
-									</option>
-								))}
-							</select>
-						</div>
-					</div>
-					<div className="search-controls-common">
-						<div className="filter-group-common">
-							<select
-								id="sortField"
-								value={sortOptions.sortField}
-								onChange={(e) =>
-									setSortOptions((prev) => ({
-										...prev,
-										sortField: e.target.value,
-									}))
-								}
-								disabled={dropdownLoading}
-							>
-								<option value="">정렬 필드</option>
-								<option value="productName">상품명</option>
-								<option value="factory">제조사</option>
-								<option value="setType">세트</option>
-								<option value="classification">분류</option>
-							</select>
-						</div>
-						<div className="filter-group-common">
-							<select
-								id="sort"
-								value={sortOptions.sort}
-								onChange={(e) =>
-									setSortOptions((prev) => ({ ...prev, sort: e.target.value }))
-								}
-								disabled={dropdownLoading}
-							>
-								<option value="">정렬 방향</option>
-								<option value="asc">오름차순</option>
-								<option value="desc">내림차순</option>
-							</select>
-						</div>
+						<select
+							className="filter-group-common select"
+							value={searchFilters.searchField}
+							onChange={(e) =>
+								handleFilterChange("searchField", e.target.value)
+							}
+							disabled={dropdownLoading}
+						>
+							<option value="">검색 필터</option>
+							<option value="modelNumber">모델번호</option>
+							<option value="factory">제조사</option>
+							<option value="note">비고</option>
+							<option value="setType">세트타입</option>
+							<option value="classification">분류</option>
+							<option value="material">재질</option>
+							<option value="standardWeight">표준중량</option>
+							<option value="createDate">등록일</option>
+							<option value="hasImage">사진여부</option>
+						</select>
 
-						<input
-							className="search-input-common"
-							id="productName"
-							type="text"
-							placeholder="상품명을 입력하세요"
-							value={searchFilters.name}
-							onChange={(e) => handleFilterChange("name", e.target.value)}
-							onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-						/>
+						<select
+							className="filter-group-common select"
+							value={sortOptions.sortField}
+							onChange={(e) =>
+								setSortOptions((prev) => ({
+									...prev,
+									sortField: e.target.value,
+								}))
+							}
+							disabled={dropdownLoading}
+						>
+							<option value="">정렬 기준</option>
+							<option value="productName">상품명</option>
+							<option value="factory">제조사</option>
+							<option value="setType">세트</option>
+							<option value="classification">분류</option>
+						</select>
 
-						<div className="search-buttons-common">
-							<button
-								className="search-btn-common"
-								onClick={handleSearch}
-								disabled={loading}
+						<select
+							className="filter-group-common select"
+							value={sortOptions.sortOrder}
+							onChange={(e) =>
+								setSortOptions((prev) => ({
+									...prev,
+									sortOrder: e.target.value,
+								}))
+							}
+							disabled={dropdownLoading}
+						>
+							<option value="">정렬 방향</option>
+							<option value="ASC">오름차순</option>
+							<option value="DESC">내림차순</option>
+						</select>
+
+						{/* 범위 검색 필드 (standardWeight, createDate) */}
+						{searchFilters.searchField === "standardWeight" ||
+						searchFilters.searchField === "createDate" ? (
+							<>
+								<input
+									className="search-input-common"
+									type={
+										searchFilters.searchField === "createDate" ? "date" : "text"
+									}
+									placeholder="최소값"
+									value={searchFilters.searchMin}
+									onChange={(e) =>
+										handleFilterChange("searchMin", e.target.value)
+									}
+								/>
+								<input
+									className="search-input-common"
+									type={
+										searchFilters.searchField === "createDate" ? "date" : "text"
+									}
+									placeholder="최대값"
+									value={searchFilters.searchMax}
+									onChange={(e) =>
+										handleFilterChange("searchMax", e.target.value)
+									}
+									onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+								/>
+							</>
+						) : searchFilters.searchField === "hasImage" ? (
+							<select
+								className="filter-group-common select"
+								value={searchFilters.search}
+								onChange={(e) => handleFilterChange("search", e.target.value)}
 							>
-								검색
-							</button>
-							<button
-								className="reset-btn-common"
-								onClick={handleResetSearch}
-								disabled={loading}
-							>
-								초기화
-							</button>
-							<button
-								className="common-btn-common"
-								onClick={handleCreate}
-								disabled={loading}
-							>
-								생성
-							</button>
-							<button
-								className="common-btn-common"
-								onClick={handleExcel}
-								disabled={loading}
-							>
-								엑셀 다운로드
-							</button>
-						</div>
+								<option value="">전체</option>
+								<option value="true">있음</option>
+								<option value="false">없음</option>
+							</select>
+						) : (
+							<input
+								className="search-input-common"
+								type="text"
+								placeholder="검색어"
+								value={searchFilters.search}
+								onChange={(e) => handleFilterChange("search", e.target.value)}
+								onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+							/>
+						)}
+
+						<button
+							className="search-btn-common"
+							onClick={handleSearch}
+							disabled={loading}
+						>
+							검색
+						</button>
+						<button
+							className="reset-btn-common"
+							onClick={handleResetSearch}
+							disabled={loading}
+						>
+							초기화
+						</button>
+						<button
+							className="common-btn-common"
+							onClick={handleCreate}
+							disabled={loading}
+						>
+							생성
+						</button>
+						<button
+							className="common-btn-common"
+							onClick={handleExcel}
+							disabled={loading}
+						>
+							엑셀 다운로드
+						</button>
 					</div>
 				</div>
 			</div>
@@ -600,7 +585,7 @@ function CataLogPage() {
 													<span className="total-value">
 														{product.productStones.reduce(
 															(sum, s) => sum + s.stoneQuantity,
-															0
+															0,
 														)}
 													</span>
 												</div>

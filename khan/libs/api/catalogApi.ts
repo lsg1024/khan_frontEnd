@@ -1,8 +1,6 @@
-// libs/api/catalogApi.ts
-// 판매처(STORE) 전용 카탈로그 API
-
 import { apiRequest, api } from "./config";
 import type { ApiResponse } from "./config";
+import type { AxiosResponse } from "axios";
 import type {
 	StoreCatalogSearchResponse,
 	StoreCatalogProductDetailDto,
@@ -10,12 +8,13 @@ import type {
 } from "../../src/types/storeCatalogDto";
 
 export const catalogApi = {
-	// 카탈로그 상품 목록 조회
 	getProducts: async (
 		name?: string,
 		factory?: string,
 		classification?: string,
 		setType?: string,
+		relatedNumber?: string,
+		material?: string,
 		page: number = 1,
 		size: number = 12,
 		sortField?: string,
@@ -30,6 +29,8 @@ export const catalogApi = {
 		if (factory) params.factory = factory;
 		if (classification) params.classification = classification;
 		if (setType) params.setType = setType;
+		if (relatedNumber) params.relatedNumber = relatedNumber;
+		if (material) params.material = material;
 		if (sortField) params.sortField = sortField;
 		if (sort) params.sort = sort;
 
@@ -67,5 +68,21 @@ export const catalogApi = {
 			responseType: "blob",
 		});
 		return response.data as Blob;
+	},
+
+	downloadExcel: async (
+		name?: string,
+		classification?: string,
+		setType?: string
+	): Promise<AxiosResponse<Blob>> => {
+		const params: Record<string, string> = {};
+		if (name) params.name = name;
+		if (classification) params.classification = classification;
+		if (setType) params.setType = setType;
+
+		return api.get("catalog/products/excel", {
+			params,
+			responseType: "blob",
+		});
 	},
 };

@@ -85,7 +85,11 @@ export default function FactoryStonePricePage(): JSX.Element {
 	// 스톤 목록 로드
 	const loadStones = async (search: string = "") => {
 		try {
-			const response = await stoneApi.getStones(search, 1, 100);
+			const response = await stoneApi.getStones({
+				search: search || undefined,
+				page: 1,
+				pageSize: 100,
+			});
 			if (response.success && response.data?.content) {
 				setStones(response.data.content);
 			}

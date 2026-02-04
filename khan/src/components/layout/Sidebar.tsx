@@ -37,6 +37,7 @@ const sidebarItems: SidebarItem[] = [
 			{ path: "/stocks/history", label: "누적 재고"},
 			{ path: "/stocks/return", label: "반납 재고"},
 			{ path: "/stocks/delete", label: "삭제 재고"},
+			{ path: "/stocks/inventory", label: "재고 조사"}
 		],
 	},
 	{

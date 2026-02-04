@@ -1,5 +1,6 @@
-import { apiRequest } from "./config";
+import { apiRequest, api } from "./config";
 import type { ApiResponse } from "./config";
+import type { AxiosResponse } from "axios";
 import { v4 as uuidv4 } from "uuid";
 import type {
 	StockRegisterRequest,
@@ -173,5 +174,22 @@ export const saleApi = {
 			{ accountGoldPrice },
 			{ params }
 		);
+	},
+
+	// 판매 내역 엑셀 다운로드
+	downloadSalesExcel: async (
+		start: string,
+		end: string,
+		search?: string,
+		type?: string
+	): Promise<AxiosResponse<Blob>> => {
+		const params: Record<string, string> = { start, end };
+		if (search) params.search = search;
+		if (type) params.type = type;
+
+		return api.get("order/sales/excel", {
+			params,
+			responseType: "blob",
+		});
 	},
 };

@@ -725,6 +725,13 @@
 	color: #666;
 }
 
+/* 이미지 없음 텍스트 */
+.no-image-text {
+	font-size: 13px;
+	color: #999;
+	font-weight: 500;
+}
+
 /* 이미지 로딩 */
 .image-loading {
 	display: flex;

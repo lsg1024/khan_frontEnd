@@ -708,17 +708,12 @@ const OrderCreatePage = () => {
 			const row = orderRows.find((r) => r.id === rowId);
 			const grade = row?.storeGrade || "1";
 
-			const response = await productApi.getProducts(
-				searchTerm,
-				undefined,
-				undefined,
-				undefined,
-				1,
-				50,
-				undefined,
-				undefined,
-				grade
-			);
+			const response = await productApi.getProducts({
+				search: searchTerm,
+				grade: grade,
+				page: 1,
+				size: 50,
+			});
 			const products = response.data?.content || [];
 
 			// 완전 일치 검사 (모델번호 기준, 대소문자 무시)

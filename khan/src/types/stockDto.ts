@@ -304,3 +304,70 @@ export interface ResponseDetail {
 	stoneInfos: StoneInfo[];
 	stoneAddLaborCost: number;
 }
+
+// =====================
+// 재고 조사 관련 타입
+// =====================
+
+// 재고 조사 목록 아이템
+export interface InventoryItem {
+	flowCode: string;
+	createAt: string;
+	stockCheckedAt: string | null;
+	stockChecked: boolean;
+	originStatus: string; // 원본 상태 (일반, 주문, 대여, 수리 등)
+	orderStatus: string; // 원본상태-현재상태 형식 (일반-재고, 주문-재고 등)
+	productName: string;
+	materialName: string;
+	colorName: string;
+	goldWeight: string;
+	productPurchaseCost: number;
+	productLaborCost: number;
+}
+
+// 재고 조사 목록 응답
+export interface InventorySearchResponse {
+	content: InventoryItem[];
+	totalElements: number;
+	totalPages: number;
+	size: number;
+	number: number;
+}
+
+// 재고 조사 준비 응답
+export interface InventoryPrepareResponse {
+	resetCount: number;
+	message: string;
+}
+
+// 재고 조사 처리 응답
+export interface InventoryCheckResponse {
+	flowCode: string;
+	productName: string | null;
+	status: "SUCCESS" | "ALREADY_CHECKED" | "NOT_CHECKABLE" | "NOT_FOUND";
+	message: string;
+	stockCheckedAt: string | null;
+}
+
+// 재질별 통계
+export interface MaterialStatistic {
+	materialName: string;
+	totalGoldWeight: string;
+	quantity: number;
+	totalPurchaseCost: number;
+}
+
+// 통계 합계
+export interface StatisticSummary {
+	totalGoldWeight: string;
+	totalQuantity: number;
+	totalPurchaseCost: number;
+}
+
+// 재고 조사 통계 응답
+export interface InventoryStatisticsResponse {
+	uncheckedStatistics: MaterialStatistic[];
+	checkedStatistics: MaterialStatistic[];
+	uncheckedSummary: StatisticSummary;
+	checkedSummary: StatisticSummary;
+}

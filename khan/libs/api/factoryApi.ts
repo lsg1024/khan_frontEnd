@@ -119,4 +119,13 @@ export const factoryApi = {
 			}
 		);
 	},
+
+	downloadPurchaseExcel: async (
+		endAt: string
+	): Promise<AxiosResponse<Blob>> => {
+		return api.get("account/factories/purchase/excel", {
+			params: { endAt },
+			responseType: "blob",
+		});
+	},
 };

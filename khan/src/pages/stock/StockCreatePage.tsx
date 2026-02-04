@@ -18,10 +18,8 @@ import { getLocalDate } from "../../utils/dateUtils";
 import type { PastOrderDto } from "../../types/orderDto";
 import type { Product, ProductDto } from "../../types/productDto";
 import type { FactorySearchDto } from "../../types/factoryDto";
-import type { StoreSearchDto, AccountInfoDto } from "../../types/storeDto";
 import type { StockOrderRows, StockCreateRequest } from "../../types/stockDto";
 import StockTable from "../../components/common/stock/StockTable";
-import StoreSearch from "../../components/common/store/StoreSearch";
 import FactorySearch from "../../components/common/factory/FactorySearch";
 import ProductSearch from "../../components/common/product/ProductSearch";
 import PastOrderHistory from "../../components/common/order/PastOrderHistory";
@@ -56,9 +54,16 @@ export const StockCreatePage = () => {
 	const orderStatus = MODE_TO_STATUS[mode as UpdateMode]; // api 상태값으로 사용
 
 	// 검색 모달 상태 - 커스텀 훅 사용
-	const storeModal = useSearchModal();
 	const factoryModal = useSearchModal();
 	const productModal = useSearchModal();
+
+	// 본인 거래처 정보 (id: 1)
+	const [defaultStore, setDefaultStore] = useState<{
+		storeId: string;
+		storeName: string;
+		grade: string;
+		goldHarryLoss: string;
+	} | null>(null);
 
 	// 드롭다운 데이터
 	const [materials, setMaterials] = useState<MaterialDto[]>([]);
@@ -192,11 +197,6 @@ export const StockCreatePage = () => {
 	};
 
 	// 필수 선택 순서 체크 함수들
-	const checkStoreSelected = (rowId: string): boolean => {
-		const row = stockRows.find((r) => r.id === rowId);
-		return !!(row?.storeId && row?.storeName);
-	};
-
 	const checkProductSelected = (rowId: string): boolean => {
 		const row = stockRows.find((r) => r.id === rowId);
 		return !!(row?.productId && row?.productName);
@@ -207,38 +207,14 @@ export const StockCreatePage = () => {
 		return !!(row?.materialId && row?.materialName);
 	};
 
-	// 필수 선택 순서 체크 및 알림
+	// 필수 선택 순서 체크 및 알림 (거래처는 자동 설정되므로 체크 불필요)
 	const validateSequence = (
 		rowId: string,
 		currentStep: "product" | "material" | "other" | "color"
 	): boolean => {
-		if (currentStep === "product" && !checkStoreSelected(rowId)) {
-			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
-			openStoreSearch(rowId);
-			return false;
-		}
-
-		if (currentStep === "material" && !checkStoreSelected(rowId)) {
-			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
-			openStoreSearch(rowId);
-			return false;
-		}
-
 		if (currentStep === "material" && !checkProductSelected(rowId)) {
 			showToast("모델번호를 먼저 선택해주세요.", "warning", 3000);
 			openProductSearch(rowId);
-			return false;
-		}
-
-		if (currentStep === "color" && !checkStoreSelected(rowId)) {
-			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
-			openStoreSearch(rowId);
-			return false;
-		}
-
-		if (currentStep === "other" && !checkStoreSelected(rowId)) {
-			showToast("거래처를 먼저 선택해주세요.", "warning", 3000);
-			openStoreSearch(rowId);
 			return false;
 		}
 
@@ -446,64 +422,6 @@ export const StockCreatePage = () => {
 	};
 
 	// 검색 컴포넌트 핸들러들
-	const openStoreSearch = (rowId: string, initialSearch?: string) => {
-		storeModal.openModal(rowId, initialSearch ? { search: initialSearch } : {});
-	};
-
-	// 거래처 선택 적용 함수 (공통 로직)
-	const applyStoreSelection = async (
-		rowId: string,
-		store: StoreSearchDto | AccountInfoDto
-	) => {
-		const storeIdValue = store.accountId?.toString();
-		const newGrade = store.grade || "1";
-
-		updateStockRow(rowId, "storeId", storeIdValue);
-		updateStockRow(rowId, "storeName", store.accountName || "");
-		updateStockRow(rowId, "storeHarry", store.goldHarryLoss || "");
-		updateStockRow(rowId, "grade", newGrade);
-
-		// 거래처 변경 시 이미 선택된 상품이 있으면 새로운 등급으로 알 단가 재계산
-		const currentRow = stockRows.find((r) => r.id === rowId);
-		if (currentRow?.productId) {
-			await updateProductDetail(currentRow.productId, rowId, newGrade);
-		}
-	};
-
-	const handleStoreSelect = async (store: StoreSearchDto | AccountInfoDto) => {
-		if (storeModal.selectedRowId) {
-			await applyStoreSelection(storeModal.selectedRowId, store);
-		}
-		storeModal.handleSelect();
-	};
-
-	// 거래처 직접 검색 (Enter 키)
-	// 반환값: true = 성공(자동 선택됨), false = 실패(팝업 열림 또는 결과 없음)
-	const handleDirectStoreSearch = async (rowId: string, searchTerm: string): Promise<boolean> => {
-		try {
-			const response = await storeApi.getStores(searchTerm, 1, 50);
-			const stores = response.data?.content || [];
-
-			// 완전 일치 검사 (대소문자 무시)
-			const exactMatch = stores.find(
-				(store) =>
-					store.accountName.toLowerCase() === searchTerm.toLowerCase()
-			);
-
-			if (exactMatch) {
-				await applyStoreSelection(rowId, exactMatch);
-				return true; // 성공
-			} else {
-				// 일치 항목 없거나 결과 없으면 검색어와 함께 팝업 열기
-				openStoreSearch(rowId, searchTerm);
-				return false;
-			}
-		} catch (err) {
-			handleError(err);
-			return false;
-		}
-	};
-
 	const openFactorySearch = (rowId: string, initialSearch?: string) => {
 		factoryModal.openModal(rowId, initialSearch ? { search: initialSearch } : {});
 	};
@@ -722,17 +640,12 @@ export const StockCreatePage = () => {
 		try {
 			const row = stockRows.find((r) => r.id === rowId);
 			const grade = row?.grade || "1";
-			const response = await productApi.getProducts(
-				searchTerm,
-				undefined,
-				undefined,
-				undefined,
-				1,
-				50,
-				undefined,
-				undefined,
-				grade
-			);
+			const response = await productApi.getProducts({
+				search: searchTerm,
+				grade: grade,
+				page: 1,
+				size: 50,
+			});
 			const products = response.data?.content || [];
 
 			// 완전 일치 검사 (모델번호 기준, 대소문자 무시)
@@ -780,9 +693,9 @@ export const StockCreatePage = () => {
 						return {
 							...row,
 							createAt: currentDate,
-							storeId: "",
-							storeName: "",
-							grade: "1",
+							storeId: defaultStore?.storeId || "1",
+							storeName: defaultStore?.storeName || "",
+							grade: defaultStore?.grade || "1",
 							productId: "",
 							productName: "",
 							materialId: "",
@@ -815,7 +728,7 @@ export const StockCreatePage = () => {
 								defaultAssistantStone?.assistantStoneName || "",
 							assistantStoneCreateAt: "",
 							totalWeight: 0,
-							storeHarry: "",
+							storeHarry: defaultStore?.goldHarryLoss || "",
 							classificationId: "",
 							classificationName: "",
 							setTypeId: "",
@@ -837,13 +750,36 @@ export const StockCreatePage = () => {
 				const productId = searchParams.get("productId");
 				const productName = searchParams.get("productName");
 
-				const [materialRes, colorRes, assistantStoneRes, goldHarryRes] =
+				const [materialRes, colorRes, assistantStoneRes, goldHarryRes, storeRes] =
 					await Promise.all([
 						materialApi.getMaterials(),
 						colorApi.getColors(),
 						assistantStoneApi.getAssistantStones(),
 						goldHarryApi.getGoldHarry(),
+						storeApi.getStore("1"), // 본인 거래처 (id: 1) 자동 로드
 					]);
+
+				// 본인 거래처 정보 설정
+				let defaultStoreData = {
+					storeId: "1",
+					storeName: "",
+					grade: "1",
+					storeHarry: "",
+				};
+				if (storeRes.success && storeRes.data) {
+					defaultStoreData = {
+						storeId: storeRes.data.accountId?.toString() || "1",
+						storeName: storeRes.data.accountName || "",
+						grade: storeRes.data.grade || "1",
+						storeHarry: storeRes.data.goldHarryLoss || "",
+					};
+					setDefaultStore({
+						storeId: defaultStoreData.storeId,
+						storeName: defaultStoreData.storeName,
+						grade: defaultStoreData.grade,
+						goldHarryLoss: defaultStoreData.storeHarry,
+					});
+				}
 
 				if (materialRes.success) {
 					const loadedMaterials = (materialRes.data || []).map((m) => ({
@@ -893,9 +829,9 @@ export const StockCreatePage = () => {
 						id: `${Date.now()}-${i}`,
 						createAt: currentDate,
 						shippingAt: currentDate,
-						storeId: "",
-						storeName: "",
-						grade: "1",
+						storeId: defaultStoreData.storeId,
+						storeName: defaultStoreData.storeName,
+						grade: defaultStoreData.grade,
 						productId: i === 0 && productId ? productId : "",
 						productName:
 							i === 0 && productName ? decodeURIComponent(productName) : "",
@@ -929,7 +865,7 @@ export const StockCreatePage = () => {
 						assistantStoneName: defaultAssistantStone?.assistantStoneName || "",
 						assistantStoneCreateAt: "",
 						totalWeight: 0,
-						storeHarry: "",
+						storeHarry: defaultStoreData.storeHarry,
 						classificationId: "",
 						classificationName: "",
 						setTypeId: "",
@@ -1089,10 +1025,8 @@ export const StockCreatePage = () => {
 				onRowUpdate={updateStockRow}
 				onRowFocus={handleRowFocus}
 				onRequiredFieldClick={handleRequiredFieldClick}
-				onStoreSearchOpen={openStoreSearch}
 				onProductSearchOpen={openProductSearch}
 				onFactorySearchOpen={openFactorySearch}
-				onDirectStoreSearch={handleDirectStoreSearch}
 				onDirectProductSearch={handleDirectProductSearch}
 				onDirectFactorySearch={handleDirectFactorySearch}
 				onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
@@ -1121,14 +1055,6 @@ export const StockCreatePage = () => {
 			</div>
 
 			{/* 검색 컴포넌트들 - 팝업 방식 */}
-			{storeModal.isOpen && (
-				<StoreSearch
-					onSelectStore={handleStoreSelect}
-					onClose={storeModal.closeModal}
-					initialSearch={storeModal.additionalParams.search || ""}
-				/>
-			)}
-
 			{factoryModal.isOpen && (
 				<FactorySearch
 					onSelectFactory={handleFactorySelect}

@@ -1,32 +1,41 @@
 // libs/api/stone.ts
-import { apiRequest } from "./config";
+import { apiRequest, api } from "./config";
 import type { ApiResponse } from "./config";
+import type { AxiosResponse } from "axios";
 import type {
 	StoneSearchResponse,
 	StoneCreateRequest,
 } from "../../src/types/stoneDto";
 
+export interface StoneSearchParams {
+	search?: string;
+	searchField?: string; 
+	searchMin?: string; 
+	searchMax?: string;
+	sortField?: string; 
+	sortOrder?: string; 
+	page?: number;
+	pageSize?: number;
+}
+
 export const stoneApi = {
-	// 스톤 검색 (페이징 지원)
 	getStones: async (
-		name?: string,
-		page: number = 1,
-		size: number = 12,
-		shape?: string,
-		type?: string,
-		sortField?: string,
-		sortOrder?: string
+		params: StoneSearchParams = {}
 	): Promise<ApiResponse<StoneSearchResponse>> => {
+		const queryParams: Record<string, string | number> = {
+			page: params.page || 1,
+			size: params.pageSize || 20,
+		};
+
+		if (params.search) queryParams.search = params.search;
+		if (params.searchField) queryParams.searchField = params.searchField;
+		if (params.searchMin) queryParams.searchMin = params.searchMin;
+		if (params.searchMax) queryParams.searchMax = params.searchMax;
+		if (params.sortField) queryParams.sortField = params.sortField;
+		if (params.sortOrder) queryParams.sortOrder = params.sortOrder;
+
 		return apiRequest.get<StoneSearchResponse>("product/stones", {
-			params: {
-				search: name || "",
-				page: page,
-				size: size,
-				shape: shape || "",
-				type: type || "",
-				sortField: sortField || "",
-				sortOrder: sortOrder || "",
-			},
+			params: queryParams,
 		});
 	},
 
@@ -74,6 +83,23 @@ export const stoneApi = {
 				"stone-shape": stoneShape,
 				"stone-size": stoneSize,
 			},
+		});
+	},
+
+	// 스톤 엑셀 다운로드
+	downloadExcel: async (
+		search?: string,
+		shape?: string,
+		type?: string
+	): Promise<AxiosResponse<Blob>> => {
+		const params: Record<string, string> = {};
+		if (search) params.search = search;
+		if (shape) params.shape = shape;
+		if (type) params.type = type;
+
+		return api.get("product/stones/excel", {
+			params,
+			responseType: "blob",
 		});
 	},
 };

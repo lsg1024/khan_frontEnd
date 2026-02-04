@@ -335,9 +335,23 @@
 		font-size: 11px;
 	}
 
-	.filter-group-common select {
+	.filter-group-common select,
+	select.filter-group-common,
+	.filter-group-common.select {
 		padding: 6px 8px;
 		font-size: 12px;
+		height: 30px;
+		min-width: 70px;
+		max-width: 100px;
+	}
+
+	.filter-group-common.input,
+	input.filter-group-common {
+		padding: 6px 8px;
+		font-size: 12px;
+		height: 30px;
+		min-width: 70px;
+		max-width: 100px;
 	}
 
 	.date-range-common {
@@ -428,9 +442,23 @@
 
 	/* 공통 필터 */
 	.filter-group-common select,
+	select.filter-group-common,
+	.filter-group-common.select,
 	.date-range-common input[type="date"] {
 		font-size: 11px;
 		padding: 4px 6px;
+		height: 24px;
+		min-width: 60px;
+		max-width: 90px;
+	}
+
+	.filter-group-common.input,
+	input.filter-group-common {
+		font-size: 11px;
+		padding: 4px 6px;
+		height: 24px;
+		min-width: 60px;
+		max-width: 90px;
 	}
 
 	.delete-btn-common,
@@ -472,6 +500,7 @@
 	font-size: 12px;
 }
 
+/* 기존 부모-자식 구조용 선택자 */
 .filter-group-common select {
 	padding: 4px 6px;
 	border: 1px solid #ddd;
@@ -479,6 +508,40 @@
 	background-color: white;
 	color: #000;
 	font-size: 12px;
+}
+
+/* select 요소에 직접 클래스가 적용된 경우용 선택자 */
+select.filter-group-common,
+.filter-group-common.select {
+	padding: 4px 6px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background-color: white;
+	color: #000;
+	font-size: 12px;
+	height: 30px;
+	min-width: 80px;
+	max-width: 120px;
+}
+
+.filter-group-common.input,
+input.filter-group-common {
+	padding: 4px 8px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background-color: white;
+	color: #000;
+	font-size: 12px;
+	height: 30px;
+	min-width: 80px;
+	max-width: 120px;
+	box-sizing: border-box;
+}
+
+.filter-group-common.input:focus,
+input.filter-group-common:focus {
+	outline: none;
+	border-color: #667eea;
 }
 
 .date-range-common {
@@ -518,6 +581,19 @@
 	max-height: 30px;
 	flex-direction: row;
 	justify-content: center;
+}
+
+.search-input-common {
+	padding: 4px 8px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 12px;
+	min-width: 100px;
+}
+
+.search-input-common:focus {
+	outline: none;
+	border-color: #667eea;
 }
 
 .search-buttons-common {

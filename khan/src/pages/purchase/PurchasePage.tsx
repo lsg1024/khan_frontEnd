@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { factoryApi } from "../../../libs/api/factoryApi";
 import { isApiSuccess } from "../../../libs/api/config";
+import { useErrorHandler } from "../../utils/errorHandler";
 import type {
 	TransactionPage,
 	TransactionPageResponse,
@@ -13,7 +14,7 @@ import "../../styles/pages/sale/AccountsReceivablePage.css";
 export const PurchasePage = () => {
 	const [transactions, setTransactions] = useState<TransactionPage[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
+	const { handleError } = useErrorHandler();
 
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
@@ -50,7 +51,6 @@ export const PurchasePage = () => {
 		page: number
 	) => {
 		setLoading(true);
-		setError("");
 
 		try {
 			const res = await factoryApi.getFactoryPurchase(
@@ -63,7 +63,7 @@ export const PurchasePage = () => {
 			);
 
 			if (!isApiSuccess(res)) {
-				setError(res.message || "매입 미수금 데이터를 불러오지 못했습니다.");
+				handleError(new Error(res.message || "매입 미수금 데이터를 불러오지 못했습니다."), "Purchase");
 				setTransactions([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -81,8 +81,7 @@ export const PurchasePage = () => {
 			setTotalPages(pageInfo?.totalPages ?? 1);
 			setTotalElements(pageInfo?.totalElements ?? content.length);
 		} catch (err) {
-			console.error("매입 미수금 데이터 로드 실패:", err);
-			setError("매입 미수금 데이터를 불러오지 못했습니다.");
+			handleError(err, "Purchase");
 			setTransactions([]);
 			setCurrentPage(1);
 			setTotalPages(0);
@@ -128,23 +127,30 @@ export const PurchasePage = () => {
 	const handleCreate = async () => {
 		try {
 			setLoading(true);
-			setError("");
 			alert("생성 기능은 준비 중입니다.");
-		} catch {
-			alert("생성에 실패했습니다.");
+		} catch (err) {
+			handleError(err, "Purchase");
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	// 엑셀 다운로드 처리
 	const handleExcelDownload = async () => {
 		try {
 			setLoading(true);
-			setError("");
-			alert("엑셀 다운로드 기능은 준비 중입니다.");
-		} catch {
-			alert("엑셀 다운로드에 실패했습니다.");
+			const response = await factoryApi.downloadPurchaseExcel(searchFilters.endDate);
+
+			const url = window.URL.createObjectURL(new Blob([response.data]));
+			const link = document.createElement("a");
+			link.href = url;
+			const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+			link.setAttribute("download", `매입금_${today}.xlsx`);
+			document.body.appendChild(link);
+			link.click();
+			link.parentNode?.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		} catch (err) {
+			handleError(err, "Purchase");
 		} finally {
 			setLoading(false);
 		}
@@ -157,13 +163,6 @@ export const PurchasePage = () => {
 
 	return (
 		<div className="page">
-			{error && (
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-			)}
-
 			{/* 검색 영역 */}
 			<div className="search-section-common">
 				<div className="search-filters-common">

@@ -37,6 +37,8 @@ import TotalRentalListPage from "./pages/stock/TotalRentalListPage";
 import StockReturnPage from "./pages/stock/StockReturnPage";
 import StockDeletePage from "./pages/stock/StockDeletePage";
 import StockCommonActionPage from "./pages/stock/StockCommonActionPage";
+import StockInventoryPage from "./pages/stock/StockInventoryPage";
+import InventoryBarcodePopup from "./pages/stock/InventoryBarcodePopup";
 import OrderDeletedPage from "./pages/order/OrderDeletePage";
 import StoneSearchPage from "./pages/stone/StoneSearchPage";
 import StoneInfoPage from "./pages/order/StoneInfoPage";
@@ -172,6 +174,7 @@ function App() {
 					/>
 					<Route path="/gold-price-setting" element={<GoldPricePopupPage />} />
 					<Route path="/gold-price-log" element={<GoldPriceLogPage />} />
+					<Route path="/stocks/inventory/barcode" element={<InventoryBarcodePopup />} />
 					<Route path="/catalog/create" element={<ProductCreatePage />} />
 					<Route
 						path="/catalog/detail/:productId"
@@ -248,6 +251,7 @@ function App() {
 						<Route path="/expect" element={<ExpectPage />} />
 						<Route path="/order-deleted" element={<OrderDeletedPage />} />
 						<Route path="/stocks" element={<StockPage />} />
+						<Route path="/stocks/inventory" element={<StockInventoryPage />} />
 						<Route path="/stocks/history" element={<StockHistoryPage />} />
 						<Route path="/stocks/return" element={<StockReturnPage />} />
 						<Route path="/stocks/delete" element={<StockDeletePage />} />

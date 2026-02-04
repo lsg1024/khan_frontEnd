@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
 import { storeApi } from "../../../libs/api/storeApi";
+import { useErrorHandler } from "../../utils/errorHandler";
 import type {
 	StoreSearchDto,
 	StoreSearchResponse,
@@ -24,8 +25,7 @@ const StoreSearchPage: React.FC = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
-
-	const [error, setError] = useState<string>("");
+	const { handleError } = useErrorHandler();
 
 	const size = 5;
 
@@ -33,7 +33,6 @@ const StoreSearchPage: React.FC = () => {
 	const performSearch = useCallback(
 		async (name: string, page: number) => {
 			setLoading(true);
-			setError("");
 
 			try {
 				if (useReceivable) {
@@ -42,7 +41,7 @@ const StoreSearchPage: React.FC = () => {
 					console.log("🔍 StoreAttempt API 응답:", res);
 
 					if (!isApiSuccess(res)) {
-						setError(res.message || "거래처 데이터를 불러오지 못했습니다.");
+						handleError(new Error(res.message || "거래처 데이터를 불러오지 못했습니다."), "StoreSearch");
 						setStores([]);
 						setCurrentPage(1);
 						setTotalPages(0);
@@ -65,7 +64,7 @@ const StoreSearchPage: React.FC = () => {
 					const res = await storeApi.getStores(name, page, size);
 
 					if (!isApiSuccess(res)) {
-						setError(res.message || "거래처 데이터를 불러오지 못했습니다.");
+						handleError(new Error(res.message || "거래처 데이터를 불러오지 못했습니다."), "StoreSearch");
 						setStores([]);
 						setCurrentPage(1);
 						setTotalPages(0);
@@ -83,8 +82,8 @@ const StoreSearchPage: React.FC = () => {
 					setTotalPages(pageInfo?.totalPages ?? 1);
 					setTotalElements(pageInfo?.totalElements ?? content.length);
 				}
-			} catch {
-				setError("거래처 데이터를 불러오지 못했습니다.");
+			} catch (err) {
+				handleError(err, "StoreSearch");
 				setStores([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -93,7 +92,7 @@ const StoreSearchPage: React.FC = () => {
 				setLoading(false);
 			}
 		},
-		[useReceivable]
+		[useReceivable, handleError]
 	);
 
 	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
@@ -175,19 +174,13 @@ const StoreSearchPage: React.FC = () => {
 						</div>
 					)}
 
-					{error && (
-						<div className="error-state">
-							<p>{error}</p>
-						</div>
-					)}
-
-					{!loading && !error && stores.length === 0 && (
+					{!loading && stores.length === 0 && (
 						<div className="empty-state">
 							<p>검색된 거래처가 없습니다.</p>
 						</div>
 					)}
 
-					{!loading && !error && stores.length > 0 && (
+					{!loading && stores.length > 0 && (
 						<div className="stores-list">
 							<StoreList stores={stores} onSelectStore={handleStoreSelect} />
 						</div>

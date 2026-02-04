@@ -20,7 +20,6 @@ const StockDetailPage: React.FC = () => {
 
 	const [stockRow, setStockRow] = useState<StockOrderRows | null>(null);
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
 
 	const [materials, setMaterials] = useState<
 		MaterialDto[]
@@ -38,7 +37,7 @@ const StockDetailPage: React.FC = () => {
 	useEffect(() => {
 		const loadData = async () => {
 			if (!flowCode) {
-				setError("재고 코드가 전달되지 않았습니다.");
+				handleError(new Error("재고 코드가 전달되지 않았습니다."), "StockDetail");
 				setLoading(false);
 				return;
 			}
@@ -184,10 +183,10 @@ const StockDetailPage: React.FC = () => {
 		);
 	}
 
-	if (error || !stockRow) {
+	if (!stockRow) {
 		return (
 			<div className="error-container">
-				<p>{error || "재고 정보를 찾을 수 없습니다."}</p>
+				<p>재고 정보를 찾을 수 없습니다.</p>
 				<button onClick={() => window.close()}>닫기</button>
 			</div>
 		);

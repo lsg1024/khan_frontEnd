@@ -38,7 +38,6 @@ export const SaleCreatePage = () => {
 	const { handleError } = useErrorHandler();
 	const { showToast } = useToast();
 	const [loading, setLoading] = useState<boolean>(false);
-	const [error, setError] = useState<string>("");
 	const [showStoreSearch, setShowStoreSearch] = useState<boolean>(false);
 	const [assistantStones, setAssistantStones] = useState<AssistantStoneDto[]>(
 		[]
@@ -634,19 +633,15 @@ export const SaleCreatePage = () => {
 		setCurrentDisplayedPastOrders([]);
 		setPastOrdersCache(new Map());
 		setPendingRequests(new Set());
-
-		// 에러 메시지 초기화
-		setError("");
 	};
 
 	// 등록 핸들러
 	const handleSubmit = async () => {
 		try {
 			setLoading(true);
-			setError("");
 
 			if (!saleOptions.storeId) {
-				setError("거래처를 선택해주세요.");
+				showToast("거래처를 선택해주세요.", "warning");
 				return;
 			}
 
@@ -665,7 +660,7 @@ export const SaleCreatePage = () => {
 
 
 			if (validRows.length === 0) {
-				setError("처리할 유효한 판매 항목이 없습니다.");
+				showToast("처리할 유효한 판매 항목이 없습니다.", "warning");
 				return;
 			}
 
@@ -1389,14 +1384,6 @@ export const SaleCreatePage = () => {
 
 	return (
 		<div className="sale-create-page">
-			{/* 에러 메시지 */}
-			{error && (
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-			)}
-
 			<div className="sale-create-content">
 				{/* 1. 상품 이미지 & 판매 옵션 & 금 거래 내역 (3분할 병렬 배치) */}
 				<div className="sale-create-top-row">

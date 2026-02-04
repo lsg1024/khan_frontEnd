@@ -20,7 +20,6 @@ function ProductEditPage() {
 	const { productId } = useParams<{ productId: string }>();
 	const [product, setProduct] = useState<Product | null>(null);
 	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>("");
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string>
 	>({});
@@ -229,14 +228,13 @@ function ProductEditPage() {
 	// 상품 상세 정보 로드
 	const loadProductDetail = async () => {
 		if (!productId) {
-			setError("상품 ID가 없습니다.");
+			handleError(new Error("상품 ID가 없습니다."), "ProductEdit");
 			setLoading(false);
 			return;
 		}
 
 		try {
 			setLoading(true);
-			setError("");
 
 			const response = await productApi.getProduct(productId);
 
@@ -272,10 +270,10 @@ function ProductEditPage() {
 				};
 				setProduct(transformedData);
 			} else {
-				setError("상품 정보를 불러올 수 없습니다.");
+				handleError(new Error("상품 정보를 불러올 수 없습니다."), "ProductEdit");
 			}
 		} catch (err: unknown) {
-			handleError(err);
+			handleError(err, "ProductEdit");
 		} finally {
 			setLoading(false);
 		}
@@ -500,13 +498,13 @@ function ProductEditPage() {
 	}
 
 	// 에러 상태
-	if (error || !product) {
+	if (!product) {
 		return (
 			<div className="product-detail-page">
 				<div className="error-container">
 					<span className="error-icon">⚠️</span>
 					<h3>오류가 발생했습니다</h3>
-					<p>{error || "상품 정보를 찾을 수 없습니다."}</p>
+					<p>상품 정보를 찾을 수 없습니다.</p>
 					<button onClick={() => window.close()} className="back-button">
 						닫기
 					</button>

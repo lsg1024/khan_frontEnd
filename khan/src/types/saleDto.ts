@@ -185,8 +185,6 @@ export interface SalePaymentRequest {
 export interface SalePrintResponse {
     lastSaleDate : string
     lastPaymentDate : string
-    businessOwnerNumber : string
-    faxNumber : string
     previousGoldBalance : string
     previousMoneyBalance : string
     afterGoldBalance : string

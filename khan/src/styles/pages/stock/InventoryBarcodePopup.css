@@ -1,0 +1,313 @@
+/* 재고 조사 바코드 팝업 스타일 */
+
+.barcode-popup {
+	min-height: 100vh;
+	background: #f5f7fa;
+	display: flex;
+	flex-direction: column;
+}
+
+.barcode-popup-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px 24px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: #fff;
+}
+
+.barcode-popup-header h1 {
+	font-size: 20px;
+	font-weight: 600;
+	margin: 0;
+}
+
+.close-btn {
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 18px;
+	color: #fff;
+	background: rgba(255, 255, 255, 0.2);
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.close-btn:hover {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+/* 입력 섹션 */
+.barcode-popup-input-section {
+	padding: 24px;
+	background: #fff;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+.input-wrapper {
+	display: flex;
+	align-items: center;
+	background: #f9f9f9;
+	border: 2px solid #e5e5e5;
+	border-radius: 12px;
+	padding: 4px;
+	transition: border-color 0.2s;
+}
+
+.input-wrapper:focus-within {
+	border-color: #667eea;
+}
+
+.barcode-icon {
+	width: 28px;
+	height: 28px;
+	color: #999;
+	margin: 0 12px;
+	flex-shrink: 0;
+}
+
+.input-wrapper input {
+	flex: 1;
+	padding: 16px 12px;
+	font-size: 18px;
+	border: none;
+	outline: none;
+	background: transparent;
+}
+
+.input-wrapper input::placeholder {
+	color: #aaa;
+}
+
+.submit-btn {
+	padding: 16px 32px;
+	font-size: 16px;
+	font-weight: 600;
+	color: #fff;
+	background: #667eea;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background 0.2s;
+	white-space: nowrap;
+}
+
+.submit-btn:hover:not(:disabled) {
+	background: #5a6fd6;
+}
+
+.submit-btn:disabled {
+	background: #ccc;
+	cursor: not-allowed;
+}
+
+/* 통계 섹션 */
+.barcode-popup-stats {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px 24px;
+	background: #fff;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+.stat-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 16px;
+	border-radius: 8px;
+}
+
+.stat-item.success {
+	background: #e8f5e9;
+}
+
+.stat-item.error {
+	background: #ffebee;
+}
+
+.stat-label {
+	font-size: 13px;
+	color: #666;
+}
+
+.stat-value {
+	font-size: 18px;
+	font-weight: 700;
+}
+
+.stat-item.success .stat-value {
+	color: #28a745;
+}
+
+.stat-item.error .stat-value {
+	color: #dc3545;
+}
+
+.clear-btn {
+	margin-left: auto;
+	padding: 8px 16px;
+	font-size: 13px;
+	color: #666;
+	background: #f5f5f5;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.clear-btn:hover {
+	background: #e8e8e8;
+}
+
+/* 결과 섹션 */
+.barcode-popup-results {
+	flex: 1;
+	padding: 24px;
+	overflow-y: auto;
+}
+
+.barcode-popup-results h3 {
+	font-size: 14px;
+	font-weight: 600;
+	color: #666;
+	margin: 0 0 16px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.no-results {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 200px;
+	background: #fff;
+	border-radius: 12px;
+	border: 2px dashed #e5e5e5;
+}
+
+.no-results p {
+	font-size: 14px;
+	color: #999;
+	margin: 0;
+}
+
+.results-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.result-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+	background: #fff;
+	border-radius: 8px;
+	border-left: 4px solid transparent;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.result-item.success {
+	border-left-color: #28a745;
+}
+
+.result-item.already_checked {
+	border-left-color: #ffc107;
+}
+
+.result-item.not_checkable {
+	border-left-color: #ff9800;
+}
+
+.result-item.not_found {
+	border-left-color: #dc3545;
+}
+
+.result-status {
+	padding: 4px 10px;
+	font-size: 11px;
+	font-weight: 600;
+	color: #fff;
+	border-radius: 4px;
+	white-space: nowrap;
+}
+
+.result-code {
+	font-family: monospace;
+	font-size: 14px;
+	font-weight: 600;
+	color: #333;
+	min-width: 100px;
+}
+
+.result-name {
+	flex: 1;
+	font-size: 14px;
+	color: #333;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.result-message {
+	font-size: 12px;
+	color: #888;
+	white-space: nowrap;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+	.barcode-popup-header {
+		padding: 16px;
+	}
+
+	.barcode-popup-header h1 {
+		font-size: 16px;
+	}
+
+	.barcode-popup-input-section {
+		padding: 16px;
+	}
+
+	.input-wrapper {
+		flex-wrap: wrap;
+	}
+
+	.input-wrapper input {
+		font-size: 16px;
+		padding: 12px;
+	}
+
+	.submit-btn {
+		width: 100%;
+		margin-top: 8px;
+	}
+
+	.barcode-popup-stats {
+		flex-wrap: wrap;
+		padding: 12px 16px;
+	}
+
+	.result-item {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.result-name {
+		order: 3;
+		width: 100%;
+		min-width: 0;
+	}
+
+	.result-message {
+		order: 4;
+		width: 100%;
+	}
+}

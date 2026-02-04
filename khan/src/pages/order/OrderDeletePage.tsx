@@ -12,7 +12,6 @@ import "../../styles/pages/order/OrderPage.css";
 
 export const OrderDeletedPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
@@ -61,7 +60,6 @@ export const OrderDeletedPage = () => {
 	const loadDeleteds = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
 			setLoading(true);
-			setError("");
 
 			// 페이지 변경 시 선택 상태 초기화
 			setSelectedDeleted([]);
@@ -189,7 +187,6 @@ export const OrderDeletedPage = () => {
 	useEffect(() => {
 		const initializeData = async () => {
 			setCurrentPage(1);
-			setError("");
 
 			await Promise.all([loadDeleteds(searchFilters, 1), fetchDropdownData()]);
 		};
@@ -218,14 +215,6 @@ export const OrderDeletedPage = () => {
 	return (
 		<>
 			<div className="page">
-				{/* 에러 메시지 */}
-				{error && (
-					<div className="error-message">
-						<span>⚠️</span>
-						<p>{error}</p>
-					</div>
-				)}
-
 				{/* 검색 영역 */}
 				<OrderSearch
 					searchFilters={searchFilters}

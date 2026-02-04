@@ -104,7 +104,6 @@ const StockRegisterPage: React.FC = () => {
 	// 1. 상태: 단일 객체/값에서 배열 또는 Map 형태로 변경
 	const [stockRows, setOrderRows] = useState<StockOrderRows[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
 
 	// 드롭다운 데이터 (한 번만 로드하면 됨)
 	const [materials, setMaterials] = useState<
@@ -385,7 +384,7 @@ const StockRegisterPage: React.FC = () => {
 	useEffect(() => {
 		const idsParam = searchParams.get("ids");
 		if (!idsParam) {
-			setError("재고등록할 주문 ID가 전달되지 않았습니다.");
+			handleError(new Error("재고등록할 주문 ID가 전달되지 않았습니다."), "StockRegister");
 			setLoading(false);
 			return;
 		}
@@ -548,7 +547,7 @@ const StockRegisterPage: React.FC = () => {
 		}
 	};
 
-	if (loading || error) {
+	if (loading) {
 		return (
 			<div className="loading-container">
 				<div className="spinner"></div>

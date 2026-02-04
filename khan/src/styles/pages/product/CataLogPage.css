@@ -309,6 +309,29 @@
 	transform: scale(1.05);
 }
 
+/* 이미지 추가 플레이스홀더 */
+.catalog-product-image.add-image-placeholder {
+	background-color: #f0f7ff;
+	border: 2px dashed #007bff;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.catalog-product-image.add-image-placeholder:hover {
+	background-color: #e0f0ff;
+	border-color: #0056b3;
+}
+
+.add-image-text {
+	font-size: 12px;
+	color: #007bff;
+	font-weight: 500;
+}
+
+.catalog-product-image.add-image-placeholder:hover .add-image-text {
+	color: #0056b3;
+}
+
 .no-image {
 	display: flex;
 	flex-direction: column;

@@ -19,7 +19,6 @@ import {
 
 export const StockPage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
@@ -210,7 +209,6 @@ export const StockPage = () => {
 	const handleExcelDownload = async () => {
 		try {
 			setLoading(true);
-			setError("");
 			const response = await orderApi.downloadOrdersExcel(
 				searchFilters.start,
 				searchFilters.end,
@@ -244,8 +242,8 @@ export const StockPage = () => {
 
 			link.parentNode?.removeChild(link);
 			window.URL.revokeObjectURL(url);
-		} catch {
-			alert("엑셀 다운로드에 실패했습니다.");
+		} catch (err) {
+			handleError(err, "StockPage");
 		} finally {
 			setLoading(false);
 		}
@@ -264,7 +262,6 @@ export const StockPage = () => {
 	const loadStocks = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
 			setLoading(true);
-			setError("");
 
 			try {
 				const response = await stockApi.getStocks(
@@ -381,14 +378,6 @@ export const StockPage = () => {
 	return (
 		<>
 			<div className="page">
-				{/* 에러 메시지 */}
-				{error && (
-					<div className="error-message">
-						<span>⚠️</span>
-						<p>{error}</p>
-					</div>
-				)}
-
 				{/* 검색 영역 */}
 				<StockSearch
 					searchFilters={searchFilters}

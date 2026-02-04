@@ -1,0 +1,193 @@
+/* 재고 상세 모달 스타일 */
+.inventory-stock-detail-modal {
+	max-width: 700px;
+	width: 95%;
+	max-height: 85vh;
+	overflow-y: auto;
+	border-radius: 12px;
+}
+
+.inventory-stock-detail-modal .modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 16px 20px;
+	border-bottom: 1px solid #e5e5e5;
+	background: #f9fafb;
+}
+
+.inventory-stock-detail-modal .modal-header h2 {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	color: #333;
+}
+
+.inventory-stock-detail-modal .modal-close-button {
+	background: none;
+	border: none;
+	font-size: 24px;
+	color: #666;
+	cursor: pointer;
+	padding: 0;
+	line-height: 1;
+}
+
+.inventory-stock-detail-modal .modal-close-button:hover {
+	color: #333;
+}
+
+.inventory-stock-detail-modal .modal-body {
+	padding: 20px;
+}
+
+/* 로딩, 에러 컨테이너 */
+.inventory-stock-detail-modal .loading-container,
+.inventory-stock-detail-modal .error-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 40px;
+	color: #666;
+}
+
+.inventory-stock-detail-modal .spinner {
+	width: 32px;
+	height: 32px;
+	border: 3px solid #f0f0f0;
+	border-top-color: #667eea;
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+	margin-bottom: 12px;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* 상세 콘텐츠 */
+.stock-detail-content {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.detail-section {
+	background: #fff;
+	border: 1px solid #e5e5e5;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.section-title {
+	margin: 0;
+	padding: 12px 16px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #333;
+	background: #f9fafb;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+.detail-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 1px;
+	background: #e5e5e5;
+}
+
+.detail-item {
+	display: flex;
+	flex-direction: column;
+	padding: 12px 16px;
+	background: #fff;
+}
+
+.detail-item.full-width {
+	grid-column: span 2;
+}
+
+.detail-label {
+	font-size: 12px;
+	color: #888;
+	margin-bottom: 4px;
+}
+
+.detail-value {
+	font-size: 14px;
+	color: #333;
+	font-weight: 500;
+}
+
+.detail-value.highlight {
+	color: #667eea;
+	font-family: monospace;
+	font-weight: 600;
+}
+
+/* 스톤 리스트 테이블 */
+.stone-list {
+	padding: 16px;
+	border-top: 1px solid #e5e5e5;
+}
+
+.stone-list h4 {
+	margin: 0 0 12px 0;
+	font-size: 13px;
+	font-weight: 600;
+	color: #666;
+}
+
+.stone-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.stone-table th,
+.stone-table td {
+	padding: 8px 12px;
+	text-align: center;
+	border: 1px solid #e5e5e5;
+}
+
+.stone-table th {
+	background: #f9fafb;
+	font-weight: 600;
+	color: #666;
+}
+
+.stone-table td {
+	color: #333;
+}
+
+/* 비고 */
+.note-content {
+	padding: 16px;
+	font-size: 14px;
+	color: #333;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+	.inventory-stock-detail-modal {
+		width: 100%;
+		max-width: 100%;
+		height: 100%;
+		max-height: 100%;
+		border-radius: 0;
+	}
+
+	.detail-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.detail-item.full-width {
+		grid-column: span 1;
+	}
+}

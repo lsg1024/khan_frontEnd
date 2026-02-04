@@ -107,11 +107,20 @@ export const AccountReceivablePage = () => {
 		loadStoreAttempts(resetFilters, 1);
 	};
 
-	// 엑셀 다운로드 처리
 	const handleExcelDownload = async () => {
 		try {
 			setLoading(true);
-			alert("엑셀 다운로드 기능은 준비 중입니다.");
+			const response = await storeApi.downloadReceivableExcel(searchFilters.search);
+
+			const url = window.URL.createObjectURL(new Blob([response.data]));
+			const link = document.createElement("a");
+			link.href = url;
+			const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+			link.setAttribute("download", `미수금_${today}.xlsx`);
+			document.body.appendChild(link);
+			link.click();
+			link.parentNode?.removeChild(link);
+			window.URL.revokeObjectURL(url);
 		} catch {
 			alert("엑셀 다운로드에 실패했습니다.");
 		} finally {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { productApi } from "../../../libs/api/productApi";
 import { isApiSuccess } from "../../../libs/api/config";
+import { useErrorHandler } from "../../utils/errorHandler";
 import { calculatePureGoldWeight } from "../../utils/goldUtils";
 import type { ProductDto } from "../../types/productDto";
 import Pagination from "../../components/common/Pagination";
@@ -8,98 +9,119 @@ import "../../styles/pages/product/ProductSearchPage.css";
 
 const ProductSearchPage: React.FC = () => {
 	const [searchParams] = useState(
-		() => new URLSearchParams(window.location.search)
+		() => new URLSearchParams(window.location.search),
 	);
 	const grade = searchParams.get("grade") || "1";
 	const initialSearch = searchParams.get("search") || ""; // 초기 검색어
 
 	const [products, setProducts] = useState<ProductDto[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
 	const [searchTerm, setSearchTerm] = useState(initialSearch);
+	const { handleError } = useErrorHandler();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
+	// 필터 상태
+	const [searchField, setSearchField] = useState("");
+	const [sortField, setSortField] = useState("");
+	const [sortOrder, setSortOrder] = useState("DESC");
+
 	const size = 12;
 
 	// 상품 검색
-	const performSearch = useCallback(async (name: string, page: number) => {
-		setLoading(true);
-		setError("");
+	const performSearch = useCallback(
+		async (
+			search: string,
+			page: number,
+			sSearchField?: string,
+			sField?: string,
+			sOrder?: string,
+		) => {
+			setLoading(true);
 
-		try {
-			const response = await productApi.getProducts(
-				name || undefined,
-				undefined,
-				undefined,
-				undefined,
-				page,
-				size,
-				undefined,
-				undefined,
-				grade
-			);
+			try {
+				const response = await productApi.getProducts({
+					search: search || undefined,
+					searchField: sSearchField || undefined,
+					sortField: sField || undefined,
+					sortOrder: sOrder || undefined,
+					grade: grade,
+					page: page,
+					size: size,
+				});
 
-			if (!isApiSuccess(response)) {
-				setError(response.message || "상품 데이터를 불러오지 못했습니다.");
+				if (!isApiSuccess(response)) {
+					handleError(new Error(response.message || "상품 데이터를 불러오지 못했습니다."), "ProductSearch");
+					setProducts([]);
+					setCurrentPage(1);
+					setTotalPages(0);
+					setTotalElements(0);
+					return;
+				}
+
+				const data = response.data;
+				const content = data?.content ?? [];
+				const pageInfo = data?.page;
+
+				setProducts(content);
+				const uiPage = (pageInfo?.number ?? page - 1) + 1;
+				setCurrentPage(uiPage);
+				setTotalPages(pageInfo?.totalPages ?? 1);
+				setTotalElements(pageInfo?.totalElements ?? content.length);
+
+				// 각 상품의 이미지 로드
+				const newImageUrls: Record<string, string> = {};
+				for (const product of content) {
+					if (product.image?.imageId && product.image?.imagePath) {
+						try {
+							const blob = await productApi.getProductImageByPath(
+								product.image.imagePath,
+							);
+							const blobUrl = URL.createObjectURL(blob);
+							newImageUrls[product.productId] = blobUrl;
+						} catch {
+							// 이미지 로드 실패 시 기본 이미지 사용
+							newImageUrls[product.productId] = "/images/not_ready.png";
+						}
+					} else {
+						newImageUrls[product.productId] = "/images/not_ready.png";
+					}
+				}
+				setImageUrls(newImageUrls);
+			} catch (err) {
+				handleError(err, "ProductSearch");
 				setProducts([]);
 				setCurrentPage(1);
 				setTotalPages(0);
 				setTotalElements(0);
-				return;
+			} finally {
+				setLoading(false);
 			}
-
-			const data = response.data;
-			const content = data?.content ?? [];
-			const pageInfo = data?.page;
-
-			setProducts(content);
-			const uiPage = (pageInfo?.number ?? page - 1) + 1;
-			setCurrentPage(uiPage);
-			setTotalPages(pageInfo?.totalPages ?? 1);
-			setTotalElements(pageInfo?.totalElements ?? content.length);
-
-			// 각 상품의 이미지 로드
-			const newImageUrls: Record<string, string> = {};
-			for (const product of content) {
-				if (product.image?.imageId && product.image?.imagePath) {
-					try {
-						const blob = await productApi.getProductImageByPath(
-							product.image.imagePath
-						);
-						const blobUrl = URL.createObjectURL(blob);
-						newImageUrls[product.productId] = blobUrl;
-					} catch {
-						// 이미지 로드 실패 시 기본 이미지 사용
-						newImageUrls[product.productId] = "/images/not_ready.png";
-					}
-				} else {
-					newImageUrls[product.productId] = "/images/not_ready.png";
-				}
-			}
-			setImageUrls(newImageUrls);
-		} catch {
-			setError("상품 데이터를 불러오지 못했습니다.");
-			setProducts([]);
-			setCurrentPage(1);
-			setTotalPages(0);
-			setTotalElements(0);
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+		},
+		[handleError],
+	);
 
 	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
 	useEffect(() => {
-		performSearch(initialSearch, 1);
+		performSearch(initialSearch, 1, "", "", "DESC");
 	}, [performSearch, initialSearch]);
 
 	// 검색 실행
 	const handleSearch = () => {
 		setCurrentPage(1);
-		performSearch(searchTerm, 1);
+		performSearch(searchTerm, 1, searchField, sortField, sortOrder);
+	};
+
+	// 초기화 처리
+	const handleReset = () => {
+		setSearchTerm("");
+		setSearchField("");
+		setSortField("");
+		setSortOrder("DESC");
+		setCurrentPage(1);
+		performSearch("", 1, "", "", "DESC");
 	};
 
 	// 상품 선택 처리
@@ -111,7 +133,7 @@ const ProductSearchPage: React.FC = () => {
 					type: "PRODUCT_SELECTED",
 					data: product,
 				},
-				"*"
+				"*",
 			);
 			window.close();
 		}
@@ -152,34 +174,75 @@ const ProductSearchPage: React.FC = () => {
 				</div>
 
 				{/* 검색 섹션 */}
-				<div className="search-section">
-					<div className="search-input-group">
-						<input
-							className="search-input"
-							type="text"
-							placeholder="상품명을 입력하세요"
-							value={searchTerm}
-							onChange={(e) => setSearchTerm(e.target.value)}
-							onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-						/>
-						<button
-							className="search-btn"
-							onClick={handleSearch}
-							disabled={loading}
-						>
-							{loading ? "검색 중..." : "검색"}
-						</button>
+				<div className="search-section-common">
+					<div className="search-filters-common">
+						{/* 1행: 필터 드롭다운 */}
+						<div className="filter-row-common">
+							<select
+								className="filter-group-common select"
+								value={searchField}
+								onChange={(e) => setSearchField(e.target.value)}
+							>
+								<option value="">검색 필터</option>
+								<option value="modelNumber">모델번호</option>
+								<option value="factory">제조사</option>
+								<option value="note">비고</option>
+								<option value="setType">세트타입</option>
+								<option value="classification">분류</option>
+								<option value="material">재질</option>
+							</select>
+
+							<select
+								className="filter-group-common select"
+								value={sortField}
+								onChange={(e) => setSortField(e.target.value)}
+							>
+								<option value="">정렬 기준</option>
+								<option value="productName">상품명</option>
+								<option value="factory">제조사</option>
+								<option value="classification">분류</option>
+								<option value="setType">세트타입</option>
+							</select>
+
+							<select
+								className="filter-group-common select"
+								value={sortOrder}
+								onChange={(e) => setSortOrder(e.target.value)}
+							>
+								<option value="DESC">내림차순</option>
+								<option value="ASC">오름차순</option>
+							</select>
+
+							<input
+								className="search-input-common"
+								type="text"
+								placeholder="검색어"
+								value={searchTerm}
+								onChange={(e) => setSearchTerm(e.target.value)}
+								onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+							/>
+							<div className="search-buttons-common">
+								<button
+									className="search-btn-common"
+									onClick={handleSearch}
+									disabled={loading}
+								>
+									{loading ? "검색 중..." : "검색"}
+								</button>
+								<button
+									className="reset-btn-common"
+									onClick={handleReset}
+									disabled={loading}
+								>
+									초기화
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 
 				{/* 결과 섹션 */}
 				<div className="search-results">
-					{error && (
-						<div className="error-state">
-							<p>{error}</p>
-						</div>
-					)}
-
 					{/* 상품 그리드 */}
 					<div className="search-products-grid">
 						{loading ? (
@@ -228,7 +291,7 @@ const ProductSearchPage: React.FC = () => {
 													<div className="gold-content">
 														{calculatePureGoldWeight(
 															product.productWeight,
-															product.productMaterial
+															product.productMaterial,
 														).toFixed(3)}
 														돈
 													</div>
@@ -264,7 +327,7 @@ const ProductSearchPage: React.FC = () => {
 													<span className="search-price-label">매입:</span>
 													<span className="search-labor-cost">
 														{calculateTotalPurchaseCost(
-															product
+															product,
 														).toLocaleString()}
 														원
 													</span>
@@ -291,7 +354,7 @@ const ProductSearchPage: React.FC = () => {
 						totalElements={totalElements}
 						loading={loading}
 						onPageChange={(page) => {
-							performSearch(searchTerm, page);
+							performSearch(searchTerm, page, searchField, sortField, sortOrder);
 						}}
 						className="product"
 					/>

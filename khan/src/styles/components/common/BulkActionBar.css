@@ -150,6 +150,18 @@
 	border-color: #23272b;
 }
 
+/* 재고조사 버튼 - 보라색 */
+.bulk-action-btn.inventory-check {
+	background-color: #667eea;
+	color: white;
+	border-color: #667eea;
+}
+
+.bulk-action-btn.inventory-check:hover:not(.disabled) {
+	background-color: #5a6fd6;
+	border-color: #4e63c9;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
 	.bulk-action-bar {

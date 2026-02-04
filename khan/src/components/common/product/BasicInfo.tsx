@@ -94,7 +94,6 @@ const BasicInfo: React.FC<ProductInfo> = ({
 			setCurrentImageIndex(0); // 인덱스 초기화
 			const previews: ImagePreviewItem[] = [];
 
-			// 1. 로컬 파일들 미리보기 생성
 			imageFiles.forEach((file, index) => {
 				const objectUrl = URL.createObjectURL(file);
 				blobUrls.push(objectUrl);
@@ -106,7 +105,6 @@ const BasicInfo: React.FC<ProductInfo> = ({
 				});
 			});
 
-			// 2. 서버 이미지 로드
 			if (product.productImageDtos && product.productImageDtos.length > 0) {
 				for (const serverImage of product.productImageDtos) {
 					if (serverImage.imageId && serverImage.imagePath) {
@@ -459,8 +457,7 @@ const BasicInfo: React.FC<ProductInfo> = ({
 							</>
 						) : (
 							<div className="carousel-empty">
-								<img src="/images/not_ready.png" alt="이미지 없음" />
-								{editable && canAddMore && (
+								{editable && canAddMore ? (
 									<label className="carousel-add-btn" title="이미지 추가">
 										<span className="add-icon">+</span>
 										<span className="add-text">이미지 추가</span>
@@ -472,6 +469,8 @@ const BasicInfo: React.FC<ProductInfo> = ({
 											style={{ display: "none" }}
 										/>
 									</label>
+								) : (
+									<span className="no-image-text">이미지 없음</span>
 								)}
 							</div>
 						)}

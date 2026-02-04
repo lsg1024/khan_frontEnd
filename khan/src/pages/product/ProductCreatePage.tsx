@@ -75,7 +75,6 @@ const EMPTY_PRODUCT: Product = {
 const ProductCreatePage = () => {
 	const [product, setProduct] = useState<Product>(EMPTY_PRODUCT);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
 	const [validationErrors, setValidationErrors] = useState<
 		Record<string, string>
 	>({});
@@ -249,7 +248,6 @@ const ProductCreatePage = () => {
 	const handleCreateProduct = async () => {
 		try {
 			setLoading(true);
-			setError("");
 			setValidationErrors({});
 			if (!validateProduct()) return;
 
@@ -269,7 +267,6 @@ const ProductCreatePage = () => {
 				if (again) {
 					setProduct({ ...EMPTY_PRODUCT, factoryId, factoryName });
 					setValidationErrors({});
-					setError("");
 					setImageFiles([]);
 				} else {
 					await handleApiSubmit({
@@ -293,14 +290,6 @@ const ProductCreatePage = () => {
 
 	return (
 		<div className="product-detail-page">
-			{/* 에러 메시지 */}
-			{error && (
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-			)}
-
 			<div className="detail-content">
 				<div className="top-section">
 					<ProductInfo

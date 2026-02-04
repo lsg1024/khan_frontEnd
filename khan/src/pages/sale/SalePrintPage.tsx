@@ -129,8 +129,6 @@ export const SalePrintPage = () => {
 						<span>거래처: {saleData.storeName}</span>
 						<span>공급자: {subdomain}</span>
 						<span>No: {saleData.storeCode}</span>
-						<span>사업자: {printData.businessOwnerNumber || "-"}</span>
-						<span>팩스: {printData.faxNumber || "-"}</span>
 					</div>
 				</div>
 

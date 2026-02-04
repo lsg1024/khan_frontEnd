@@ -12,7 +12,6 @@ import type { SearchFilters } from "../../components/common/stock/StockSearch";
 
 export const StockDeletePage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
@@ -153,7 +152,6 @@ export const StockDeletePage = () => {
 	const handleExcelDownload = async () => {
 		try {
 			setLoading(true);
-			setError("");
 			const response = await orderApi.downloadOrdersExcel(
 				searchFilters.start,
 				searchFilters.end,
@@ -187,8 +185,8 @@ export const StockDeletePage = () => {
 
 			link.parentNode?.removeChild(link);
 			window.URL.revokeObjectURL(url);
-		} catch {
-			alert("엑셀 다운로드에 실패했습니다.");
+		} catch (err) {
+			handleError(err, "StockDeletePage");
 		} finally {
 			setLoading(false);
 		}
@@ -198,7 +196,6 @@ export const StockDeletePage = () => {
 	const loadStocks = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
 			setLoading(true);
-			setError("");
 
 			try {
 				// DELETED 상태의 재고만 가져오기
@@ -311,14 +308,6 @@ export const StockDeletePage = () => {
 	return (
 		<>
 			<div className="page">
-				{/* 에러 메시지 */}
-				{error && (
-					<div className="error-message">
-						<span>⚠️</span>
-						<p>{error}</p>
-					</div>
-				)}
-
 				{/* 검색 영역 */}
 				<StockSearch
 					searchFilters={searchFilters}

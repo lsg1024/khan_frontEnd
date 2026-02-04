@@ -9,32 +9,47 @@ import type {
 	ProductImageDto,
 } from "../../src/types/productDto";
 
-export const productApi = {
-	// 상품 목록 조회 (페이징 및 검색 옵션 지원)
-	getProducts: async (
-		name?: string,
-		factory?: string,
-		classification?: string,
-		setType?: string,
-		page: number = 1,
-		size?: number,
-		sortField?: string,
-		sort?: string,
-		grade?: string
-	): Promise<ApiResponse<ProductSearchResponse>> => {
-		const params: Record<string, string | number> = { page: page.toString() };
+// searchField 옵션:
+// - modelNumber: 모델번호 검색 (상품명 + 공장번호 통합 검색, 기본값)
+// - factory: 제조사 검색
+// - note: 비고 검색
+// - setType: 세트 구분 (세트타입 ID)
+// - classification: 분류 구분 (분류 ID)
+// - material: 표준재질 (재질 ID)
+// - standardWeight: 표준 중량 범위 검색 (searchMin, searchMax 사용)
+// - createDate: 등록일 범위 검색 (searchMin, searchMax 사용, YYYY-MM-DD 형식)
+// - hasImage: 사진 여부 (true/false)
+export interface ProductSearchParams {
+	search?: string; // 검색 값 (텍스트/ID 검색 시 사용)
+	searchField?: string; // 검색 필드
+	searchMin?: string; // 범위 검색 최소값
+	searchMax?: string; // 범위 검색 최대값
+	sortField?: string; // 정렬 필드 (factory, setType, classification, productName)
+	sortOrder?: string; // 정렬 방향 (ASC, DESC)
+	grade?: string; // 등급 (1~4)
+	page?: number; // 페이지 번호
+	size?: number; // 페이지 크기
+}
 
-		if (name) params.name = name;
-		if (factory) params.factory = factory;
-		if (classification) params.classification = classification;
-		if (setType) params.setType = setType;
-		if (size) params.size = size;
-		if (sortField) params.sortField = sortField;
-		if (sort) params.sort = sort;
-		if (grade) params.grade = grade;
+export const productApi = {
+	getProducts: async (
+		params: ProductSearchParams = {}
+	): Promise<ApiResponse<ProductSearchResponse>> => {
+		const queryParams: Record<string, string | number> = {
+			page: params.page || 1,
+		};
+
+		if (params.search) queryParams.search = params.search;
+		if (params.searchField) queryParams.searchField = params.searchField;
+		if (params.searchMin) queryParams.searchMin = params.searchMin;
+		if (params.searchMax) queryParams.searchMax = params.searchMax;
+		if (params.sortField) queryParams.sortField = params.sortField;
+		if (params.sortOrder) queryParams.sortOrder = params.sortOrder;
+		if (params.grade) queryParams.grade = params.grade;
+		if (params.size) queryParams.size = params.size;
 
 		return apiRequest.get<ProductSearchResponse>("product/products", {
-			params,
+			params: queryParams,
 		});
 	},
 

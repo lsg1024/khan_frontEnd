@@ -80,7 +80,10 @@ const StoneInfoPage: React.FC = () => {
 			}
 
 			// 사용 가능한 스톤 목록 로드
-			const response = await stoneApi.getStones("", 1, 1000);
+			const response = await stoneApi.getStones({
+				page: 1,
+				pageSize: 1000,
+			});
 
 			if (response.success) {
 				setAvailableStones(response.data?.content || []);

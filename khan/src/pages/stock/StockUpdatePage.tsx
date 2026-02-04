@@ -28,7 +28,6 @@ const StockUpdatePage: React.FC = () => {
 	const [stockDetail, setStockDetail] = useState<ResponseDetail | null>(null);
 	const [stockRows, setStockRows] = useState<StockOrderRows[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
 	const [flowCodes, setFlowCodes] = useState<string[]>([]);
 
 	// 드롭다운 데이터
@@ -136,7 +135,7 @@ const StockUpdatePage: React.FC = () => {
 	useEffect(() => {
 		const loadStockData = async () => {
 			if (!flowCode) {
-				setError("재고 코드가 없습니다.");
+				handleError(new Error("재고 코드가 없습니다."), "StockUpdate");
 				setLoading(false);
 				return;
 			}
@@ -359,18 +358,6 @@ const StockUpdatePage: React.FC = () => {
 			<div className="loading-container">
 				<div className="spinner"></div>
 				<p>재고 정보를 불러오는 중...</p>
-			</div>
-		);
-	}
-
-	if (error) {
-		return (
-			<div className="error-container">
-				<div className="error-message">
-					<span>⚠️</span>
-					<p>{error}</p>
-				</div>
-				<button onClick={handleClose}>닫기</button>
 			</div>
 		);
 	}

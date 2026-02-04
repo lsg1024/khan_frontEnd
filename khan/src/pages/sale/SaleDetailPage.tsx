@@ -34,7 +34,6 @@ const SaleDetailPage: React.FC = () => {
 
 	const [saleRows, setSaleRows] = useState<SaleCreateRow[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
 	const [isSaving, setIsSaving] = useState(false);
 
 	const [materials, setMaterials] = useState<MaterialDto[]>([]);
@@ -89,7 +88,7 @@ const SaleDetailPage: React.FC = () => {
 				const saleCodeValue = saleCodes.length > 0 ? saleCodes[0] : "";
 
 				if (flowCodes.length === 0) {
-					setError("판매 코드가 전달되지 않았습니다.");
+					handleError(new Error("판매 코드가 전달되지 않았습니다."), "SaleDetail");
 					setLoading(false);
 					return;
 				}
@@ -98,7 +97,7 @@ const SaleDetailPage: React.FC = () => {
 					orderStatuses.length === 0 ||
 					flowCodes.length !== orderStatuses.length
 				) {
-					setError("주문 상태가 올바르지 않습니다.");
+					handleError(new Error("주문 상태가 올바르지 않습니다."), "SaleDetail");
 					setLoading(false);
 					return;
 				}
@@ -342,13 +341,13 @@ const SaleDetailPage: React.FC = () => {
 
 			// 단일 항목 모드 (기존 로직)
 			if (!flowCode) {
-				setError("판매 코드가 전달되지 않았습니다.");
+				handleError(new Error("판매 코드가 전달되지 않았습니다."), "SaleDetail");
 				setLoading(false);
 				return;
 			}
 
 			if (!orderStatus) {
-				setError("주문 상태가 전달되지 않았습니다.");
+				handleError(new Error("주문 상태가 전달되지 않았습니다."), "SaleDetail");
 				setLoading(false);
 				return;
 			}
@@ -855,7 +854,6 @@ const SaleDetailPage: React.FC = () => {
 
 		try {
 			setIsSaving(true);
-			setError("");
 
 			if (isBulkMode) {
 				const deletePromises = saleRows.map((row) => {
@@ -951,10 +949,10 @@ const SaleDetailPage: React.FC = () => {
 		);
 	}
 
-	if (error || saleRows.length === 0) {
+	if (saleRows.length === 0) {
 		return (
 			<div className="error-container">
-				<p>{error || "판매 정보를 찾을 수 없습니다."}</p>
+				<p>판매 정보를 찾을 수 없습니다.</p>
 				<button onClick={() => window.close()}>닫기</button>
 			</div>
 		);

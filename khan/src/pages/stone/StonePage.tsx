@@ -1,9 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { stoneApi } from "../../../libs/api/stoneApi";
-import { stoneShapeApi } from "../../../libs/api/stoneShapeApi";
-import { stoneTypeApi } from "../../../libs/api/stoneTypeApi";
-import type { StoneShapeDto } from "../../types/stoneShapeDto";
-import type { StoneTypeDto } from "../../types/stoneTypeDto";
 import { isApiSuccess } from "../../../libs/api/config";
 import type {
 	StoneSearchDto,
@@ -26,14 +22,14 @@ import "../../styles/pages/stone/StonePage.css";
 
 const convertToProductStone = (stone: StoneSearchDto): ProductStoneDto => {
 	return {
-		productStoneId: stone.stoneId, // stoneId를 productStoneId로 사용
+		productStoneId: stone.stoneId,
 		stoneId: stone.stoneId,
 		stoneName: stone.stoneName,
 		stoneWeight: stone.stoneWeight,
-		mainStone: false, // 기본값
-		includeStone: true, // 기본값
+		mainStone: false,
+		includeStone: true,
 		stonePurchase: stone.stonePurchasePrice,
-		stoneQuantity: 1, // 기본값
+		stoneQuantity: 1,
 		productStoneNote: stone.stoneNote || "",
 		stoneWorkGradePolicyDtos: stone.stoneWorkGradePolicyDto || [],
 		productCount: stone.productCount,
@@ -47,23 +43,20 @@ export const StonePage = () => {
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [pageInfo, setPageInfo] = useState<PageInfo>({
-		size: 10,
+		size: 40,
 		number: 1,
 		totalElements: 0,
 		totalPages: 0,
 	});
 	const [showProductModal, setShowProductModal] = useState<boolean>(false);
 	const [selectedProducts, setSelectedProducts] = useState<ProductInfo[]>([]);
-	const [stoneShapes, setStoneShapes] = useState<StoneShapeDto[]>([]);
-	const [stoneTypes, setStoneTypes] = useState<StoneTypeDto[]>([]);
 
 	const { handleError } = useErrorHandler();
 
 	// 검색 필터 상태
 	const [searchFilters, setSearchFilters] = useState<StoneSearchFilters>({
 		search: "",
-		stoneType: "",
-		stoneShape: "",
+		searchField: "",
 		sortField: "",
 		sortOrder: "",
 	});
@@ -83,15 +76,14 @@ export const StonePage = () => {
 			try {
 				setLoading(true);
 
-				const response = await stoneApi.getStones(
-					filters.search,
-					page,
-					20,
-					filters.stoneShape,
-					filters.stoneType,
-					filters.sortField,
-					filters.sortOrder
-				);
+				const response = await stoneApi.getStones({
+					search: filters.search || undefined,
+					searchField: filters.searchField || undefined,
+					page: page,
+					pageSize: 40,
+					sortField: filters.sortField || undefined,
+					sortOrder: filters.sortOrder || undefined,
+				});
 
 				if (isApiSuccess(response) && response.data) {
 					const convertedStones = response.data.content.map((stone) =>
@@ -110,29 +102,8 @@ export const StonePage = () => {
 				setDropdownLoading(false);
 			}
 		},
-		[]
-	); // eslint-disable-line react-hooks/exhaustive-deps
-
-	// 스톤 모양, 스톤 종류 로드
-	const fetchDropdownData = useCallback(async () => {
-		setDropdownLoading(true);
-		try {
-			const [shapesRes, typesRes] = await Promise.all([
-				stoneShapeApi.getStoneShapes(),
-				stoneTypeApi.getStoneTypes(),
-			]);
-			if (isApiSuccess(shapesRes) && shapesRes.data) {
-				setStoneShapes(shapesRes.data);
-			}
-			if (isApiSuccess(typesRes) && typesRes.data) {
-				setStoneTypes(typesRes.data);
-			}
-		} catch (err: unknown) {
-			handleError(err);
-		} finally {
-			setDropdownLoading(false);
-		}
-	}, []); // eslint-disable-line react-hooks/exhaustive-deps
+		[] // eslint-disable-line react-hooks/exhaustive-deps
+	);
 
 	const handleSearch = () => {
 		setCurrentPage(1);
@@ -143,8 +114,7 @@ export const StonePage = () => {
 	const handleClearSearch = () => {
 		const clearedFilters: StoneSearchFilters = {
 			search: "",
-			stoneType: "",
-			stoneShape: "",
+			searchField: "",
 			sortField: "",
 			sortOrder: "",
 		};
@@ -158,9 +128,27 @@ export const StonePage = () => {
 		openStoneCreatePopup();
 	};
 
-	// 엑셀 다운로드 핸들러 (임시로 alert 사용)
-	const handleDownExcel = () => {
-		alert("엑셀 다운로드 기능은 아직 구현되지 않았습니다.");
+	const handleDownExcel = async () => {
+		try {
+			setLoading(true);
+			const response = await stoneApi.downloadExcel(
+				searchFilters.search || undefined
+			);
+
+			const url = window.URL.createObjectURL(new Blob([response.data]));
+			const link = document.createElement("a");
+			link.href = url;
+			const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+			link.setAttribute("download", `스톤목록_${today}.xlsx`);
+			document.body.appendChild(link);
+			link.click();
+			link.parentNode?.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		} catch {
+			alert("엑셀 다운로드에 실패했습니다.");
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	// 상품 목록 팝업 열기
@@ -174,7 +162,6 @@ export const StonePage = () => {
 
 		const popup = window.open(url, NAME, FEATURES);
 		if (popup) {
-			// 팝업에 데이터 전달
 			setTimeout(() => {
 				popup.postMessage(
 					{ type: "STONE_PRODUCTS_DATA", productInfos },
@@ -205,19 +192,16 @@ export const StonePage = () => {
 	useEffect(() => {
 		const initialFilters: StoneSearchFilters = {
 			search: "",
-			stoneType: "",
-			stoneShape: "",
+			searchField: "",
 			sortField: "",
 			sortOrder: "",
 		};
 		loadStones(initialFilters, 1);
-		fetchDropdownData();
-	}, [loadStones, fetchDropdownData]);
+	}, [loadStones]);
 
 	useEffect(() => {
 		const onMessage = (e: MessageEvent) => {
 			if (e.origin !== window.location.origin) return;
-			// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
 			if (e.data && e.data.type === "STONE_CREATED") {
 				setTimeout(() => loadStones(searchFilters, currentPage), 500);
 			}
@@ -234,8 +218,6 @@ export const StonePage = () => {
 			{/* 검색 섹션 */}
 			<StoneSearchBar
 				filters={searchFilters}
-				stoneShapes={stoneShapes}
-				stoneTypes={stoneTypes}
 				loading={loading}
 				dropdownLoading={dropdownLoading}
 				onFilterChange={handleFilterChange}

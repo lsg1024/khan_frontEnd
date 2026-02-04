@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { isApiSuccess } from "../../../libs/api/config";
 import { factoryApi } from "../../../libs/api/factoryApi";
+import { useErrorHandler } from "../../utils/errorHandler";
 import type { FactorySearchDto } from "../../types/factoryDto";
 import FactoryList from "../../components/common/factory/FactoryList";
 import Pagination from "../../components/common/Pagination";
@@ -20,21 +21,20 @@ const FactorySearchPage: React.FC = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
+	const { handleError } = useErrorHandler();
 
-	const [error, setError] = useState<string>("");
 	const size = 5;
 
 	// 검색 API 호출
 	const performSearch = useCallback(async (name: string, page: number) => {
 		setLoading(true);
-		setError("");
 
 		try {
 			const res = await factoryApi.getFactories(name, page, false, size);
 
 			// success=false 응답 처리
 			if (!isApiSuccess(res)) {
-				setError(res.message || "제조사 데이터를 불러오지 못했습니다.");
+				handleError(new Error(res.message || "제조사 데이터를 불러오지 못했습니다."), "FactorySearch");
 				setFactories([]);
 				setCurrentPage(1);
 				setTotalPages(0);
@@ -52,8 +52,8 @@ const FactorySearchPage: React.FC = () => {
 			setCurrentPage(uiPage);
 			setTotalPages(pageInfo?.totalPages ?? 1);
 			setTotalElements(pageInfo?.totalElements ?? content.length);
-		} catch {
-			setError("제조사 데이터를 불러오지 못했습니다.");
+		} catch (err) {
+			handleError(err, "FactorySearch");
 			setFactories([]);
 			setCurrentPage(1);
 			setTotalPages(0);
@@ -61,7 +61,7 @@ const FactorySearchPage: React.FC = () => {
 		} finally {
 			setLoading(false);
 		}
-	}, []);
+	}, [handleError]);
 
 	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
 	useEffect(() => {
@@ -72,6 +72,13 @@ const FactorySearchPage: React.FC = () => {
 	const handleSearch = () => {
 		setCurrentPage(1);
 		performSearch(searchName, 1);
+	};
+
+	// 초기화 처리
+	const handleReset = () => {
+		setSearchName("");
+		setCurrentPage(1);
+		performSearch("", 1);
 	};
 
 	// 엔터 키 처리
@@ -113,23 +120,34 @@ const FactorySearchPage: React.FC = () => {
 				</div>
 
 				{/* 검색 섹션 */}
-				<div className="search-section">
-					<div className="search-input-group">
-						<input
-							type="text"
-							value={searchName}
-							onChange={(e) => setSearchName(e.target.value)}
-							onKeyDown={handleKeyPress}
-							placeholder="제조사명을 입력해 주세요"
-							className="search-input"
-						/>
-						<button
-							onClick={handleSearch}
-							className="search-btn"
-							disabled={loading}
-						>
-							{loading ? "검색 중..." : "검색"}
-						</button>
+				<div className="search-section-common">
+					<div className="search-filters-common">
+						<div className="search-controls-common">
+							<input
+								type="text"
+								value={searchName}
+								onChange={(e) => setSearchName(e.target.value)}
+								onKeyDown={handleKeyPress}
+								placeholder="제조사명을 입력해 주세요"
+								className="search-input"
+							/>
+							<div className="search-buttons-common">
+								<button
+									onClick={handleSearch}
+									className="search-btn-common"
+									disabled={loading}
+								>
+									{loading ? "검색 중..." : "검색"}
+								</button>
+								<button
+									onClick={handleReset}
+									className="reset-btn-common"
+									disabled={loading}
+								>
+									초기화
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 
@@ -142,22 +160,16 @@ const FactorySearchPage: React.FC = () => {
 						</div>
 					)}
 
-					{error && (
-						<div className="error-state">
-							<p>{error}</p>
-						</div>
-					)}
-
-					{!loading && !error && factories.length === 0 && (
+					{!loading && factories.length === 0 && (
 						<div className="empty-state">
 							<p>검색된 제조사가 없습니다.</p>
 						</div>
 					)}
-				
-                    <FactoryList
-                        factories={factories}
-                        onSelectFactory={handleFactorySelect}
-                    />
+
+					<FactoryList
+						factories={factories}
+						onSelectFactory={handleFactorySelect}
+					/>
 
 					{/* 페이지네이션 */}
 					<Pagination

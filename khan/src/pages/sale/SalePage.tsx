@@ -19,7 +19,6 @@ import {
 
 export const SalePage = () => {
 	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
@@ -162,8 +161,22 @@ export const SalePage = () => {
 	const handleExcelDownload = async () => {
 		try {
 			setLoading(true);
-			setError("");
-			alert("엑셀 다운로드 기능은 준비 중입니다.");
+			const response = await saleApi.downloadSalesExcel(
+				searchFilters.start,
+				searchFilters.end,
+				searchFilters.search,
+				searchFilters.type
+			);
+
+			const url = window.URL.createObjectURL(new Blob([response.data]));
+			const link = document.createElement("a");
+			link.href = url;
+			const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+			link.setAttribute("download", `판매내역_${today}.xlsx`);
+			document.body.appendChild(link);
+			link.click();
+			link.parentNode?.removeChild(link);
+			window.URL.revokeObjectURL(url);
 		} catch {
 			alert("엑셀 다운로드에 실패했습니다.");
 		} finally {
@@ -285,7 +298,6 @@ export const SalePage = () => {
 	const loadSales = useCallback(
 		async (filters: typeof searchFilters, page: number = 1) => {
 			setLoading(true);
-			setError("");
 
 			try {
 				const response = await saleApi.getSaleResponse(
@@ -346,14 +358,6 @@ export const SalePage = () => {
 	return (
 		<>
 			<div className="page">
-				{/* 에러 메시지 */}
-				{error && (
-					<div className="error-message">
-						<span>⚠️</span>
-						<p>{error}</p>
-					</div>
-				)}
-
 				{/* 검색 영역 */}
 				<SaleSearch
 					searchFilters={searchFilters}

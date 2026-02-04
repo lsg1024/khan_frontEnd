@@ -116,4 +116,16 @@ export const storeApi = {
 			responseType: "blob",
 		});
 	},
+
+	downloadReceivableExcel: async (
+		name?: string
+	): Promise<AxiosResponse<Blob>> => {
+		const params: Record<string, string> = {};
+		if (name) params.search = name;
+
+		return api.get("account/stores/receivable/excel", {
+			params,
+			responseType: "blob",
+		});
+	},
 };

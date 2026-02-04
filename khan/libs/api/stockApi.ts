@@ -7,6 +7,10 @@ import type {
 	StockUpdateRequest,
 	StockRentalRequest,
 	ResponseDetail,
+	InventorySearchResponse,
+	InventoryPrepareResponse,
+	InventoryCheckResponse,
+	InventoryStatisticsResponse,
 } from "../../src/types/stockDto";
 
 export const stockApi = {
@@ -241,5 +245,70 @@ export const stockApi = {
 		return apiRequest.patch<string>("order/stocks/delete/stock", null, {
 			params,
 		});
+	},
+
+	// ============ 재고 조사 API ============
+
+	// 재고 조사 목록 조회
+	getInventory: async (
+		searchField?: string,
+		searchValue?: string,
+		sortField?: string,
+		sortOrder?: "ASC" | "DESC",
+		stockChecked?: "checked" | "unchecked" | "all",
+		orderStatus?: "STOCK" | "RENTAL" | "RETURN" | "NORMAL",
+		materialName?: string,
+		page: number = 0,
+		size: number = 40
+	): Promise<ApiResponse<InventorySearchResponse>> => {
+		const params: Record<string, string> = {
+			page: page.toString(),
+			size: size.toString(),
+		};
+		if (searchField) params.searchField = searchField;
+		if (searchValue) params.searchValue = searchValue;
+		if (sortField) params.sortField = sortField;
+		if (sortOrder) params.sortOrder = sortOrder;
+		if (stockChecked && stockChecked !== "all") params.stockChecked = stockChecked;
+		if (orderStatus) params.orderStatus = orderStatus;
+		if (materialName) params.materialName = materialName;
+
+		return apiRequest.get<InventorySearchResponse>("order/stocks/inventory", {
+			params,
+		});
+	},
+
+	// 재고 조사 재질 필터 조회
+	getInventoryMaterialFilters: async (): Promise<ApiResponse<string[]>> => {
+		return apiRequest.get<string[]>("order/stocks/inventory/filters/material");
+	},
+
+	// 재고 조사 준비 (체크 상태 초기화)
+	prepareInventory: async (): Promise<ApiResponse<InventoryPrepareResponse>> => {
+		return apiRequest.post<InventoryPrepareResponse>(
+			"order/stocks/inventory/prepare",
+			null
+		);
+	},
+
+	// 재고 조사 체크 (바코드 스캔)
+	checkInventory: async (
+		flowCode: string
+	): Promise<ApiResponse<InventoryCheckResponse>> => {
+		const params = { flowCode };
+		return apiRequest.post<InventoryCheckResponse>(
+			"order/stocks/inventory/check",
+			null,
+			{ params }
+		);
+	},
+
+	// 재고 조사 통계 조회
+	getInventoryStatistics: async (): Promise<
+		ApiResponse<InventoryStatisticsResponse>
+	> => {
+		return apiRequest.get<InventoryStatisticsResponse>(
+			"order/stocks/inventory/statistics"
+		);
 	},
 };
