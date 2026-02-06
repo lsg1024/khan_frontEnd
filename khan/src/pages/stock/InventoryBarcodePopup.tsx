@@ -7,6 +7,7 @@ import "../../styles/pages/stock/InventoryBarcodePopup.css";
 function InventoryBarcodePopup() {
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [barcodeInput, setBarcodeInput] = useState("");
+	const [lastScannedBarcode, setLastScannedBarcode] = useState("");
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [results, setResults] = useState<InventoryCheckResponse[]>([]);
 	const [successCount, setSuccessCount] = useState(0);
@@ -16,9 +17,11 @@ function InventoryBarcodePopup() {
 	const handleBarcodeCheck = async (flowCode: string) => {
 		if (!flowCode.trim() || isProcessing) return;
 
+		const scannedCode = flowCode.trim();
+		setLastScannedBarcode(scannedCode);
 		setIsProcessing(true);
 		try {
-			const response = await stockApi.checkInventory(flowCode.trim());
+			const response = await stockApi.checkInventory(scannedCode);
 			if (response.success && response.data) {
 				const result = response.data;
 				setResults((prev) => [result, ...prev].slice(0, 50)); // 최근 50개만 유지
@@ -59,10 +62,19 @@ function InventoryBarcodePopup() {
 		window.close();
 	};
 
-	// 자동 포커스
+	// 자동 포커스 및 포커스 유지
 	useEffect(() => {
 		inputRef.current?.focus();
-	}, []);
+
+		// 포커스 유지를 위한 인터벌
+		const focusInterval = setInterval(() => {
+			if (document.activeElement !== inputRef.current && !isProcessing) {
+				inputRef.current?.focus();
+			}
+		}, 500);
+
+		return () => clearInterval(focusInterval);
+	}, [isProcessing]);
 
 	// 상태에 따른 색상
 	const getStatusColor = (status: string) => {
@@ -135,6 +147,12 @@ function InventoryBarcodePopup() {
 						{isProcessing ? "처리중..." : "확인"}
 					</button>
 				</div>
+				{lastScannedBarcode && (
+					<div className="last-scanned-display">
+						<span className="last-scanned-label">마지막 스캔:</span>
+						<span className="last-scanned-value">{lastScannedBarcode}</span>
+					</div>
+				)}
 			</div>
 
 			<div className="barcode-popup-stats">

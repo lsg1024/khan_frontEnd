@@ -193,11 +193,23 @@ function StockInventoryPage() {
 		const left = (window.screen.width - width) / 2;
 		const top = (window.screen.height - height) / 2;
 
-		window.open(
+		const popup = window.open(
 			"/stocks/inventory/barcode",
 			"inventory-barcode",
 			`width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`,
 		);
+
+		// 팝업 닫힘 감지 후 데이터 새로고침
+		if (popup) {
+			const checkPopupClosed = setInterval(() => {
+				if (popup.closed) {
+					clearInterval(checkPopupClosed);
+					// 팝업이 닫히면 데이터 새로고침
+					loadInventory(0);
+					loadStatistics();
+				}
+			}, 500);
+		}
 	};
 
 	// 선택 항목 재고 조사 처리

@@ -9,21 +9,6 @@ import type {
 	ProductImageDto,
 } from "../../src/types/productDto";
 
-// searchField 옵션:
-// - modelNumber: 모델번호 검색 (상품명 + 공장번호 통합 검색, 기본값)
-// - factory: 제조사 검색
-// - note: 비고 검색
-// - setType: 세트 구분 (세트타입 ID)
-// - classification: 분류 구분 (분류 ID)
-// - material: 표준재질 (재질 ID)
-// - standardWeight: 표준 중량 범위 검색 (searchMin, searchMax 사용)
-// - createDate: 등록일 범위 검색 (searchMin, searchMax 사용, YYYY-MM-DD 형식)
-// - hasImage: 사진 여부 (true/false)
-//
-// 독립 필터 (searchField와 별개로 AND 조합 가능):
-// - setType: 세트타입 ID로 필터
-// - classification: 분류 ID로 필터
-// - factory: 제조사 ID로 필터
 export interface ProductSearchParams {
 	search?: string; // 검색 값 (텍스트/ID 검색 시 사용)
 	searchField?: string; // 검색 필드
@@ -34,15 +19,14 @@ export interface ProductSearchParams {
 	grade?: string; // 등급 (1~4)
 	page?: number; // 페이지 번호
 	size?: number; // 페이지 크기
-	// 독립 필터 (AND 조합 가능)
-	setType?: string; // 세트타입 필터 (ID)
-	classification?: string; // 분류 필터 (ID)
-	factory?: string; // 제조사 필터 (ID)
+	setType?: string; // 세트타입 필터
+	classification?: string; // 분류 필터
+	factory?: string; // 제조사 필터
 }
 
 export const productApi = {
 	getProducts: async (
-		params: ProductSearchParams = {}
+		params: ProductSearchParams = {},
 	): Promise<ApiResponse<ProductSearchResponse>> => {
 		const queryParams: Record<string, string | number> = {
 			page: params.page || 1,
@@ -56,10 +40,6 @@ export const productApi = {
 		if (params.sortOrder) queryParams.sortOrder = params.sortOrder;
 		if (params.grade) queryParams.grade = params.grade;
 		if (params.size) queryParams.size = params.size;
-		// 독립 필터
-		if (params.setType) queryParams.setType = params.setType;
-		if (params.classification) queryParams.classification = params.classification;
-		if (params.factory) queryParams.factory = params.factory;
 
 		return apiRequest.get<ProductSearchResponse>("product/products", {
 			params: queryParams,
@@ -73,7 +53,7 @@ export const productApi = {
 
 	// 상품 생성
 	createProduct: async (
-		data: CreateProductRequest
+		data: CreateProductRequest,
 	): Promise<ApiResponse<CreateProductRequest>> => {
 		return apiRequest.post<CreateProductRequest>("product/products", data);
 	},
@@ -81,11 +61,11 @@ export const productApi = {
 	// 상품 수정
 	updateProduct: async (
 		productId: string,
-		data: UpdateProductRequest
+		data: UpdateProductRequest,
 	): Promise<ApiResponse<UpdateProductRequest>> => {
 		return apiRequest.patch<UpdateProductRequest>(
 			`product/products/${productId}`,
-			data
+			data,
 		);
 	},
 
@@ -97,21 +77,21 @@ export const productApi = {
 	// 상품 이미지 업로드 (상품당 1개, 기존 이미지 자동 대체) - 단일 이미지 (레거시)
 	uploadProductImage: async (
 		productId: string,
-		imageFile: File
+		imageFile: File,
 	): Promise<ApiResponse<string>> => {
 		const formData = new FormData();
 		formData.append("image", imageFile);
 
 		return apiRequest.post<string>(
 			`product/products/${productId}/image`,
-			formData
+			formData,
 		);
 	},
 
 	// 상품 다중 이미지 업로드 (기존 이미지 유지하면서 추가)
 	uploadProductImages: async (
 		productId: string,
-		imageFiles: File[]
+		imageFiles: File[],
 	): Promise<ApiResponse<ProductImageDto[]>> => {
 		const formData = new FormData();
 		imageFiles.forEach((file) => {
@@ -120,22 +100,22 @@ export const productApi = {
 
 		return apiRequest.post<ProductImageDto[]>(
 			`product/products/${productId}/images`,
-			formData
+			formData,
 		);
 	},
 
 	// 특정 상품의 모든 이미지 조회
 	getProductImagesByProductId: async (
-		productId: string
+		productId: string,
 	): Promise<ApiResponse<ProductImageDto[]>> => {
 		return apiRequest.get<ProductImageDto[]>(
-			`product/products/${productId}/images`
+			`product/products/${productId}/images`,
 		);
 	},
 
 	// 상품 이미지 조회 (여러 상품 ID로 조회)
 	getProductImages: async (
-		productIds: number[]
+		productIds: number[],
 	): Promise<
 		ApiResponse<
 			Record<number, { images: Array<{ imageId: number; imageUrl: string }> }>
@@ -160,7 +140,7 @@ export const productApi = {
 
 	// 관련번호로 묶인 상품 목록 조회
 	getRelatedProducts: async (
-		productId: string
+		productId: string,
 	): Promise<
 		ApiResponse<
 			Array<{
