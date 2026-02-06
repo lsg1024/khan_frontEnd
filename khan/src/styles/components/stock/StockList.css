@@ -4,10 +4,13 @@
 	background-color: white;
 	border-radius: 8px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	max-width: 1200px;
+	min-width: auto;
+	max-width: 100%;
 	margin: 0 auto;
 	width: 100%;
-	-webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+	display: block;
+	scroll-behavior: smooth;
+	-webkit-overflow-scrolling: touch;
 }
 
 .stock-table {
@@ -16,6 +19,7 @@
 	background-color: white;
 	color: #000;
 	border-collapse: collapse;
+	min-width: auto;
 }
 
 /* 행끼리 구분선 추가 */
@@ -126,6 +130,15 @@
 .order-cell {
 	width: 30px;
 	min-width: 30px;
+}
+
+.product-name-cell {
+	width: 80px;
+	min-width: 80px;
+	max-width: 100px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .size-note-cell {
@@ -313,11 +326,78 @@
 	color: #0056b3;
 }
 
-/* 태블릿 (1199px 이하) */
-@media (max-width: 1199px) {
-	.stock-list {
-		max-width: 100%;
-		border-radius: 4px;
+/* 노트북 17인치 + 사이드바 (1400px 이하) */
+@media (max-width: 1400px) {
+	.stock-table {
+		font-size: 9px;
+	}
+
+	.stock-table th,
+	.stock-table td {
+		padding: 2px 3px;
+	}
+
+	.serial-cell {
+		width: 55px;
+		min-width: 55px;
+	}
+
+	.product-name-cell {
+		width: 70px;
+		min-width: 70px;
+		max-width: 80px;
+	}
+}
+
+/* 노트북 15인치 + 사이드바 (1200px 이하) */
+@media (max-width: 1200px) {
+	.stock-table {
+		font-size: 8px;
+	}
+
+	.stock-table th,
+	.stock-table td {
+		padding: 2px 2px;
+	}
+
+	.serial-cell {
+		width: 50px;
+		min-width: 50px;
+	}
+
+	.product-name-cell {
+		width: 60px;
+		min-width: 60px;
+		max-width: 70px;
+	}
+
+	.size-note-content,
+	.stone-note-content {
+		min-width: 40px;
+	}
+}
+
+/* 사이드바 열린 상태에서 작은 화면 (1024px 이하) */
+@media (max-width: 1024px) {
+	.stock-table {
+		font-size: 8px;
+	}
+
+	.stock-table th,
+	.stock-table td {
+		padding: 1px 2px;
+	}
+
+	.serial-cell,
+	.order-cell,
+	.size-note-cell,
+	.size-note-content,
+	.stone-note-cell,
+	.stone-note-content,
+	.material-cell,
+	.color-cell,
+	.product-name-cell {
+		min-width: unset;
 	}
 }
 
@@ -330,7 +410,7 @@
 
 	.stock-table {
 		font-size: 10px;
-		min-width: 1000px; /* 가로 스크롤 유도 */
+		min-width: unset;
 	}
 
 	.stock-table th,
@@ -338,25 +418,29 @@
 		padding: 4px;
 	}
 
-	/* 셀 크기 축소 */
-	.serial-cell {
-		width: 50px;
-		min-width: 50px;
-	}
-
-	.order-cell {
-		width: 25px;
-		min-width: 25px;
-	}
-
+	/* 셀 최소 너비 제거 */
+	.serial-cell,
+	.order-cell,
 	.size-note-cell,
-	.size-note-content {
-		min-width: 40px;
-	}
-
+	.size-note-content,
 	.stone-note-cell,
-	.stone-note-content {
-		min-width: 60px;
+	.stone-note-content,
+	.material-cell,
+	.color-cell,
+	.main-quantity-cell,
+	.assistance-quantity-cell,
+	.gold-weight-cell,
+	.stone-weight-cell,
+	.product-labor-cost-cell,
+	.add-labor-cost-cell,
+	.main-stone-labor-cost-cell,
+	.assistance-stone-labor-cost-cell,
+	.stone-add-labor-cost-cell,
+	.product-purchase-cost-cell,
+	.stone-purchase-cost-cell,
+	.assistant-stone-cell,
+	.assistant-stone-name-cell {
+		min-width: unset;
 	}
 
 	/* 툴팁 비활성화 (터치 디바이스) */

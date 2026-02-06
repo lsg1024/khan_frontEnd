@@ -8,6 +8,7 @@ interface StockListProps {
 	loading: boolean;
 	selected: string[];
 	onSelect: (flowCode: string, checked: boolean) => void;
+	onSelectAll?: (checked: boolean) => void;
 	onNoClick?: (flowCode: string) => void;
 	onSerialClick?: (flowCode: string) => void; // 시리얼 번호 클릭 핸들러
 	showShippingAt?: boolean; // 변경일 표시 여부
@@ -20,6 +21,7 @@ export const StockList = ({
 	loading,
 	selected,
 	onSelect,
+	onSelectAll,
 	onNoClick,
 	onSerialClick,
 	showShippingAt = false,
@@ -45,6 +47,7 @@ export const StockList = ({
 					<th>거래처</th>
 					<th>주문</th>
 					<th>등록일</th>
+					<th>상품명</th>
 					<th className="stock-table-twin">사이즈/비고</th>
 					<th>재질</th>
 					<th>색상</th>
@@ -57,12 +60,29 @@ export const StockList = ({
 					<th colSpan={2}>매입가</th>
 				</tr>
 				<tr>
-					<th></th>
+					<th>
+						{onSelectAll && (
+							<input
+								type="checkbox"
+								checked={
+									stocks.length > 0 &&
+									stocks
+										.filter(
+											(s) =>
+												!(disableRentalCheckbox && s.currentStatus === "대여"),
+										)
+										.every((s) => selected.includes(s.flowCode))
+								}
+								onChange={(e) => onSelectAll(e.target.checked)}
+							/>
+						)}
+					</th>
 					<th></th>
 					<th></th>
 					<th></th>
 					<th>상태</th>
 					<th>{showShippingAt ? "변경일" : ""}</th>
+					<th></th>
 					<th></th>
 					<th></th>
 					<th></th>
@@ -168,7 +188,9 @@ export const StockList = ({
 									</span>
 								</div>
 							</td>
-							<td className={`date-cell ${stock.statusHistory && stock.statusHistory.length > 0 ? 'has-history' : ''}`}>
+							<td
+								className={`date-cell ${stock.statusHistory && stock.statusHistory.length > 0 ? "has-history" : ""}`}
+							>
 								<StatusHistoryTooltip statusHistory={stock.statusHistory}>
 									<div className="info-row-order">
 										<span>
@@ -178,11 +200,11 @@ export const StockList = ({
 														const year = date.getFullYear();
 														const month = String(date.getMonth() + 1).padStart(
 															2,
-															"0"
+															"0",
 														);
 														const day = String(date.getDate()).padStart(2, "0");
 														return `${year}-${month}-${day}`;
-												  })()
+													})()
 												: "-"}
 										</span>
 									</div>
@@ -193,18 +215,26 @@ export const StockList = ({
 													? (() => {
 															const date = new Date(stock.shippingAt);
 															const year = date.getFullYear();
-															const month = String(date.getMonth() + 1).padStart(
+															const month = String(
+																date.getMonth() + 1,
+															).padStart(2, "0");
+															const day = String(date.getDate()).padStart(
 																2,
-																"0"
+																"0",
 															);
-															const day = String(date.getDate()).padStart(2, "0");
 															return `${year}-${month}-${day}`;
-													  })()
+														})()
 													: "-"}
 											</span>
 										</div>
 									)}
 								</StatusHistoryTooltip>
+							</td>
+							<td
+								className="product-name-cell"
+								title={stock.productName || "-"}
+							>
+								{stock.productName || "-"}
 							</td>
 							<td
 								className="size-note-content"
@@ -225,8 +255,8 @@ export const StockList = ({
 									stock.materialName === "18K"
 										? "material-name-18k"
 										: stock.materialName === "24K"
-										? "material-name-24k"
-										: ""
+											? "material-name-24k"
+											: ""
 								}`}
 								title={stock.materialName || "-"}
 							>

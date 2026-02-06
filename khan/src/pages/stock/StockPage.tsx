@@ -94,6 +94,17 @@ export const StockPage = () => {
 		);
 	};
 
+	const handleSelectAll = (checked: boolean) => {
+		if (checked) {
+			const selectableFlowCodes = stocks
+				.filter((stock) => stock.currentStatus !== "대여")
+				.map((stock) => stock.flowCode);
+			setSelectedStocks(selectableFlowCodes);
+		} else {
+			setSelectedStocks([]);
+		}
+	};
+
 	// No 클릭 시 수정 페이지 열기 (단일 선택)
 	const handleStockNoClick = (flowCode: string) => {
 		openMultiPopup(flowCode, () => openStockUpdatePopup(flowCode));
@@ -404,6 +415,7 @@ export const StockPage = () => {
 						loading={loading}
 						selected={selectedStocks}
 						onSelect={handleSelectStock}
+						onSelectAll={handleSelectAll}
 						onNoClick={handleStockNoClick}
 						onSerialClick={handleSerialClick}
 					/>

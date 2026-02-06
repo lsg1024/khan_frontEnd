@@ -49,8 +49,8 @@
 	background-color: white;
 	border-radius: 8px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	min-width: 1000px;
-	max-width: 1200px;
+	min-width: auto;
+	max-width: 100%;
 	margin: 0 auto;
 	width: 100%;
 	display: block;
@@ -384,13 +384,30 @@
 }
 
 /* 반응형 스타일 */
+
+/* 노트북 17인치/15인치 + 사이드바 (1400px 이하) */
 @media (max-width: 1400px) {
 	.table {
-		font-size: 12px;
+		font-size: 11px;
+	}
+
+	.table th,
+	.table td {
+		padding: 2px 4px;
 	}
 }
 
+/* 노트북 15인치 + 사이드바 (1200px 이하) */
 @media (max-width: 1200px) {
+	.table {
+		font-size: 10px;
+	}
+
+	.table th,
+	.table td {
+		padding: 2px 3px;
+	}
+
 	.filter-row-order {
 		flex-direction: column;
 		align-items: stretch;
@@ -415,9 +432,15 @@
 	}
 }
 
+/* 사이드바 열린 상태에서 작은 화면 (1024px 이하) */
 @media (max-width: 1024px) {
-	.list {
-		min-width: auto;
+	.table {
+		font-size: 9px;
+	}
+
+	.table th,
+	.table td {
+		padding: 1px 2px;
 	}
 }
 

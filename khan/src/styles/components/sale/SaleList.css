@@ -249,11 +249,80 @@
 	color: var(--text-color);
 }
 
-/* 태블릿 (1199px 이하) */
-@media (max-width: 1199px) {
+/* 노트북 17인치 + 사이드바 (1400px 이하) */
+@media (max-width: 1400px) {
+	.sale-table {
+		font-size: 9px;
+	}
+
+	.sale-table th,
+	.sale-table td {
+		padding: 2px 3px;
+	}
+
+	.product-cell {
+		width: 80px;
+		min-width: 80px;
+	}
+
+	.note-cell {
+		width: 60px;
+		min-width: 60px;
+	}
+}
+
+/* 노트북 15인치 + 사이드바 (1200px 이하) */
+@media (max-width: 1200px) {
+	.sale-table {
+		font-size: 8px;
+	}
+
+	.sale-table th,
+	.sale-table td {
+		padding: 2px 2px;
+	}
+
+	.product-cell {
+		width: 70px;
+		min-width: 70px;
+	}
+
+	.store-cell {
+		width: 60px;
+		min-width: 60px;
+	}
+
+	.note-cell {
+		width: 50px;
+		min-width: 50px;
+	}
+}
+
+/* 사이드바 열린 상태에서 작은 화면 (1024px 이하) */
+@media (max-width: 1024px) {
+	.sale-table {
+		font-size: 8px;
+	}
+
+	.sale-table th,
+	.sale-table td {
+		padding: 1px 2px;
+	}
+
 	.sale-list {
 		max-width: 100%;
 		border-radius: 4px;
+	}
+
+	/* 셀 최소 너비 제거 */
+	.no-cell,
+	.date-cell,
+	.store-cell,
+	.product-cell,
+	.note-cell,
+	.material-cell,
+	.color-cell {
+		min-width: unset;
 	}
 }
 

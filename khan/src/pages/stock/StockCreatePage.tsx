@@ -797,15 +797,13 @@ export const StockCreatePage = () => {
 					}));
 					setColors(loadedColors);
 				}
-				if (assistantStoneRes.success) {
-					const loadedAssistantStones = (assistantStoneRes.data || []).map(
-						(a) => ({
+				const loadedAssistantStones: AssistantStoneDto[] = assistantStoneRes.success
+					? (assistantStoneRes.data || []).map((a) => ({
 							assistantStoneId: a.assistantStoneId,
 							assistantStoneName: a.assistantStoneName,
-						})
-					);
-					setAssistantStones(loadedAssistantStones);
-				}
+						}))
+					: [];
+				setAssistantStones(loadedAssistantStones);
 				if (goldHarryRes.success) {
 					const loadedGoldHarries = (goldHarryRes.data || []).map((g) => ({
 						goldHarryId: g.goldHarryId?.toString() || "",
@@ -814,10 +812,10 @@ export const StockCreatePage = () => {
 					setGoldHarries(loadedGoldHarries);
 				}
 
-				// assistantStoneId가 "1"인 보조석 찾기
+				// assistantStoneId가 "1"인 보조석 찾기 (loadedAssistantStones 사용 - state는 아직 반영 안됨)
 				const defaultAssistantStone =
-					assistantStones.find((a) => a.assistantStoneId.toString() === "1") ||
-					assistantStones[0] ||
+					loadedAssistantStones.find((a) => a.assistantStoneId.toString() === "1") ||
+					loadedAssistantStones[0] ||
 					null;
 
 				// 초기 5개 행 생성

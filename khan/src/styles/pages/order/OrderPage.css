@@ -291,3 +291,111 @@ tr.disabled-row button {
 	background-color: #f2f2f2;
 	color: #333;
 }
+
+/* 노트북 17인치 + 사이드바 (1400px 이하) */
+@media (max-width: 1400px) {
+	.table {
+		font-size: 9px;
+	}
+
+	.table th,
+	.table td {
+		padding: 2px 3px;
+	}
+
+	.product-name-order {
+		max-width: 150px;
+	}
+
+	.note-cell-order,
+	.color-cell-order {
+		min-width: 100px;
+	}
+
+	.info-value,
+	.info-label {
+		font-size: 10px;
+	}
+
+	.order-image {
+		width: 40px;
+		height: 40px;
+	}
+}
+
+/* 노트북 15인치 + 사이드바 (1200px 이하) */
+@media (max-width: 1200px) {
+	.table {
+		font-size: 8px;
+	}
+
+	.table th,
+	.table td {
+		padding: 2px 2px;
+	}
+
+	.product-name-order {
+		max-width: 120px;
+	}
+
+	.note-cell-order,
+	.color-cell-order {
+		min-width: 80px;
+	}
+
+	.info-value,
+	.info-label {
+		font-size: 9px;
+	}
+
+	.info-cell {
+		min-width: 35px;
+	}
+
+	.order-image {
+		width: 35px;
+		height: 35px;
+	}
+
+	.priority-badge-order,
+	.status-badge-order {
+		padding: 2px 6px;
+		font-size: 10px;
+		min-width: 50px;
+	}
+
+	.status-dropdown-order {
+		padding: 3px 4px;
+		font-size: 9px;
+	}
+}
+
+/* 사이드바 열린 상태에서 작은 화면 (1024px 이하) */
+@media (max-width: 1024px) {
+	.table {
+		font-size: 8px;
+	}
+
+	.table th,
+	.table td {
+		padding: 1px 2px;
+	}
+
+	.product-name-order {
+		max-width: 100px;
+	}
+
+	.note-cell-order,
+	.color-cell-order {
+		min-width: unset;
+	}
+
+	.info-cell {
+		min-width: unset;
+	}
+
+	.order-image {
+		width: 30px;
+		height: 30px;
+	}
+}
