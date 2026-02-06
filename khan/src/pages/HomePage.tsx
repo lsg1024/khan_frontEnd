@@ -458,20 +458,20 @@ const HomePage = () => {
 							) : monthlySales ? (
 								<div className="summary-stats">
 									<div className="stat-item">
-										<span className="stat-label">매출 순금</span>
-										<span className="stat-value">
+										<span className="main-stat-label">매출 순금</span>
+										<span className="main-stat-value">
 											{monthlySales.salePureGold}g
 										</span>
 									</div>
 									<div className="stat-item">
-										<span className="stat-label">매출 공임</span>
-										<span className="stat-value">
+										<span className="main-stat-label">매출 공임</span>
+										<span className="main-stat-value">
 											{formatNumber(monthlySales.saleLaborCost)}원
 										</span>
 									</div>
 									<div className="stat-item">
-										<span className="stat-label">마진 공임</span>
-										<span className="stat-value highlight">
+										<span className="main-stat-label">마진 공임</span>
+										<span className="main-stat-value highlight">
 											{formatNumber(monthlySales.marginLaborCost)}원
 										</span>
 									</div>
@@ -493,14 +493,14 @@ const HomePage = () => {
 							) : receivableSummary ? (
 								<div className="summary-stats">
 									<div className="stat-item">
-										<span className="stat-label">미수 순금</span>
-										<span className="stat-value warning">
+										<span className="main-stat-label">미수 순금</span>
+										<span className="main-main-stat-value warning">
 											{receivableSummary.totalPureGold}g
 										</span>
 									</div>
 									<div className="stat-item">
-										<span className="stat-label">미수 금액</span>
-										<span className="stat-value warning">
+										<span className="main-stat-label">미수 금액</span>
+										<span className="main-main-stat-value warning">
 											{formatNumber(receivableSummary.totalAmount)}원
 										</span>
 									</div>
@@ -528,20 +528,20 @@ const HomePage = () => {
 							) : rentalSummary ? (
 								<div className="summary-stats">
 									<div className="stat-item">
-										<span className="stat-label">대여 순금</span>
-										<span className="stat-value">
+										<span className="main-stat-label">대여 순금</span>
+										<span className="main-stat-value">
 											{rentalSummary.totalPureGold}g
 										</span>
 									</div>
 									<div className="stat-item">
-										<span className="stat-label">대여 공임</span>
-										<span className="stat-value">
+										<span className="main-stat-label">대여 공임</span>
+										<span className="main-stat-value">
 											{formatNumber(rentalSummary.totalLaborCost)}원
 										</span>
 									</div>
 									<div className="stat-item">
-										<span className="stat-label">대여 수량</span>
-										<span className="stat-value">
+										<span className="main-stat-label">대여 수량</span>
+										<span className="main-stat-value">
 											{formatNumber(rentalSummary.totalCount)}개
 										</span>
 									</div>
@@ -563,14 +563,14 @@ const HomePage = () => {
 							) : factoryUnpaid ? (
 								<div className="summary-stats">
 									<div className="stat-item">
-										<span className="stat-label">미결제 순금</span>
-										<span className="stat-value warning">
+										<span className="main-stat-label">미결제 순금</span>
+										<span className="main-stat-value warning">
 											{factoryUnpaid.totalPureGold}g
 										</span>
 									</div>
 									<div className="stat-item">
-										<span className="stat-label">미결제 금액</span>
-										<span className="stat-value warning">
+										<span className="main-stat-label">미결제 금액</span>
+										<span className="main-stat-value warning">
 											{formatNumber(factoryUnpaid.totalAmount)}원
 										</span>
 									</div>

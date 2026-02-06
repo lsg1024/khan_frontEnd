@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { productApi } from "../../../libs/api/productApi";
+import { factoryApi } from "../../../libs/api/factoryApi";
+import { setTypeApi } from "../../../libs/api/setTypeApi";
+import { classificationApi } from "../../../libs/api/classificationApi";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { calculatePureGoldWeight } from "../../utils/goldUtils";
 import type { ProductDto } from "../../types/productDto";
+import type { SetTypeDto } from "../../types/setTypeDto";
+import type { ClassificationDto } from "../../types/classificationDto";
+import type { FactorySearchDto } from "../../types/factoryDto";
 import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/product/ProductSearchPage.css";
 
@@ -28,6 +34,17 @@ const ProductSearchPage: React.FC = () => {
 	const [sortField, setSortField] = useState("");
 	const [sortOrder, setSortOrder] = useState("DESC");
 
+	// 독립 필터 상태 (AND 조합)
+	const [filterSetType, setFilterSetType] = useState("");
+	const [filterClassification, setFilterClassification] = useState("");
+	const [filterFactory, setFilterFactory] = useState("");
+
+	// 드롭다운 데이터
+	const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
+	const [classifications, setClassifications] = useState<ClassificationDto[]>([]);
+	const [factories, setFactories] = useState<FactorySearchDto[]>([]);
+	const [dropdownLoading, setDropdownLoading] = useState(false);
+
 	const size = 12;
 
 	// 상품 검색
@@ -38,6 +55,9 @@ const ProductSearchPage: React.FC = () => {
 			sSearchField?: string,
 			sField?: string,
 			sOrder?: string,
+			fSetType?: string,
+			fClassification?: string,
+			fFactory?: string,
 		) => {
 			setLoading(true);
 
@@ -50,6 +70,10 @@ const ProductSearchPage: React.FC = () => {
 					grade: grade,
 					page: page,
 					size: size,
+					// 독립 필터 (AND 조합)
+					setType: fSetType || undefined,
+					classification: fClassification || undefined,
+					factory: fFactory || undefined,
 				});
 
 				if (!isApiSuccess(response)) {
@@ -103,15 +127,45 @@ const ProductSearchPage: React.FC = () => {
 		[], // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
+	// 드롭다운 데이터 로드
+	useEffect(() => {
+		const loadDropdowns = async () => {
+			setDropdownLoading(true);
+			try {
+				const [setTypesRes, classificationsRes, factoriesRes] = await Promise.all([
+					setTypeApi.getSetTypes(),
+					classificationApi.getClassifications(),
+					factoryApi.getFactories(undefined, 1, true), // un_page=true로 전체 데이터
+				]);
+
+				if (setTypesRes.success && setTypesRes.data) {
+					setSetTypes(setTypesRes.data);
+				}
+				if (classificationsRes.success && classificationsRes.data) {
+					setClassifications(classificationsRes.data);
+				}
+				if (factoriesRes.success && factoriesRes.data) {
+					setFactories(factoriesRes.data.content || []);
+				}
+			} catch (error) {
+				console.error("드롭다운 데이터 로드 실패:", error);
+			} finally {
+				setDropdownLoading(false);
+			}
+		};
+
+		loadDropdowns();
+	}, []);
+
 	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
 	useEffect(() => {
-		performSearch(initialSearch, 1, "", "", "DESC");
+		performSearch(initialSearch, 1, "", "", "DESC", "", "", "");
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 검색 실행
 	const handleSearch = () => {
 		setCurrentPage(1);
-		performSearch(searchTerm, 1, searchField, sortField, sortOrder);
+		performSearch(searchTerm, 1, searchField, sortField, sortOrder, filterSetType, filterClassification, filterFactory);
 	};
 
 	// 초기화 처리
@@ -120,8 +174,11 @@ const ProductSearchPage: React.FC = () => {
 		setSearchField("");
 		setSortField("");
 		setSortOrder("DESC");
+		setFilterSetType("");
+		setFilterClassification("");
+		setFilterFactory("");
 		setCurrentPage(1);
-		performSearch("", 1, "", "", "DESC");
+		performSearch("", 1, "", "", "DESC", "", "", "");
 	};
 
 	// 상품 선택 처리
@@ -176,7 +233,51 @@ const ProductSearchPage: React.FC = () => {
 				{/* 검색 섹션 */}
 				<div className="search-section-common">
 					<div className="search-filters-common">
-						{/* 1행: 필터 드롭다운 */}
+						<div className="filter-row-common">
+							<select
+								className="filter-group-common select"
+								value={filterSetType}
+								onChange={(e) => setFilterSetType(e.target.value)}
+								disabled={dropdownLoading}
+							>
+								<option value="">세트타입 전체</option>
+								{setTypes.map((st) => (
+									<option key={st.setTypeId} value={st.setTypeId}>
+										{st.setTypeName}
+									</option>
+								))}
+							</select>
+
+							<select
+								className="filter-group-common select"
+								value={filterClassification}
+								onChange={(e) => setFilterClassification(e.target.value)}
+								disabled={dropdownLoading}
+							>
+								<option value="">분류 전체</option>
+								{classifications.map((cls) => (
+									<option key={cls.classificationId} value={cls.classificationId}>
+										{cls.classificationName}
+									</option>
+								))}
+							</select>
+
+							<select
+								className="filter-group-common select"
+								value={filterFactory}
+								onChange={(e) => setFilterFactory(e.target.value)}
+								disabled={dropdownLoading}
+							>
+								<option value="">제조사 전체</option>
+								{factories.map((f) => (
+									<option key={f.factoryId} value={f.factoryId}>
+										{f.factoryName}
+									</option>
+								))}
+							</select>
+						</div>
+
+						{/* 2행: 검색 필터 및 정렬 */}
 						<div className="filter-row-common">
 							<select
 								className="filter-group-common select"
@@ -354,7 +455,7 @@ const ProductSearchPage: React.FC = () => {
 						totalElements={totalElements}
 						loading={loading}
 						onPageChange={(page) => {
-							performSearch(searchTerm, page, searchField, sortField, sortOrder);
+							performSearch(searchTerm, page, searchField, sortField, sortOrder, filterSetType, filterClassification, filterFactory);
 						}}
 						className="product"
 					/>

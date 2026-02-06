@@ -327,10 +327,7 @@ export const AccountFormPage = () => {
 												required
 											/>
 										</td>
-										<th>
-											<span className="required">*</span>
-											대표자
-										</th>
+										<th>대표자</th>
 										<td>
 											<input
 												type="text"

@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { catalogApi } from "../../../libs/api/catalogApi";
 import { productApi } from "../../../libs/api/productApi";
+import { factoryApi } from "../../../libs/api/factoryApi";
+import { setTypeApi } from "../../../libs/api/setTypeApi";
+import { classificationApi } from "../../../libs/api/classificationApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import {
 	calculatePureGoldWeightWithHarry,
@@ -8,6 +11,9 @@ import {
 } from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";
 import type { ProductDto } from "../../types/productDto";
+import type { SetTypeDto } from "../../types/setTypeDto";
+import type { ClassificationDto } from "../../types/classificationDto";
+import type { FactorySearchDto } from "../../types/factoryDto";
 import {
 	openProductDetailPopup,
 	openProductCreatePopup,
@@ -40,6 +46,16 @@ function CataLogPage() {
 		sortField: "",
 		sortOrder: "",
 	});
+
+	// 독립 필터 상태 (AND 조합)
+	const [filterSetType, setFilterSetType] = useState("");
+	const [filterClassification, setFilterClassification] = useState("");
+	const [filterFactory, setFilterFactory] = useState("");
+
+	// 드롭다운 데이터
+	const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
+	const [classifications, setClassifications] = useState<ClassificationDto[]>([]);
+	const [factories, setFactories] = useState<FactorySearchDto[]>([]);
 
 	// 드롭다운 로딩 상태
 	const [dropdownLoading, setDropdownLoading] = useState(false);
@@ -157,6 +173,9 @@ function CataLogPage() {
 			filters: typeof searchFilters,
 			page: number = 1,
 			sortOpts: typeof sortOptions = sortOptions,
+			fSetType?: string,
+			fClassification?: string,
+			fFactory?: string,
 		) => {
 			setLoading(true);
 
@@ -169,6 +188,10 @@ function CataLogPage() {
 					sortField: sortOpts.sortField || undefined,
 					sortOrder: sortOpts.sortOrder || undefined,
 					page: page,
+					// 독립 필터 (AND 조합)
+					setType: fSetType || undefined,
+					classification: fClassification || undefined,
+					factory: fFactory || undefined,
 				});
 
 				if (response.success && response.data) {
@@ -209,7 +232,7 @@ function CataLogPage() {
 	// 검색 실행
 	const handleSearch = () => {
 		setCurrentPage(1);
-		loadProducts(searchFilters, 1, sortOptions);
+		loadProducts(searchFilters, 1, sortOptions, filterSetType, filterClassification, filterFactory);
 	};
 
 	// 검색 초기화
@@ -226,8 +249,11 @@ function CataLogPage() {
 		};
 		setSearchFilters(resetFilters);
 		setSortOptions(resetSort);
+		setFilterSetType("");
+		setFilterClassification("");
+		setFilterFactory("");
 		setCurrentPage(1);
-		loadProducts(resetFilters, 1, resetSort);
+		loadProducts(resetFilters, 1, resetSort, "", "", "");
 	};
 
 	const handleCreate = () => {
@@ -263,6 +289,36 @@ function CataLogPage() {
 		}
 	};
 
+	// 드롭다운 데이터 로드
+	useEffect(() => {
+		const loadDropdowns = async () => {
+			setDropdownLoading(true);
+			try {
+				const [setTypesRes, classificationsRes, factoriesRes] = await Promise.all([
+					setTypeApi.getSetTypes(),
+					classificationApi.getClassifications(),
+					factoryApi.getFactories(undefined, 1, true), // un_page=true로 전체 데이터
+				]);
+
+				if (setTypesRes.success && setTypesRes.data) {
+					setSetTypes(setTypesRes.data);
+				}
+				if (classificationsRes.success && classificationsRes.data) {
+					setClassifications(classificationsRes.data);
+				}
+				if (factoriesRes.success && factoriesRes.data) {
+					setFactories(factoriesRes.data.content || []);
+				}
+			} catch (error) {
+				console.error("드롭다운 데이터 로드 실패:", error);
+			} finally {
+				setDropdownLoading(false);
+			}
+		};
+
+		loadDropdowns();
+	}, []);
+
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {
 			if (event.origin !== window.location.origin) return;
@@ -270,7 +326,7 @@ function CataLogPage() {
 			// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
 			if (event.data?.type === "PRODUCT_CREATED") {
 				setTimeout(() => {
-					loadProducts(searchFilters, currentPage, sortOptions);
+					loadProducts(searchFilters, currentPage, sortOptions, filterSetType, filterClassification, filterFactory);
 				}, 500);
 			}
 		};
@@ -279,7 +335,7 @@ function CataLogPage() {
 		return () => {
 			window.removeEventListener("message", handleMessage);
 		};
-	}, [loadProducts, searchFilters, currentPage, sortOptions]);
+	}, [loadProducts, searchFilters, currentPage, sortOptions, filterSetType, filterClassification, filterFactory]);
 
 	// 컴포넌트 마운트시 초기 데이터 로드
 	useEffect(() => {
@@ -341,6 +397,52 @@ function CataLogPage() {
 			{/* 검색 영역 */}
 			<div className="search-section-common">
 				<div className="search-filters-common">
+					{/* 1행: 독립 필터 (AND 조합) */}
+					<div className="filter-row-common">
+						<select
+							className="filter-group-common select"
+							value={filterSetType}
+							onChange={(e) => setFilterSetType(e.target.value)}
+							disabled={dropdownLoading}
+						>
+							<option value="">세트타입 전체</option>
+							{setTypes.map((st) => (
+								<option key={st.setTypeId} value={st.setTypeId}>
+									{st.setTypeName}
+								</option>
+							))}
+						</select>
+
+						<select
+							className="filter-group-common select"
+							value={filterClassification}
+							onChange={(e) => setFilterClassification(e.target.value)}
+							disabled={dropdownLoading}
+						>
+							<option value="">분류 전체</option>
+							{classifications.map((cls) => (
+								<option key={cls.classificationId} value={cls.classificationId}>
+									{cls.classificationName}
+								</option>
+							))}
+						</select>
+
+						<select
+							className="filter-group-common select"
+							value={filterFactory}
+							onChange={(e) => setFilterFactory(e.target.value)}
+							disabled={dropdownLoading}
+						>
+							<option value="">제조사 전체</option>
+							{factories.map((f) => (
+								<option key={f.factoryId} value={f.factoryId}>
+									{f.factoryName}
+								</option>
+							))}
+						</select>
+					</div>
+
+					{/* 2행: 검색 필터 및 정렬 */}
 					<div className="filter-row-common">
 						<select
 							className="filter-group-common select"
@@ -653,7 +755,7 @@ function CataLogPage() {
 					loading={loading}
 					onPageChange={(page) => {
 						setCurrentPage(page);
-						loadProducts(searchFilters, page, sortOptions);
+						loadProducts(searchFilters, page, sortOptions, filterSetType, filterClassification, filterFactory);
 					}}
 					className="catalog"
 				/>

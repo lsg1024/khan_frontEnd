@@ -120,23 +120,23 @@
 	border-radius: 4px;
 }
 
-.stat-label {
-	font-size: 13px;
+.main-stat-label {
+	font-size: 12px;
 	color: #666;
 	font-weight: 500;
 }
 
-.stat-value {
-	font-size: 14px;
+.main-stat-value {
+	font-size: 12px;
 	font-weight: 600;
 	color: #333;
 }
 
-.stat-value.highlight {
+.main-stat-value.highlight {
 	color: #28a745;
 }
 
-.stat-value.warning {
+.main-stat-value.warning {
 	color: #dc3545;
 }
 
@@ -148,7 +148,7 @@
 
 /* 거래처별 통계 테이블 */
 .store-stats-table {
-	font-size: 11px;
+	font-size: 12px;
 }
 
 .store-stats-table th,
@@ -171,7 +171,7 @@
 	text-align: left;
 	color: #007bff;
 	font-weight: 500;
-	font-size: 0.75rem;
+	font-size: 12px;
 }
 
 .dashboard-table .no-data,
@@ -256,7 +256,7 @@
 }
 
 .stock-detail-table {
-	font-size: 11px;
+	font-size: 12px;
 }
 
 .stock-detail-table th,
@@ -667,6 +667,11 @@
 .loading-state .spinner {
 	margin-bottom: var(--spacing-md);
 	animation: pulse 1.5s ease-in-out infinite;
+}
+
+.main-main-stat-value {
+	font-size: 12px;
+	font-weight: 700;
 }
 
 @keyframes pulse {
@@ -1183,7 +1188,7 @@
 .store-stats-table tbody td {
 	text-align: right;
 	padding: 6px 6px;
-	font-size: 11px;
+	font-size: 12px;
 	border-bottom: 1px solid #eee;
 }
 

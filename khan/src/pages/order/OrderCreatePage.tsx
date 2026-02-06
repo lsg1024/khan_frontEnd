@@ -693,8 +693,6 @@ const OrderCreatePage = () => {
 		productModal.openModal(rowId, { grade: grade, search: initialSearch || "" });
 	};
 
-	// 상품 직접 검색 (Enter 키로 검색 후 완전 일치 시 자동 선택)
-	// 반환값: true = 성공(자동 선택됨), false = 실패(팝업 열림 또는 결과 없음)
 	const handleDirectProductSearch = async (
 		rowId: string,
 		searchTerm: string

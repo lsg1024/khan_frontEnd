@@ -19,6 +19,11 @@ import type {
 // - standardWeight: 표준 중량 범위 검색 (searchMin, searchMax 사용)
 // - createDate: 등록일 범위 검색 (searchMin, searchMax 사용, YYYY-MM-DD 형식)
 // - hasImage: 사진 여부 (true/false)
+//
+// 독립 필터 (searchField와 별개로 AND 조합 가능):
+// - setType: 세트타입 ID로 필터
+// - classification: 분류 ID로 필터
+// - factory: 제조사 ID로 필터
 export interface ProductSearchParams {
 	search?: string; // 검색 값 (텍스트/ID 검색 시 사용)
 	searchField?: string; // 검색 필드
@@ -29,6 +34,10 @@ export interface ProductSearchParams {
 	grade?: string; // 등급 (1~4)
 	page?: number; // 페이지 번호
 	size?: number; // 페이지 크기
+	// 독립 필터 (AND 조합 가능)
+	setType?: string; // 세트타입 필터 (ID)
+	classification?: string; // 분류 필터 (ID)
+	factory?: string; // 제조사 필터 (ID)
 }
 
 export const productApi = {
@@ -47,6 +56,10 @@ export const productApi = {
 		if (params.sortOrder) queryParams.sortOrder = params.sortOrder;
 		if (params.grade) queryParams.grade = params.grade;
 		if (params.size) queryParams.size = params.size;
+		// 독립 필터
+		if (params.setType) queryParams.setType = params.setType;
+		if (params.classification) queryParams.classification = params.classification;
+		if (params.factory) queryParams.factory = params.factory;
 
 		return apiRequest.get<ProductSearchResponse>("product/products", {
 			params: queryParams,
