@@ -817,16 +817,40 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								<td className="order-create-table-money-cell">
 									<input
 										type="text"
-										value={row.productLaborCost.toLocaleString()}
-										readOnly
-										disabled={loading}
-										style={{ backgroundColor: "#f5f5f5" }}
+										value={Number(row.productLaborCost || 0).toLocaleString()}
+										onChange={(e) => {
+											if (isStockStatus) return;
+											handleIntegerChange(
+												row.id,
+												"productLaborCost",
+												e.target.value
+											);
+										}}
+										placeholder="0"
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
+										}}
 									/>
 								</td>
 								<td className="order-create-table-money-cell">
 									<input
 										type="text"
-										value={row.productAddLaborCost.toLocaleString()}
+										value={Number(row.productAddLaborCost || 0).toLocaleString()}
 										onChange={(e) => {
 											if (isStockStatus) return; // 재고 상태일 때 변경 방지
 											handleIntegerChange(
@@ -859,7 +883,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								<td className="order-create-table-money-cell">
 									<input
 										type="text"
-										value={row.mainStonePrice.toLocaleString()}
+										value={Number(row.mainStonePrice || 0).toLocaleString()}
 										readOnly
 										disabled={loading}
 										style={{ backgroundColor: "#f5f5f5" }}
@@ -869,7 +893,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 									<div className="search-field-container">
 										<input
 											type="text"
-											value={row.assistanceStonePrice.toLocaleString()}
+											value={Number(row.assistanceStonePrice || 0).toLocaleString()}
 											readOnly
 											disabled={loading}
 											style={{ backgroundColor: "#f5f5f5" }}
@@ -897,7 +921,7 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								<td className="order-create-table-money-cell">
 									<input
 										type="text"
-										value={row.stoneAddLaborCost.toLocaleString()}
+										value={Number(row.stoneAddLaborCost || 0).toLocaleString()}
 										onChange={(e) => {
 											if (isStockStatus) return;
 											handleIntegerChange(

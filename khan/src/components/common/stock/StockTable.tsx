@@ -430,7 +430,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										🗑️
 									</button>
 								</td>
-								{/* 거래처 */}
+								{/* 거래처 - 재고 등록 시 storeId=1 고정 */}
 								<td className="search-type-cell">
 									<div className="search-field-container">
 										<input
@@ -440,14 +440,10 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												searchInputs[row.id]?.storeName ?? row.storeName
 											}
 											placeholder="거래처"
-											disabled={
-												!safeIsRowInputEnabled(index) ||
-												isReadOnlyMode ||
-												isDetailMode ||
-												isSaleMode
-											}
+											disabled={true}
+											readOnly={true}
 											style={{
-												backgroundColor: isCreateMode ? "white" : "#f5f5f5",
+												backgroundColor: "#f5f5f5",
 											}}
 											onChange={(e) =>
 												handleSearchInputChange(
@@ -466,31 +462,6 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												}
 											}}
 										/>
-										{isCreateMode && (
-											<span
-												className={`search-icon ${
-													searchingField[row.id] === "store" ? "loading" : ""
-												}`}
-												onClick={() => {
-													if (
-														searchingField[row.id] !== "store" &&
-														safeIsRowInputEnabled(index)
-													) {
-														safeOnStoreSearchOpen(row.id);
-													} else if (searchingField[row.id] !== "store") {
-														alert("이전 주문장을 완성해 주세요.");
-													}
-												}}
-												style={{
-													opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
-													cursor: !safeIsRowInputEnabled(index)
-														? "not-allowed"
-														: "pointer",
-												}}
-											>
-												{searchingField[row.id] === "store" ? "⏳" : "🔍"}
-											</span>
-										)}
 									</div>
 								</td>
 								{/* 상품 */}
@@ -779,16 +750,23 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.productLaborCost.toLocaleString()}
-										readOnly
-										disabled={loading}
-										style={{ backgroundColor: "#f5f5f5" }}
+										value={Number(row.productLaborCost || 0).toLocaleString()}
+										onChange={(e) => {
+											const value = e.target.value.replace(/,/g, "");
+											onRowUpdate(row.id, "productLaborCost", value);
+										}}
+										placeholder="0"
+										disabled={loading || mode === "readonly"}
+										style={{
+											backgroundColor:
+												mode === "readonly" ? "#f5f5f5" : "white",
+										}}
 									/>
 								</td>
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.productAddLaborCost.toLocaleString()}
+										value={Number(row.productAddLaborCost || 0).toLocaleString()}
 										onChange={(e) => {
 											const value = e.target.value.replace(/,/g, "");
 											onRowUpdate(row.id, "productAddLaborCost", value);
@@ -804,12 +782,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.mainStonePrice.toLocaleString()}
-										onChange={(e) => {
-											const value = e.target.value.replace(/,/g, "");
-											onRowUpdate(row.id, "mainStonePrice", value);
-										}}
-										disabled={loading || isDetailMode || isReadOnlyMode}
+										value={Number(row.mainStonePrice || 0).toLocaleString()}
+										readOnly
+										disabled={loading}
 										style={{ backgroundColor: "#f5f5f5" }}
 									/>
 								</td>
@@ -817,12 +792,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 									<div className="search-field-container">
 										<input
 											type="text"
-											value={row.assistanceStonePrice.toLocaleString()}
-											onChange={(e) => {
-												const value = e.target.value.replace(/,/g, "");
-												onRowUpdate(row.id, "assistanceStonePrice", value);
-											}}
-											disabled={loading || isDetailMode || isReadOnlyMode}
+											value={Number(row.assistanceStonePrice || 0).toLocaleString()}
+											readOnly
+											disabled={loading}
 											style={{ backgroundColor: "#f5f5f5" }}
 										/>
 										{!isReadOnlyMode && (
@@ -842,7 +814,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="money-cell">
 									<input
 										type="text"
-										value={row.stoneAddLaborCost.toLocaleString()}
+										value={Number(row.stoneAddLaborCost || 0).toLocaleString()}
 										onChange={(e) => {
 											const value = e.target.value.replace(/,/g, "");
 											onRowUpdate(row.id, "stoneAddLaborCost", value);
