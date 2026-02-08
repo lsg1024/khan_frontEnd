@@ -4,7 +4,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { catalogApi } from "../../../libs/api/catalogApi";
-import { productApi } from "../../../libs/api/productApi";
 import { classificationApi } from "../../../libs/api/classificationApi";
 import { setTypeApi } from "../../../libs/api/setTypeApi";
 import { useErrorHandler } from "../../utils/errorHandler";
@@ -54,7 +53,7 @@ function StoreCatalogPage() {
 			for (const product of productList) {
 				if (product.image?.imageId && product.image?.imagePath) {
 					try {
-						const blob = await productApi.getProductImageByPath(
+						const blob = await catalogApi.getProductImageByPath(
 							product.image.imagePath
 						);
 						const blobUrl = URL.createObjectURL(blob);
@@ -198,9 +197,6 @@ function StoreCatalogPage() {
 			{/* 헤더 영역 */}
 			<div className="shop-header">
 				<h1 className="shop-title">Product Catalog</h1>
-				<p className="shop-subtitle">
-					총 <strong>{totalElements.toLocaleString()}</strong>개의 상품
-				</p>
 			</div>
 
 			{/* 카테고리 탭 */}
