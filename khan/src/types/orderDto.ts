@@ -128,6 +128,7 @@ export interface OrderCreateRequest {
 	productFactoryName: string;
 	productSize: string;
 	isProductWeightSale: boolean;
+	productLaborCost: number;
 	productAddLaborCost: number;
 	colorId: string;
 	colorName: string;

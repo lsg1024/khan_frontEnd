@@ -1047,6 +1047,7 @@ const OrderCreatePage = () => {
 					productName: row.productName,
 					productFactoryName: row.productFactoryName,
 					productSize: row.productSize,
+					productLaborCost: row.productLaborCost || 0,
 					productAddLaborCost: row.productAddLaborCost || 0,
 					isProductWeightSale: row.isProductWeightSale,
 					stoneWeight: row.stoneWeight,
