@@ -158,8 +158,6 @@
 }
 
 .main-image-container img {
-	width: 180px;
-	height: 180px;
 	object-fit: contain;
 	background-color: white;
 	border: 1px solid #e9ecef;

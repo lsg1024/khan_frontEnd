@@ -1,8 +1,9 @@
 // STORE 역할 전용 레이아웃
 // 심플한 헤더와 전체 너비 콘텐츠 영역
 
-import { type ReactNode } from "react";
+import { type ReactNode, useCallback } from "react";
 import { tokenUtils } from "../../utils/tokenUtils";
+import { authApi } from "../../../libs/api/authApi";
 import "../../styles/components/layout/StoreLayout.css";
 
 interface StoreLayoutProps {
@@ -13,12 +14,18 @@ interface StoreLayoutProps {
 function StoreLayout({ children, onLogout }: StoreLayoutProps) {
 	const nickname = tokenUtils.getNickname();
 
-	const handleLogout = () => {
+	const handleLogout = useCallback(async () => {
+		try {
+			await authApi.logout();
+		} catch (error) {
+			console.error("서버 로그아웃 실패:", error);
+		}
+
 		tokenUtils.removeToken();
 		if (onLogout) {
 			onLogout();
 		}
-	};
+	}, [onLogout]);
 
 	return (
 		<div className="store-layout">

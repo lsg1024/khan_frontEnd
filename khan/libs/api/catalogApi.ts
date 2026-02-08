@@ -10,7 +10,6 @@ import type {
 export const catalogApi = {
 	getProducts: async (
 		name?: string,
-		factory?: string,
 		classification?: string,
 		setType?: string,
 		relatedNumber?: string,
@@ -26,7 +25,6 @@ export const catalogApi = {
 		};
 
 		if (name) params.name = name;
-		if (factory) params.factory = factory;
 		if (classification) params.classification = classification;
 		if (setType) params.setType = setType;
 		if (relatedNumber) params.relatedNumber = relatedNumber;

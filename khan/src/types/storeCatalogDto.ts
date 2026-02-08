@@ -15,9 +15,6 @@ export interface StoreCatalogStoneDto {
 export interface StoreCatalogProductDto {
 	productId: string;
 	productName: string;
-	productFactoryName: string;
-	factoryId: number;
-	factoryName: string;
 	productWeight: string;
 	productMaterial: string;
 	productColor: string;
@@ -45,9 +42,6 @@ export interface StoreCatalogStoneDetailDto {
 export interface StoreCatalogProductDetailDto {
 	productId: string;
 	productName: string;
-	productFactoryName: string;
-	factoryId: number;
-	factoryName: string;
 	standardWeight: string;
 	productRelatedNumber: string;
 	productNote: string;

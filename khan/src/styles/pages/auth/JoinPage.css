@@ -180,12 +180,12 @@
 	box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
 }
 
-/* 입력 유효성 검사 스타일 */
-.form-input:invalid {
+/* 입력 유효성 검사 스타일 - 사용자가 입력 시도 후에만 표시 */
+.form-input:user-invalid {
 	border-color: var(--danger-color);
 }
 
-.form-input:valid {
+.form-input:user-valid {
 	border-color: var(--success-color);
 }
 

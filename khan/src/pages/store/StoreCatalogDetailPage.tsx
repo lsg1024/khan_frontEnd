@@ -273,16 +273,6 @@ function StoreCatalogDetailPage() {
 						<h2 className="product-name">{product.productName}</h2>
 						<div className="info-grid">
 							<div className="info-row">
-								<span className="label">제조사 상품명</span>
-								<span className="value">
-									{product.productFactoryName || "-"}
-								</span>
-							</div>
-							<div className="info-row">
-								<span className="label">제조사</span>
-								<span className="value">{product.factoryName || "-"}</span>
-							</div>
-							<div className="info-row">
 								<span className="label">분류</span>
 								<span className="value">
 									{product.classificationDto?.classificationName || "-"}

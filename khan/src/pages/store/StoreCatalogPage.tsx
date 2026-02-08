@@ -7,14 +7,12 @@ import { catalogApi } from "../../../libs/api/catalogApi";
 import { productApi } from "../../../libs/api/productApi";
 import { classificationApi } from "../../../libs/api/classificationApi";
 import { setTypeApi } from "../../../libs/api/setTypeApi";
-import { factoryApi } from "../../../libs/api/factoryApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { getGoldDonFromWeight } from "../../utils/goldUtils";
 import Pagination from "../../components/common/Pagination";
 import type { StoreCatalogProductDto } from "../../types/storeCatalogDto";
 import type { SetTypeDto } from "../../types/setTypeDto";
 import type { ClassificationDto } from "../../types/classificationDto";
-import type { FactorySearchDto } from "../../types/factoryDto";
 import "../../styles/pages/store/StoreCatalogPage.css";
 
 function StoreCatalogPage() {
@@ -32,7 +30,6 @@ function StoreCatalogPage() {
 		name: "",
 		classification: "",
 		setType: "",
-		factory: "",
 	});
 
 	// 정렬 상태
@@ -47,7 +44,6 @@ function StoreCatalogPage() {
 	// 드롭다운 데이터
 	const [classifications, setClassifications] = useState<ClassificationDto[]>([]);
 	const [setTypes, setSetTypes] = useState<SetTypeDto[]>([]);
-	const [factories, setFactories] = useState<FactorySearchDto[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 
 	// 이미지 로드 함수
@@ -89,7 +85,6 @@ function StoreCatalogPage() {
 			try {
 				const response = await catalogApi.getProducts(
 					filters.name || undefined,
-					filters.factory || undefined,
 					filters.classification || undefined,
 					filters.setType || undefined,
 					undefined, // relatedNumber
@@ -130,8 +125,8 @@ function StoreCatalogPage() {
 	const handleTabChange = (tab: string) => {
 		setActiveTab(tab);
 		if (tab === "all") {
-			setSearchFilters({ name: "", classification: "", setType: "", factory: "" });
-			loadProducts({ name: "", classification: "", setType: "", factory: "" }, 1, sortOptions);
+			setSearchFilters({ name: "", classification: "", setType: "" });
+			loadProducts({ name: "", classification: "", setType: "" }, 1, sortOptions);
 		} else {
 			// 분류 ID로 필터
 			const newFilters = { ...searchFilters, classification: tab };
@@ -171,10 +166,9 @@ function StoreCatalogPage() {
 		const loadDropdowns = async () => {
 			setDropdownLoading(true);
 			try {
-				const [classificationsRes, setTypesRes, factoriesRes] = await Promise.all([
+				const [classificationsRes, setTypesRes] = await Promise.all([
 					classificationApi.getClassifications(),
 					setTypeApi.getSetTypes(),
-					factoryApi.getFactories(undefined, 1, true), // un_page=true로 전체 데이터
 				]);
 
 				if (classificationsRes.success && classificationsRes.data) {
@@ -183,10 +177,6 @@ function StoreCatalogPage() {
 
 				if (setTypesRes.success && setTypesRes.data) {
 					setSetTypes(setTypesRes.data);
-				}
-
-				if (factoriesRes.success && factoriesRes.data) {
-					setFactories(factoriesRes.data.content || []);
 				}
 			} catch (error) {
 				console.error("드롭다운 데이터 로드 실패:", error);
@@ -262,22 +252,6 @@ function StoreCatalogPage() {
 						{setTypes.map((setType) => (
 							<option key={setType.setTypeId} value={setType.setTypeId}>
 								{setType.setTypeName}
-							</option>
-						))}
-					</select>
-
-					<select
-						value={searchFilters.factory}
-						onChange={(e) => {
-							handleFilterChange("factory", e.target.value);
-							setTimeout(() => handleSearch(), 0);
-						}}
-						disabled={dropdownLoading}
-					>
-						<option value="">제조사</option>
-						{factories.map((factory) => (
-							<option key={factory.factoryId} value={factory.factoryId}>
-								{factory.factoryName}
 							</option>
 						))}
 					</select>
