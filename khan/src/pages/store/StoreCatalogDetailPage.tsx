@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { isApiSuccess } from "../../../libs/api/config";
 import { catalogApi } from "../../../libs/api/catalogApi";
+import { productApi } from "../../../libs/api/productApi";
 import type {
 	StoreCatalogProductDetailDto,
 	StoreCatalogRelatedProductDto,
@@ -38,7 +39,7 @@ function StoreCatalogDetailPage() {
 	// 이미지 로드
 	const loadImage = useCallback(async (imagePath: string, imageId: string) => {
 		try {
-			const blob = await catalogApi.getProductImageByPath(imagePath);
+			const blob = await productApi.getProductImageByPath(imagePath);
 			const blobUrl = URL.createObjectURL(blob);
 			setImageUrls((prev) => ({ ...prev, [imageId]: blobUrl }));
 		} catch (err) {
@@ -50,7 +51,7 @@ function StoreCatalogDetailPage() {
 	const loadRelatedImage = useCallback(
 		async (imagePath: string, productId: number) => {
 			try {
-				const blob = await catalogApi.getProductImageByPath(imagePath);
+				const blob = await productApi.getProductImageByPath(imagePath);
 				const blobUrl = URL.createObjectURL(blob);
 				setRelatedImageUrls((prev) => ({ ...prev, [productId]: blobUrl }));
 			} catch (err) {

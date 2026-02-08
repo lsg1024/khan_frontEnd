@@ -1,9 +1,8 @@
-// 판매처(STORE) 전용 카탈로그 페이지
-// 쇼핑몰 스타일 UI
 
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { catalogApi } from "../../../libs/api/catalogApi";
+import { productApi } from "../../../libs/api/productApi";
 import { classificationApi } from "../../../libs/api/classificationApi";
 import { setTypeApi } from "../../../libs/api/setTypeApi";
 import { useErrorHandler } from "../../utils/errorHandler";
@@ -53,7 +52,7 @@ function StoreCatalogPage() {
 			for (const product of productList) {
 				if (product.image?.imageId && product.image?.imagePath) {
 					try {
-						const blob = await catalogApi.getProductImageByPath(
+						const blob = await productApi.getProductImageByPath(
 							product.image.imagePath
 						);
 						const blobUrl = URL.createObjectURL(blob);
