@@ -58,11 +58,11 @@ const sidebarItems: SidebarItem[] = [
 			{ path: "/rentals/records", label: "누적 대여"},
 		],
 	},
-	// {
-	// 	path: "/gold-money",
-	// 	label: "금&현금",
-	// 	icon: "💰"
-	// },
+	{
+		path: "/gold-money",
+		label: "금&현금",
+		icon: "💰"
+	},
 	{
 		path: "/purchase",
 		label: "매입 관리",

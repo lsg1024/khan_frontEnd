@@ -40,6 +40,9 @@ export const productApi = {
 		if (params.sortOrder) queryParams.sortOrder = params.sortOrder;
 		if (params.grade) queryParams.grade = params.grade;
 		if (params.size) queryParams.size = params.size;
+		if (params.setType) queryParams.setType = params.setType;
+		if (params.classification) queryParams.classification = params.classification;
+		if (params.factory) queryParams.factory = params.factory;
 
 		return apiRequest.get<ProductSearchResponse>("product/products", {
 			params: queryParams,

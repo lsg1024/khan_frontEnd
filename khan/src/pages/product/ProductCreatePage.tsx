@@ -42,6 +42,8 @@ const buildCreatePayload = (p: Product): CreateProductRequest => ({
 		stoneId: s.stoneId || "",
 		mainStone: !!s.mainStone,
 		includeStone: !!s.includeStone,
+		includeQuantity: s.includeQuantity !== false,
+		includePrice: s.includePrice !== false,
 		stoneQuantity: s.stoneQuantity ?? 0,
 		productStoneNote: s.productStoneNote ?? "",
 	})),
@@ -202,6 +204,10 @@ const ProductCreatePage = () => {
 						return { ...stone, mainStone: Boolean(value) };
 					case "includeStone":
 						return { ...stone, includeStone: Boolean(value) };
+					case "includeQuantity":
+						return { ...stone, includeQuantity: Boolean(value) };
+					case "includePrice":
+						return { ...stone, includePrice: Boolean(value) };
 					case "note":
 						return { ...stone, productStoneNote: String(value) };
 					default:
@@ -221,6 +227,8 @@ const ProductCreatePage = () => {
 				stoneWeight: "",
 				mainStone: false,
 				includeStone: true,
+				includeQuantity: true,
+				includePrice: true,
 				stonePurchase: 0,
 				stoneQuantity: 1,
 				productStoneNote: "",
@@ -328,6 +336,8 @@ const ProductCreatePage = () => {
 						grades: false,
 						mainStone: true,
 						includeStone: true,
+						includeQuantity: true,
+						includePrice: true,
 						stoneQuantity: true,
 						note: true,
 					}}

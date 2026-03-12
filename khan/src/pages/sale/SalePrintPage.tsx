@@ -21,7 +21,7 @@ export const SalePrintPage = () => {
 	// 인쇄 핸들러
 	const handlePrint = useReactToPrint({
 		contentRef: printRef,
-		documentTitle: `거래명세서_${printData?.saleItemResponses?.[0]?.storeName}_${printData?.saleItemResponses?.[0]?.storeCode}`,
+		documentTitle: `거래명세서_${printData?.saleItemResponses?.[0]?.storeName}_${printData?.saleItemResponses?.[0]?.displayCode || printData?.saleItemResponses?.[0]?.storeCode}`,
 	});
 
 	// 데이터 로드
@@ -128,7 +128,7 @@ export const SalePrintPage = () => {
 						</span>
 						<span>거래처: {saleData.storeName}</span>
 						<span>공급자: {subdomain}</span>
-						<span>No: {saleData.storeCode}</span>
+						<span>No: {saleData.displayCode || saleData.storeCode}</span>
 					</div>
 				</div>
 

@@ -20,6 +20,8 @@ const StoneTable: React.FC<StoneTableProps> = ({
     grades: false,
     mainStone: true,
     includeStone: true,
+    includeQuantity: true,
+    includePrice: true,
     stoneQuantity: true,
     note: true,
   },
@@ -254,10 +256,12 @@ const StoneTable: React.FC<StoneTableProps> = ({
       </div>
       <table className="stone-table">
         <colgroup>
-          <col style={{ width: "4%" }} />      {/* No */}
+          <col style={{ width: "3%" }} />      {/* No */}
           <col style={{ width: "6%" }} />      {/* 메인 */}
           <col style={{ width: "6%" }} />      {/* 적용 */}
-          <col style={{ width: "20%" }} />     {/* 스톤명 */}
+          <col style={{ width: "6%" }} />      {/* 알수포함 */}
+          <col style={{ width: "6%" }} />      {/* 가격포함 */}
+          <col style={{ width: "17%" }} />     {/* 스톤명 */}
           <col style={{ width: "5%" }} />      {/* 알수 */}
           <col style={{ width: "4%" }} />      {/* 개당중량 */}
           <col style={{ width: "6%" }} />      {/* 구매단가 */}
@@ -265,14 +269,16 @@ const StoneTable: React.FC<StoneTableProps> = ({
           <col style={{ width: "6%" }} />      {/* 2등급 */}
           <col style={{ width: "6%" }} />      {/* 3등급 */}
           <col style={{ width: "6%" }} />      {/* 4등급 */}
-          <col style={{ width: "14%" }} />     {/* 비고 */}
-          {editable && onDeleteStone && <col style={{ width: "4%" }} />}  {/* 삭제 */}
+          <col style={{ width: "10%" }} />     {/* 비고 */}
+          {editable && onDeleteStone && <col style={{ width: "5%" }} />}  {/* 삭제 */}
         </colgroup>
         <thead>
           <tr>
             <th>No</th>
             <th>메인</th>
             <th>적용</th>
+            <th>알수포함</th>
+            <th>가격포함</th>
             <th>스톤명</th>
             <th>알수</th>
             <th>개당 중량</th>
@@ -282,6 +288,8 @@ const StoneTable: React.FC<StoneTableProps> = ({
             {editable && onDeleteStone && <th>삭제</th>}
           </tr>
           <tr>
+            <th></th>
+            <th></th>
             <th></th>
             <th></th>
             <th></th>
@@ -347,6 +355,50 @@ const StoneTable: React.FC<StoneTableProps> = ({
                 )}
               </td>
 
+              {/* 알수포함 */}
+              <td>
+                {editable && fieldPermissions.includeQuantity ? (
+                  <select
+                    className="editable-select"
+                    value={stone.includeQuantity !== false ? "Y" : "N"}
+                    onChange={(e) =>
+                      handleFieldChange(
+                        stone.productStoneId,
+                        "includeQuantity",
+                        e.target.value === "Y"
+                      )
+                    }
+                  >
+                    <option value="Y">Y</option>
+                    <option value="N">N</option>
+                  </select>
+                ) : (
+                  <span>{stone.includeQuantity !== false ? "Y" : "N"}</span>
+                )}
+              </td>
+
+              {/* 가격포함 */}
+              <td>
+                {editable && fieldPermissions.includePrice ? (
+                  <select
+                    className="editable-select"
+                    value={stone.includePrice !== false ? "Y" : "N"}
+                    onChange={(e) =>
+                      handleFieldChange(
+                        stone.productStoneId,
+                        "includePrice",
+                        e.target.value === "Y"
+                      )
+                    }
+                  >
+                    <option value="Y">Y</option>
+                    <option value="N">N</option>
+                  </select>
+                ) : (
+                  <span>{stone.includePrice !== false ? "Y" : "N"}</span>
+                )}
+              </td>
+
               {/* 스톤명 */}
               <td
                 onMouseEnter={(e) =>
@@ -383,12 +435,14 @@ const StoneTable: React.FC<StoneTableProps> = ({
                       value={stone.stoneName}
                       readOnly
                     />
-                    <button
-                      className="search-button-stone-table"
-                      onClick={() => handleSearchClick(stone.productStoneId)}
-                    >
-                      🔍
-                    </button>
+                    {editable && (
+                      <button
+                        className="search-button-stone-table"
+                        onClick={() => handleSearchClick(stone.productStoneId)}
+                      >
+                        🔍
+                      </button>
+                    )}
                   </div>
                 )}
               </td>
@@ -618,10 +672,10 @@ const StoneTable: React.FC<StoneTableProps> = ({
           {/* 소계 행 */}
           {showTotalRow && (
             <tr className="stone-total-row">
-              <td colSpan={4}>소계</td>
+              <td colSpan={6}>소계</td>
               <td className="stone-total-cell">
                 {stones
-                  .filter((stone) => stone.includeStone)
+                  .filter((stone) => stone.includeStone && stone.includeQuantity !== false)
                   .reduce((sum, stone) => sum + stone.stoneQuantity, 0)}
               </td>
               <td>
@@ -638,7 +692,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
               </td>
               <td className="stone-total-cell">
                 {stones
-                  .filter((stone) => stone.includeStone)
+                  .filter((stone) => stone.includeStone && stone.includePrice !== false)
                   .reduce(
                     (sum, stone) =>
                       sum + stone.stonePurchase * stone.stoneQuantity,
@@ -649,7 +703,7 @@ const StoneTable: React.FC<StoneTableProps> = ({
               {[1, 2, 3, 4].map((gradeNum) => (
                 <td key={gradeNum} className="stone-total-cell">
                   {stones
-                    .filter((stone) => stone.includeStone)
+                    .filter((stone) => stone.includeStone && stone.includePrice !== false)
                     .reduce((sum, stone) => {
                       const gradePolicy = stone.stoneWorkGradePolicyDtos?.find(
                         (policy) => policy.grade === `GRADE_${gradeNum}`

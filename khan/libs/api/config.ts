@@ -8,7 +8,7 @@ const API_BASE_URL = "https://api.kkhan.co.kr";
 const API_LOCAL_URL = "http://localhost:8080";
 
 export function getApiBaseUrl(): string {
-	return API_BASE_URL
+	return API_LOCAL_URL
 }
 
 function parseJwt(token: string) {
@@ -203,6 +203,17 @@ api.interceptors.response.use(
 					response.headers.get("authorization");
 				if (authHeader && authHeader.startsWith("Bearer ")) {
 					const newToken = authHeader.substring(7);
+
+					// 재발급된 토큰의 tenant가 현재 서브도메인과 일치하는지 확인
+					const decoded = parseJwt(newToken);
+					const tokenTenantId = decoded?.tenantId || decoded?.tenant;
+					const currentSubdomain = extractSubdomain(window.location.hostname);
+
+					if (tokenTenantId && currentSubdomain && tokenTenantId !== currentSubdomain) {
+						// 다른 테넌트의 refreshToken으로 발급된 토큰 → 로그인 페이지로 이동
+						throw new Error("Tenant mismatch on reissue");
+					}
+
 					tokenUtils.setToken(newToken);
 				}
 

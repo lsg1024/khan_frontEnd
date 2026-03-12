@@ -28,6 +28,8 @@ const convertToProductStone = (stone: StoneSearchDto): ProductStoneDto => {
 		stoneWeight: stone.stoneWeight,
 		mainStone: false,
 		includeStone: true,
+		includeQuantity: true,
+		includePrice: true,
 		stonePurchase: stone.stonePurchasePrice,
 		stoneQuantity: 1,
 		productStoneNote: stone.stoneNote || "",

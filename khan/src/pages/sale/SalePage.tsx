@@ -117,7 +117,7 @@ export const SalePage = () => {
 				} else {
 					// 다른 거래처 또는 다른 거래번호
 					alert(
-						`동일한 거래처(${firstSelectedSale?.storeName})와 거래번호(${firstSelectedSale?.saleCode})의 항목만 선택할 수 있습니다.`
+						`동일한 거래처(${firstSelectedSale?.storeName})와 거래번호(${firstSelectedSale?.displayCode || firstSelectedSale?.saleCode})의 항목만 선택할 수 있습니다.`
 					);
 				}
 			}
@@ -212,7 +212,8 @@ export const SalePage = () => {
 			}
 
 			// 시세 추가/변경 팝업 열기
-			const url = `/sales/wg-price/${saleCode}/${goldPrice.data}`;
+			const displayCode = selectedSale.displayCode || saleCode;
+			const url = `/sales/wg-price/${saleCode}/${goldPrice.data}?displayCode=${encodeURIComponent(displayCode)}`;
 			const NAME = `wg_price_${saleCode}`;
 			const FEATURES = "resizable=yes,scrollbars=yes,width=600,height=500";
 			const popup = window.open(url, NAME, FEATURES);

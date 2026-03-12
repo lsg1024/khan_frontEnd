@@ -212,6 +212,8 @@ const StoneInfoPage: React.FC = () => {
 			addLaborCost: 0,
 			quantity: 1,
 			includeStone: true,
+			includeQuantity: true,
+			includePrice: true,
 			mainStone: false,
 			grade: defaultGrade, // store grade 기반 기본 등급 설정
 		};
@@ -292,19 +294,28 @@ const StoneInfoPage: React.FC = () => {
 			const purchaseCost = stone.purchaseCost || 0;
 			const laborCost = stone.laborCost || 0;
 			const addLaborCost = stone.addLaborCost || 0;
+			const shouldIncludeQuantity = stone.includeQuantity !== false;
+			const shouldIncludePrice = stone.includePrice !== false;
 
 			if (stone.includeStone) {
 				summary.totalStoneWeight += weight * quantity;
-				if (stone.mainStone) {
-					summary.mainStoneCount += quantity;
-					summary.mainStonePrice += purchaseCost * quantity;
-					summary.totalAddLaborCost += addLaborCost * quantity;
-					summary.totalLaborCost += laborCost * quantity;
-				} else {
-					summary.assistanceStoneCount += quantity;
-					summary.assistanceStonePrice += purchaseCost * quantity;
-					summary.totalAddLaborCost += addLaborCost * quantity;
-					summary.totalLaborCost += laborCost * quantity;
+				if (shouldIncludeQuantity) {
+					if (stone.mainStone) {
+						summary.mainStoneCount += quantity;
+					} else {
+						summary.assistanceStoneCount += quantity;
+					}
+				}
+				if (shouldIncludePrice) {
+					if (stone.mainStone) {
+						summary.mainStonePrice += purchaseCost * quantity;
+						summary.totalAddLaborCost += addLaborCost * quantity;
+						summary.totalLaborCost += laborCost * quantity;
+					} else {
+						summary.assistanceStonePrice += purchaseCost * quantity;
+						summary.totalAddLaborCost += addLaborCost * quantity;
+						summary.totalLaborCost += laborCost * quantity;
+					}
 				}
 			}
 		});
@@ -425,6 +436,8 @@ const StoneInfoPage: React.FC = () => {
 										<th>삭제</th>
 										<th>메인스톤</th>
 										<th>포함여부</th>
+										<th>알수포함</th>
+										<th>가격포함</th>
 										<th>스톤 선택</th>
 										<th>등급</th>
 										<th>중량</th>
@@ -438,7 +451,7 @@ const StoneInfoPage: React.FC = () => {
 									{stoneInfos.length === 0 ? (
 										<tr>
 											<td
-												colSpan={10}
+												colSpan={12}
 												style={{ textAlign: "center", padding: "40px" }}
 											>
 												스톤 정보가 없습니다. '+ 스톤 추가' 버튼을 클릭하여
@@ -477,6 +490,32 @@ const StoneInfoPage: React.FC = () => {
 															updateStoneInfo(
 																index,
 																"includeStone",
+																e.target.checked,
+															)
+														}
+													/>
+												</td>
+												<td>
+													<input
+														type="checkbox"
+														checked={info.includeQuantity !== false}
+														onChange={(e) =>
+															updateStoneInfo(
+																index,
+																"includeQuantity",
+																e.target.checked,
+															)
+														}
+													/>
+												</td>
+												<td>
+													<input
+														type="checkbox"
+														checked={info.includePrice !== false}
+														onChange={(e) =>
+															updateStoneInfo(
+																index,
+																"includePrice",
 																e.target.checked,
 															)
 														}

@@ -103,7 +103,7 @@ const SaleOption: React.FC<SaleOptionProps> = ({
 					<label>거래번호</label>
 					<input
 						type="text"
-						value={options.saleCode}
+						value={options.displayCode || options.saleCode}
 						readOnly
 						placeholder="자동 생성"
 						disabled

@@ -151,7 +151,7 @@ export const SaleList = ({
 							<td className="store-cell" title={sale.storeName}>
 								{sale.storeName}
 							</td>
-							<td className="sale-code-cell" title={sale.saleCode.toString()}>
+							<td className="sale-code-cell" title={sale.displayCode || sale.saleCode.toString()}>
 								<button
 									className="serial-btn sale-code-cell"
 									onClick={(e) => {
@@ -165,7 +165,7 @@ export const SaleList = ({
 										window.open(url, NAME, FEATURES);
 									}}
 								>
-									{sale.saleCode}
+									{sale.displayCode || sale.saleCode}
 								</button>
 							</td>
 							<td className="sale-code-cell" title={sale.flowCode.toString()}>

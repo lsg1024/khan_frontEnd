@@ -32,6 +32,7 @@ export interface SaleRow {
 	storeId: string;
 	storeName: string;
 	saleCode: string; // 큰 정수값을 문자열로 처리
+	displayCode: string; // 표시용 코드 (YYMMDDNN)
 	flowCode: string; // 큰 정수값을 문자열로 처리
 	productName: string;
 	materialName: string | null;
@@ -143,6 +144,7 @@ export interface SaleOptionData {
 	tradeDate: string; // 거래일
 	marketPrice: number; // 시세
 	saleCode: string; // 거래번호
+	displayCode?: string; // 표시용 거래번호 (YYMMDDNN)
 	tradeType: "중량" | "시세"; // 거래 형태
 	grade: string; // 공금 등급
 	harry: string; // 적용해리
@@ -199,6 +201,7 @@ export interface SaleItemResponse {
 	storeName: string;
 	storeHarry: string;
 	storeCode: string;
+	displayCode: string;
 	accountGoldPrice: string;
 	saleItems: SaleItem[];
 }
@@ -210,6 +213,7 @@ export interface SaleItem {
 	storeId: string;
 	storeName: string;
 	saleCode: string;
+	displayCode: string;
 	flowCode: string;
 	imagePath: string;
 	productName: string;

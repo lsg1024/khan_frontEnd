@@ -58,6 +58,8 @@ export interface ProductStoneDto {
 	stoneWeight: string;
 	mainStone: boolean;
 	includeStone: boolean;
+	includeQuantity: boolean;
+	includePrice: boolean;
 	stonePurchase: number;
 	stoneQuantity: number;
 	productStoneNote: string;
@@ -74,6 +76,8 @@ export interface StoneFieldPermissions {
 	grades?: boolean;
 	mainStone?: boolean;
 	includeStone?: boolean;
+	includeQuantity?: boolean;
+	includePrice?: boolean;
 	stoneQuantity?: boolean;
 	note?: boolean;
 }
@@ -102,6 +106,8 @@ export interface StoneEditState {
 	[stoneId: string]: {
 		mainStone?: boolean;
 		includeStone?: boolean;
+		includeQuantity?: boolean;
+		includePrice?: boolean;
 		stoneQuantity?: number;
 		stoneWeight?: string;
 		stonePurchase?: number;
@@ -122,5 +128,7 @@ export interface StoneInfo {
 	quantity: number;
 	mainStone: boolean;
 	includeStone: boolean;
+	includeQuantity: boolean;
+	includePrice: boolean;
 	grade?: string; // 스톤 등급
 }

@@ -119,6 +119,8 @@ export interface ProductStone {
 	purchasePrice: number;
 	mainStone: boolean;
 	includeStone: boolean;
+	includeQuantity: boolean;
+	includePrice: boolean;
 }
 
 export interface ProductDto {

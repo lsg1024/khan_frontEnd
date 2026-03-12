@@ -1,0 +1,391 @@
+.gold-money-page {
+	width: 100%;
+	height: 100%;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+/* 잔액 카드 */
+.gold-money-page .balance-cards {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 20px;
+}
+
+.gold-money-page .balance-card {
+	flex: 1;
+	background: white;
+	border: 1px solid #dee2e6;
+	border-radius: 8px;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.gold-money-page .balance-card .balance-label {
+	font-size: 13px;
+	color: #6c757d;
+	font-weight: 500;
+}
+
+.gold-money-page .balance-card .balance-value {
+	font-size: 24px;
+	font-weight: 700;
+}
+
+.gold-money-page .balance-card .balance-value.gold {
+	color: #fd7e14;
+}
+
+.gold-money-page .balance-card .balance-value.money {
+	color: #007bff;
+}
+
+/* 검색/필터 영역 */
+.gold-money-page .filter-section {
+	background: #f8f9fa;
+	padding: 15px;
+	border-radius: 4px;
+	margin-bottom: 15px;
+	border: 1px solid #dee2e6;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.gold-money-page .filter-section select,
+.gold-money-page .filter-section input[type="date"] {
+	padding: 8px 12px;
+	border: 1px solid #ced4da;
+	border-radius: 4px;
+	font-size: 14px;
+	background: white;
+}
+
+.gold-money-page .filter-section select:focus,
+.gold-money-page .filter-section input[type="date"]:focus {
+	outline: none;
+	border-color: #80bdff;
+	box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.gold-money-page .filter-section .filter-btn {
+	padding: 8px 20px;
+	background: #007bff;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	font-size: 14px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.gold-money-page .filter-section .filter-btn:hover:not(:disabled) {
+	background: #0056b3;
+}
+
+.gold-money-page .filter-section .filter-btn:disabled {
+	background: #6c757d;
+	cursor: not-allowed;
+}
+
+.gold-money-page .filter-section .filter-btn.add-btn {
+	background: #28a745;
+	margin-left: auto;
+}
+
+.gold-money-page .filter-section .filter-btn.add-btn:hover:not(:disabled) {
+	background: #218838;
+}
+
+/* 테이블 */
+.gold-money-page .ledger-table-container {
+	background: white;
+	border: 1px solid #dee2e6;
+	border-radius: 4px;
+	overflow-x: auto;
+	max-height: calc(100vh - 380px);
+	overflow-y: auto;
+}
+
+.gold-money-page .ledger-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+	background: white;
+}
+
+.gold-money-page .ledger-table thead {
+	background: #e9ecef;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+.gold-money-page .ledger-table th {
+	padding: 12px 8px;
+	text-align: center;
+	font-weight: 600;
+	color: #495057;
+	border: 1px solid #dee2e6;
+	white-space: nowrap;
+	background: #e9ecef;
+}
+
+.gold-money-page .ledger-table tbody tr {
+	border-bottom: 1px solid #dee2e6;
+}
+
+.gold-money-page .ledger-table tbody tr:hover {
+	background: #f8f9fa;
+}
+
+.gold-money-page .ledger-table td {
+	padding: 10px 8px;
+	color: #212529;
+	border: 1px solid #dee2e6;
+	text-align: center;
+}
+
+.gold-money-page .ledger-table .amount-cell {
+	text-align: right;
+	font-weight: 500;
+	padding-right: 12px;
+}
+
+.gold-money-page .ledger-table .amount-cell.gold {
+	color: #fd7e14;
+}
+
+.gold-money-page .ledger-table .amount-cell.money {
+	color: #007bff;
+}
+
+.gold-money-page .ledger-table .desc-cell {
+	text-align: left;
+	padding-left: 12px;
+	max-width: 250px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* 배지 */
+.gold-money-page .type-badge {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.gold-money-page .type-badge.income {
+	background: #d4edda;
+	color: #155724;
+}
+
+.gold-money-page .type-badge.expense {
+	background: #f8d7da;
+	color: #721c24;
+}
+
+.gold-money-page .type-badge.asset-gold {
+	background: #fff3cd;
+	color: #856404;
+}
+
+.gold-money-page .type-badge.asset-money {
+	background: #d1ecf1;
+	color: #0c5460;
+}
+
+/* 액션 버튼 */
+.gold-money-page .action-btn {
+	padding: 4px 10px;
+	border: none;
+	border-radius: 3px;
+	font-size: 12px;
+	cursor: pointer;
+	margin: 0 2px;
+}
+
+.gold-money-page .action-btn.edit {
+	background: #ffc107;
+	color: #212529;
+}
+
+.gold-money-page .action-btn.edit:hover {
+	background: #e0a800;
+}
+
+.gold-money-page .action-btn.delete {
+	background: #dc3545;
+	color: white;
+}
+
+.gold-money-page .action-btn.delete:hover {
+	background: #c82333;
+}
+
+/* 모달 */
+.gold-money-page .modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.gold-money-page .modal-content {
+	background: white;
+	border-radius: 8px;
+	padding: 24px;
+	width: 420px;
+	max-width: 90vw;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.gold-money-page .modal-content h3 {
+	margin: 0 0 20px;
+	font-size: 18px;
+	color: #333;
+}
+
+.gold-money-page .modal-content .form-group {
+	margin-bottom: 14px;
+}
+
+.gold-money-page .modal-content .form-group label {
+	display: block;
+	font-size: 13px;
+	font-weight: 500;
+	color: #495057;
+	margin-bottom: 4px;
+}
+
+.gold-money-page .modal-content .form-group input,
+.gold-money-page .modal-content .form-group select,
+.gold-money-page .modal-content .form-group textarea {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid #ced4da;
+	border-radius: 4px;
+	font-size: 14px;
+	box-sizing: border-box;
+}
+
+.gold-money-page .modal-content .form-group textarea {
+	resize: vertical;
+	min-height: 60px;
+}
+
+.gold-money-page .modal-content .form-group input:focus,
+.gold-money-page .modal-content .form-group select:focus,
+.gold-money-page .modal-content .form-group textarea:focus {
+	outline: none;
+	border-color: #80bdff;
+	box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.gold-money-page .modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 20px;
+}
+
+.gold-money-page .modal-actions .modal-btn {
+	padding: 8px 20px;
+	border: none;
+	border-radius: 4px;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.gold-money-page .modal-actions .modal-btn.cancel {
+	background: #6c757d;
+	color: white;
+}
+
+.gold-money-page .modal-actions .modal-btn.cancel:hover {
+	background: #5a6268;
+}
+
+.gold-money-page .modal-actions .modal-btn.submit {
+	background: #007bff;
+	color: white;
+}
+
+.gold-money-page .modal-actions .modal-btn.submit:hover {
+	background: #0056b3;
+}
+
+/* 빈 상태 */
+.gold-money-page .empty-state {
+	padding: 40px 20px;
+	text-align: center;
+	color: #6c757d;
+	font-size: 14px;
+}
+
+/* 로딩 */
+.gold-money-page .loading-state {
+	padding: 40px 20px;
+	text-align: center;
+}
+
+.gold-money-page .loading-state .spinner {
+	width: 40px;
+	height: 40px;
+	border: 4px solid #f3f4f6;
+	border-top-color: #007bff;
+	border-radius: 50%;
+	margin: 0 auto 15px;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+	.gold-money-page {
+		padding: 10px;
+	}
+
+	.gold-money-page .balance-cards {
+		flex-direction: column;
+	}
+
+	.gold-money-page .filter-section {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.gold-money-page .filter-section .filter-btn.add-btn {
+		margin-left: 0;
+	}
+
+	.gold-money-page .ledger-table {
+		font-size: 13px;
+	}
+
+	.gold-money-page .ledger-table th,
+	.gold-money-page .ledger-table td {
+		padding: 8px 6px;
+	}
+
+	.gold-money-page .modal-content {
+		width: 95vw;
+	}
+}

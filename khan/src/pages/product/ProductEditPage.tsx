@@ -140,6 +140,10 @@ function ProductEditPage() {
 						return { ...stone, mainStone: Boolean(value) };
 					case "includeStone":
 						return { ...stone, includeStone: Boolean(value) };
+					case "includeQuantity":
+						return { ...stone, includeQuantity: Boolean(value) };
+					case "includePrice":
+						return { ...stone, includePrice: Boolean(value) };
 					case "note":
 						return { ...stone, productStoneNote: String(value) };
 					default:
@@ -170,6 +174,8 @@ function ProductEditPage() {
 			stoneWeight: "0",
 			mainStone: false,
 			includeStone: true,
+			includeQuantity: true,
+			includePrice: true,
 			stonePurchase: 0,
 			stoneQuantity: 1,
 			productStoneNote: "",
@@ -390,12 +396,16 @@ function ProductEditPage() {
 						stoneId: string;
 						mainStone: boolean;
 						includeStone: boolean;
+						includeQuantity: boolean;
+						includePrice: boolean;
 						stoneQuantity: number;
 						productStoneNote: string;
 					} = {
 						stoneId: stone.stoneId || "",
 						mainStone: stone.mainStone,
 						includeStone: stone.includeStone,
+						includeQuantity: stone.includeQuantity !== false,
+						includePrice: stone.includePrice !== false,
 						stoneQuantity: stone.stoneQuantity || 0,
 						productStoneNote: stone.productStoneNote || "",
 					};
@@ -564,6 +574,8 @@ function ProductEditPage() {
 						grades: false,
 						mainStone: true,
 						includeStone: true,
+						includeQuantity: true,
+						includePrice: true,
 						stoneQuantity: true,
 						note: true,
 					}}

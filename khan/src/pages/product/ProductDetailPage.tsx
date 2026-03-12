@@ -229,6 +229,8 @@ function ProductDetailPage() {
 						grades: false,
 						mainStone: false,
 						includeStone: false,
+						includeQuantity: false,
+						includePrice: false,
 						stoneQuantity: false,
 						note: false,
 					}}

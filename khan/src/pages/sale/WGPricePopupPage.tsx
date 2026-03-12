@@ -1,5 +1,5 @@
 import { useEffect, useState, type JSX } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { saleApi } from "../../../libs/api/saleApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import "../../styles/pages/settings/WGPricePopup.css";
@@ -9,6 +9,8 @@ export default function WGPricePopupPage(): JSX.Element {
 		saleCode: string;
 		goldPrice?: string;
 	}>();
+	const [searchParams] = useSearchParams();
+	const displayCode = searchParams.get("displayCode") || saleCode;
 	const [newPrice, setNewPrice] = useState<string>(goldPrice!);
 	const [loading, setLoading] = useState(false);
 	const [hasExistingPrice] = useState(false);
@@ -86,7 +88,7 @@ export default function WGPricePopupPage(): JSX.Element {
 				{/* 거래 코드 표시 */}
 				<div className="sale-code-section">
 					<div className="section-title">거래 코드</div>
-					<div className="sale-code-display">{saleCode}</div>
+					<div className="sale-code-display">{displayCode}</div>
 				</div>
 
 				{/* 현재 상태 표시 */}

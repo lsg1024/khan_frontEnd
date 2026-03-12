@@ -18,20 +18,36 @@ export const calculateStoneDetails = (stoneInfos: StoneInfo[]) => {
 			laborCost = stone.laborCost || 0,
 			addLaborCost = stone.addLaborCost || 0;
 		if (stone.includeStone) {
+			// includeQuantity: 알 개수 포함 여부 (기본값 true)
+			const shouldIncludeQuantity = stone.includeQuantity !== false;
+			// includePrice: 가격 포함 여부 (기본값 true)
+			const shouldIncludePrice = stone.includePrice !== false;
+
 			details.stoneWeight += Number(weight) * Number(quantity);
 
-			// 스톤 총 매입가 = (매입비용 + 가공비 + 추가가공비) × 수량
-			details.purchaseStonePrice +=
-				(purchaseCost + laborCost + addLaborCost) * quantity;
+			if (shouldIncludePrice) {
+				// 스톤 총 매입가 = (매입비용 + 가공비 + 추가가공비) × 수량
+				details.purchaseStonePrice +=
+					(purchaseCost + laborCost + addLaborCost) * quantity;
 
-			// 개별 항목도 유지 (레거시 호환성)
-			details.stoneAddLaborCost += addLaborCost * quantity;
-			if (stone.mainStone) {
-				details.mainStoneCount += quantity;
-				details.mainStonePrice += laborCost * quantity;
-			} else {
-				details.assistanceStoneCount += quantity;
-				details.assistanceStonePrice += laborCost * quantity;
+				// 개별 항목도 유지 (레거시 호환성)
+				details.stoneAddLaborCost += addLaborCost * quantity;
+			}
+
+			if (shouldIncludeQuantity) {
+				if (stone.mainStone) {
+					details.mainStoneCount += quantity;
+				} else {
+					details.assistanceStoneCount += quantity;
+				}
+			}
+
+			if (shouldIncludePrice) {
+				if (stone.mainStone) {
+					details.mainStonePrice += laborCost * quantity;
+				} else {
+					details.assistanceStonePrice += laborCost * quantity;
+				}
 			}
 		}
 	});

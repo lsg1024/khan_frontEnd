@@ -36,6 +36,8 @@ export function transformProductStones(
 			quantity: stone.stoneQuantity,
 			mainStone: stone.mainStone,
 			includeStone: stone.includeStone,
+			includeQuantity: stone.includeQuantity !== false,
+			includePrice: stone.includePrice !== false,
 			addLaborCost: 0,
 		};
 	});

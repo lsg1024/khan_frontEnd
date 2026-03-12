@@ -344,7 +344,7 @@ const StockCommonActionPage: React.FC = () => {
 									const shouldAdd = window.confirm(
 										`오늘 등록된 판매장이 있습니다.\n해당 판매장에 추가하시겠습니까?`
 									);
-									newSale = shouldAdd;
+									newSale = !shouldAdd;
 								}
 							}
 						}
@@ -353,8 +353,10 @@ const StockCommonActionPage: React.FC = () => {
 					}
 				}
 
-				// 판매 등록
-				promises = stockRows.map((currentRow) => {
+				// 판매 등록 (순차 실행: 같은 상점 → 하나의 영수증으로 묶이도록)
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const saleResponses: any[] = [];
+				for (const currentRow of stockRows) {
 					const calculatedStoneData = calculateStoneDetails(
 						currentRow.stoneInfos || []
 					);
@@ -389,8 +391,10 @@ const StockCommonActionPage: React.FC = () => {
 						stoneInfos: currentRow.stoneInfos || [],
 					};
 
-					return saleApi.updateStockToSale(currentRow.id, saleData, newSale);
-				});
+					const res = await saleApi.updateStockToSale(currentRow.id, saleData, newSale);
+					saleResponses.push(res);
+				}
+				promises = saleResponses;
 				successMessage = "판매 등록";
 				actionType = "판매 등록";
 			} else if (action === "rental") {
@@ -431,7 +435,7 @@ const StockCommonActionPage: React.FC = () => {
 				actionType = "반납 등록";
 			}
 
-			// 모든 등록 요청을 병렬로 실행
+			// 판매는 순차 실행 완료(결과 배열), 대여/반납은 병렬 실행
 			const responses = await Promise.all(promises);
 
 			// 성공/실패 개수 확인

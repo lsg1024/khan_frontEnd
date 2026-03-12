@@ -141,9 +141,9 @@ export const saleApi = {
 	},
 
 	// 판매 등록 전 동일 거래처 확인
-	checkBeforeSale: async (accountId: number): Promise<ApiResponse<{ saleCode: string, accountGoldPrice: number}>> => {
+	checkBeforeSale: async (accountId: number): Promise<ApiResponse<{ saleCode: string, displayCode: string, accountGoldPrice: number}>> => {
 		const params = { id: accountId };
-		return apiRequest.get<{ saleCode: string, accountGoldPrice: number }>("order/sale/check", { params });
+		return apiRequest.get<{ saleCode: string, displayCode: string, accountGoldPrice: number }>("order/sale/check", { params });
 	},
 
 	// 판매 인쇄용 데이터 조회

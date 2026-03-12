@@ -63,9 +63,11 @@ function CataLogPage() {
 	// 총 판매가 계산 (상품 판매가 + 스톤 판매가)
 	const calculateTotalLaborCost = (product: ProductDto): number => {
 		const productCost = parseInt(product.productLaborCost) || 0;
-		const stoneCost = product.productStones.reduce((sum, stone) => {
-			return sum + stone.laborCost * stone.stoneQuantity;
-		}, 0);
+		const stoneCost = product.productStones
+			.filter((stone) => stone.includeStone && stone.includePrice !== false)
+			.reduce((sum, stone) => {
+				return sum + stone.laborCost * stone.stoneQuantity;
+			}, 0);
 		return productCost + stoneCost;
 	};
 
@@ -685,7 +687,9 @@ function CataLogPage() {
 												<div className="stone-total-inline">
 													<span className="total-label">스톤개수:</span>
 													<span className="total-value">
-														{product.productStones.reduce(
+														{product.productStones
+														.filter((s) => s.includeStone && s.includeQuantity !== false)
+														.reduce(
 															(sum, s) => sum + s.stoneQuantity,
 															0,
 														)}
