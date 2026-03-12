@@ -30,6 +30,8 @@ export const ExpactPage = () => {
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
 	const [colors, setColors] = useState<string[]>([]);
+	const [classifications, setClassifications] = useState<string[]>([]);
+	const [materials, setMaterials] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
 	const { showToast } = useToast();
@@ -65,12 +67,15 @@ export const ExpactPage = () => {
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
 		search: "",
+		searchField: "",
 		start: getLocalDate(),
 		end: getLocalDate(),
 		factory: "",
 		store: "",
 		setType: "",
 		color: "",
+		classification: "",
+		material: "",
 		sortField: "",
 		sortOrder: "" as const,
 	});
@@ -99,12 +104,15 @@ export const ExpactPage = () => {
 	const handleReset = async () => {
 		const resetFilters: SearchFilters = {
 			search: "",
+			searchField: "",
 			start: getLocalDate(),
 			end: getLocalDate(),
 			factory: "",
 			store: "",
 			setType: "",
 			color: "",
+			classification: "",
+			material: "",
 			sortField: "",
 			sortOrder: "" as const,
 		};
@@ -210,9 +218,15 @@ export const ExpactPage = () => {
 					filters.end,
 					"EXPECT",
 					filters.search,
+					filters.searchField,
 					filters.factory,
 					filters.store,
 					filters.setType,
+					filters.color,
+					filters.classification,
+					filters.material,
+					filters.sortField,
+					filters.sortOrder as "ASC" | "DESC" | "",
 					page
 				);
 
@@ -272,36 +286,22 @@ export const ExpactPage = () => {
 	const fetchDropdownData = async () => {
 		setDropdownLoading(true);
 		try {
-			// 공장 데이터 가져오기 -> 서버에서 distinct 이용해 종합 페이지에서 가져오도록
-			const factoryResponse = await orderApi.getFilterFactories(
-				searchFilters.start,
-				searchFilters.end,
-				"EXPECT"
-			);
+			const sf = searchFilters;
+			const status = "EXPECT";
+			const [factoryResponse, storeResponse, setTypeResponse, colorResponse, classificationResponse, materialResponse] = await Promise.all([
+				orderApi.getFilterFactories(sf.start, sf.end, status, sf.factory, sf.store, sf.setType, sf.color, sf.classification, sf.material),
+				orderApi.getFilterStores(sf.start, sf.end, status, sf.factory, sf.store, sf.setType, sf.color, sf.classification, sf.material),
+				orderApi.getFilterSetTypes(sf.start, sf.end, status, sf.factory, sf.store, sf.setType, sf.color, sf.classification, sf.material),
+				orderApi.getFilterColors(sf.start, sf.end, status, sf.factory, sf.store, sf.setType, sf.color, sf.classification, sf.material),
+				orderApi.getFilterClassifications(sf.start, sf.end, status, sf.factory, sf.store, sf.setType, sf.color, sf.classification, sf.material),
+				orderApi.getFilterMaterials(sf.start, sf.end, status, sf.factory, sf.store, sf.setType, sf.color, sf.classification, sf.material),
+			]);
 			setFactories(factoryResponse.data || []);
-
-			// 판매처 데이터 가져오기
-			const storeResponse = await orderApi.getFilterStores(
-				searchFilters.start,
-				searchFilters.end,
-				"EXPECT"
-			);
 			setStores(storeResponse.data || []);
-
-			// 세트타입 데이터 가져오기
-			const setTypeResponse = await orderApi.getFilterSetTypes(
-				searchFilters.start,
-				searchFilters.end,
-				"EXPECT"
-			);
 			setSetTypes(setTypeResponse.data || []);
-			// 색상 데이터 가져오기
-			const colorResponse = await orderApi.getFilterColors(
-				searchFilters.start,
-				searchFilters.end,
-				"EXPECT"
-			);
 			setColors(colorResponse.data || []);
+			setClassifications(classificationResponse.data || []);
+			setMaterials(materialResponse.data || []);
 		} catch (err) {
 			console.error("드롭다운 데이터 로드 실패:", err);
 		} finally {
@@ -392,6 +392,8 @@ export const ExpactPage = () => {
 					stores={stores}
 					setTypes={setTypes}
 					colors={colors}
+					classifications={classifications}
+					materials={materials}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
 					onStart={false}

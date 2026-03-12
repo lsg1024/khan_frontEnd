@@ -387,6 +387,7 @@ function ProductEditPage() {
 						note: group.note || "",
 						policyDtos: group.policyDtos.map((policy) => ({
 							workGradePolicyId: policy.workGradePolicyId,
+							grade: policy.grade,
 							laborCost: policy.laborCost,
 						})),
 					})),
