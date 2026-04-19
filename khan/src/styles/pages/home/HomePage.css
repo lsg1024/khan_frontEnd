@@ -22,7 +22,7 @@
 .dashboard-card {
 	background-color: var(--bg-primary);
 	border: 1px solid #dee2e6;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	overflow: hidden;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -32,7 +32,7 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 8px 12px;
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border-bottom: 1px solid #dee2e6;
 }
 
@@ -40,7 +40,7 @@
 	margin: 0;
 	font-size: 13px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .dashboard-card .card-header .detail-link {
@@ -69,7 +69,7 @@
 	align-items: center;
 	justify-content: center;
 	height: 150px;
-	color: #666;
+	color: var(--text-light);
 	font-size: 13px;
 }
 
@@ -95,7 +95,7 @@
 }
 
 .dashboard-table tbody tr:hover {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 }
 
 /* 넓은 카드 (거래처별 통계 등) */
@@ -116,20 +116,20 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 8px 12px;
-	background-color: #f8f9fa;
-	border-radius: 4px;
+	background-color: var(--bg-secondary);
+	border-radius: var(--border-radius-sm);
 }
 
 .main-stat-label {
 	font-size: 12px;
-	color: #666;
+	color: var(--text-light);
 	font-weight: 500;
 }
 
 .main-stat-value {
 	font-size: 12px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .main-stat-value.highlight {
@@ -204,7 +204,7 @@
 .stock-detail-filters .search-input {
 	padding: 8px 12px;
 	border: 1px solid #dee2e6;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 13px;
 	width: 200px;
 }
@@ -219,7 +219,7 @@
 	background-color: #007bff;
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 13px;
 	cursor: pointer;
 	transition: background-color 0.2s;
@@ -237,10 +237,10 @@
 .stock-detail-filters .filter-select {
 	padding: 8px 12px;
 	border: 1px solid #dee2e6;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 13px;
 	min-width: 120px;
-	background-color: white;
+	background-color: var(--bg-primary);
 	cursor: pointer;
 }
 
@@ -279,9 +279,9 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 12px 16px;
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border: 1px solid #dee2e6;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	gap: 12px;
 }
 
@@ -289,7 +289,7 @@
 	margin: 0;
 	font-size: 16px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .schedule-toolbar-controls {
@@ -302,9 +302,9 @@
 .schedule-select {
 	padding: 6px 10px;
 	border: 1px solid #ccc;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 13px;
-	background-color: white;
+	background-color: var(--bg-primary);
 	min-width: 80px;
 	cursor: pointer;
 }
@@ -321,7 +321,7 @@
 .schedule-toolbar-btn {
 	padding: 6px 12px;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 13px;
 	font-weight: 500;
 	cursor: pointer;
@@ -382,7 +382,7 @@
 
 .custom-calendar-toolbar .nav-button {
 	color: black;
-	background-color: white;
+	background-color: var(--bg-primary);
 	border: none;
 	width: 40px;
 	height: 40px;
@@ -594,7 +594,7 @@
 		var(--bg-secondary) 85%
 	);
 	transform: translateY(-1px);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow-section);
 }
 
 /* Details 콘텐츠 애니메이션 */
@@ -625,7 +625,7 @@
 .user-data-details pre {
 	margin: 0;
 	padding: var(--spacing-md);
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius);
 	font-size: var(--font-size-sm);
@@ -862,7 +862,7 @@
 .schedule-form .form-group label {
 	font-size: 13px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .schedule-form .form-input,
@@ -870,7 +870,7 @@
 .schedule-form .form-textarea {
 	padding: 10px 12px;
 	border: 1px solid #dee2e6;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 14px;
 	transition: border-color 0.2s;
 }
@@ -918,10 +918,10 @@
 
 .schedule-form .view-value {
 	padding: 10px 12px;
-	background-color: #f8f9fa;
-	border-radius: 4px;
+	background-color: var(--bg-secondary);
+	border-radius: var(--border-radius-sm);
 	font-size: 14px;
-	color: #333;
+	color: var(--text-dark);
 	min-height: 40px;
 	display: flex;
 	align-items: center;
@@ -948,7 +948,7 @@
 }
 
 .schedule-form .color-option.selected {
-	border-color: #333;
+	border-color: var(--text-dark);
 	box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
 }
 
@@ -972,7 +972,7 @@
 
 .schedule-modal-footer .btn {
 	padding: 10px 20px;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 14px;
 	font-weight: 500;
 	cursor: pointer;
@@ -1110,13 +1110,13 @@
 .store-stats-filters .filter-group label {
 	font-size: 12px;
 	font-weight: 600;
-	color: #666;
+	color: var(--text-light);
 }
 
 .store-stats-filters .filter-input {
 	padding: 6px 10px;
 	border: 1px solid #dee2e6;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 13px;
 	min-width: 120px;
 }
@@ -1129,10 +1129,10 @@
 .store-stats-filters .filter-select {
 	padding: 6px 10px;
 	border: 1px solid #dee2e6;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 13px;
 	min-width: 100px;
-	background-color: white;
+	background-color: var(--bg-primary);
 	cursor: pointer;
 }
 
@@ -1148,7 +1148,7 @@
 }
 
 .store-stats-filters .date-range span {
-	color: #666;
+	color: var(--text-light);
 }
 
 .store-stats-filters .filter-buttons {
@@ -1177,7 +1177,7 @@
 }
 
 .store-stats-table thead .header-sub-row th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	font-weight: 600;
 	font-size: 10px;
 	padding: 4px 4px;
@@ -1205,7 +1205,7 @@
 }
 
 .store-stats-table tbody tr:hover {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 }
 
 /* 종합 합계 행 */
@@ -1264,8 +1264,9 @@
 		margin: 10mm;
 	}
 
-	/* 전체 페이지 숨김 */
-	body * {
+	/* HomePage 영역 숨김 (모달만 인쇄하기 위해) */
+	.home-page-content,
+	.home-page-content * {
 		visibility: hidden;
 	}
 

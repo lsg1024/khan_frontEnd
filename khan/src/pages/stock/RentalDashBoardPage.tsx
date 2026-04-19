@@ -26,6 +26,8 @@ export const RentalDashBoardPage = () => {
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
 	const [colors, setColors] = useState<string[]>([]);
+	const [classifications, setClassifications] = useState<string[]>([]);
+	const [materials, setMaterials] = useState<string[]>([]);
 	const [orderStatus] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
@@ -39,6 +41,7 @@ export const RentalDashBoardPage = () => {
 	// 검색 관련 상태 (대여 상태로 고정)
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
 		search: "",
+		searchField: "",
 		start: "2025-01-01",
 		end: getLocalDate(),
 		order_status: "RENTAL", // 대여 상태로 고정
@@ -46,6 +49,8 @@ export const RentalDashBoardPage = () => {
 		store: "",
 		setType: "",
 		color: "",
+		classification: "",
+		material: "",
 		sortField: "",
 		sortOrder: "" as const,
 	});
@@ -152,6 +157,7 @@ export const RentalDashBoardPage = () => {
 	const handleReset = () => {
 		const resetFilters: SearchFilters = {
 			search: "",
+			searchField: "",
 			start: "2025-01-01",
 			end: getLocalDate(),
 			order_status: "RENTAL", // 대여 상태 유지
@@ -159,6 +165,8 @@ export const RentalDashBoardPage = () => {
 			store: "",
 			setType: "",
 			color: "",
+			classification: "",
+			material: "",
 			sortField: "",
 			sortOrder: "" as const,
 		};
@@ -336,11 +344,14 @@ export const RentalDashBoardPage = () => {
 					filters.start,
 					filters.end,
 					filters.search,
+					filters.searchField,
 					"RENTAL", // 대여 상태로 고정
 					filters.factory,
 					filters.store,
 					filters.setType,
 					filters.color,
+					filters.classification,
+					filters.material,
 					filters.sortField,
 					filters.sortOrder as "ASC" | "DESC" | "",
 					page
@@ -409,6 +420,24 @@ export const RentalDashBoardPage = () => {
 			if (colorResponse.success && colorResponse.data) {
 				setColors(colorResponse.data);
 			}
+
+			const classificationResponse = await stockApi.getFilterClassifications(
+				searchFilters.start,
+				searchFilters.end,
+				"RENTAL"
+			);
+			if (classificationResponse.success && classificationResponse.data) {
+				setClassifications(classificationResponse.data);
+			}
+
+			const materialResponse = await stockApi.getFilterMaterials(
+				searchFilters.start,
+				searchFilters.end,
+				"RENTAL"
+			);
+			if (materialResponse.success && materialResponse.data) {
+				setMaterials(materialResponse.data);
+			}
 		} catch (err) {
 			handleError(err);
 		} finally {
@@ -458,6 +487,8 @@ export const RentalDashBoardPage = () => {
 					stores={stores}
 					setTypes={setTypes}
 					colors={colors}
+					classifications={classifications}
+					materials={materials}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
 					onStart={true}

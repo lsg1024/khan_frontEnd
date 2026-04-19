@@ -8,15 +8,15 @@
 .page-header h1 {
 	font-size: 24px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 /* 검색 영역 */
 .search-section {
 	background: #fff;
 	padding: 20px;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-card);
 }
 
 .search-row {
@@ -34,8 +34,8 @@
 
 .search-row input[type="date"] {
 	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	font-size: 14px;
 }
 
@@ -44,7 +44,7 @@
 	background-color: #007bff;
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
 	font-size: 14px;
 	transition: background-color 0.2s;
@@ -68,5 +68,5 @@
 .empty-cell {
 	text-align: center !important;
 	padding: 40px !important;
-	color: #666;
+	color: var(--text-light);
 }

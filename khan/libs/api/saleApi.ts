@@ -8,6 +8,7 @@ import type {
 } from "../../src/types/stockDto";
 import type {
 	SaleSearchResponse,
+	SaleRow,
 	SaleDetailResponse,
 	SaleUpdateRequest,
 	SalePaymentRequest,
@@ -32,7 +33,7 @@ export const saleApi = {
 		// sortOrder?: "ASC" | "DESC" | "",
 		page: number = 1
 	): Promise<ApiResponse<SaleSearchResponse>> => {
-		const params = {
+		const params: Record<string, string | number | undefined> = {
 			start,
 			end,
 			search,
@@ -43,6 +44,32 @@ export const saleApi = {
 		};
 		return apiRequest.get<SaleSearchResponse>("order/sales", {
 			params,
+		});
+	},
+
+	// 판매 전체 목록 조회 (페이징 없이 배열 반환 - 메시지 전송용)
+	getAllSales: async (
+		start: string,
+		end: string,
+		search?: string,
+		type?: string
+	): Promise<ApiResponse<SaleRow[]>> => {
+		const params: Record<string, string | undefined> = {
+			start,
+			end,
+			search,
+			type,
+		};
+		return apiRequest.get<SaleRow[]>("order/sales/all", { params });
+	},
+
+	// 날짜 범위 내 판매 거래처 목록 (메시지 전송용 - 거래처 ID/이름만 반환)
+	getSaleStores: async (
+		start: string,
+		end: string
+	): Promise<ApiResponse<{ storeId: number; storeName: string }[]>> => {
+		return apiRequest.get<{ storeId: number; storeName: string }[]>("order/sales/stores", {
+			params: { start, end },
 		});
 	},
 

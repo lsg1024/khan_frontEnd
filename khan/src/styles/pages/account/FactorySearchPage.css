@@ -8,8 +8,8 @@
 
 .account-search-container {
 	background: white;
-	border-radius: 8px;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-modal);
 	height: 100%;
 	display: flex;
 	flex-direction: column;
@@ -22,14 +22,14 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 0.5rem 0.5rem;
-	border-bottom: 1px solid #e9ecef;
-	background-color: #f8f9fa;
+	border-bottom: 1px solid var(--border-color-soft);
+	background-color: var(--bg-secondary);
 }
 
 .account-search-header h2 {
 	margin: 0;
 	font-size: 1.25rem;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .close-button {
@@ -37,7 +37,7 @@
 	border: none;
 	font-size: 1.5rem;
 	cursor: pointer;
-	color: #666;
+	color: var(--text-light);
 	padding: 0;
 	width: 30px;
 	height: 30px;
@@ -47,7 +47,7 @@
 }
 
 .close-button:hover {
-	color: #333;
+	color: var(--text-dark);
 }
 
 .spinner {

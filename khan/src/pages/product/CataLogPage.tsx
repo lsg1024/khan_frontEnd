@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { catalogApi } from "../../../libs/api/catalogApi";
 import { productApi } from "../../../libs/api/productApi";
 import { factoryApi } from "../../../libs/api/factoryApi";
 import { setTypeApi } from "../../../libs/api/setTypeApi";
 import { classificationApi } from "../../../libs/api/classificationApi";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useToast } from "../../components/common/toast/Toast";
 import {
 	calculatePureGoldWeightWithHarry,
 	getGoldDonFromWeight,
@@ -22,6 +24,7 @@ import {
 import "../../styles/pages/product/CataLogPage.css";
 
 function CataLogPage() {
+	const location = useLocation();
 	const [products, setProducts] = useState<ProductDto[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [currentPage, setCurrentPage] = useState(1);
@@ -32,6 +35,7 @@ function CataLogPage() {
 		null,
 	);
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState({
@@ -59,6 +63,10 @@ function CataLogPage() {
 
 	// 드롭다운 로딩 상태
 	const [dropdownLoading, setDropdownLoading] = useState(false);
+
+	// 가격 표시 토글 상태
+	const [showMarketPrice, setShowMarketPrice] = useState(true);
+	const [showSellingPrice, setShowSellingPrice] = useState(true);
 
 	// 총 판매가 계산 (상품 판매가 + 스톤 판매가)
 	const calculateTotalLaborCost = (product: ProductDto): number => {
@@ -102,7 +110,7 @@ function CataLogPage() {
 	// 주문 등록 버튼
 	const handleOrderRegister = () => {
 		if (!selectedProductId) {
-			alert("주문 등록할 상품을 선택해주세요.");
+			showToast("주문 등록할 상품을 선택해주세요.", "warning", 3000);
 			return;
 		}
 		const selectedProduct = products.find(
@@ -119,7 +127,7 @@ function CataLogPage() {
 	// 재고 등록 버튼
 	const handleStockRegister = () => {
 		if (!selectedProductId) {
-			alert("재고 등록할 상품을 선택해주세요.");
+			showToast("재고 등록할 상품을 선택해주세요.", "warning", 3000);
 			return;
 		}
 		const selectedProduct = products.find(
@@ -136,10 +144,27 @@ function CataLogPage() {
 	// 상품 수정 버튼
 	const handleProductEdit = () => {
 		if (!selectedProductId) {
-			alert("수정할 상품을 선택해주세요.");
+			showToast("수정할 상품을 선택해주세요.", "warning", 3000);
 			return;
 		}
 		openProductEditPopup(selectedProductId);
+	};
+
+	// 재고보기 버튼 - 선택된 상품의 재고 목록을 팝업으로 표시
+	const handleStockView = () => {
+		if (!selectedProductId) {
+			showToast("재고를 확인할 상품을 선택해주세요.", "warning", 3000);
+			return;
+		}
+		const selectedProduct = products.find(
+			(p) => p.productId === selectedProductId,
+		);
+		const productName = selectedProduct
+			? encodeURIComponent(selectedProduct.productName)
+			: "";
+		const url = `/stocks?search=${productName}&searchField=productName`;
+		const features = "width=1400,height=800,resizable=yes,scrollbars=yes";
+		window.open(url, "stock_view", features);
 	};
 
 	// 이미지 로드 함수
@@ -284,12 +309,22 @@ function CataLogPage() {
 			link.click();
 			link.parentNode?.removeChild(link);
 			window.URL.revokeObjectURL(url);
-		} catch {
-			alert("엑셀 다운로드에 실패했습니다.");
+		} catch (err) {
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
 	};
+
+	// 사이드바 카탈로그 클릭 시 검색 초기화
+	useEffect(() => {
+		const state = location.state as { reset?: number } | null;
+		if (state?.reset) {
+			handleResetSearch();
+			// state 소비 후 초기화 (뒤로가기 시 재트리거 방지)
+			window.history.replaceState({}, document.title);
+		}
+	}, [location.state]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// 드롭다운 데이터 로드
 	useEffect(() => {
@@ -444,8 +479,25 @@ function CataLogPage() {
 						</select>
 					</div>
 
-					{/* 2행: 검색 필터 및 정렬 */}
+					{/* 2행: 가격 토글 + 검색 필터 및 정렬 */}
 					<div className="filter-row-common">
+						<label className="price-toggle-label">
+							<input
+								type="checkbox"
+								checked={showSellingPrice}
+								onChange={(e) => setShowSellingPrice(e.target.checked)}
+							/>
+							판매가
+						</label>
+						<label className="price-toggle-label">
+							<input
+								type="checkbox"
+								checked={showMarketPrice}
+								onChange={(e) => setShowMarketPrice(e.target.checked)}
+							/>
+							시세가
+						</label>
+
 						<select
 							className="filter-group-common select"
 							value={searchFilters.searchField}
@@ -621,6 +673,9 @@ function CataLogPage() {
 										style={{ cursor: "pointer" }}
 									>
 										{product.productName}
+										{product.stockCount > 0 && (
+											<span className="stock-count-badge">{product.stockCount}</span>
+										)}
 									</h3>
 								</div>
 								<div className="product-details">
@@ -660,43 +715,47 @@ function CataLogPage() {
 												})}
 											</div>
 										)}
-									{/* 시세가와 판매가를 한 줄로 */}
-									<div className="detail-row combined price-row-combined">
-										<div>
-											<span className="price-label">시세가:</span>
-											<span className="labor-cost">
-												{(
-													calculateTotalGoldPrice(product) +
-													calculateTotalLaborCost(product)
-												).toLocaleString()}
-												원
-											</span>
+									{/* 판매가와 시세가 */}
+									{showSellingPrice && (
+										<div className="detail-row combined price-row-combined">
+											<div>
+												<span className="price-label">판매가:</span>
+												<span className="selling-price">
+													{calculateTotalLaborCost(product).toLocaleString()}원
+												</span>
+											</div>
+											{/* 스톤 총 개수 */}
+											{product.productStones &&
+												product.productStones.length > 0 && (
+													<div className="stone-total-inline">
+														<span className="total-label">스톤개수:</span>
+														<span className="total-value">
+															{product.productStones
+															.filter((s) => s.includeStone && s.includeQuantity !== false)
+															.reduce(
+																(sum, s) => sum + s.stoneQuantity,
+																0,
+															)}
+														</span>
+													</div>
+												)}
 										</div>
-									</div>
+									)}
 
-									<div className="detail-row combined price-row-combined">
-										<div>
-											<span className="price-label">판매가:</span>
-											<span className="selling-price">
-												{calculateTotalLaborCost(product).toLocaleString()}원
-											</span>
+									{showMarketPrice && (
+										<div className="detail-row combined price-row-combined">
+											<div>
+												<span className="price-label">시세가:</span>
+												<span className="labor-cost">
+													{(
+														calculateTotalGoldPrice(product) +
+														calculateTotalLaborCost(product)
+													).toLocaleString()}
+													원
+												</span>
+											</div>
 										</div>
-										{/* 스톤 총 개수 */}
-										{product.productStones &&
-											product.productStones.length > 0 && (
-												<div className="stone-total-inline">
-													<span className="total-label">스톤개수:</span>
-													<span className="total-value">
-														{product.productStones
-														.filter((s) => s.includeStone && s.includeQuantity !== false)
-														.reduce(
-															(sum, s) => sum + s.stoneQuantity,
-															0,
-														)}
-													</span>
-												</div>
-											)}
-									</div>
+									)}
 									{/* 메모 */}
 									{product.productNote && (
 										<div className="detail-row note">
@@ -739,6 +798,15 @@ function CataLogPage() {
 							disabled={!selectedProductId}
 						>
 							재고등록
+						</button>
+						<button
+							className={`bulk-action-btn change-delivery-date ${
+								!selectedProductId ? "disabled" : ""
+							}`}
+							onClick={handleStockView}
+							disabled={!selectedProductId}
+						>
+							재고보기
 						</button>
 						<button
 							className={`bulk-action-btn return-register ${

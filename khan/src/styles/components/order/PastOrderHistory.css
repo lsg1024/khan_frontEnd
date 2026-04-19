@@ -1,11 +1,11 @@
 /* 과거 거래내역 섹션 스타일 */
 .order-history-section {
-	background-color: white;
-	border-radius: 8px;
+	background-color: var(--bg-primary);
+	border-radius: var(--border-radius-lg);
 }
 
 .order-history-section h2 {
-	color: #333;
+	color: var(--text-dark);
 	font-size: 14px;
 	font-weight: 600;
 	text-align: center;
@@ -13,8 +13,8 @@
 
 .order-history-table-container {
 	background: white;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-card);
 	overflow-x: auto;
 	max-height: 400px;
 	overflow-y: auto;
@@ -30,7 +30,7 @@
 }
 
 .order-history-table thead {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	position: sticky;
 	top: 0;
 	z-index: 10;
@@ -38,7 +38,7 @@
 
 .order-history-table td {
 	text-align: center;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	font-size: 11px;
 	white-space: nowrap;
 	min-height: 30px;
@@ -55,7 +55,7 @@
 }
 
 .order-history-table th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	font-weight: 600;
 	color: #495057;
 }

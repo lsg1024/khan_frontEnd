@@ -495,6 +495,19 @@ const OrderCreatePage = () => {
 		updateOrderRow(rowId, "storeHarry", store.goldHarryLoss || "");
 		updateOrderRow(rowId, "storeGrade", newGrade);
 
+		// 판매처 상세 정보 조회 (재질 우선순위용)
+		let storeMaterialId: string | undefined;
+		let storeMaterialName: string | undefined;
+		try {
+			const storeDetail = await storeApi.getStore(storeIdValue);
+			if (storeDetail?.data?.additionalMaterialId) {
+				storeMaterialId = storeDetail.data.additionalMaterialId;
+				storeMaterialName = storeDetail.data.additionalMaterialName;
+			}
+		} catch {
+			// 판매처 상세 조회 실패 시 무시
+		}
+
 		// 거래처 선택 시 productId가 있으면 상품 정보 자동 로드
 		const currentRow = orderRows.find((r) => r.id === rowId);
 		if (currentRow?.productId) {
@@ -594,8 +607,19 @@ const OrderCreatePage = () => {
 					);
 					updateOrderRow(rowId, "stoneWeight", calculatedStoneData.stoneWeight);
 
-					// 재질 자동 선택
-					if (productDetail.materialDto?.materialName) {
+					// 재질 자동 선택 (판매처 설정 > 카탈로그 기본값)
+					let materialApplied = false;
+					if (storeMaterialId && storeMaterialName) {
+						const foundStoreMaterial = materials.find(
+							(m) => m.materialId?.toString() === storeMaterialId || m.materialName === storeMaterialName
+						);
+						if (foundStoreMaterial) {
+							updateOrderRow(rowId, "materialId", foundStoreMaterial.materialId);
+							updateOrderRow(rowId, "materialName", foundStoreMaterial.materialName);
+							materialApplied = true;
+						}
+					}
+					if (!materialApplied && productDetail.materialDto?.materialName) {
 						const foundMaterial = materials.find(
 							(m) => m.materialName === productDetail.materialDto?.materialName
 						);
@@ -825,8 +849,29 @@ const OrderCreatePage = () => {
 			);
 		}
 
-		// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
-		if (product.productMaterial) {
+		// 재질 자동 선택 (판매처 설정 > 상품 기본값)
+		let materialSetByStore = false;
+		const currentRowForMaterial = orderRows.find((r) => r.id === rowId);
+		if (currentRowForMaterial?.storeId) {
+			try {
+				const storeDetailRes = await storeApi.getStore(currentRowForMaterial.storeId);
+				if (storeDetailRes?.data?.additionalMaterialId) {
+					const storeMatName = storeDetailRes.data.additionalMaterialName;
+					const storeMatId = storeDetailRes.data.additionalMaterialId;
+					const foundStoreMat = materials.find(
+						(m) => m.materialId?.toString() === storeMatId || m.materialName === storeMatName
+					);
+					if (foundStoreMat) {
+						updateOrderRow(rowId, "materialId", foundStoreMat.materialId.toString());
+						updateOrderRow(rowId, "materialName", foundStoreMat.materialName);
+						materialSetByStore = true;
+					}
+				}
+			} catch {
+				// 무시
+			}
+		}
+		if (!materialSetByStore && product.productMaterial) {
 			const foundMaterial = materials.find(
 				(m) => m.materialName === product.productMaterial
 			);
@@ -1015,9 +1060,12 @@ const OrderCreatePage = () => {
 			return;
 		}
 
+		// 총 주문 수 계산 (수량 포함)
+		const totalCount = validRows.reduce((sum, row) => sum + (row.quantity && row.quantity > 1 ? row.quantity : 1), 0);
+
 		// 사용자에게 저장될 행 수 확인
-		if (filteredOutRows.length > 0) {
-			const confirmMsg = `${validRows.length}개의 주문이 저장됩니다.`;
+		if (filteredOutRows.length > 0 || totalCount > validRows.length) {
+			const confirmMsg = `${totalCount}개의 주문이 저장됩니다.`;
 			if (!confirm(confirmMsg)) {
 				return;
 			}
@@ -1026,13 +1074,16 @@ const OrderCreatePage = () => {
 		try {
 			setLoading(true);
 
-			const promises = validRows.map((row) => {
+			const promises: Promise<unknown>[] = [];
+			let totalOrderCount = 0;
+			for (const row of validRows) {
 				const priority = priorities.find(
 					(p) => p.priorityName === row.priorityName
 				);
 				const priorityDays = priority?.priorityDate || 7;
-				const shippingDate = addBusinessDays(currentDate, priorityDays);
-				const shippingAtFormatted = formatDateToString(shippingDate);
+				const orderDate = row.createAt ? new Date(row.createAt) : new Date(currentDate);
+				const shippingDate = addBusinessDays(orderDate, priorityDays);
+				const shippingAtFormatted = row.shippingAt || formatDateToString(shippingDate);
 
 				const orderData: OrderCreateRequest = {
 					storeId: row.storeId,
@@ -1072,12 +1123,16 @@ const OrderCreatePage = () => {
 					stoneAddLaborCost: Number(row.stoneAddLaborCost) || 0,
 				};
 
-				return orderApi.createOrder(orderStatus, orderData);
-			});
+				const qty = row.quantity && row.quantity > 1 ? row.quantity : 1;
+				for (let i = 0; i < qty; i++) {
+					promises.push(orderApi.createOrder(orderStatus, orderData));
+				}
+				totalOrderCount += qty;
+			}
 
 			await handleApiSubmit({
 				promises,
-				successMessage: `${validRows.length}개의 주문이 성공적으로 생성되었습니다.`,
+				successMessage: `${totalOrderCount}개의 주문이 성공적으로 생성되었습니다.`,
 				parentMessageType: "ORDER_CREATED",
 				parentMessageData: {
 					success: true,

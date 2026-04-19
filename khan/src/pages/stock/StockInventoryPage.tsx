@@ -615,15 +615,13 @@ function StockInventoryPage() {
 
 
 			{/* 페이지네이션 */}
-			{totalPages > 1 && (
-				<Pagination
-					currentPage={currentPage + 1}
-					totalPages={totalPages}
-					totalElements={totalElements}
-					loading={loading}
-					onPageChange={handlePageChange}
-				/>
-			)}
+			<Pagination
+				currentPage={currentPage + 1}
+				totalPages={totalPages}
+				totalElements={totalElements}
+				loading={loading}
+				onPageChange={handlePageChange}
+			/>
 
 			{/* 통계 영역 */}
 			{statistics && (

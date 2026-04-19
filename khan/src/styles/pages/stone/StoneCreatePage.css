@@ -24,7 +24,7 @@
 
 .stone-create-header h2 {
 	margin: 0;
-	color: #333;
+	color: var(--text-dark);
 	font-size: 16px;
 	font-weight: 600;
 }
@@ -44,7 +44,7 @@
 }
 
 .stone-create-table th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border: 1px solid #e1e5e9;
 	text-align: center;
 	font-weight: 600;
@@ -56,7 +56,7 @@
 }
 
 .stone-create-table .no-th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border: 1px solid #e1e5e9;
 	text-align: center;
 	font-weight: 600;
@@ -68,7 +68,7 @@
 }
 
 .stone-create-table .stone-th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border: 1px solid #e1e5e9;
 	text-align: center;
 	font-weight: 600;
@@ -80,7 +80,7 @@
 }
 
 .stone-create-table .stone-size-th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border: 1px solid #e1e5e9;
 	text-align: center;
 	font-weight: 600;
@@ -92,7 +92,7 @@
 }
 
 .stone-create-table .note-th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border: 1px solid #e1e5e9;
 	text-align: center;
 	font-weight: 600;
@@ -104,7 +104,7 @@
 }
 
 .stone-create-table .weight-th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border: 1px solid #e1e5e9;
 	text-align: center;
 	font-weight: 600;
@@ -120,7 +120,7 @@
 	padding: 4px 4px;
 	text-align: center;
 	font-size: 11px;
-	color: #333;
+	color: var(--text-dark);
 	vertical-align: middle;
 }
 
@@ -140,7 +140,7 @@
 
 /* 읽기 전용 스톤 이름 스타일 */
 .stone-create-table .readonly-stone-name {
-	background-color: #f8f9fa !important;
+	background-color: var(--bg-secondary) !important;
 	color: #6c757d;
 	cursor: not-allowed;
 	border-color: #e1e5e9;
@@ -154,7 +154,7 @@
 
 /* 행 호버 */
 .stone-create-table tbody tr:hover {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 }
 
 /* 하단 액션 바 */

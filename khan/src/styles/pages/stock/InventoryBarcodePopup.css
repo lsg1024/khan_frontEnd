@@ -53,7 +53,7 @@
 	align-items: center;
 	background: #f9f9f9;
 	border: 2px solid #e5e5e5;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	padding: 2px;
 	transition: border-color 0.2s;
 }
@@ -130,7 +130,7 @@
 	color: #1b5e20;
 	background: rgba(255, 255, 255, 0.7);
 	padding: 3px 10px;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 }
 
 /* 통계 섹션 */
@@ -148,7 +148,7 @@
 	align-items: center;
 	gap: 8px;
 	padding: 8px 16px;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 }
 
 .stat-item.success {
@@ -161,7 +161,7 @@
 
 .stat-label {
 	font-size: 13px;
-	color: #666;
+	color: var(--text-light);
 }
 
 .stat-value {
@@ -181,9 +181,9 @@
 	margin-left: auto;
 	padding: 8px 16px;
 	font-size: 13px;
-	color: #666;
+	color: var(--text-light);
 	background: #f5f5f5;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	border-radius: 6px;
 	cursor: pointer;
 	transition: all 0.2s;
@@ -203,7 +203,7 @@
 .barcode-popup-results h3 {
 	font-size: 14px;
 	font-weight: 600;
-	color: #666;
+	color: var(--text-light);
 	margin: 0 0 16px;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
@@ -237,7 +237,7 @@
 	gap: 12px;
 	padding: 12px 16px;
 	background: #fff;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	border-left: 4px solid transparent;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -263,7 +263,7 @@
 	font-size: 11px;
 	font-weight: 600;
 	color: #fff;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	white-space: nowrap;
 }
 
@@ -271,14 +271,14 @@
 	font-family: monospace;
 	font-size: 14px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 	min-width: 100px;
 }
 
 .result-name {
 	flex: 1;
 	font-size: 14px;
-	color: #333;
+	color: var(--text-dark);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;

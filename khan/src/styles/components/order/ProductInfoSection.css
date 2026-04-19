@@ -7,7 +7,7 @@
 .product-info-section h2 {
 	font-size: 18px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 	margin-bottom: 16px;
 	padding-bottom: 8px;
 	border-bottom: 2px solid #e1e5e9;
@@ -16,9 +16,9 @@
 .order-history-placeholder {
 	padding: 40px;
 	text-align: center;
-	color: #666;
+	color: var(--text-light);
 	background: #f8f9fa;
 	border: 1px dashed #ddd;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	font-size: 14px;
 }

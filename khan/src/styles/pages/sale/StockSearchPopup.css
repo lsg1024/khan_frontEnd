@@ -13,7 +13,7 @@
 .stock-search-popup .popup-header h2 {
 	margin: 0;
 	font-size: 1.5rem;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .stock-search-popup .popup-content {
@@ -28,7 +28,7 @@
 	justify-content: center;
 	align-items: center;
 	min-height: 400px;
-	color: #666;
+	color: var(--text-light);
 	font-size: 1.1rem;
 }
 
@@ -39,7 +39,7 @@
 }
 
 .stock-search-table thead {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	position: sticky;
 	top: 0;
 	z-index: 10;
@@ -63,7 +63,7 @@
 }
 
 .stock-search-table tbody tr:hover {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 }
 
 .stock-search-table tbody tr.selected-row {

@@ -48,11 +48,14 @@ export const StockSearchPopup = () => {
 				"2025-01-01", // start
 				getLocalDate(), // end
 				"", // search
+				"", // searchField
 				"STOCK", // order_status - 재고 상태만 조회
 				"", // factory
 				storeName, // store - 거래처명으로 필터링
 				"", // setType
 				"", // color
+				"", // classification
+				"", // material
 				"", // sortField
 				"", // sortOrder
 				page, // page

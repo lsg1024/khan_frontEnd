@@ -7,7 +7,7 @@
 }
 
 .gold-price-popup .popup-header {
-	background-color: #fff;
+	background-color: var(--bg-primary);
 	padding: 20px 24px;
 	border-bottom: 1px solid #e0e0e0;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -17,7 +17,7 @@
 	margin: 0;
 	font-size: 20px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .gold-price-popup .popup-content {
@@ -34,8 +34,8 @@
 
 /* 현재 금 시세 섹션 */
 .gold-price-popup .current-price-section {
-	background-color: #fff;
-	border-radius: 8px;
+	background-color: var(--bg-primary);
+	border-radius: var(--border-radius-lg);
 	padding: 24px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -50,7 +50,7 @@
 .gold-price-popup .section-title {
 	font-size: 14px;
 	font-weight: 500;
-	color: #666;
+	color: var(--text-light);
 	margin-bottom: 0;
 }
 
@@ -59,7 +59,7 @@
 	background-color: #6c757d;
 	color: #fff;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 12px;
 	font-weight: 500;
 	cursor: pointer;
@@ -91,7 +91,7 @@
 .gold-price-popup .price-unit {
 	font-size: 18px;
 	font-weight: 500;
-	color: #666;
+	color: var(--text-light);
 }
 
 .gold-price-popup .loading-text {
@@ -101,8 +101,8 @@
 
 /* 새 금 시세 입력 섹션 */
 .gold-price-popup .new-price-section {
-	background-color: #fff;
-	border-radius: 8px;
+	background-color: var(--bg-primary);
+	border-radius: var(--border-radius-lg);
 	padding: 24px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -125,7 +125,7 @@
 	border: 2px solid #e0e0e0;
 	border-radius: 6px;
 	padding: 0 16px;
-	background-color: #fff;
+	background-color: var(--bg-primary);
 	transition: border-color 0.2s;
 }
 
@@ -180,7 +180,7 @@
 .gold-price-popup .input-unit {
 	font-size: 16px;
 	font-weight: 500;
-	color: #666;
+	color: var(--text-light);
 	white-space: nowrap;
 }
 
@@ -192,7 +192,7 @@
 	padding: 12px 16px;
 	background-color: #e8f4f8;
 	border-left: 4px solid #2196f3;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 14px;
 	color: #555;
 }
@@ -232,7 +232,7 @@
 
 .gold-price-popup .btn-cancel {
 	background-color: #f5f5f5;
-	color: #666;
+	color: var(--text-light);
 }
 
 .gold-price-popup .btn-cancel:hover:not(:disabled) {

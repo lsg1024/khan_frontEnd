@@ -1,16 +1,10 @@
 /* 4. 스톤 정보 섹션 - 테이블 형태 */
-.stone-section {
-	width: 100%;
-	background-color: white;
-	padding: 0.75rem;
-	border-radius: 8px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+/* .stone-section 기본 스타일: common.css에서 통합 정의 */
 
 .stone-section h2 {
 	margin: 0 0 0.5rem 0;
 	font-size: 1rem;
-	color: #333;
+	color: var(--text-dark);
 	padding-bottom: 0.25rem;
 }
 
@@ -36,7 +30,7 @@
 	color: white;
 	border: none;
 	padding: 4px 10px;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
 	font-size: 14px;
 	font-weight: 500;
@@ -55,8 +49,8 @@
 .no-stones-message {
 	text-align: center;
 	padding: 2rem;
-	color: #666;
-	background-color: #f8f9fa;
+	color: var(--text-light);
+	background-color: var(--bg-secondary);
 	border-radius: 6px;
 	border: 1px dashed #dee2e6;
 }
@@ -70,7 +64,7 @@
 .stone-table {
 	width: 100%;
 	border-collapse: collapse;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	background: white;
 	margin-top: 0.5rem;
 	font-size: 12px;
@@ -80,14 +74,14 @@
 .stone-table th,
 .stone-table td {
 	padding: 6px 3px;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	color: #495057;
 	text-align: center;
 	vertical-align: middle;
 }
 
 .stone-table th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	font-weight: bold;
 	color: #495057;
 	font-size: 11px;
@@ -152,11 +146,11 @@
 .stone-table .table-input {
 	width: 100%;
 	padding: 1px 1px;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	border-radius: 3px;
 	font-size: 12px;
 	background: white;
-	color: #333;
+	color: var(--text-dark);
 	text-align: center;
 	box-sizing: border-box;
 }
@@ -170,11 +164,11 @@
 .stone-table .editable-select {
 	width: 100%;
 	padding: 3px 8px;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	border-radius: 3px;
 	font-size: 12px;
 	background: white;
-	color: #333;
+	color: var(--text-dark);
 	text-align: center;
 	text-align-last: center;
 	box-sizing: border-box;
@@ -243,7 +237,7 @@
 	background: #fff5f5;
 	border: 1px solid #ffc9c9;
 	color: #c92a2a;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	font-size: 0.9rem;
 }
 

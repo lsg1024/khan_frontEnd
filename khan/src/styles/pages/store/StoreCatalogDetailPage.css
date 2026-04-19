@@ -25,12 +25,6 @@
 	animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
 /* 에러 상태 */
 .store-catalog-detail-page .error-container {
 	display: flex;
@@ -49,13 +43,13 @@
 .store-catalog-detail-page .error-container h3 {
 	margin: 0;
 	font-size: 18px;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .store-catalog-detail-page .error-container p {
 	margin: 0;
 	font-size: 14px;
-	color: #666;
+	color: var(--text-light);
 }
 
 /* 상세 콘텐츠 */
@@ -70,7 +64,7 @@
 	display: flex;
 	gap: 24px;
 	background: #fff;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	padding: 20px;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -94,7 +88,7 @@
 	align-items: center;
 	justify-content: center;
 	background: #f5f5f5;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	overflow: hidden;
 }
 
@@ -157,7 +151,7 @@
 	border-radius: 50%;
 	border: 2px solid #ddd;
 	background: #fff;
-	color: #666;
+	color: var(--text-light);
 	font-size: 12px;
 	cursor: pointer;
 	display: flex;
@@ -186,7 +180,7 @@
 .store-catalog-detail-page .product-name {
 	font-size: 22px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 	margin: 0 0 20px 0;
 	padding-bottom: 12px;
 	border-bottom: 2px solid #007bff;
@@ -207,13 +201,13 @@
 .store-catalog-detail-page .info-row .label {
 	flex-shrink: 0;
 	width: 100px;
-	color: #666;
+	color: var(--text-light);
 	font-weight: 500;
 }
 
 .store-catalog-detail-page .info-row .value {
 	flex: 1;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .store-catalog-detail-page .info-row .gold-weight {
@@ -222,14 +216,14 @@
 }
 
 .store-catalog-detail-page .note-row .value {
-	color: #666;
+	color: var(--text-light);
 	font-size: 13px;
 }
 
 /* 관련 상품 섹션 */
 .store-catalog-detail-page .related-section {
 	background: #fff;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	padding: 20px;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -237,7 +231,7 @@
 .store-catalog-detail-page .section-title {
 	font-size: 16px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 	margin: 0 0 16px 0;
 	padding-bottom: 8px;
 	border-bottom: 1px solid #eee;
@@ -302,7 +296,7 @@
 .store-catalog-detail-page .related-product-name {
 	padding: 6px;
 	font-size: 11px;
-	color: #333;
+	color: var(--text-dark);
 	text-align: center;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -319,7 +313,7 @@
 /* 스톤 정보 섹션 */
 .store-catalog-detail-page .stones-section {
 	background: #fff;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	padding: 20px;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -336,14 +330,14 @@
 	border-bottom: 1px solid #e0e0e0;
 	font-size: 13px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .store-catalog-detail-page .table-row {
 	display: flex;
 	border-bottom: 1px solid #e0e0e0;
 	font-size: 13px;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .store-catalog-detail-page .table-row:last-child {
@@ -388,7 +382,7 @@
 .store-catalog-detail-page .col-note {
 	flex: 2;
 	min-width: 100px;
-	color: #666;
+	color: var(--text-light);
 }
 
 /* 액션 버튼 */
@@ -402,8 +396,8 @@
 	padding: 10px 24px;
 	font-size: 14px;
 	background: #f0f0f0;
-	color: #333;
-	border: 1px solid #ddd;
+	color: var(--text-dark);
+	border: 1px solid var(--border-color-light);
 	border-radius: 6px;
 	cursor: pointer;
 	transition: all 0.2s;

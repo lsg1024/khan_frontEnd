@@ -1,7 +1,7 @@
 .gold-history-container {
 	background: #fff;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	padding: 16px;
 	flex: 1;
 	color: black;
@@ -14,7 +14,7 @@
 .gold-history-header h3 {
 	font-size: 16px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 	margin: 0;
 }
 
@@ -22,14 +22,14 @@
 .gold-history-table {
 	display: flex;
 	flex-direction: column;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 }
 
 .gold-history-table-header {
 	display: grid;
 	grid-template-columns: 120px 1fr 1fr;
 	background-color: #f0f0f0;
-	border-bottom: 1px solid #ddd;
+	border-bottom: 1px solid var(--border-color-light);
 }
 
 .gold-history-header-cell {
@@ -46,7 +46,7 @@
 .gold-history-table-row {
 	display: grid;
 	grid-template-columns: 120px 1fr 1fr;
-	border-bottom: 1px solid #ddd;
+	border-bottom: 1px solid var(--border-color-light);
 }
 
 .gold-history-table-row:last-child {

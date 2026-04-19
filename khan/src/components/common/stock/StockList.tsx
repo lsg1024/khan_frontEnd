@@ -234,7 +234,10 @@ export const StockList = ({
 								className="product-name-cell"
 								title={stock.productName || "-"}
 							>
-								{stock.productName || "-"}
+								<div>{stock.productName || "-"}</div>
+								{stock.productFactoryName && (
+									<div className="product-factory-name">{stock.productFactoryName}</div>
+								)}
 							</td>
 							<td
 								className="size-note-content"

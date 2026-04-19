@@ -52,7 +52,7 @@
 	font-weight: 500;
 	color: #555;
 	background: transparent;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	border-radius: 6px;
 	cursor: pointer;
 	transition: all 0.2s ease;

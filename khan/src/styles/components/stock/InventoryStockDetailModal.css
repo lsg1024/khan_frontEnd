@@ -20,21 +20,21 @@
 	margin: 0;
 	font-size: 18px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .inventory-stock-detail-modal .modal-close-button {
 	background: none;
 	border: none;
 	font-size: 24px;
-	color: #666;
+	color: var(--text-light);
 	cursor: pointer;
 	padding: 0;
 	line-height: 1;
 }
 
 .inventory-stock-detail-modal .modal-close-button:hover {
-	color: #333;
+	color: var(--text-dark);
 }
 
 .inventory-stock-detail-modal .modal-body {
@@ -49,7 +49,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 40px;
-	color: #666;
+	color: var(--text-light);
 }
 
 .inventory-stock-detail-modal .spinner {
@@ -62,12 +62,6 @@
 	margin-bottom: 12px;
 }
 
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
 /* 상세 콘텐츠 */
 .stock-detail-content {
 	display: flex;
@@ -78,7 +72,7 @@
 .detail-section {
 	background: #fff;
 	border: 1px solid #e5e5e5;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	overflow: hidden;
 }
 
@@ -87,7 +81,7 @@
 	padding: 12px 16px;
 	font-size: 14px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 	background: #f9fafb;
 	border-bottom: 1px solid #e5e5e5;
 }
@@ -118,7 +112,7 @@
 
 .detail-value {
 	font-size: 14px;
-	color: #333;
+	color: var(--text-dark);
 	font-weight: 500;
 }
 
@@ -138,7 +132,7 @@
 	margin: 0 0 12px 0;
 	font-size: 13px;
 	font-weight: 600;
-	color: #666;
+	color: var(--text-light);
 }
 
 .stone-table {
@@ -157,18 +151,18 @@
 .stone-table th {
 	background: #f9fafb;
 	font-weight: 600;
-	color: #666;
+	color: var(--text-light);
 }
 
 .stone-table td {
-	color: #333;
+	color: var(--text-dark);
 }
 
 /* 비고 */
 .note-content {
 	padding: 16px;
 	font-size: 14px;
-	color: #333;
+	color: var(--text-dark);
 	white-space: pre-wrap;
 	word-break: break-word;
 }

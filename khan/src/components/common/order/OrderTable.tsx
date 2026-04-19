@@ -343,6 +343,8 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 						<th>사이즈</th>
 						<th>급</th>
 						<th>기타</th>
+						<th>수량</th>
+						<th>주문일</th>
 						<th>출고일</th>
 					</tr>
 					<tr>
@@ -366,6 +368,8 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 						<th></th>
 						<th>메인</th>
 						<th>보조</th>
+						<th></th>
+						<th></th>
 						<th></th>
 						<th></th>
 						<th></th>
@@ -1085,11 +1089,11 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											);
 											onRowUpdate(row.id, "priorityName", e.target.value);
 
-											// priorityDate만큼 영업일 기준으로 출고일 설정
+											// priorityDate만큼 영업일 기준으로 출고일 설정 (주문일 기준)
 											if (selectedPriority && selectedPriority.priorityDate) {
-												const currentDate = new Date();
+												const baseDate = row.createAt ? new Date(row.createAt) : new Date();
 												const deliveryDate = addBusinessDays(
-													currentDate,
+													baseDate,
 													selectedPriority.priorityDate
 												);
 												const formattedDate = formatDateToString(deliveryDate);
@@ -1146,6 +1150,72 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 										}}
 										style={{
 											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+										}}
+									/>
+								</td>
+								<td>
+									<input
+										type="number"
+										min={1}
+										max={99}
+										value={row.quantity || 1}
+										onChange={(e) => {
+											const val = Math.max(1, Math.min(99, Number(e.target.value) || 1));
+											onRowUpdate(row.id, "quantity", val);
+										}}
+										disabled={loading || !safeIsRowInputEnabled(index)}
+										style={{
+											width: "40px",
+											textAlign: "center",
+											opacity: !safeIsRowInputEnabled(index) ? 0.5 : 1,
+										}}
+										onFocus={() => {
+											if (mode === "create" && safeIsRowInputEnabled(index)) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+									/>
+								</td>
+								<td>
+									<input
+										type="date"
+										value={row.createAt}
+										onChange={(e) => {
+											if (isStockStatus) return;
+											onRowUpdate(row.id, "createAt", e.target.value);
+											// 주문일 변경 시 출고일 자동 재계산
+											const selectedPriority = priorities.find(
+												(p) => p.priorityName === row.priorityName
+											);
+											if (selectedPriority && selectedPriority.priorityDate) {
+												const newOrderDate = new Date(e.target.value);
+												if (!isNaN(newOrderDate.getTime())) {
+													const newDeliveryDate = addBusinessDays(
+														newOrderDate,
+														selectedPriority.priorityDate
+													);
+													const formattedDate = formatDateToString(newDeliveryDate);
+													onRowUpdate(row.id, "shippingAt", formattedDate);
+												}
+											}
+										}}
+										disabled={
+											loading || !safeIsRowInputEnabled(index) || isStockStatus
+										}
+										onFocus={() => {
+											if (
+												mode === "create" &&
+												safeIsRowInputEnabled(index) &&
+												!isStockStatus
+											) {
+												safeOnRowFocus(row.id);
+											}
+										}}
+										style={{
+											opacity:
+												!safeIsRowInputEnabled(index) || isStockStatus
+													? 0.5
+													: 1,
 										}}
 									/>
 								</td>

@@ -28,7 +28,17 @@ function LoginPage() {
 					const reissueResponse = await authApi.refreshToken();
 
 					if (isMounted && reissueResponse.success) {
-						// 재발급 성공 시 홈으로 리다이렉트
+						// 재발급된 토큰의 tenant가 현재 서브도메인과 일치하는지 확인
+						const currentSubdomain = extractSubdomain(window.location.hostname);
+						const tokenTenant = tokenUtils.getTenantId();
+
+						if (tokenTenant && currentSubdomain && tokenTenant !== currentSubdomain) {
+							// 다른 테넌트의 토큰 → 즉시 제거하고 로그인 폼 표시
+							tokenUtils.removeToken();
+							if (isMounted) setIsCheckingAuth(false);
+							return;
+						}
+
 						window.dispatchEvent(new Event("tokenChange"));
 						navigate("/", { replace: true });
 						return;

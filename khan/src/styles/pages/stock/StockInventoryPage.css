@@ -22,7 +22,7 @@
 .inventory-filters {
 	background: #fff;
 	border: 1px solid #e5e5e5;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	padding: 16px;
 	margin-bottom: 16px;
 }
@@ -44,8 +44,8 @@
 .filter-select {
 	padding: 8px 12px;
 	font-size: 13px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	background: #fff;
 	cursor: pointer;
 	min-width: 130px;
@@ -63,8 +63,8 @@
 .filter-input {
 	padding: 8px 12px;
 	font-size: 13px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	width: 180px;
 }
 
@@ -148,7 +148,7 @@
 .inventory-table-wrapper {
 	background: #fff;
 	border: 1px solid #e5e5e5;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	overflow: hidden;
 	min-height: 400px;
 }
@@ -171,12 +171,6 @@
 	border-radius: 50%;
 	animation: spin 0.8s linear infinite;
 	margin-bottom: 12px;
-}
-
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
 }
 
 /* 빈 상태 */
@@ -205,14 +199,14 @@
 
 .inventory-table th {
 	font-weight: 600;
-	color: #666;
+	color: var(--text-light);
 	background: #f9f9f9;
 	position: sticky;
 	top: 0;
 }
 
 .inventory-table td {
-	color: #333;
+	color: var(--text-dark);
 }
 
 .inventory-table tbody tr:hover {
@@ -307,19 +301,19 @@
 .inventory-table tfoot .totals-row td {
 	border-bottom: none;
 	padding: 12px;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .inventory-table tfoot .totals-label {
 	text-align: right !important;
 	font-size: 14px;
-	color: #666;
+	color: var(--text-light);
 }
 
 .inventory-table tfoot .totals-value {
 	font-size: 14px;
 	font-weight: 700;
-	color: #333;
+	color: var(--text-dark);
 }
 
 /* 통계 영역 */
@@ -333,7 +327,7 @@
 .statistics-table-wrapper {
 	background: #fff;
 	border: 1px solid #e5e5e5;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	overflow: hidden;
 }
 
@@ -370,12 +364,12 @@
 
 .statistics-table th {
 	font-weight: 600;
-	color: #666;
+	color: var(--text-light);
 	background: #fafafa;
 }
 
 .statistics-table td {
-	color: #333;
+	color: var(--text-dark);
 }
 
 .statistics-table .summary-row {
@@ -384,7 +378,7 @@
 }
 
 .statistics-table .summary-row td {
-	color: #333;
+	color: var(--text-dark);
 }
 
 /* 반응형 */

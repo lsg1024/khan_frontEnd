@@ -73,12 +73,26 @@ const sidebarItems: SidebarItem[] = [
 		],
 	},
 	{
+		path: "/expense",
+		label: "경비 관리",
+		icon: "📊"
+	},
+	{
 		path:"/accounts",
 		label: "거래처",
 		icon: "🏢",
 		children: [
 			{ path: "/accounts/store", label: "판매처"},
 			{ path: "/accounts/factory", label: "매입처"},
+		],
+	},
+	{
+		path: "/message",
+		label: "메시지 관리",
+		icon: "📱",
+		children: [
+			{ path: "/message", label: "메시지 전송" },
+			{ path: "/message/history", label: "전송 이력" },
 		],
 	},
 	{ path: "/settings", label: "기초 관리", icon: "⚙️" }
@@ -90,7 +104,12 @@ export const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 	const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
 	const handleNavigation = (path: string) => {
-		navigate(path);
+		// 카탈로그 클릭 시 항상 초기화 상태로 이동 (이미 카탈로그에 있어도)
+		if (path === "/catalog") {
+			navigate(path, { state: { reset: Date.now() } });
+		} else {
+			navigate(path);
+		}
 		// 모바일에서 메뉴 선택 시 사이드바 닫기
 		onClose?.();
 	};

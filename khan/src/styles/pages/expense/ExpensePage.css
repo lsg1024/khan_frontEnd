@@ -1,0 +1,231 @@
+/* ===== Expense Page ===== */
+
+/* Expense date range - hide calendar icon, open on click */
+.expense-date-range input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.expense-date-range input[type="date"] {
+  position: relative;
+  padding: 4px 6px;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--bg-primary);
+  color: #000;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.expense-date-range input[type="date"]:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.expense-date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-color);
+}
+
+.expense-date-range span {
+  font-weight: 500;
+  font-size: 12px;
+}
+
+/* Expense filter select */
+.expense-filter-select {
+  padding: 4px 8px;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--border-radius-sm);
+  font-size: 12px;
+  background-color: var(--bg-primary);
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.expense-filter-select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Total info display */
+.expense-total-info {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-color);
+  padding: 4px 0;
+}
+
+/* Row styling for expense (출고) */
+.expense-row-out {
+  /* subtle differentiation for expense rows */
+}
+
+/* Summary row styles */
+.expense-summary-income {
+  background-color: #ffffcc !important;
+}
+
+.expense-summary-income td {
+  font-weight: 600;
+  color: #333;
+}
+
+.expense-summary-expense {
+  background-color: #e8f4fd !important;
+}
+
+.expense-summary-expense td {
+  font-weight: 600;
+  color: #333;
+}
+
+.expense-summary-net {
+  background-color: #ccffcc !important;
+}
+
+.expense-summary-net td {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Modal styles */
+.create-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.expense-modal {
+  background: white;
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 550px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.expense-modal .create-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.expense-modal .create-form-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.expense-modal .close-button {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expense-modal .close-button:hover {
+  color: #333;
+}
+
+.expense-modal .create-form-body {
+  padding: 16px 20px;
+}
+
+.expense-modal .form-group {
+  margin-bottom: 12px;
+}
+
+.expense-modal .form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  font-size: 12px;
+  color: #333;
+}
+
+.expense-modal .form-group input,
+.expense-modal .form-group select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color-light, #ddd);
+  border-radius: var(--border-radius-sm);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.expense-modal .form-group input:focus,
+.expense-modal .form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Form row for 2-column layout */
+.expense-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.expense-modal .create-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* No button style for row numbers */
+.no-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.no-btn:hover {
+  color: #0056b3;
+}
+
+/* ===== Responsive ===== */
+@media screen and (max-width: 768px) {
+  .expense-modal {
+    width: 95%;
+    max-width: none;
+  }
+
+  .expense-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .expense-date-range {
+    flex-wrap: wrap;
+  }
+}

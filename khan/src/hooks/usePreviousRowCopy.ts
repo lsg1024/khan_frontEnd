@@ -1,7 +1,43 @@
 import { useCallback } from "react";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const usePreviousRowCopy = (rows: any[], updateRow: any) => {
+interface Row {
+	id: string;
+	storeId?: string;
+	storeName?: string;
+	productId?: string;
+	productName?: string;
+	materialId?: string;
+	materialName?: string;
+	colorId?: string;
+	colorName?: string;
+	classificationId?: string;
+	classificationName?: string;
+	setTypeId?: string;
+	setTypeName?: string;
+	factoryId?: string;
+	factoryName?: string;
+	productLaborCost?: number;
+	productAddLaborCost?: number;
+	productPurchaseCost?: number;
+	mainStonePrice?: number;
+	stoneAddLaborCost?: number;
+	assistanceStonePrice?: number;
+	mainStoneCount?: number;
+	assistanceStoneCount?: number;
+	stoneWeightTotal?: number;
+	stoneWeight?: number;
+	stoneInfos?: unknown[];
+	productFactoryName?: string;
+	storeHarry?: number;
+	storeGrade?: string;
+	grade?: string;
+	[key: string]: unknown;
+}
+
+export const usePreviousRowCopy = (
+	rows: Row[],
+	updateRow: (rowId: string, field: string, value: unknown) => void
+) => {
 	// 바로 직전 행의 필수값 가져오기
 	const getPreviousRowRequiredValues = useCallback(
 		(currentIndex: number) => {
@@ -30,8 +66,7 @@ export const usePreviousRowCopy = (rows: any[], updateRow: any) => {
 			fieldType: "store" | "product" | "material" | "color"
 		) => {
 			const currentIndex = rows.findIndex(
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(row: any) => row.id === currentRowId
+				(row: Row) => row.id === currentRowId
 			);
 			const currentRow = rows[currentIndex];
 

@@ -1,16 +1,10 @@
 /* ===== 가격 정보 섹션 ===== */
-.price-section {
-	width: 100%;
-	background-color: white;
-	padding: 0.75rem;
-	border-radius: 8px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+/* .price-section 기본 스타일: common.css에서 통합 정의 */
 
 .price-section h2 {
 	margin: 0 0 0.5rem 0;
 	font-size: 1rem;
-	color: #333;
+	color: var(--text-dark);
 	border-bottom: 2px solid #28a745;
 	padding-bottom: 0.25rem;
 }
@@ -19,7 +13,7 @@
 .price-table {
 	width: 100%;
 	border-collapse: collapse;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	background: white;
 	margin-top: 0.5rem;
 	font-size: 12px; /* 전체 테이블 글씨 크기 축소 */
@@ -28,14 +22,14 @@
 .price-table th,
 .price-table td {
 	padding: 6px 3px; /* 패딩 더 축소 */
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	text-align: center;
 	vertical-align: middle;
 	line-height: 1.1; /* 줄 간격 더 축소 */
 }
 
 .price-table th {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	font-weight: bold;
 	color: #495057;
 	font-size: 11px; /* 헤더 글씨 크기 축소 */
@@ -110,11 +104,11 @@
 .price-table .table-input {
 	width: 100%;
 	padding: 4px 6px; /* 입력 필드 패딩 축소 */
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	border-radius: 3px;
 	font-size: 12px; /* 입력 필드 글씨 크기 축소 */
 	background: white;
-	color: #333;
+	color: var(--text-dark);
 	text-align: center;
 	box-sizing: border-box;
 	line-height: 1.2; /* 줄 간격 축소 */
@@ -129,11 +123,11 @@
 .price-table .editable-select {
 	width: 100%;
 	padding: 4px 6px; /* 셀렉트 패딩 축소 */
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	border-radius: 3px;
 	font-size: 12px; /* 셀렉트 글씨 크기 축소 */
 	background: white;
-	color: #333;
+	color: var(--text-dark);
 	text-align: center;
 	text-align-last: center;
 	box-sizing: border-box;

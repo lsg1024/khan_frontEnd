@@ -9,7 +9,7 @@
 }
 
 .wg-price-popup .popup-header {
-	background-color: #fff;
+	background-color: var(--bg-primary);
 	padding: 24px;
 	border-bottom: 1px solid #e0e0e0;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -19,7 +19,7 @@
 	margin: 0;
 	font-size: 24px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .wg-price-popup .popup-content {
@@ -33,9 +33,9 @@
 
 /* 거래 코드 섹션 */
 .wg-price-popup .sale-code-section {
-	background-color: #fff;
+	background-color: var(--bg-primary);
 	padding: 20px;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -66,7 +66,7 @@
 
 /* 현재 시세 섹션 */
 .wg-price-popup .current-price-section {
-	background-color: #fff;
+	background-color: var(--bg-primary);
 	padding: 24px;
 	border-radius: 12px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -75,7 +75,7 @@
 .wg-price-popup .section-title {
 	font-size: 14px;
 	font-weight: 600;
-	color: #666;
+	color: var(--text-light);
 	margin-bottom: 12px;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
@@ -97,7 +97,7 @@
 .wg-price-popup .price-unit {
 	font-size: 18px;
 	font-weight: 500;
-	color: #666;
+	color: var(--text-light);
 }
 
 .wg-price-popup .loading-text {
@@ -107,7 +107,7 @@
 
 /* 새 시세 입력 섹션 */
 .wg-price-popup .new-price-section {
-	background-color: #fff;
+	background-color: var(--bg-primary);
 	padding: 24px;
 	border-radius: 12px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -131,7 +131,7 @@
 	padding: 14px 50px 14px 16px;
 	font-size: 18px;
 	border: 2px solid #e0e0e0;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	transition: all 0.3s ease;
 	outline: none;
 }
@@ -151,7 +151,7 @@
 	right: 16px;
 	font-size: 16px;
 	font-weight: 500;
-	color: #666;
+	color: var(--text-light);
 	pointer-events: none;
 }
 
@@ -162,7 +162,7 @@
 	color: #fff;
 	background-color: #1976d2;
 	border: none;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	cursor: pointer;
 	transition: all 0.3s ease;
 	white-space: nowrap;
@@ -186,7 +186,7 @@
 	padding: 16px;
 	background-color: #fff3e0;
 	border-left: 4px solid #ff9800;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 }
 
 .wg-price-popup .info-icon {
@@ -213,10 +213,10 @@
 	padding: 12px 32px;
 	font-size: 16px;
 	font-weight: 500;
-	color: #666;
-	background-color: #fff;
+	color: var(--text-light);
+	background-color: var(--bg-primary);
 	border: 2px solid #e0e0e0;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	cursor: pointer;
 	transition: all 0.3s ease;
 }

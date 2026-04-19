@@ -6,6 +6,7 @@ import SaleSearch from "../../components/common/sale/SaleSearch";
 import SaleList from "../../components/common/sale/SaleList";
 import Pagination from "../../components/common/Pagination";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useToast } from "../../components/common/toast/Toast";
 import type { SaleSearchFilters } from "../../components/common/sale/SaleSearch";
 import SaleBulkActionBar from "../../components/common/sale/SaleBulkActionBar";
 import "../../styles/pages/sale/SalePage.css";
@@ -25,6 +26,7 @@ export const SalePage = () => {
 	const [sales, setSales] = useState<SaleRow[]>([]);
 	const [selected, setSelected] = useState<string[]>([]);
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 
 	// 팝업 관리
 	const { openSinglePopup, openMultiPopup } = usePopupManager();
@@ -65,15 +67,15 @@ export const SalePage = () => {
 		field: K,
 		value: SaleSearchFilters[K]
 	) => {
-		setSearchFilters((prev) => ({ ...prev, [field]: value }));
-
-		// start 선택 시 end 자동 보정 (문자열 날짜 비교)
-		if (field === "start" && (value as string) > prevEnd()) {
-			setSearchFilters((prev) => ({ ...prev, end: value as string }));
-		}
+		setSearchFilters((prev) => {
+			const updated = { ...prev, [field]: value };
+			// start 선택 시 end 자동 보정 (문자열 날짜 비교)
+			if (field === "start" && (value as string) > prev.end) {
+				updated.end = value as string;
+			}
+			return updated;
+		});
 	};
-
-	const prevEnd = () => searchFilters.end;
 
 	// 한글 판매 타입을 영어 enum으로 변환
 	const convertSaleTypeToEnum = (saleType: string): string => {
@@ -116,8 +118,10 @@ export const SalePage = () => {
 					setSelected((prev) => [...prev, flowCode]);
 				} else {
 					// 다른 거래처 또는 다른 거래번호
-					alert(
-						`동일한 거래처(${firstSelectedSale?.storeName})와 거래번호(${firstSelectedSale?.displayCode || firstSelectedSale?.saleCode})의 항목만 선택할 수 있습니다.`
+					showToast(
+						`동일한 거래처(${firstSelectedSale?.storeName})와 거래번호(${firstSelectedSale?.displayCode || firstSelectedSale?.saleCode})의 항목만 선택할 수 있습니다.`,
+						"warning",
+						3000
 					);
 				}
 			}
@@ -177,8 +181,8 @@ export const SalePage = () => {
 			link.click();
 			link.parentNode?.removeChild(link);
 			window.URL.revokeObjectURL(url);
-		} catch {
-			alert("엑셀 다운로드에 실패했습니다.");
+		} catch (err) {
+			handleError(err);
 		} finally {
 			setLoading(false);
 		}
@@ -187,7 +191,7 @@ export const SalePage = () => {
 	// 시세 추가 처리
 	const handleAddMarketPrice = async () => {
 		if (selected.length === 0) {
-			alert("시세를 추가할 판매 항목을 선택해주세요.");
+			showToast("시세를 추가할 판매 항목을 선택해주세요.", "warning", 3000);
 			return;
 		}
 
@@ -195,7 +199,7 @@ export const SalePage = () => {
 			// 선택된 판매 항목들의 saleCode 가져오기 (동일한 saleCode를 가진 항목만 선택 가능)
 			const selectedSale = sales.find((sale) => sale.flowCode === selected[0]);
 			if (!selectedSale || !selectedSale.saleCode) {
-				alert("판매 정보를 찾을 수 없습니다.");
+				showToast("판매 정보를 찾을 수 없습니다.", "error", 3000);
 				return;
 			}
 
@@ -252,7 +256,7 @@ export const SalePage = () => {
 	// 반품 처리 - SaleDetailPage 팝업으로 열기
 	const handleReturn = () => {
 		if (selected.length === 0) {
-			alert("반품할 판매 항목을 선택해주세요.");
+			showToast("반품할 판매 항목을 선택해주세요.", "warning", 3000);
 			return;
 		}
 

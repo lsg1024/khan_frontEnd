@@ -31,7 +31,18 @@ const ImageZoomModal: React.FC<ImageZoomModalProps> = ({
 	}, [onClose]);
 
 	return (
-		<div className="image-zoom-modal-overlay" onClick={onClose}>
+		<div
+			className="image-zoom-modal-overlay"
+			onClick={onClose}
+			role="dialog"
+			aria-label="이미지 확대 보기"
+			onKeyDown={(e) => {
+				if (e.key === "Escape") {
+					onClose();
+				}
+			}}
+			tabIndex={0}
+		>
 			<div
 				className="image-zoom-modal-content"
 				onClick={(e) => e.stopPropagation()}

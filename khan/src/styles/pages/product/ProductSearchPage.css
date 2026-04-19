@@ -7,8 +7,8 @@
 
 .product-search-container {
 	background: white;
-	border-radius: 8px;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-modal);
 	height: 100%;
 	display: flex;
 	flex-direction: column;
@@ -21,14 +21,14 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 1rem 1.5rem;
-	border-bottom: 1px solid #e9ecef;
-	background-color: #f8f9fa;
+	border-bottom: 1px solid var(--border-color-soft);
+	background-color: var(--bg-secondary);
 }
 
 .product-search-header h2 {
 	margin: 0;
 	font-size: 1.25rem;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .search-products-grid {
@@ -60,7 +60,7 @@
 	justify-content: center;
 	padding: 3rem;
 	text-align: center;
-	color: #666;
+	color: var(--text-light);
 }
 
 .empty-state .empty-icon {
@@ -72,7 +72,7 @@
 .empty-state h3 {
 	margin: 0 0 0.5rem 0;
 	font-size: 1.25rem;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .empty-state p {
@@ -103,7 +103,7 @@
 .loading-container p {
 	margin: 0;
 	font-size: 0.875rem;
-	color: #666;
+	color: var(--text-light);
 }
 
 /* 에러 상태 스타일 */
@@ -124,8 +124,8 @@
 
 .search-product-modal-content {
 	background: white;
-	border-radius: 8px;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-modal);
 	width: 90%;
 	max-width: 1100px;
 	height: 700px;
@@ -137,7 +137,7 @@
 .search-product-card {
 	height: auto;
 	width: 180px;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	cursor: pointer;
 	border-radius: 2px var(--border-radius);
 }

@@ -64,6 +64,10 @@ import UserManagementPopupPage from "./pages/setting/UserManagementPopupPage";
 import GoldPricePopupPage from "./pages/setting/GoldPricePopupPage";
 import GoldPriceLogPage from "./pages/setting/GoldPriceLogPage";
 import WGPricePopupPage from "./pages/sale/WGPricePopupPage";
+import MessagePage from "./pages/message/MessagePage";
+import MessageHistoryPage from "./pages/message/MessageHistoryPage";
+import MessageSettingsPopupPage from "./pages/setting/MessageSettingsPopupPage";
+import ExpensePage from "./pages/expense/ExpensePage";
 
 import Layout from "./components/layout/Layout";
 
@@ -173,6 +177,7 @@ function App() {
 						element={<UserManagementPopupPage />}
 					/>
 					<Route path="/gold-price-setting" element={<GoldPricePopupPage />} />
+					<Route path="/message-settings" element={<MessageSettingsPopupPage />} />
 					<Route path="/gold-price-log" element={<GoldPriceLogPage />} />
 					<Route path="/stocks/inventory/barcode" element={<InventoryBarcodePopup />} />
 					<Route path="/catalog/create" element={<ProductCreatePage />} />
@@ -264,6 +269,9 @@ function App() {
 						<Route path="/gold-money" element={<GoldMoneyPage />} />
 						<Route path="/purchase" element={<PurchasePage />} />
 						<Route path="/purchase/receipts" element={<PurchaseReceiptsPage />} />
+						<Route path="/expense" element={<ExpensePage />} />
+						<Route path="/message" element={<MessagePage />} />
+						<Route path="/message/history" element={<MessageHistoryPage />} />
 						<Route path="/login" element={<Navigate to="/" replace />} />
 						<Route path="/join" element={<Navigate to="/" replace />} />
 					</Route>

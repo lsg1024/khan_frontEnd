@@ -20,6 +20,8 @@ export const StockReturnPage = () => {
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
 	const [colors, setColors] = useState<string[]>([]);
+	const [classifications, setClassifications] = useState<string[]>([]);
+	const [materials, setMaterials] = useState<string[]>([]);
 	const [orderStatus] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
@@ -31,6 +33,7 @@ export const StockReturnPage = () => {
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
 		search: "",
+		searchField: "",
 		start: "2025-01-01",
 		end: getLocalDate(),
 		order_status: "RETURN", // RETURN 상태로 고정
@@ -38,6 +41,8 @@ export const StockReturnPage = () => {
 		store: "",
 		setType: "",
 		color: "",
+		classification: "",
+		material: "",
 		sortField: "",
 		sortOrder: "" as const,
 	});
@@ -101,6 +106,7 @@ export const StockReturnPage = () => {
 	const handleReset = () => {
 		const resetFilters: SearchFilters = {
 			search: "",
+			searchField: "",
 			start: "2025-01-01",
 			end: getLocalDate(),
 			order_status: "RETURN", // RETURN 상태 유지
@@ -108,6 +114,8 @@ export const StockReturnPage = () => {
 			store: "",
 			setType: "",
 			color: "",
+			classification: "",
+			material: "",
 			sortField: "",
 			sortOrder: "" as const,
 		};
@@ -201,11 +209,14 @@ export const StockReturnPage = () => {
 					filters.start,
 					filters.end,
 					filters.search,
+					filters.searchField,
 					"RETURN", // RETURN 상태로 고정
 					filters.factory,
 					filters.store,
 					filters.setType,
 					filters.color,
+					filters.classification,
+					filters.material,
 					filters.sortField,
 					filters.sortOrder as "ASC" | "DESC" | "",
 					page
@@ -274,6 +285,24 @@ export const StockReturnPage = () => {
 			if (colorResponse.success && colorResponse.data) {
 				setColors(colorResponse.data);
 			}
+
+			const classificationResponse = await stockApi.getFilterClassifications(
+				searchFilters.start,
+				searchFilters.end,
+				"RETURN"
+			);
+			if (classificationResponse.success && classificationResponse.data) {
+				setClassifications(classificationResponse.data);
+			}
+
+			const materialResponse = await stockApi.getFilterMaterials(
+				searchFilters.start,
+				searchFilters.end,
+				"RETURN"
+			);
+			if (materialResponse.success && materialResponse.data) {
+				setMaterials(materialResponse.data);
+			}
 		} catch (err) {
 			handleError(err);
 		} finally {
@@ -319,6 +348,8 @@ export const StockReturnPage = () => {
 					stores={stores}
 					setTypes={setTypes}
 					colors={colors}
+					classifications={classifications}
+					materials={materials}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
 					onStart={true}

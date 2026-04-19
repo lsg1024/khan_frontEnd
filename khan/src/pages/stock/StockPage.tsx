@@ -8,6 +8,7 @@ import StockList from "../../components/common/stock/StockList";
 import Pagination from "../../components/common/Pagination";
 import StockBulkActionBar from "../../components/common/stock/StockBulkActionBar";
 import { useErrorHandler } from "../../utils/errorHandler";
+import { useToast } from "../../components/common/toast/Toast";
 import type { SearchFilters } from "../../components/common/stock/StockSearch";
 import { usePopupManager } from "../../hooks/usePopupManager";
 import { useBarcodeHandler } from "../../hooks/useBarcodeHandler";
@@ -27,9 +28,12 @@ export const StockPage = () => {
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
 	const [colors, setColors] = useState<string[]>([]);
+	const [classifications, setClassifications] = useState<string[]>([]);
+	const [materials, setMaterials] = useState<string[]>([]);
 	const [orderStatus] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 
 	// 체크박스 선택 관련 상태 (다중 선택 허용)
 	const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
@@ -61,6 +65,7 @@ export const StockPage = () => {
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
 		search: "",
+		searchField: "",
 		start: "2025-01-01",
 		end: getLocalDate(),
 		order_status: "",
@@ -68,6 +73,8 @@ export const StockPage = () => {
 		store: "",
 		setType: "",
 		color: "",
+		classification: "",
+		material: "",
 		sortField: "",
 		sortOrder: "" as const,
 	});
@@ -77,15 +84,15 @@ export const StockPage = () => {
 		field: K,
 		value: SearchFilters[K]
 	) => {
-		setSearchFilters((prev) => ({ ...prev, [field]: value }));
-
-		// start 선택 시 end 자동 보정 (문자열 날짜 비교)
-		if (field === "start" && (value as string) > prevEnd()) {
-			setSearchFilters((prev) => ({ ...prev, end: value as string }));
-		}
+		setSearchFilters((prev) => {
+			const updated = { ...prev, [field]: value };
+			// start 선택 시 end 자동 보정 (문자열 날짜 비교)
+			if (field === "start" && (value as string) > prev.end) {
+				updated.end = value as string;
+			}
+			return updated;
+		});
 	};
-
-	const prevEnd = () => searchFilters.end;
 
 	// 선택 관련 핸들러
 	const handleSelectStock = (flowCode: string, checked: boolean) => {
@@ -130,6 +137,7 @@ export const StockPage = () => {
 	const handleReset = () => {
 		const resetFilters: SearchFilters = {
 			search: "",
+			searchField: "",
 			start: "2025-01-01",
 			end: getLocalDate(),
 			order_status: "",
@@ -137,6 +145,8 @@ export const StockPage = () => {
 			store: "",
 			setType: "",
 			color: "",
+			classification: "",
+			material: "",
 			sortField: "",
 			sortOrder: "" as const,
 		};
@@ -172,7 +182,7 @@ export const StockPage = () => {
 
 		const newPopup = window.open(url, NAME, FEATURES);
 		if (!newPopup) {
-			alert("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.");
+			showToast("팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.", "error", 3000);
 		}
 	};
 
@@ -193,18 +203,16 @@ export const StockPage = () => {
 				stockApi.deleteStock(flowCode)
 			);
 
-			const responses = await Promise.all(deletePromises);
+			const results = await Promise.allSettled(deletePromises);
 
 			// 성공/실패 개수 확인
-			const successCount = responses.filter((res) => res.success).length;
-			const failCount = responses.length - successCount;
+			const succeeded = results.filter(r => r.status === "fulfilled").length;
+			const failed = results.filter(r => r.status === "rejected").length;
 
-			if (failCount === 0) {
-				alert(`${successCount}개의 재고가 성공적으로 삭제되었습니다.`);
+			if (failed > 0) {
+				showToast(`${succeeded}건 성공, ${failed}건 실패`, "warning", 3000);
 			} else {
-				alert(
-					`${successCount}개 성공, ${failCount}개 실패\n일부 재고 삭제에 실패했습니다.`
-				);
+				showToast("선택한 재고가 삭제되었습니다.", "success", 3000);
 			}
 
 			// 목록 새로고침 및 선택 초기화
@@ -223,12 +231,15 @@ export const StockPage = () => {
 			const response = await orderApi.downloadOrdersExcel(
 				searchFilters.start,
 				searchFilters.end,
-				"ORDER",
+				searchFilters.order_status,
 				searchFilters.search,
+				searchFilters.searchField,
 				searchFilters.factory,
 				searchFilters.store,
 				searchFilters.setType,
-				searchFilters.color
+				searchFilters.color,
+				searchFilters.classification,
+				searchFilters.material
 			);
 
 			const blob = new Blob([response.data], {
@@ -279,11 +290,14 @@ export const StockPage = () => {
 					filters.start,
 					filters.end,
 					filters.search,
+					filters.searchField,
 					filters.order_status,
 					filters.factory,
 					filters.store,
 					filters.setType,
 					filters.color,
+					filters.classification,
+					filters.material,
 					filters.sortField,
 					filters.sortOrder as "ASC" | "DESC" | "",
 					page
@@ -352,8 +366,26 @@ export const StockPage = () => {
 			if (colorResponse.success && colorResponse.data) {
 				setColors(colorResponse.data);
 			}
+
+			const classificationResponse = await stockApi.getFilterClassifications(
+				searchFilters.start,
+				searchFilters.end,
+				searchFilters.order_status || ""
+			);
+			if (classificationResponse.success && classificationResponse.data) {
+				setClassifications(classificationResponse.data);
+			}
+
+			const materialResponse = await stockApi.getFilterMaterials(
+				searchFilters.start,
+				searchFilters.end,
+				searchFilters.order_status || ""
+			);
+			if (materialResponse.success && materialResponse.data) {
+				setMaterials(materialResponse.data);
+			}
 		} catch (err) {
-			handleError(err);
+			console.error("드롭다운 데이터 로드 실패:", err);
 		} finally {
 			setDropdownLoading(false);
 		}
@@ -402,6 +434,8 @@ export const StockPage = () => {
 					stores={stores}
 					setTypes={setTypes}
 					colors={colors}
+					classifications={classifications}
+					materials={materials}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
 					onStart={true}

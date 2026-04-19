@@ -1,9 +1,9 @@
 /* StockList 스타일 */
 .stock-list {
 	overflow-x: auto;
-	background-color: white;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	background-color: var(--bg-primary);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-card);
 	min-width: auto;
 	max-width: 100%;
 	margin: 0 auto;
@@ -16,7 +16,7 @@
 .stock-table {
 	width: 100%;
 	font-size: 10px;
-	background-color: white;
+	background-color: var(--bg-primary);
 	color: #000;
 	border-collapse: collapse;
 	min-width: auto;
@@ -28,7 +28,7 @@
 }
 
 .stock-table tbody tr:hover {
-	background-color: white;
+	background-color: var(--bg-primary);
 }
 
 .stock-table th {
@@ -39,7 +39,7 @@
 	border-bottom: 1px solid #dee2e6;
 	border-right: 1px solid #dee2e6;
 	white-space: nowrap;
-	background-color: white;
+	background-color: var(--bg-primary);
 	position: sticky;
 	top: 0;
 	z-index: 10;
@@ -75,7 +75,7 @@
 	background-color: rgba(0, 0, 0, 0.9);
 	color: white;
 	padding: 6px 10px;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	white-space: normal;
 	max-width: 300px;
 	width: max-content;
@@ -113,7 +113,7 @@
 }
 
 .stock-row:hover {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 }
 
 /* 개별 셀 스타일 */
@@ -159,12 +159,12 @@
 
 .size-note-content .size {
 	font-weight: bold;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .size-note-content .note {
 	font-size: 11px;
-	color: #666;
+	color: var(--text-light);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -274,7 +274,7 @@
 }
 
 .stock-row-general {
-	background-color: #f8f9fa !important; /* 일반 - 회색 */
+	background-color: var(--bg-secondary) !important; /* 일반 - 회색 */
 }
 
 .stock-row-rental {

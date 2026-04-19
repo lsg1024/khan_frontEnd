@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 
 export interface SearchFilters {
     search: string;
+    searchField: string;
     start: string;
     end: string;
     order_status: string;
@@ -9,6 +10,8 @@ export interface SearchFilters {
     store: string;
     setType: string;
     color: string;
+    classification: string;
+    material: string;
     sortField: string;
     sortOrder: "ASC" | "DESC" | "";
 }
@@ -29,6 +32,8 @@ interface StockSearchProps {
     stores: string[];
     setTypes: string[];
     colors: string[];
+    classifications: string[];
+    materials: string[];
     loading: boolean;
     dropdownLoading: boolean;
 }
@@ -46,6 +51,8 @@ const StockSearch: React.FC<StockSearchProps> = ({
     stores,
     setTypes,
     colors,
+    classifications,
+    materials,
     loading,
     dropdownLoading,
 }) => {
@@ -168,9 +175,59 @@ const StockSearch: React.FC<StockSearchProps> = ({
                                 ))}
                             </select>
                         </div>
+
+                        <div className="filter-group-common">
+                            <select
+                                id="classification"
+                                value={searchFilters.classification}
+                                onChange={(e) => onFilterChange("classification", e.target.value)}
+                                disabled={dropdownLoading}
+                            >
+                                <option value="">분류</option>
+                                {classifications.map((classification) => (
+                                    <option key={classification} value={classification}>
+                                        {classification}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="filter-group-common">
+                            <select
+                                id="material"
+                                value={searchFilters.material}
+                                onChange={(e) => onFilterChange("material", e.target.value)}
+                                disabled={dropdownLoading}
+                            >
+                                <option value="">재질</option>
+                                {materials.map((material) => (
+                                    <option key={material} value={material}>
+                                        {material}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="search-controls-common">
+                        <div className="filter-group-common">
+                            <select
+                                id="searchField"
+                                value={searchFilters.searchField}
+                                onChange={(e) => onFilterChange("searchField", e.target.value)}
+                                disabled={dropdownLoading}
+                            >
+                                <option value="">검색 기준</option>
+                                <option value="modelNumber">모델번호</option>
+                                <option value="factory">제조사</option>
+                                <option value="store">판매처</option>
+                                <option value="setType">세트타입</option>
+                                <option value="classification">분류</option>
+                                <option value="material">재질</option>
+                                <option value="color">색상</option>
+                            </select>
+                        </div>
+
                         <div className="filter-group-common">
                             <select
                                 id="sortField"

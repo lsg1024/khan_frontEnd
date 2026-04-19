@@ -1,15 +1,15 @@
 .barcode-printer-settings {
 	padding: 20px;
 	background: white;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-card);
 }
 
 .printer-status {
 	margin-bottom: 16px;
 	padding: 12px;
 	background: #f5f5f5;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 14px;
 }
 
@@ -18,7 +18,7 @@
 	padding: 12px;
 	background: #fee;
 	border: 1px solid #fcc;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	color: #c33;
 	font-size: 14px;
 }
@@ -32,14 +32,14 @@
 	margin-bottom: 8px;
 	font-weight: 600;
 	font-size: 14px;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .printer-select {
 	width: 100%;
 	padding: 10px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	font-size: 14px;
 	background: white;
 }
@@ -64,7 +64,7 @@
 	background: #4a90e2;
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 14px;
 	cursor: pointer;
 	transition: background 0.2s;
@@ -83,7 +83,7 @@
 	margin-top: 12px;
 	padding: 10px;
 	background: #f0f8ff;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 13px;
-	color: #333;
+	color: var(--text-dark);
 }

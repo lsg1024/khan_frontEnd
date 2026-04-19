@@ -1,0 +1,309 @@
+/* ===== 메시지 페이지 ===== */
+
+/* 메시지 날짜 선택 - 달력 아이콘 숨기고 클릭 시 달력 열림 (다른 페이지와 동일) */
+.message-date-range input[type="date"]::-webkit-calendar-picker-indicator {
+	opacity: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	cursor: pointer;
+}
+
+.message-date-range input[type="date"] {
+	position: relative;
+	padding: 4px 6px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
+	background-color: var(--bg-primary);
+	color: #000;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.message-date-range input[type="date"]:focus {
+	outline: none;
+	border-color: #667eea;
+}
+
+.message-date-range {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #000;
+}
+
+.message-date-range span {
+	color: var(--text-color);
+	font-weight: 500;
+}
+
+/* 메시지 레이아웃 (2컬럼) */
+.message-layout {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+/* 거래처 선택 섹션 */
+.message-stores-section {
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-color, #e0e0e0);
+	border-radius: var(--border-radius-lg);
+	padding: 12px;
+}
+
+.message-stores-section .section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.message-stores-section h3 {
+	font-size: 13px;
+	font-weight: 600;
+	margin: 0;
+	color: var(--text-color);
+}
+
+/* 거래처 리스트 */
+.store-list {
+	max-height: 380px;
+	overflow-y: auto;
+	border: 1px solid var(--border-color, #e0e0e0);
+	border-radius: var(--border-radius-sm);
+	background-color: var(--bg-primary);
+}
+
+.store-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 10px;
+	cursor: pointer;
+	border-bottom: 1px solid var(--border-color-light, #f0f0f0);
+	font-size: 12px;
+	transition: background-color 0.15s ease;
+}
+
+.store-item:last-child {
+	border-bottom: none;
+}
+
+.store-item:hover {
+	background-color: var(--hover-bg, #f5f5f5);
+}
+
+.store-item.selected {
+	background-color: var(--selected-bg, #e8f4fd);
+}
+
+.store-name {
+	flex: 1;
+	font-weight: 500;
+	color: var(--text-color);
+}
+
+.store-phone {
+	color: var(--text-secondary, #888);
+	font-size: 11px;
+}
+
+.empty-message {
+	text-align: center;
+	padding: 20px;
+	color: var(--text-secondary, #888);
+	font-size: 12px;
+}
+
+/* 메시지 작성 섹션 */
+.message-content-section {
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-color, #e0e0e0);
+	border-radius: var(--border-radius-lg);
+	padding: 12px;
+}
+
+.message-content-section h3 {
+	font-size: 13px;
+	font-weight: 600;
+	margin: 0 0 8px 0;
+	color: var(--text-color);
+}
+
+.message-textarea {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid var(--border-color, #e0e0e0);
+	border-radius: var(--border-radius-sm);
+	font-size: 12px;
+	font-family: inherit;
+	resize: vertical;
+	box-sizing: border-box;
+	background-color: var(--bg-primary);
+	color: var(--text-color);
+}
+
+.message-textarea:focus {
+	outline: none;
+	border-color: #667eea;
+}
+
+.char-count {
+	text-align: right;
+	font-size: 11px;
+	color: var(--text-secondary, #888);
+	margin: 4px 0 12px 0;
+}
+
+.send-btn {
+	width: 100%;
+	padding: 10px;
+	font-size: 13px;
+	font-weight: 600;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+/* 전송 결과 섹션 */
+.message-results-section {
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-color, #e0e0e0);
+	border-radius: var(--border-radius-lg);
+	padding: 12px;
+	margin-top: 12px;
+}
+
+.message-results-section h3 {
+	font-size: 13px;
+	font-weight: 600;
+	margin: 0 0 8px 0;
+	color: var(--text-color);
+}
+
+/* 결과 행 색상 */
+.row-success {
+	background-color: var(--success-bg, #f0fff4);
+}
+
+.row-failed {
+	background-color: var(--error-bg, #fff5f5);
+}
+
+.content-cell {
+	max-width: 200px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.empty-row {
+	text-align: center;
+	color: var(--text-secondary, #888);
+	padding: 40px 0 !important;
+}
+
+/* SENS Config Section (팝업용) */
+.sens-config-section {
+	border: 1px solid var(--border-color, #e0e0e0);
+	border-radius: var(--border-radius-lg);
+	padding: 16px;
+	margin-top: 20px;
+}
+
+.sens-config-section h3 {
+	font-size: 14px;
+	font-weight: 600;
+	margin: 0 0 16px 0;
+}
+
+.sens-form-group {
+	margin-bottom: 12px;
+}
+
+.sens-form-group label {
+	display: block;
+	font-size: 12px;
+	font-weight: 500;
+	margin-bottom: 4px;
+	color: var(--text-secondary, #666);
+}
+
+.sens-form-group input {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid var(--border-color, #e0e0e0);
+	border-radius: var(--border-radius-sm);
+	font-size: 13px;
+	box-sizing: border-box;
+}
+
+.sens-btn-group {
+	display: flex;
+	gap: 8px;
+	margin-top: 16px;
+}
+
+/* SENS 설정 팝업 버튼 스타일 */
+.sens-btn-group button {
+	padding: 8px 16px;
+	border: none;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.sens-btn-group .search-btn-common {
+	background-color: #007bff;
+	color: white;
+}
+
+.sens-btn-group .search-btn-common:hover:not(:disabled) {
+	background-color: #0056b3;
+}
+
+.sens-btn-group .search-btn-common:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.sens-btn-group .reset-btn-common {
+	background-color: #6c757d;
+	color: white;
+}
+
+.sens-btn-group .reset-btn-common:hover:not(:disabled) {
+	background-color: #5a6268;
+}
+
+.sens-btn-group .common-btn-common {
+	background-color: #28a745;
+	color: white;
+}
+
+.sens-btn-group .common-btn-common:hover:not(:disabled) {
+	background-color: #218838;
+}
+
+.sens-btn-group .delete-btn-common {
+	background-color: #dc3545;
+	color: white;
+}
+
+.sens-btn-group .delete-btn-common:hover:not(:disabled) {
+	background-color: #b52a37;
+}
+
+/* ===== 반응형 ===== */
+@media screen and (max-width: 768px) {
+	.message-layout {
+		grid-template-columns: 1fr;
+	}
+}

@@ -3,8 +3,8 @@
 	flex-direction: column;
 	gap: 12px;
 	background: #fff;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	padding: 16px;
 }
 
@@ -42,7 +42,7 @@
 .sale-option-field label {
 	font-size: 10px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .sale-option-field-search label.required-field::before,
@@ -55,8 +55,8 @@
 .sale-option-field-search select,
 .sale-option-field input,
 .sale-option-field select {
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	font-size: 11px;
 }
 
@@ -69,14 +69,14 @@
 }
 
 .sale-option-field input[readonly] {
-	background-color: white;
+	background-color: var(--bg-primary);
 	cursor: pointer;
 }
 
 .btn-search {
 	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	background: white;
 	cursor: pointer;
 	font-size: 14px;

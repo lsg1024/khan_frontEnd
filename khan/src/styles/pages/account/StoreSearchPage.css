@@ -8,8 +8,8 @@
 
 .store-search-container {
 	background: white;
-	border-radius: 8px;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-modal);
 	height: 100%;
 	display: flex;
 	flex-direction: column;
@@ -22,13 +22,13 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 1rem 1.5rem;
-	border-bottom: 1px solid #e9ecef;
-	background-color: #f8f9fa;
+	border-bottom: 1px solid var(--border-color-soft);
+	background-color: var(--bg-secondary);
 }
 
 .store-search-header h2 {
 	margin: 0;
-	color: #333;
+	color: var(--text-dark);
 	font-size: 1.2rem;
 }
 
@@ -36,7 +36,7 @@
 	background: none;
 	border: none;
 	font-size: 1.5rem;
-	color: #666;
+	color: var(--text-light);
 	cursor: pointer;
 	padding: 0;
 	width: 30px;
@@ -64,7 +64,7 @@
 .error-state p,
 .empty-state p {
 	margin: 0;
-	color: #666;
+	color: var(--text-light);
 	font-size: 1rem;
 }
 

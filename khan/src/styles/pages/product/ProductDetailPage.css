@@ -26,7 +26,7 @@
 	gap: 0.5rem;
 	margin-bottom: 0.75rem;
 	padding-bottom: 0.5rem;
-	border-bottom: 1px solid #e9ecef;
+	border-bottom: 1px solid var(--border-color-soft);
 }
 
 .back-button {
@@ -34,7 +34,7 @@
 	background-color: #007bff;
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
 	text-decoration: none;
 	font-size: 0.9rem;
@@ -49,8 +49,8 @@
 	width: 100%;
 	min-height: 80px;
 	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	font-family: inherit;
 	font-size: 12px;
 	line-height: 1.4;
@@ -70,8 +70,8 @@
 .editable-number {
 	width: 100%;
 	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	font-family: inherit;
 	font-size: 14px;
 	background: white !important;
@@ -99,7 +99,7 @@
 .detail-header h1 {
 	margin: 0;
 	font-size: 1.5rem;
-	color: #333;
+	color: var(--text-dark);
 }
 
 /* 메인 컨텐트 - 직렬 구조 */
@@ -136,9 +136,9 @@
 	align-items: center;
 	width: 100%;
 	padding: 0.5rem;
-	background-color: white;
-	border-radius: 8px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	background-color: var(--bg-primary);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-section);
 }
 
 /* 이미지 슬라이더 컨테이너 */
@@ -159,9 +159,9 @@
 
 .main-image-container img {
 	object-fit: contain;
-	background-color: white;
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-color-soft);
+	border-radius: var(--border-radius-lg);
 	padding: 0.3rem;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -211,8 +211,8 @@
 	height: 30px;
 	border-radius: 50%;
 	border: 2px solid #ddd;
-	background-color: white;
-	color: #666;
+	background-color: var(--bg-primary);
+	color: var(--text-light);
 	font-size: 12px;
 	font-weight: bold;
 	cursor: pointer;
@@ -244,9 +244,9 @@
 	width: 200px;
 	height: 200px;
 	object-fit: contain;
-	background-color: white;
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-color-soft);
+	border-radius: var(--border-radius-lg);
 	padding: 1rem;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -257,9 +257,9 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: white;
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-color-soft);
+	border-radius: var(--border-radius-lg);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -510,7 +510,7 @@
 	background-color: #28a745;
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
 	font-size: 12px;
 	transition: background-color 0.3s;
@@ -529,7 +529,7 @@
 	background-color: #6c757d;
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
 	font-size: 12px;
 	transition: background-color 0.3s;

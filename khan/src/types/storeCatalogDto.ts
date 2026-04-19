@@ -19,6 +19,7 @@ export interface StoreCatalogProductDto {
 	productMaterial: string;
 	productColor: string;
 	productNote: string;
+	stockCount: number;
 	image: {
 		imageId: string;
 		imagePath: string;

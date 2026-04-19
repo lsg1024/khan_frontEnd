@@ -91,15 +91,15 @@ export const OrderPage = () => {
 		field: K,
 		value: SearchFilters[K]
 	) => {
-		setSearchFilters((prev) => ({ ...prev, [field]: value }));
-
-		// start 선택 시 end 자동 보정 (문자열 날짜 비교)
-		if (field === "start" && (value as string) > prevEnd()) {
-			setSearchFilters((prev) => ({ ...prev, end: value as string }));
-		}
+		setSearchFilters((prev) => {
+			const updated = { ...prev, [field]: value };
+			// start 선택 시 end 자동 보정 (문자열 날짜 비교)
+			if (field === "start" && (value as string) > prev.end) {
+				updated.end = value as string;
+			}
+			return updated;
+		});
 	};
-
-	const prevEnd = () => searchFilters.end;
 
 	const handleOrderCreate = () => {
 		openSinglePopup(() => openOrderCreatePopup("order"));
@@ -400,8 +400,8 @@ export const OrderPage = () => {
 			setColors(colorResponse.data || []);
 			setClassifications(classificationResponse.data || []);
 			setMaterials(materialResponse.data || []);
-		} catch {
-			// 에러 처리
+		} catch (err) {
+			console.error("드롭다운 데이터 로드 실패:", err);
 		} finally {
 			setDropdownLoading(false);
 		}
@@ -462,7 +462,7 @@ export const OrderPage = () => {
 					<div className="date-picker-modal-overlay">
 						<div className="date-picker-modal">
 							<h3>출고일 변경</h3>
-							<p>주문번호: {selectedOrders}</p>
+							<p>선택된 주문: {selectedOrders.length}건</p>
 							<input
 								type="date"
 								value={newDeliveryDate.toISOString().split("T")[0]}

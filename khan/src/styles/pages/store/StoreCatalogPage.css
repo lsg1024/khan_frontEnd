@@ -53,7 +53,7 @@
 	padding: 10px 20px;
 	font-size: 14px;
 	font-weight: 500;
-	color: #666;
+	color: var(--text-light);
 	background: #fff;
 	border: 1px solid #e5e5e5;
 	border-radius: 24px;
@@ -63,7 +63,7 @@
 }
 
 .shop-tab:hover {
-	color: #333;
+	color: var(--text-dark);
 	border-color: #ccc;
 	background: #fafafa;
 }
@@ -105,7 +105,7 @@
 	padding: 12px 16px 12px 44px;
 	font-size: 14px;
 	border: 1px solid #e5e5e5;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	background: #f9f9f9;
 	transition: all 0.2s ease;
 }
@@ -159,10 +159,6 @@
 	border-top-color: #222;
 	border-radius: 50%;
 	animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-	to { transform: rotate(360deg); }
 }
 
 .shop-loading p {
@@ -256,7 +252,7 @@
 	font-weight: 600;
 	color: #996515;
 	background: rgba(255, 248, 220, 0.95);
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	backdrop-filter: blur(4px);
 }
 
@@ -308,9 +304,9 @@
 .stone-chip {
 	padding: 3px 8px;
 	font-size: 11px;
-	color: #666;
+	color: var(--text-light);
 	background: #f5f5f5;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 }
 
 .stone-chip.main {
@@ -323,7 +319,7 @@
 	font-size: 11px;
 	color: #999;
 	background: #f0f0f0;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 }
 
 /* 메모 */
@@ -358,7 +354,7 @@
 .shop-empty h3 {
 	font-size: 18px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 	margin: 0 0 8px;
 }
 

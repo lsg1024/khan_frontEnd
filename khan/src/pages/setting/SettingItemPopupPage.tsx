@@ -13,6 +13,9 @@ type ItemType =
 	| "stoneType"
 	| "stoneShape"
 	| "assistantStone"
+	| "bankType"
+	| "incomeAccount"
+	| "expenseAccount"
 	| "user"
 	| "role";
 
@@ -101,6 +104,21 @@ export default function SettingItemPopupPage(): JSX.Element {
 					response = await assistantStoneApi.getAssistantStones();
 					break;
 				}
+				case "bankType": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.getBankTypes();
+					break;
+				}
+				case "incomeAccount": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.getIncomeAccounts();
+					break;
+				}
+				case "expenseAccount": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.getExpenseAccounts();
+					break;
+				}
 				default:
 					return;
 			}
@@ -159,6 +177,21 @@ export default function SettingItemPopupPage(): JSX.Element {
 						case "assistantStone":
 							id = (anyItem.assistantStoneId as number) || "";
 							name = (anyItem.assistantStoneName as string) || "";
+							break;
+						case "bankType":
+							id = (anyItem.id as number) || "";
+							name = (anyItem.name as string) || "";
+							note = (anyItem.note as string) || "";
+							break;
+						case "incomeAccount":
+							id = (anyItem.id as number) || "";
+							name = (anyItem.name as string) || "";
+							note = (anyItem.note as string) || "";
+							break;
+						case "expenseAccount":
+							id = (anyItem.id as number) || "";
+							name = (anyItem.name as string) || "";
+							note = (anyItem.note as string) || "";
 							break;
 					}
 
@@ -302,6 +335,30 @@ export default function SettingItemPopupPage(): JSX.Element {
 					});
 					break;
 				}
+				case "bankType": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.createBankType({
+						name: createFormData.name,
+						note: createFormData.note,
+					});
+					break;
+				}
+				case "incomeAccount": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.createIncomeAccount({
+						name: createFormData.name,
+						note: createFormData.note,
+					});
+					break;
+				}
+				case "expenseAccount": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.createExpenseAccount({
+						name: createFormData.name,
+						note: createFormData.note,
+					});
+					break;
+				}
 			}
 
 			if (response?.success) {
@@ -434,6 +491,30 @@ export default function SettingItemPopupPage(): JSX.Element {
 					});
 					break;
 				}
+				case "bankType": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.updateBankType(Number(id), {
+						name: editFormData.name,
+						note: editFormData.note,
+					});
+					break;
+				}
+				case "incomeAccount": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.updateIncomeAccount(Number(id), {
+						name: editFormData.name,
+						note: editFormData.note,
+					});
+					break;
+				}
+				case "expenseAccount": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.updateExpenseAccount(Number(id), {
+						name: editFormData.name,
+						note: editFormData.note,
+					});
+					break;
+				}
 			}
 
 			if (response?.success) {
@@ -508,6 +589,21 @@ export default function SettingItemPopupPage(): JSX.Element {
 						"../../../libs/api/assistantStoneApi"
 					);
 					response = await assistantStoneApi.deleteAssistantStone(id);
+					break;
+				}
+				case "bankType": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.deleteBankType(Number(id));
+					break;
+				}
+				case "incomeAccount": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.deleteIncomeAccount(Number(id));
+					break;
+				}
+				case "expenseAccount": {
+					const { expenseMasterApi } = await import("../../../libs/api/expenseApi");
+					response = await expenseMasterApi.deleteExpenseAccount(Number(id));
 					break;
 				}
 			}

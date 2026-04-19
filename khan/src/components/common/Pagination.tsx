@@ -45,6 +45,7 @@ const Pagination: React.FC<PaginationProps> = ({
 					className="page-btn"
 					onClick={handlePrevPage}
 					disabled={currentPage <= 1 || loading}
+					aria-label={`이전 페이지 (현재 ${currentPage}페이지)`}
 				>
 					이전
 				</button>
@@ -57,6 +58,7 @@ const Pagination: React.FC<PaginationProps> = ({
 					className="page-btn"
 					onClick={handleNextPage}
 					disabled={currentPage >= totalPages || totalPages <= 1 || loading}
+					aria-label={`다음 페이지 (현재 ${currentPage}페이지)`}
 				>
 					다음
 				</button>

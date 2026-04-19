@@ -19,6 +19,8 @@ export const TotalRentalListPage = () => {
 	const [stores, setStores] = useState<string[]>([]);
 	const [setTypes, setSetTypes] = useState<string[]>([]);
 	const [colors, setColors] = useState<string[]>([]);
+	const [classifications, setClassifications] = useState<string[]>([]);
+	const [materials, setMaterials] = useState<string[]>([]);
 	const [orderStatus] = useState<string[]>([]);
 	const [dropdownLoading, setDropdownLoading] = useState(false);
 	const { handleError } = useErrorHandler();
@@ -28,6 +30,7 @@ export const TotalRentalListPage = () => {
 	// 검색 관련 상태
 	const [searchFilters, setSearchFilters] = useState<SearchFilters>({
 		search: "",
+		searchField: "",
 		start: "2025-01-01",
 		end: getLocalDate(),
 		order_status: "",
@@ -35,6 +38,8 @@ export const TotalRentalListPage = () => {
 		store: "",
 		setType: "",
 		color: "",
+		classification: "",
+		material: "",
 		sortField: "",
 		sortOrder: "" as const,
 	});
@@ -90,6 +95,7 @@ export const TotalRentalListPage = () => {
 	const handleReset = () => {
 		const resetFilters: SearchFilters = {
 			search: "",
+			searchField: "",
 			start: "2025-01-01",
 			end: getLocalDate(),
 			order_status: "",
@@ -97,6 +103,8 @@ export const TotalRentalListPage = () => {
 			store: "",
 			setType: "",
 			color: "",
+			classification: "",
+			material: "",
 			sortField: "",
 			sortOrder: "" as const,
 		};
@@ -159,10 +167,13 @@ export const TotalRentalListPage = () => {
 					filters.start,
 					filters.end,
 					filters.search,
+					filters.searchField,
 					filters.factory,
 					filters.store,
 					filters.setType,
 					filters.color,
+					filters.classification,
+					filters.material,
 					filters.sortField,
 					filters.sortOrder as "ASC" | "DESC" | "",
 					page
@@ -231,6 +242,24 @@ export const TotalRentalListPage = () => {
 			if (colorResponse.success && colorResponse.data) {
 				setColors(colorResponse.data);
 			}
+
+			const classificationResponse = await stockApi.getFilterClassifications(
+				searchFilters.start,
+				searchFilters.end,
+				""
+			);
+			if (classificationResponse.success && classificationResponse.data) {
+				setClassifications(classificationResponse.data);
+			}
+
+			const materialResponse = await stockApi.getFilterMaterials(
+				searchFilters.start,
+				searchFilters.end,
+				""
+			);
+			if (materialResponse.success && materialResponse.data) {
+				setMaterials(materialResponse.data);
+			}
 		} catch (err) {
 			handleError(err);
 		} finally {
@@ -275,6 +304,8 @@ export const TotalRentalListPage = () => {
 					stores={stores}
 					setTypes={setTypes}
 					colors={colors}
+					classifications={classifications}
+					materials={materials}
 					loading={loading}
 					dropdownLoading={dropdownLoading}
 					onStart={true}

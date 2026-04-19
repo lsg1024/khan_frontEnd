@@ -4,8 +4,8 @@
 	justify-content: center;
 	margin-top: 30px;
 	padding: 20px;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-card);
 }
 
 .pagination {
@@ -19,7 +19,7 @@
 
 .pagination-footer {
 	flex-shrink: 0;
-	background-color: white;
+	background-color: var(--bg-primary);
 	padding-bottom: 10px;
 	border-radius: 5px;
 }
@@ -31,7 +31,7 @@
 
 .pagination-info .page-info {
 	font-size: 0.875rem;
-	color: #666;
+	color: var(--text-light);
 	margin: 0;
 }
 

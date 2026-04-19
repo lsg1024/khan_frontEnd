@@ -92,6 +92,7 @@ export interface OrderDto {
 	storeName: string;
 	productId: string;
 	productName: string;
+	productFactoryName: string;
 	materialName: string;
 	colorName: string;
 	setType: string;
@@ -223,6 +224,9 @@ export interface OrderRowData {
 	assistantStone: boolean; // 입고여부 (Y/N)
 	assistantStoneName: string; // 보조석 아이디 (없음, 랩, 천연, 모이사, 유색석)
 	assistantStoneCreateAt: string; // 입고날짜
+
+	// 수량 (동일 상품 복수 주문)
+	quantity?: number;
 
 	// 재고 상태 필드 추가
 	currentStatus?: string; // ORDER, STOCK, SHIPPED 등

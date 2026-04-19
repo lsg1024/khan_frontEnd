@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { stockApi } from "../../../libs/api/stockApi";
 import { saleApi } from "../../../libs/api/saleApi";
+import { storeApi } from "../../../libs/api/storeApi";
 import { materialApi } from "../../../libs/api/materialApi";
 import { colorApi } from "../../../libs/api/colorApi";
 import { assistantStoneApi } from "../../../libs/api/assistantStoneApi";
@@ -13,7 +14,9 @@ import type { ColorDto } from "../../types/colorDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
 import type { goldHarryResponse as GoldHarryDto } from "../../types/goldHarryDto";
 import type { ResponseDetail, StockOrderRows } from "../../types/stockDto";
+import type { StoreSearchDto } from "../../types/storeDto";
 import StockTable from "../../components/common/stock/StockTable";
+import StoreSearch from "../../components/common/store/StoreSearch";
 import "../../styles/pages/stock/StockUpdatePage.css";
 
 type ActionType = "sale" | "rental" | "return";
@@ -33,6 +36,13 @@ const StockCommonActionPage: React.FC = () => {
 	const [colors, setColors] = useState<ColorDto[]>([]);
 	const [assistantStones, setAssistantStones] = useState<AssistantStoneDto[]>([]);
 	const [goldHarries, setGoldHarries] = useState<GoldHarryDto[]>([]);
+
+	// 대여 등록 시 판매처 변경 관련
+	const [rentalStoreId, setRentalStoreId] = useState("");
+	const [rentalStoreName, setRentalStoreName] = useState("");
+	const [rentalStoreGrade, setRentalStoreGrade] = useState("");
+	const [rentalStoreHarry, setRentalStoreHarry] = useState("");
+	const [showStoreSearch, setShowStoreSearch] = useState(false);
 	// 액션 타입에 따른 타이틀
 	const getTitle = () => {
 		switch (action) {
@@ -305,6 +315,16 @@ const StockCommonActionPage: React.FC = () => {
 		loadStockData();
 	}, [flowCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
+	// 대여 등록 시 판매처 선택 핸들러
+	const handleStoreSelect = (store: StoreSearchDto | import("../../types/storeDto").AccountInfoDto) => {
+		const storeData = store as StoreSearchDto;
+		setRentalStoreId(storeData.accountId.toString());
+		setRentalStoreName(storeData.accountName);
+		setRentalStoreGrade(storeData.grade || "");
+		setRentalStoreHarry(storeData.goldHarryLoss?.toString() || "");
+		setShowStoreSearch(false);
+	};
+
 	const handleClose = () => {
 		// 부모 창에 메시지 전송
 		if (window.opener) {
@@ -420,6 +440,13 @@ const StockCommonActionPage: React.FC = () => {
 						productAddLaborCost: Number(currentRow.productAddLaborCost) || 0,
 						stoneAddLaborCost: Number(currentRow.stoneAddLaborCost) || 0,
 						stoneInfos: currentRow.stoneInfos || [],
+						// 판매처 변경 정보
+						...(rentalStoreId && {
+							storeId: rentalStoreId,
+							storeName: rentalStoreName,
+							storeGrade: rentalStoreGrade,
+							storeHarry: rentalStoreHarry,
+						}),
 					};
 
 					return stockApi.updateStockToRental(currentRow.id, rentalData);
@@ -512,6 +539,31 @@ const StockCommonActionPage: React.FC = () => {
 					</div>
 				)}
 			</div>
+
+			{/* 대여 등록 시 판매처 변경 */}
+			{action === "rental" && (
+				<div className="rental-store-section">
+					<div className="detail-item-stock">
+						<label>판매처 변경:</label>
+						<span className="rental-store-name">
+							{rentalStoreName || stockDetail.storeName || "미선택"}
+						</span>
+						<button
+							className="btn-store-search"
+							onClick={() => setShowStoreSearch(true)}
+							disabled={loading}
+						>
+							변경
+						</button>
+					</div>
+					{showStoreSearch && (
+						<StoreSearch
+							onSelectStore={handleStoreSelect}
+							onClose={() => setShowStoreSearch(false)}
+						/>
+					)}
+				</div>
+			)}
 
 			{/* StockTable 사용 */}
 			<StockTable

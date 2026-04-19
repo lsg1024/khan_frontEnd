@@ -2,7 +2,7 @@ import { useState, type JSX } from "react";
 import BarcodePrinterSettings from "../../components/setting/BarcodePrinterSettings";
 import "../../styles/pages/settings/SettingsPage.css";
 
-type SettingCategory = "상품" | "주문" | "스톤" | "기타" | "사용자 관리";
+type SettingCategory = "상품" | "주문" | "스톤" | "경비" | "기타" | "사용자 관리";
 
 interface SettingItem {
 	id: string;
@@ -19,6 +19,9 @@ interface SettingItem {
 		| "stoneType"
 		| "stoneShape"
 		| "assistantStone"
+		| "bankType"
+		| "incomeAccount"
+		| "expenseAccount"
 		| "user"
 		| "role";
 	adminOnly?: boolean;
@@ -81,6 +84,26 @@ const settingItems: SettingItem[] = [
 		modalType: "assistantStone",
 	},
 
+	// 경비
+	{
+		id: "bank-type",
+		label: "통장구분",
+		category: "경비",
+		modalType: "bankType",
+	},
+	{
+		id: "income-account",
+		label: "수입계정",
+		category: "경비",
+		modalType: "incomeAccount",
+	},
+	{
+		id: "expense-account",
+		label: "지출계정",
+		category: "경비",
+		modalType: "expenseAccount",
+	},
+
 	// 기타 관련
 	{ id: "barcode-printer", label: "바코드 프린터 설정", category: "기타" },
 
@@ -91,12 +114,18 @@ const settingItems: SettingItem[] = [
 		category: "사용자 관리",
 		modalType: "user",
 	},
+	{
+		id: "message-settings",
+		label: "메시지 전송 설정",
+		category: "사용자 관리",
+	},
 ];
 
 const categories: SettingCategory[] = [
 	"상품",
 	"주문",
 	"스톤",
+	"경비",
 	"기타",
 	"사용자 관리",
 ];
@@ -107,6 +136,18 @@ export default function SettingsPage(): JSX.Element {
 	const handleItemClick = (item: SettingItem) => {
 		if (item.id === "barcode-printer") {
 			setShowPrinterSettings(true);
+		} else if (item.id === "message-settings") {
+			// 메시지 전송 설정 팝업
+			const width = 550;
+			const height = 650;
+			const left = window.screenX + (window.outerWidth - width) / 2;
+			const top = window.screenY + (window.outerHeight - height) / 2;
+
+			window.open(
+				`/message-settings`,
+				`message_settings_popup`,
+				`width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+			);
 		} else if (item.id === "user") {
 			// 사용자 관리는 별도 팝업
 			const width = 550;
@@ -168,23 +209,23 @@ export default function SettingsPage(): JSX.Element {
 					<div key={group.category} className="category-group">
 						<h3 className="category-title">{group.category}</h3>
 						<div className="category-grid">
-							{group.items.map((item) => (
-								<div
-									key={item.id}
-									className={`setting-card ${
-										item.adminOnly ? "admin-only" : ""
-									}`}
-									onClick={() => handleItemClick(item)}
-								>
-									<div className="card-content">
-										<span className="card-label">{item.label}</span>
-										{item.adminOnly && (
-											<span className="admin-badge">Admin</span>
-										)}
+								{group.items.map((item) => (
+									<div
+										key={item.id}
+										className={`setting-card ${
+											item.adminOnly ? "admin-only" : ""
+										}`}
+										onClick={() => handleItemClick(item)}
+									>
+										<div className="card-content">
+											<span className="card-label">{item.label}</span>
+											{item.adminOnly && (
+												<span className="admin-badge">Admin</span>
+											)}
+										</div>
 									</div>
-								</div>
-							))}
-						</div>
+								))}
+							</div>
 					</div>
 				))}
 			</div>

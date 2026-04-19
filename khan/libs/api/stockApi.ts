@@ -67,11 +67,14 @@ export const stockApi = {
 		start: string,
 		end: string,
 		search?: string,
+		searchField?: string,
 		order_status?: string,
 		factory?: string,
 		store?: string,
 		setType?: string,
 		color?: string,
+		classification?: string,
+		material?: string,
 		sortField?: string,
 		sortOrder?: "ASC" | "DESC" | "",
 		page: number = 1,
@@ -81,10 +84,13 @@ export const stockApi = {
 		if (start) params.start = start;
 		if (end) params.end = end;
 		if (search) params.search = search;
+		if (searchField) params.searchField = searchField;
 		if (factory) params.factory = factory;
 		if (store) params.store = store;
 		if (setType) params.setType = setType;
 		if (color) params.color = color;
+		if (classification) params.classification = classification;
+		if (material) params.material = material;
 		if (sortField) params.sortField = sortField;
 		if (sortOrder) params.sortOrder = sortOrder;
 		if (order_status) params.order_status = order_status;
@@ -97,10 +103,13 @@ export const stockApi = {
 		start: string,
 		end: string,
 		search?: string,
+		searchField?: string,
 		factory?: string,
 		store?: string,
 		setType?: string,
 		color?: string,
+		classification?: string,
+		material?: string,
 		sortField?: string,
 		sortOrder?: "ASC" | "DESC" | "",
 		page: number = 1
@@ -109,10 +118,13 @@ export const stockApi = {
 		if (start) params.start = start;
 		if (end) params.end = end;
 		if (search) params.search = search;
+		if (searchField) params.searchField = searchField;
 		if (factory) params.factory = factory;
 		if (store) params.store = store;
 		if (setType) params.setType = setType;
 		if (color) params.color = color;
+		if (classification) params.classification = classification;
+		if (material) params.material = material;
 		if (sortField) params.sortField = sortField;
 		if (sortOrder) params.sortOrder = sortOrder;
 
@@ -173,6 +185,32 @@ export const stockApi = {
 		if (order_status) params.order_status = order_status;
 
 		return apiRequest.get<string[]>("order/stocks/filters/color", { params });
+	},
+
+	getFilterClassifications: async (
+		start: string,
+		end: string,
+		order_status?: string
+	): Promise<ApiResponse<string[]>> => {
+		const params: Record<string, string> = {};
+		if (start) params.start = start;
+		if (end) params.end = end;
+		if (order_status) params.order_status = order_status;
+
+		return apiRequest.get<string[]>("order/stocks/filters/classification", { params });
+	},
+
+	getFilterMaterials: async (
+		start: string,
+		end: string,
+		order_status?: string
+	): Promise<ApiResponse<string[]>> => {
+		const params: Record<string, string> = {};
+		if (start) params.start = start;
+		if (end) params.end = end;
+		if (order_status) params.order_status = order_status;
+
+		return apiRequest.get<string[]>("order/stocks/filters/material", { params });
 	},
 
 	// 재고 직접 생성

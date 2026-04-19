@@ -10,7 +10,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	background-color: #fff;
+	background-color: var(--bg-primary);
 	padding: 16px 24px;
 	border-bottom: 1px solid #e0e0e0;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -20,13 +20,13 @@
 	margin: 0;
 	font-size: 18px;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .gold-price-log-page .btn-back {
 	padding: 8px 16px;
 	background-color: #f5f5f5;
-	color: #666;
+	color: var(--text-light);
 	border: none;
 	border-radius: 6px;
 	font-size: 14px;
@@ -53,7 +53,7 @@
 	align-items: center;
 	justify-content: center;
 	height: 200px;
-	color: #666;
+	color: var(--text-light);
 }
 
 .gold-price-log-page .spinner {
@@ -66,19 +66,10 @@
 	margin-bottom: 12px;
 }
 
-@keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
 /* 테이블 컨테이너 */
 .gold-price-log-page .log-table-container {
-	background-color: #fff;
-	border-radius: 8px;
+	background-color: var(--bg-primary);
+	border-radius: var(--border-radius-lg);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 	overflow: hidden;
 }
@@ -91,7 +82,7 @@
 }
 
 .gold-price-log-page .log-table thead {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border-bottom: 2px solid #e0e0e0;
 }
 
@@ -115,7 +106,7 @@
 .gold-price-log-page .log-table td {
 	padding: 12px 16px;
 	text-align: center;
-	color: #333;
+	color: var(--text-dark);
 }
 
 /* 컬럼별 스타일 */
@@ -150,7 +141,7 @@
 }
 
 .gold-price-log-page .col-date {
-	color: #666;
+	color: var(--text-light);
 	font-size: 13px;
 	white-space: nowrap;
 }

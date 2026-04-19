@@ -369,8 +369,29 @@ export const StockCreatePage = () => {
 				calculatedStoneData.stoneWeight.toString()
 			);
 
-			// 재질 자동 선택
-			if (productDetail.materialDto?.materialName) {
+			// 재질 자동 선택 (판매처 설정 > 카탈로그 기본값)
+			let stockMaterialApplied = false;
+			const currentStockRow = stockRows.find((r) => r.id === rowId);
+			if (currentStockRow?.storeId) {
+				try {
+					const storeDetailRes = await storeApi.getStore(currentStockRow.storeId);
+					if (storeDetailRes?.data?.additionalMaterialId) {
+						const storeMatName = storeDetailRes.data.additionalMaterialName;
+						const storeMatId = storeDetailRes.data.additionalMaterialId;
+						const foundStoreMat = materials.find(
+							(m) => m.materialId?.toString() === storeMatId || m.materialName === storeMatName
+						);
+						if (foundStoreMat) {
+							updateStockRow(rowId, "materialId", foundStoreMat.materialId);
+							updateStockRow(rowId, "materialName", foundStoreMat.materialName);
+							stockMaterialApplied = true;
+						}
+					}
+				} catch {
+					// 무시
+				}
+			}
+			if (!stockMaterialApplied && productDetail.materialDto?.materialName) {
 				const foundMaterial = materials.find(
 					(m) => m.materialName === productDetail.materialDto?.materialName
 				);
@@ -596,8 +617,29 @@ export const StockCreatePage = () => {
 			updateStockRow(rowId, "assistanceStoneCount", assistanceStoneCount);
 		}
 
-		// productMaterial 값이 있으면 자동으로 드롭다운에서 선택
-		if (product.productMaterial) {
+		// 재질 자동 선택 (판매처 설정 > 상품 기본값)
+		let matSetByStore2 = false;
+		const rowForMat2 = stockRows.find((r) => r.id === rowId);
+		if (rowForMat2?.storeId) {
+			try {
+				const sRes2 = await storeApi.getStore(rowForMat2.storeId);
+				if (sRes2?.data?.additionalMaterialId) {
+					const sMatName2 = sRes2.data.additionalMaterialName;
+					const sMatId2 = sRes2.data.additionalMaterialId;
+					const foundSMat2 = materials.find(
+						(m) => m.materialId?.toString() === sMatId2 || m.materialName === sMatName2
+					);
+					if (foundSMat2) {
+						updateStockRow(rowId, "materialId", foundSMat2.materialId);
+						updateStockRow(rowId, "materialName", foundSMat2.materialName);
+						matSetByStore2 = true;
+					}
+				}
+			} catch {
+				// 무시
+			}
+		}
+		if (!matSetByStore2 && product.productMaterial) {
 			const foundMaterial = materials.find(
 				(m) => m.materialName === product.productMaterial
 			);

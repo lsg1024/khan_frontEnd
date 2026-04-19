@@ -133,7 +133,7 @@
 .category-group {
 	background: white;
 	border: 1px solid #e0e0e0;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	padding: 1.5rem;
 	margin: 1rem;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -142,7 +142,7 @@
 .category-title {
 	font-size: 1.25rem;
 	font-weight: 700;
-	color: #333;
+	color: var(--text-dark);
 	padding-bottom: 0.75rem;
 	border-bottom: 2px solid #e0e0e0;
 }
@@ -196,7 +196,45 @@
 	color: white;
 	border-radius: 3px;
 	font-weight: 600;
-} /* 모달 스타일 */
+}
+
+/* 사용자 관리 카테고리 - 버튼 스타일 카드 */
+.category-grid-buttons {
+	display: flex;
+	flex-direction: row;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.setting-btn-card {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	background-color: #007bff;
+	color: white;
+	min-width: 140px;
+}
+
+.setting-btn-card:hover {
+	background-color: #0056b3;
+}
+
+.setting-btn-card.admin-only {
+	background-color: #dc3545;
+}
+
+.setting-btn-card.admin-only:hover {
+	background-color: #b52a37;
+}
+
+/* 모달 스타일 */
 .modal-overlay {
 	position: fixed;
 	top: 0;
@@ -256,14 +294,14 @@
 	margin: 0;
 	font-size: 1.5rem;
 	font-weight: 700;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .close-btn {
 	background: none;
 	border: none;
 	font-size: 2rem;
-	color: #666;
+	color: var(--text-light);
 	cursor: pointer;
 	padding: 0;
 	width: 32px;
@@ -271,14 +309,14 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	transition: all 0.2s ease;
 	line-height: 1;
 }
 
 .close-btn:hover {
 	background: #f5f5f5;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .modal-body {

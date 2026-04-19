@@ -8,7 +8,7 @@ const API_BASE_URL = "https://api.kkhan.co.kr";
 const API_LOCAL_URL = "http://localhost:8080";
 
 export function getApiBaseUrl(): string {
-	return API_BASE_URL
+	return API_LOCAL_URL
 }
 
 function parseJwt(token: string) {
@@ -57,6 +57,8 @@ export const api = axios.create({
 });
 
 let isRefreshing = false;
+let reissueFailCount = 0;
+const MAX_REISSUE_ATTEMPTS = 1;
 let failedQueue: Array<{
 	resolve: (value?: unknown) => void;
 	reject: (reason?: unknown) => void;
@@ -142,12 +144,10 @@ api.interceptors.response.use(
 		const originalRequest = err.config;
 		if (err.response?.status === 401 && !originalRequest._retry) {
 			if (isRefreshing) {
-				// 이미 토큰 재발급이 진행 중이라면, 현재 요청을 큐에 추가하고 대기
 				return new Promise((resolve, reject) => {
 					failedQueue.push({ resolve, reject });
 				})
 					.then(() => {
-						// 재발급 성공 후, 헤더에 새 토큰을 설정하여 원래 요청을 다시 보냄
 						originalRequest.headers["Authorization"] =
 							"Bearer " + tokenUtils.getToken();
 						originalRequest.headers["X-Tenant-ID"] = extractSubdomain(
@@ -175,10 +175,16 @@ api.interceptors.response.use(
 				return Promise.reject(err);
 			}
 
+			// 재발급 실패 횟수 초과 시 즉시 로그아웃 (무한 루프 방지)
+			if (reissueFailCount >= MAX_REISSUE_ATTEMPTS) {
+				tokenUtils.removeToken();
+				window.dispatchEvent(new CustomEvent("tokenExpired"));
+				return Promise.reject(new Error("Maximum reissue attempts exceeded"));
+			}
+
 			isRefreshing = true;
 
 			try {
-				// reissue 요청은 인터셉터를 우회하여 직접 fetch 사용
 				const response = await fetch(`${getApiBaseUrl()}/auth/reissue`, {
 					method: "POST",
 					credentials: "include",
@@ -189,34 +195,58 @@ api.interceptors.response.use(
 				});
 
 				if (!response.ok) {
+					reissueFailCount++;
+
+					// 서버가 tenant mismatch로 세션을 무효화한 경우
+					if (response.status === 401) {
+						const errorData = await response.json().catch(() => null);
+						const isTenantMismatch = errorData?.message?.includes("Tenant mismatch");
+
+						if (isTenantMismatch) {
+							// 서버에서 이미 refresh token을 삭제함 → 즉시 로그아웃
+							reissueFailCount = MAX_REISSUE_ATTEMPTS;
+							throw new Error("Cross-tenant session invalidated");
+						}
+					}
+
 					throw new Error(`HTTP error! status: ${response.status}`);
 				}
 
 				const data = await response.json();
 				if (!data.success) {
+					reissueFailCount++;
 					throw new Error("Token refresh failed");
 				}
 
-				// Authorization 헤더에서 새 토큰 추출
 				const authHeader =
 					response.headers.get("Authorization") ||
 					response.headers.get("authorization");
 				if (authHeader && authHeader.startsWith("Bearer ")) {
 					const newToken = authHeader.substring(7);
 
-					// 재발급된 토큰의 tenant가 현재 서브도메인과 일치하는지 확인
 					const decoded = parseJwt(newToken);
 					const tokenTenantId = decoded?.tenantId || decoded?.tenant;
 					const currentSubdomain = extractSubdomain(window.location.hostname);
 
 					if (tokenTenantId && currentSubdomain && tokenTenantId !== currentSubdomain) {
-						// 다른 테넌트의 refreshToken으로 발급된 토큰 → 로그인 페이지로 이동
+						// 토큰 tenant 불일치 → 서버에 로그아웃 요청하여 refresh token 완전 삭제
+						reissueFailCount = MAX_REISSUE_ATTEMPTS;
+						fetch(`${getApiBaseUrl()}/auth/reissue`, {
+							method: "POST",
+							credentials: "include",
+							headers: {
+								"Content-Type": "application/json",
+								"X-Tenant-ID": currentSubdomain,
+							},
+						}).catch(() => {});
 						throw new Error("Tenant mismatch on reissue");
 					}
 
 					tokenUtils.setToken(newToken);
 				}
 
+				// 성공 시 카운터 리셋
+				reissueFailCount = 0;
 				processQueue(null);
 
 				originalRequest.headers["Authorization"] =
@@ -225,7 +255,6 @@ api.interceptors.response.use(
 			} catch (refreshError) {
 				processQueue(refreshError as Error);
 
-				// 로그아웃 처리
 				tokenUtils.removeToken();
 				window.dispatchEvent(new CustomEvent("tokenExpired"));
 

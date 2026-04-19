@@ -4,8 +4,8 @@
 /* 스톤 검색 모달 고유 스타일 */
 .stone-search-modal {
 	background: white;
-	border-radius: 8px;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	border-radius: var(--border-radius-lg);
+	box-shadow: var(--shadow-modal);
 	width: 90%;
 	max-width: 1000px;
 	max-height: 80vh;
@@ -15,22 +15,22 @@
 }
 
 .stone-search-modal-header {
-	background-color: white; /* 스톤 검색은 헤더 배경이 흰색 */
+	background-color: var(--bg-primary); /* 스톤 검색은 헤더 배경이 흰색 */
 }
 
 /* 스톤 테이블 전용 스타일 */
 .stones-table {
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	overflow: hidden;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .table-header {
 	display: grid;
 	grid-template-columns: 2fr 1fr 1.2fr 1fr 1fr 1fr 1fr 0.8fr;
-	background-color: #f8f9fa;
-	border-bottom: 1px solid #ddd;
+	background-color: var(--bg-secondary);
+	border-bottom: 1px solid var(--border-color-light);
 	font-weight: bold;
 	color: #495057;
 }
@@ -94,7 +94,7 @@
 
 .pagination-footer-stone {
 	border-top: 1px solid #efefef;
-	background-color: white !important;
+	background-color: var(--bg-primary) !important;
 }
 
 /* 스톤 검색 전용 반응형 - 태블릿 */
@@ -121,7 +121,7 @@
 		flex-direction: column;
 		padding: 10px;
 		margin-bottom: 6px;
-		border: 1px solid #e9ecef;
+		border: 1px solid var(--border-color-soft);
 		border-radius: 6px;
 		gap: 4px;
 	}

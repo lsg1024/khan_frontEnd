@@ -183,6 +183,7 @@ export interface StockResponse {
 	currentStatus: string;
 	storeName: string;
 	productName: string;
+	productFactoryName: string;
 	productSize: string;
 	stockNote: string;
 	materialName: string;
@@ -269,6 +270,10 @@ export interface StockRentalRequest {
 	productAddLaborCost: number;
 	stoneAddLaborCost: number;
 	stoneInfos: StoneInfo[];
+	storeId?: string;
+	storeName?: string;
+	storeGrade?: string;
+	storeHarry?: string;
 }
 
 export interface ResponseDetail {

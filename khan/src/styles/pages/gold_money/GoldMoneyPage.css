@@ -1,391 +1,374 @@
-.gold-money-page {
-	width: 100%;
-	height: 100%;
-	padding: 20px;
-	box-sizing: border-box;
+/* ─── 금&현금 합계 카드 ─── */
+.gm-summary-cards {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 0 4px;
 }
 
-/* 잔액 카드 */
-.gold-money-page .balance-cards {
-	display: flex;
-	gap: 16px;
-	margin-bottom: 20px;
+.gm-summary-card {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: var(--border-radius-sm, 6px);
+  border: 1px solid #dee2e6;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.gold-money-page .balance-card {
-	flex: 1;
-	background: white;
-	border: 1px solid #dee2e6;
-	border-radius: 8px;
-	padding: 20px;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
+.gm-summary-card.income {
+  background: #fff8e1;
+  border-color: #ffcc02;
 }
 
-.gold-money-page .balance-card .balance-label {
-	font-size: 13px;
-	color: #6c757d;
-	font-weight: 500;
+.gm-summary-card.expense {
+  background: #e3f2fd;
+  border-color: #64b5f6;
 }
 
-.gold-money-page .balance-card .balance-value {
-	font-size: 24px;
-	font-weight: 700;
+.gm-summary-card.net {
+  background: #e8f5e9;
+  border-color: #81c784;
 }
 
-.gold-money-page .balance-card .balance-value.gold {
-	color: #fd7e14;
+.gm-summary-label {
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 55px;
 }
 
-.gold-money-page .balance-card .balance-value.money {
-	color: #007bff;
+.gm-summary-values {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #333;
 }
 
-/* 검색/필터 영역 */
-.gold-money-page .filter-section {
-	background: #f8f9fa;
-	padding: 15px;
-	border-radius: 4px;
-	margin-bottom: 15px;
-	border: 1px solid #dee2e6;
-	display: flex;
-	gap: 10px;
-	align-items: center;
-	flex-wrap: wrap;
+.gm-summary-values span {
+  white-space: nowrap;
 }
 
-.gold-money-page .filter-section select,
-.gold-money-page .filter-section input[type="date"] {
-	padding: 8px 12px;
-	border: 1px solid #ced4da;
-	border-radius: 4px;
-	font-size: 14px;
-	background: white;
+/* ─── 날짜 범위 ─── */
+.gm-date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.gold-money-page .filter-section select:focus,
-.gold-money-page .filter-section input[type="date"]:focus {
-	outline: none;
-	border-color: #80bdff;
-	box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+.gm-date-range input[type="date"] {
+  padding: 6px 10px;
+  border: 1px solid #ced4da;
+  border-radius: var(--border-radius-sm, 4px);
+  font-size: 13px;
+  background: white;
+  position: relative;
 }
 
-.gold-money-page .filter-section .filter-btn {
-	padding: 8px 20px;
-	background: #007bff;
-	color: white;
-	border: none;
-	border-radius: 4px;
-	font-size: 14px;
-	cursor: pointer;
-	white-space: nowrap;
+.gm-date-range input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 
-.gold-money-page .filter-section .filter-btn:hover:not(:disabled) {
-	background: #0056b3;
+.gm-register-btn {
+  background: #28a745 !important;
 }
 
-.gold-money-page .filter-section .filter-btn:disabled {
-	background: #6c757d;
-	cursor: not-allowed;
+.gm-register-btn:hover {
+  background: #218838 !important;
 }
 
-.gold-money-page .filter-section .filter-btn.add-btn {
-	background: #28a745;
-	margin-left: auto;
+/* ─── 총 건수 ─── */
+.gm-total-info {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #495057;
+  font-weight: 500;
 }
 
-.gold-money-page .filter-section .filter-btn.add-btn:hover:not(:disabled) {
-	background: #218838;
+/* ─── 배지 ─── */
+.gm-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-/* 테이블 */
-.gold-money-page .ledger-table-container {
-	background: white;
-	border: 1px solid #dee2e6;
-	border-radius: 4px;
-	overflow-x: auto;
-	max-height: calc(100vh - 380px);
-	overflow-y: auto;
+.gm-badge.income {
+  background: #d4edda;
+  color: #155724;
 }
 
-.gold-money-page .ledger-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 14px;
-	background: white;
+.gm-badge.expense {
+  background: #f8d7da;
+  color: #721c24;
 }
 
-.gold-money-page .ledger-table thead {
-	background: #e9ecef;
-	position: sticky;
-	top: 0;
-	z-index: 10;
+/* ─── 합계 행 (리스트 테이블) ─── */
+.gm-summary-row.income td {
+  background: #fff8e1 !important;
+  font-weight: 600;
+  color: #856404;
 }
 
-.gold-money-page .ledger-table th {
-	padding: 12px 8px;
-	text-align: center;
-	font-weight: 600;
-	color: #495057;
-	border: 1px solid #dee2e6;
-	white-space: nowrap;
-	background: #e9ecef;
+.gm-summary-row.expense td {
+  background: #e3f2fd !important;
+  font-weight: 600;
+  color: #0c5460;
 }
 
-.gold-money-page .ledger-table tbody tr {
-	border-bottom: 1px solid #dee2e6;
+.gm-summary-row.net td {
+  background: #e8f5e9 !important;
+  font-weight: 600;
+  color: #2e7d32;
 }
 
-.gold-money-page .ledger-table tbody tr:hover {
-	background: #f8f9fa;
+.gm-summary-row td {
+  border-top: 2px solid #adb5bd;
 }
 
-.gold-money-page .ledger-table td {
-	padding: 10px 8px;
-	color: #212529;
-	border: 1px solid #dee2e6;
-	text-align: center;
+/* ─── 일괄 액션 버튼 ─── */
+.gm-bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid #dee2e6;
 }
 
-.gold-money-page .ledger-table .amount-cell {
-	text-align: right;
-	font-weight: 500;
-	padding-right: 12px;
+.gm-bulk-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #dc3545;
 }
 
-.gold-money-page .ledger-table .amount-cell.gold {
-	color: #fd7e14;
+/* ─── 관리 버튼 ─── */
+.gm-action-btn {
+  padding: 3px 8px !important;
+  font-size: 11px !important;
 }
 
-.gold-money-page .ledger-table .amount-cell.money {
-	color: #007bff;
+/* ─── 다중 등록 모달 ─── */
+.gm-register-modal {
+  background: white;
+  border-radius: 8px;
+  width: 95vw;
+  max-width: 1400px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.gold-money-page .ledger-table .desc-cell {
-	text-align: left;
-	padding-left: 12px;
-	max-width: 250px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+.gm-register-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #dee2e6;
+  flex-wrap: wrap;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
 }
 
-/* 배지 */
-.gold-money-page .type-badge {
-	display: inline-block;
-	padding: 3px 10px;
-	border-radius: 3px;
-	font-size: 12px;
-	font-weight: 600;
+.gm-register-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #212529;
+  white-space: nowrap;
 }
 
-.gold-money-page .type-badge.income {
-	background: #d4edda;
-	color: #155724;
+.gm-register-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.gold-money-page .type-badge.expense {
-	background: #f8d7da;
-	color: #721c24;
+.gm-register-date label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #dc3545;
 }
 
-.gold-money-page .type-badge.asset-gold {
-	background: #fff3cd;
-	color: #856404;
+.gm-register-date label::before {
+  content: "★";
+  margin-right: 2px;
 }
 
-.gold-money-page .type-badge.asset-money {
-	background: #d1ecf1;
-	color: #0c5460;
+.gm-register-date input[type="date"] {
+  padding: 5px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 13px;
 }
 
-/* 액션 버튼 */
-.gold-money-page .action-btn {
-	padding: 4px 10px;
-	border: none;
-	border-radius: 3px;
-	font-size: 12px;
-	cursor: pointer;
-	margin: 0 2px;
+/* 등록 폼 합계 */
+.gm-register-totals {
+  display: flex;
+  gap: 16px;
+  margin-left: auto;
 }
 
-.gold-money-page .action-btn.edit {
-	background: #ffc107;
-	color: #212529;
+.gm-reg-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 20px;
+  border-radius: 4px;
+  min-width: 100px;
 }
 
-.gold-money-page .action-btn.edit:hover {
-	background: #e0a800;
+.gm-reg-total span {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 2px;
 }
 
-.gold-money-page .action-btn.delete {
-	background: #dc3545;
-	color: white;
+.gm-reg-total strong {
+  font-size: 14px;
 }
 
-.gold-money-page .action-btn.delete:hover {
-	background: #c82333;
+.gm-reg-total.income {
+  background: #f8d7da;
+  color: #721c24;
 }
 
-/* 모달 */
-.gold-money-page .modal-overlay {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0, 0, 0, 0.5);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1000;
+.gm-reg-total.expense {
+  background: #d1ecf1;
+  color: #0c5460;
 }
 
-.gold-money-page .modal-content {
-	background: white;
-	border-radius: 8px;
-	padding: 24px;
-	width: 420px;
-	max-width: 90vw;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+.gm-reg-total.net {
+  background: #fff3cd;
+  color: #856404;
 }
 
-.gold-money-page .modal-content h3 {
-	margin: 0 0 20px;
-	font-size: 18px;
-	color: #333;
+/* ─── 등록 테이블 ─── */
+.gm-register-table-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
 }
 
-.gold-money-page .modal-content .form-group {
-	margin-bottom: 14px;
+.gm-register-table {
+  font-size: 12px !important;
 }
 
-.gold-money-page .modal-content .form-group label {
-	display: block;
-	font-size: 13px;
-	font-weight: 500;
-	color: #495057;
-	margin-bottom: 4px;
+.gm-register-table thead th {
+  padding: 6px 4px !important;
+  font-size: 12px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.gold-money-page .modal-content .form-group input,
-.gold-money-page .modal-content .form-group select,
-.gold-money-page .modal-content .form-group textarea {
-	width: 100%;
-	padding: 8px 12px;
-	border: 1px solid #ced4da;
-	border-radius: 4px;
-	font-size: 14px;
-	box-sizing: border-box;
+.gm-register-table tbody td {
+  padding: 2px 2px !important;
+  vertical-align: middle;
 }
 
-.gold-money-page .modal-content .form-group textarea {
-	resize: vertical;
-	min-height: 60px;
+/* 등록 폼 인풋 공통 */
+.gm-input-select,
+.gm-input-text,
+.gm-input-number {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid #dee2e6;
+  border-radius: 3px;
+  font-size: 12px;
+  box-sizing: border-box;
+  background: white;
 }
 
-.gold-money-page .modal-content .form-group input:focus,
-.gold-money-page .modal-content .form-group select:focus,
-.gold-money-page .modal-content .form-group textarea:focus {
-	outline: none;
-	border-color: #80bdff;
-	box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+.gm-input-select:focus,
+.gm-input-text:focus,
+.gm-input-number:focus {
+  outline: none;
+  border-color: #80bdff;
 }
 
-.gold-money-page .modal-actions {
-	display: flex;
-	justify-content: flex-end;
-	gap: 8px;
-	margin-top: 20px;
+.gm-input-number {
+  text-align: right;
 }
 
-.gold-money-page .modal-actions .modal-btn {
-	padding: 8px 20px;
-	border: none;
-	border-radius: 4px;
-	font-size: 14px;
-	cursor: pointer;
+.gm-input-number[readonly] {
+  background: #f8f9fa;
+  color: #495057;
 }
 
-.gold-money-page .modal-actions .modal-btn.cancel {
-	background: #6c757d;
-	color: white;
+.gm-input-select:disabled {
+  background: #e9ecef;
+  cursor: not-allowed;
 }
 
-.gold-money-page .modal-actions .modal-btn.cancel:hover {
-	background: #5a6268;
+.gm-cancel-row-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
 }
 
-.gold-money-page .modal-actions .modal-btn.submit {
-	background: #007bff;
-	color: white;
+.gm-cancel-row-btn:hover {
+  color: #a71d2a;
 }
 
-.gold-money-page .modal-actions .modal-btn.submit:hover {
-	background: #0056b3;
+.gm-total-cell {
+  font-weight: 600;
+  color: #212529;
+  background: #fffde7;
 }
 
-/* 빈 상태 */
-.gold-money-page .empty-state {
-	padding: 40px 20px;
-	text-align: center;
-	color: #6c757d;
-	font-size: 14px;
+/* 등록 액션 */
+.gm-register-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-top: 1px solid #dee2e6;
+  background: #f8f9fa;
+  border-radius: 0 0 8px 8px;
 }
 
-/* 로딩 */
-.gold-money-page .loading-state {
-	padding: 40px 20px;
-	text-align: center;
+/* ─── 텍스트 정렬 ─── */
+.text-right {
+  text-align: right;
 }
 
-.gold-money-page .loading-state .spinner {
-	width: 40px;
-	height: 40px;
-	border: 4px solid #f3f4f6;
-	border-top-color: #007bff;
-	border-radius: 50%;
-	margin: 0 auto 15px;
-	animation: spin 1s linear infinite;
+.text-center {
+  text-align: center;
 }
 
-@keyframes spin {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
-/* 반응형 */
+/* ─── 반응형 ─── */
 @media (max-width: 768px) {
-	.gold-money-page {
-		padding: 10px;
-	}
+  .gm-summary-cards {
+    flex-direction: column;
+  }
 
-	.gold-money-page .balance-cards {
-		flex-direction: column;
-	}
+  .gm-register-modal {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
 
-	.gold-money-page .filter-section {
-		flex-direction: column;
-		align-items: stretch;
-	}
+  .gm-register-header {
+    border-radius: 0;
+  }
 
-	.gold-money-page .filter-section .filter-btn.add-btn {
-		margin-left: 0;
-	}
-
-	.gold-money-page .ledger-table {
-		font-size: 13px;
-	}
-
-	.gold-money-page .ledger-table th,
-	.gold-money-page .ledger-table td {
-		padding: 8px 6px;
-	}
-
-	.gold-money-page .modal-content {
-		width: 95vw;
-	}
+  .gm-register-totals {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
 }

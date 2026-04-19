@@ -30,20 +30,20 @@
 .image-cell-order {
 	display: flex;
 	justify-content: center;
-	background-color: white;
+	background-color: var(--bg-primary);
 }
 
 .order-image {
 	width: 50px;
 	height: 50px;
 	object-fit: contain;
-	border-radius: 4px;
-	border: 1px solid #ddd;
+	border-radius: var(--border-radius-sm);
+	border: 1px solid var(--border-color-light);
 }
 
 .info-image {
 	object-fit: contain;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	padding: 10px;
 	max-width: 250px;
 	max-height: 250px;
@@ -55,6 +55,13 @@
 	text-align: left !important;
 	font-weight: 500;
 	color: #000; /* 검정색으로 변경 */
+}
+
+.product-factory-name {
+	font-size: 9px;
+	color: #888;
+	font-weight: 400;
+	margin-top: 1px;
 }
 
 .info-cell {
@@ -74,7 +81,7 @@
 
 .info-label {
 	font-size: 12px;
-	color: #666;
+	color: var(--text-light);
 	font-weight: 500;
 	min-width: 30px;
 }
@@ -130,9 +137,9 @@
 /* 상태 드롭다운 스타일 */
 .status-dropdown-order {
 	padding: 4px 6px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	background-color: white;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
+	background-color: var(--bg-primary);
 	cursor: pointer;
 	color: #000;
 	transition: border-color 0.2s;
@@ -168,7 +175,7 @@
 	font-weight: 500;
 	cursor: pointer;
 	padding: 4px 8px;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	transition: all 0.2s;
 	text-decoration: underline;
 }
@@ -239,9 +246,9 @@ tr.disabled-row button {
 }
 
 .date-picker-modal {
-	background-color: white;
+	background-color: var(--bg-primary);
 	padding: 20px;
-	border-radius: 8px;
+	border-radius: var(--border-radius-lg);
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 	display: flex;
 	flex-direction: column;
@@ -258,7 +265,7 @@ tr.disabled-row button {
 .date-picker-input {
 	padding: 8px;
 	border: 1px solid #ccc;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 1rem;
 }
 
@@ -277,7 +284,7 @@ tr.disabled-row button {
 	flex: 1;
 	padding: 10px;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
 	font-weight: bold;
 }
@@ -289,7 +296,7 @@ tr.disabled-row button {
 
 .date-btn-cancel {
 	background-color: #f2f2f2;
-	color: #333;
+	color: var(--text-dark);
 }
 
 /* 노트북 17인치 + 사이드바 (1400px 이하) */

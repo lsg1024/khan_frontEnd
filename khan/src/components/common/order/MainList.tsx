@@ -49,7 +49,6 @@ const MainList = ({
 					<th colSpan={3}>보조석</th>
 					<th>메인/보조</th>
 					<th>사이즈</th>
-					<th>세트타입</th>
 					<th>재고</th>
 					<th>급</th>
 					<th>비고</th>
@@ -107,7 +106,12 @@ const MainList = ({
 								{(currentPage - 1) * 16 + index + 1}
 							</button>
 						</td>
-						<td className="product-name-order">{dto.productName}</td>
+						<td className="product-name-order">
+							<div>{dto.productName}</div>
+							{dto.productFactoryName && (
+								<div className="product-factory-name">{dto.productFactoryName}</div>
+							)}
+						</td>
 						<td className={`info-cell ${dto.statusHistory && dto.statusHistory.length > 0 ? 'has-history' : ''}`}>
 							<StatusHistoryTooltip statusHistory={dto.statusHistory}>
 								<div className="info-row-order">
@@ -180,7 +184,6 @@ const MainList = ({
 							</div>
 						</td>
 						<td>{dto.productSize}</td>
-						<td>{dto.setType}</td>
 						<td>{dto.stockQuantity}</td>
 						<td>
 							<span className={`priority-badge-order ${dto.priority}`}>

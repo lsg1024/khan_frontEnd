@@ -1,38 +1,16 @@
-.account-modal-overlay {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.5);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1000;
-}
-
-.account-modal-content {
-	background: white;
-	border-radius: 8px;
-	width: 90%;
-	max-width: 800px;
-	max-height: 80vh;
-	display: flex;
-	flex-direction: column;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
+/* 모달 오버레이/컨텐츠: common.css에서 통합 정의 */
 
 .account-modal-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	padding: 1rem 1.5rem;
-	border-bottom: 1px solid #e9ecef;
+	border-bottom: 1px solid var(--border-color-soft);
 }
 
 .account-modal-header h3 {
 	margin: 0;
-	color: #333;
+	color: var(--text-dark);
 	font-size: 1.2rem;
 }
 
@@ -40,7 +18,7 @@
 	background: none;
 	border: none;
 	font-size: 1.5rem;
-	color: #666;
+	color: var(--text-light);
 	cursor: pointer;
 	padding: 0;
 	width: 30px;
@@ -56,7 +34,7 @@
 
 .account-search-section {
 	padding: 1rem 1.5rem;
-	border-bottom: 1px solid #e9ecef;
+	border-bottom: 1px solid var(--border-color-soft);
 }
 
 .account-search-bar {
@@ -67,8 +45,8 @@
 .account-search-input {
 	flex: 1;
 	padding: 0.5rem;
-	border: 1px solid #ddd;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-light);
+	border-radius: var(--border-radius-sm);
 	font-size: 0.9rem;
 	background: #f8f9fa;
 }
@@ -84,7 +62,7 @@
 	background-color: #007bff;
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
 	font-size: 0.9rem;
 }
@@ -106,7 +84,7 @@
 	align-items: center;
 	justify-content: center;
 	height: 200px;
-	color: #666;
+	color: var(--text-light);
 	font-size: 0.9rem;
 }
 
@@ -121,7 +99,7 @@
 }
 
 .account-item {
-	border: 1px solid #e9ecef;
+	border: 1px solid var(--border-color-soft);
 	border-radius: 6px;
 	padding: 1rem;
 	cursor: pointer;
@@ -145,7 +123,7 @@
 .account-name {
 	font-weight: bold;
 	font-size: 1.1rem;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .account-level {
@@ -162,7 +140,7 @@
 
 .account-level.level-two {
 	background-color: #ffc107;
-	color: #333;
+	color: var(--text-dark);
 }
 
 .account-level.level-three {
@@ -181,17 +159,17 @@
 .account-page-button,
 .account-page-btn {
 	padding: 0.5rem 1rem;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color-light);
 	background: white;
-	color: #333;
-	border-radius: 4px;
+	color: var(--text-dark);
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
 	font-size: 0.9rem;
 }
 
 .account-page-button:hover:not(:disabled),
 .account-page-btn:hover:not(:disabled) {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	border-color: #007bff;
 }
 
@@ -202,41 +180,15 @@
 }
 
 .account-page-info {
-	color: #666;
+	color: var(--text-light);
 	font-size: 0.9rem;
 	min-width: 80px;
 	text-align: center;
 }
 
 /* 반응형 디자인 - 태블릿 */
+/* 모달 overlay/content/header: responsive.css에서 통합 정의 */
 @media (max-width: 768px) {
-	.account-modal-overlay {
-		padding: 0;
-		align-items: stretch;
-	}
-
-	.account-modal-content {
-		width: 100%;
-		max-width: 100%;
-		height: 100%;
-		max-height: 100%;
-		border-radius: 0;
-	}
-
-	.account-modal-header {
-		padding: 10px 12px;
-	}
-
-	.account-modal-header h3 {
-		font-size: 14px;
-	}
-
-	.account-modal-close {
-		width: 28px;
-		height: 28px;
-		font-size: 18px;
-	}
-
 	.account-search-section {
 		padding: 8px 10px;
 	}
@@ -407,8 +359,8 @@
 .accounts-table {
 	display: flex;
 	flex-direction: column;
-	border: 1px solid #e9ecef;
-	border-radius: 4px;
+	border: 1px solid var(--border-color-soft);
+	border-radius: var(--border-radius-sm);
 	overflow: hidden;
 }
 
@@ -417,8 +369,8 @@
 	grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 1fr 1fr;
 	gap: 0;
 	padding: 0;
-	background-color: #f8f9fa;
-	border-bottom: 1px solid #e9ecef;
+	background-color: var(--bg-secondary);
+	border-bottom: 1px solid var(--border-color-soft);
 	font-weight: 600;
 	color: #495057;
 	font-size: 12px;
@@ -452,7 +404,7 @@
 }
 
 .accounts-table .table-row:hover {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 }
 
 .accounts-table .table-row:last-child {
@@ -461,7 +413,7 @@
 
 .accounts-table .col-name {
 	font-weight: 500;
-	color: #333;
+	color: var(--text-dark);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -473,7 +425,7 @@
 .accounts-table .col-phone,
 .accounts-table .col-harry,
 .accounts-table .col-trade {
-	color: #666;
+	color: var(--text-light);
 	font-size: 12px;
 }
 
@@ -507,7 +459,7 @@
 	background-color: #28a745;
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	font-size: 12px;
 	font-weight: 500;
 	cursor: pointer;
@@ -532,10 +484,10 @@
 
 	.accounts-table .table-row {
 		padding: 1rem;
-		border: 1px solid #e9ecef;
-		border-radius: 4px;
+		border: 1px solid var(--border-color-soft);
+		border-radius: var(--border-radius-sm);
 		margin-bottom: 0.5rem;
-		background-color: white;
+		background-color: var(--bg-primary);
 	}
 
 	.accounts-table .table-row > span {

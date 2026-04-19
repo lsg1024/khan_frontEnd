@@ -13,9 +13,9 @@
 	grid-template-columns: 2fr 1.5fr 1.5fr 0.8fr 0.8fr 1fr 0.8fr;
 	gap: 8px;
 	padding: 12px 8px;
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 	font-weight: 600;
-	color: #333;
+	color: var(--text-dark);
 	border-bottom: 2px solid #dee2e6;
 	align-items: center;
 }
@@ -31,12 +31,12 @@
 }
 
 .stores-table .table-row:hover {
-	background-color: #f8f9fa;
+	background-color: var(--bg-secondary);
 }
 
 .stores-table .col-name {
 	font-weight: 500;
-	color: #333;
+	color: var(--text-dark);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -44,7 +44,7 @@
 
 .stores-table .col-owner,
 .stores-table .col-phone {
-	color: #666;
+	color: var(--text-light);
 	font-size: 13px;
 }
 
@@ -83,7 +83,7 @@
 
 .stores-table .col-harry,
 .stores-table .col-trade {
-	color: #666;
+	color: var(--text-light);
 	font-size: 13px;
 	text-align: center;
 }
@@ -98,7 +98,7 @@
 	background-color: var(--primary-color);
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: var(--border-radius-sm);
 	cursor: pointer;
 	font-size: 12px;
 	font-weight: 500;
@@ -112,6 +112,6 @@
 .no-results {
 	text-align: center;
 	padding: 40px;
-	color: #666;
+	color: var(--text-light);
 	font-size: 14px;
 }

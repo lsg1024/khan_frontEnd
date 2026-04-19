@@ -66,10 +66,17 @@ export const useBulkActions = ({
 				const promises = selectedItems.map((orderId) =>
 					orderApi.updateDeliveryDate(orderId, isoDateString)
 				);
-				await Promise.all(promises);
-				alert(
-					`${selectedItems.length}개 주문의 출고일이 성공적으로 변경되었습니다.`
-				);
+				const results = await Promise.allSettled(promises);
+				const succeeded = results.filter(r => r.status === "fulfilled").length;
+				const failed = results.filter(r => r.status === "rejected").length;
+
+				if (failed > 0) {
+					handleError(new Error(`${succeeded}개 성공, ${failed}개 실패`));
+				} else {
+					alert(
+						`${succeeded}개 주문의 출고일이 성공적으로 변경되었습니다.`
+					);
+				}
 
 				await loadData(searchFilters, currentPage);
 			} catch (err) {
