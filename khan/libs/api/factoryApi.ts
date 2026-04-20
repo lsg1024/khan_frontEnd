@@ -13,15 +13,26 @@ import type {
 import type { TransactionPageResponse } from "../../src/types/storeDto";
 
 export const factoryApi = {
-	// 제조사 검색 (페이징 지원)
+	// 제조사 검색 (페이징 + 정렬 + searchField 지원)
 	getFactories: async (
 		name?: string,
 		page: number = 1,
 		un_page?: boolean,
-		size: number = 12
+		size: number = 12,
+		searchField?: string,
+		sortField?: string,
+		sortOrder?: string
 	): Promise<ApiResponse<FactorySearchResponse>> => {
 		return apiRequest.get<FactorySearchResponse>("account/factories", {
-			params: { search: name || "", page: page, un_page: un_page, size: size },
+			params: {
+				search: name || "",
+				page: page,
+				un_page: un_page,
+				size: size,
+				searchField: searchField || undefined,
+				sortField: sortField || undefined,
+				sortOrder: sortOrder || undefined,
+			},
 		});
 	},
 

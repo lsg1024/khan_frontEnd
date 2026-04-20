@@ -10,11 +10,21 @@ import {
 import Pagination from "../../components/common/Pagination";
 import AccountTable from "../../components/account/AccountTable";
 import AccountBulkActionBar from "../../components/account/AccountBulkActionBar";
-import AccountSearchBar from "../../components/account/AccountSearchBar";
 import "../../styles/pages/account/StorePage.css";
 
 export const StorePage = () => {
-	const [searchName, setSearchName] = useState("");
+	// 검색 관련 상태 (카타로그 패턴과 동일)
+	const [searchFilters, setSearchFilters] = useState({
+		search: "",
+		searchField: "",
+	});
+
+	// 정렬 관련 상태
+	const [sortOptions, setSortOptions] = useState({
+		sortField: "",
+		sortOrder: "",
+	});
+
 	const [stores, setStores] = useState<StoreSearchDto[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
@@ -28,11 +38,22 @@ export const StorePage = () => {
 	const { handleError } = useErrorHandler();
 
 	const loadStores = useCallback(
-		async (name: string, page: number) => {
+		async (
+			filters: typeof searchFilters,
+			page: number,
+			sortOpts: typeof sortOptions
+		) => {
 			setLoading(true);
 
 			try {
-				const res = await storeApi.getStores(name, page, size);
+				const res = await storeApi.getStores(
+					filters.search,
+					page,
+					size,
+					filters.searchField || undefined,
+					sortOpts.sortField || undefined,
+					sortOpts.sortOrder || undefined
+				);
 
 				if (!isApiSuccess(res)) {
 					alert(res.message || "거래처 데이터를 불러오지 못했습니다.");
@@ -66,7 +87,10 @@ export const StorePage = () => {
 	);
 
 	useEffect(() => {
-		loadStores("", 1);
+		loadStores({ search: "", searchField: "" }, 1, {
+			sortField: "",
+			sortOrder: "",
+		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
@@ -80,7 +104,10 @@ export const StorePage = () => {
 			) {
 				if (event.data.accountType === "store") {
 					// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
-					setTimeout(() => loadStores(searchName, currentPage), 500);
+					setTimeout(
+						() => loadStores(searchFilters, currentPage, sortOptions),
+						500
+					);
 				}
 			}
 		};
@@ -89,17 +116,27 @@ export const StorePage = () => {
 		return () => {
 			window.removeEventListener("message", handleMessage);
 		};
-	}, [searchName, currentPage, loadStores]);
+	}, [searchFilters, sortOptions, currentPage, loadStores]);
+
+	const handleFilterChange = (
+		field: keyof typeof searchFilters,
+		value: string
+	) => {
+		setSearchFilters((prev) => ({ ...prev, [field]: value }));
+	};
 
 	const handleSearch = () => {
 		setCurrentPage(1);
-		loadStores(searchName, 1);
+		loadStores(searchFilters, 1, sortOptions);
 	};
 
 	const handleReset = () => {
-		setSearchName("");
+		const resetFilters = { search: "", searchField: "" };
+		const resetSort = { sortField: "", sortOrder: "" };
+		setSearchFilters(resetFilters);
+		setSortOptions(resetSort);
 		setCurrentPage(1);
-		loadStores("", 1);
+		loadStores(resetFilters, 1, resetSort);
 	};
 
 	const handleSelectOne = (id: number) => {
@@ -166,7 +203,7 @@ export const StorePage = () => {
 				return;
 			}
 			alert("해리가 수정되었습니다.");
-			loadStores(searchName, currentPage);
+			loadStores(searchFilters, currentPage, sortOptions);
 		} catch {
 			alert("해리 수정 중 오류가 발생했습니다.");
 		}
@@ -183,7 +220,7 @@ export const StorePage = () => {
 				return;
 			}
 			alert("등급이 수정되었습니다.");
-			loadStores(searchName, currentPage);
+			loadStores(searchFilters, currentPage, sortOptions);
 		} catch {
 			alert("등급 수정 중 오류가 발생했습니다.");
 		}
@@ -201,7 +238,7 @@ export const StorePage = () => {
 			}
 			alert("삭제되었습니다.");
 			setSelectedId(null);
-			loadStores(searchName, currentPage);
+			loadStores(searchFilters, currentPage, sortOptions);
 		} catch {
 			alert("삭제 중 오류가 발생했습니다.");
 		}
@@ -241,16 +278,103 @@ export const StorePage = () => {
 
 	return (
 		<div className="page">
-			{/* 검색 영역 */}
-			<AccountSearchBar
-				searchName={searchName}
-				onSearchNameChange={setSearchName}
-				onSearch={handleSearch}
-				onReset={handleReset}
-				onCreate={handleCreate}
-				onExcelDownload={handleExcel}
-				loading={loading}
-			/>
+			{/* 검색 영역 (카타로그 패턴과 동일한 레이아웃) */}
+			<div className="search-section-common">
+				<div className="search-filters-common">
+					<div className="filter-row-common">
+						<select
+							className="filter-group-common select"
+							value={searchFilters.searchField}
+							onChange={(e) =>
+								handleFilterChange("searchField", e.target.value)
+							}
+							disabled={loading}
+						>
+							<option value="">검색 필터</option>
+							<option value="accountName">거래처명</option>
+							<option value="accountOwnerName">대표자</option>
+							<option value="phoneNumber">연락처</option>
+							<option value="faxNumber">팩스</option>
+							<option value="businessNumber1">사업장번호1</option>
+							<option value="businessNumber2">사업장번호2</option>
+							<option value="grade">등급</option>
+							<option value="note">비고</option>
+						</select>
+
+						<select
+							className="filter-group-common select"
+							value={sortOptions.sortField}
+							onChange={(e) =>
+								setSortOptions((prev) => ({
+									...prev,
+									sortField: e.target.value,
+								}))
+							}
+							disabled={loading}
+						>
+							<option value="">정렬 기준</option>
+							<option value="accountName">거래처명</option>
+							<option value="accountOwnerName">대표자</option>
+							<option value="grade">등급</option>
+							<option value="createDate">등록일</option>
+						</select>
+
+						<select
+							className="filter-group-common select"
+							value={sortOptions.sortOrder}
+							onChange={(e) =>
+								setSortOptions((prev) => ({
+									...prev,
+									sortOrder: e.target.value,
+								}))
+							}
+							disabled={loading}
+						>
+							<option value="">정렬 방향</option>
+							<option value="ASC">오름차순</option>
+							<option value="DESC">내림차순</option>
+						</select>
+
+						<input
+							className="search-input-common"
+							type="text"
+							placeholder="검색어"
+							value={searchFilters.search}
+							onChange={(e) => handleFilterChange("search", e.target.value)}
+							onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+						/>
+
+						<button
+							className="search-btn-common"
+							onClick={handleSearch}
+							disabled={loading}
+						>
+							검색
+						</button>
+						<button
+							className="reset-btn-common"
+							onClick={handleReset}
+							disabled={loading}
+						>
+							초기화
+						</button>
+						<button
+							className="common-btn-common"
+							onClick={handleCreate}
+							disabled={loading}
+						>
+							생성
+						</button>
+						<button
+							className="common-btn-common"
+							onClick={handleExcel}
+							disabled={loading}
+						>
+							엑셀 다운로드
+						</button>
+					</div>
+				</div>
+			</div>
 
 			{/* 거래처 목록 */}
 			<div className="list">
@@ -307,7 +431,7 @@ export const StorePage = () => {
 						totalElements={totalElements}
 						loading={loading}
 						onPageChange={(page) => {
-							loadStores(searchName, page);
+							loadStores(searchFilters, page, sortOptions);
 						}}
 						className="store"
 					/>

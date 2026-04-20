@@ -3,12 +3,26 @@ import axios, { AxiosHeaders } from "axios";
 import type { AxiosRequestConfig } from "axios";
 import { extractSubdomain } from "../domain";
 import { tokenUtils } from "../../src/utils/tokenUtils";
+import { cleanPayload } from "../utils/cleanPayload";
 
-const API_BASE_URL = "https://api.kkhan.co.kr";
+const API_PROD_URL = "https://api.kkhan.co.kr";
 const API_LOCAL_URL = "http://localhost:8080";
 
+/**
+ * API Base URL 결정 우선순위:
+ *   1) VITE_API_BASE_URL 환경 변수 (빌드 시 주입 가능: .env.production 또는 Docker --build-arg)
+ *   2) import.meta.env.PROD === true  → API_PROD_URL
+ *   3) 그 외 (npm run dev)            → API_LOCAL_URL
+ *
+ * Dockerfile 의 `npm run build` 는 자동으로 PROD 모드로 동작하므로
+ * 이미지 빌드 시 별도 설정 없이 API_PROD_URL 이 사용된다.
+ */
 export function getApiBaseUrl(): string {
-	return API_LOCAL_URL
+	const override = import.meta.env.VITE_API_BASE_URL;
+	if (typeof override === "string" && override.length > 0) {
+		return override;
+	}
+	return import.meta.env.PROD ? API_PROD_URL : API_LOCAL_URL;
 }
 
 function parseJwt(token: string) {
@@ -77,6 +91,11 @@ const processQueue = (error: Error | null) => {
 };
 
 api.interceptors.request.use((config) => {
+	// cleanPayload 적용: 빈 문자열을 null로 변환하여 NumberFormatException 방지
+	if (config.data && typeof config.data === "object") {
+		config.data = cleanPayload(config.data);
+	}
+
 	const token = tokenUtils.getToken();
 	const currentSubdomain = extractSubdomain(window.location.hostname);
 

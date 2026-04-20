@@ -3,10 +3,14 @@ interface AccountSearchBarProps {
 	onSearchNameChange: (value: string) => void;
 	onSearch: () => void;
 	onReset: () => void;
-	onCreate: () => void;
-	onExcelDownload: () => void;
+	onCreate?: () => void;
+	onExcelDownload?: () => void;
 	loading: boolean;
 	placeholder?: string;
+	/** 생성 버튼 표시 여부 (기본 true). 팝업 모드 등에서 false 로 감출 수 있음. */
+	showCreate?: boolean;
+	/** 엑셀 다운로드 버튼 표시 여부 (기본 true). 팝업 모드 등에서 false 로 감출 수 있음. */
+	showExcel?: boolean;
 }
 
 export const AccountSearchBar = ({
@@ -18,6 +22,8 @@ export const AccountSearchBar = ({
 	onExcelDownload,
 	loading,
 	placeholder = "검색...",
+	showCreate = true,
+	showExcel = true,
 }: AccountSearchBarProps) => {
 	const handleKeyPress = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter") {
@@ -53,20 +59,24 @@ export const AccountSearchBar = ({
 						>
 							초기화
 						</button>
-						<button
-							className="common-btn-common"
-							onClick={onCreate}
-							disabled={loading}
-						>
-							생성
-						</button>
-						<button
-							className="common-btn-common"
-							onClick={onExcelDownload}
-							disabled={loading}
-						>
-							엑셀 다운로드
-						</button>
+						{showCreate && onCreate && (
+							<button
+								className="common-btn-common"
+								onClick={onCreate}
+								disabled={loading}
+							>
+								생성
+							</button>
+						)}
+						{showExcel && onExcelDownload && (
+							<button
+								className="common-btn-common"
+								onClick={onExcelDownload}
+								disabled={loading}
+							>
+								엑셀 다운로드
+							</button>
+						)}
 					</div>
 				</div>
 			</div>

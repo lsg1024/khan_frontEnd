@@ -33,16 +33,40 @@ export const messageApi = {
 		return apiRequest.post<SendResult[]>("users/message/send", data);
 	},
 
-	// 전송 이력 조회
+	// 전송 이력 조회 (선택적 필터: 수신자명/전화번호/내용/날짜 범위)
 	getHistory: async (
 		page: number = 1,
-		size: number = 20
+		size: number = 20,
+		filters?: {
+			receiverName?: string;
+			receiverPhone?: string;
+			content?: string;
+			startDate?: string;
+			endDate?: string;
+		}
 	): Promise<ApiResponse<MessageHistoryPageResponse>> => {
+		const params: Record<string, string | number> = {
+			page: page - 1,
+			size,
+		};
+		if (filters?.receiverName && filters.receiverName.trim()) {
+			params.receiverName = filters.receiverName.trim();
+		}
+		if (filters?.receiverPhone && filters.receiverPhone.trim()) {
+			params.receiverPhone = filters.receiverPhone.trim();
+		}
+		if (filters?.content && filters.content.trim()) {
+			params.content = filters.content.trim();
+		}
+		if (filters?.startDate) {
+			params.startDate = filters.startDate;
+		}
+		if (filters?.endDate) {
+			params.endDate = filters.endDate;
+		}
 		return apiRequest.get<MessageHistoryPageResponse>(
 			"users/message/history",
-			{
-				params: { page: page - 1, size },
-			}
+			{ params }
 		);
 	},
 };

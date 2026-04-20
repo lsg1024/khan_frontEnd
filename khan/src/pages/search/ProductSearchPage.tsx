@@ -22,17 +22,25 @@ const ProductSearchPage: React.FC = () => {
 
 	const [products, setProducts] = useState<ProductDto[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [searchTerm, setSearchTerm] = useState(initialSearch);
 	const { handleError } = useErrorHandler();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
-	// 필터 상태
-	const [searchField, setSearchField] = useState("");
-	const [sortField, setSortField] = useState("");
-	const [sortOrder, setSortOrder] = useState("DESC");
+	// 검색 필터 상태 (카타로그와 동일한 구조)
+	const [searchFilters, setSearchFilters] = useState({
+		search: initialSearch,
+		searchField: "",
+		searchMin: "",
+		searchMax: "",
+	});
+
+	// 정렬 상태 (카타로그와 동일한 기본값)
+	const [sortOptions, setSortOptions] = useState({
+		sortField: "",
+		sortOrder: "DESC",
+	});
 
 	// 독립 필터 상태 (AND 조합)
 	const [filterSetType, setFilterSetType] = useState("");
@@ -47,14 +55,17 @@ const ProductSearchPage: React.FC = () => {
 
 	const size = 12;
 
-	// 상품 검색
+	// 상품 검색 — 카타로그와 동일한 파라미터 세트
 	const performSearch = useCallback(
 		async (
-			search: string,
+			filters: {
+				search: string;
+				searchField: string;
+				searchMin: string;
+				searchMax: string;
+			},
 			page: number,
-			sSearchField?: string,
-			sField?: string,
-			sOrder?: string,
+			sortOpts: { sortField: string; sortOrder: string },
 			fSetType?: string,
 			fClassification?: string,
 			fFactory?: string,
@@ -63,10 +74,12 @@ const ProductSearchPage: React.FC = () => {
 
 			try {
 				const response = await productApi.getProducts({
-					search: search || undefined,
-					searchField: sSearchField || undefined,
-					sortField: sField || undefined,
-					sortOrder: sOrder || undefined,
+					search: filters.search || undefined,
+					searchField: filters.searchField || undefined,
+					searchMin: filters.searchMin || undefined,
+					searchMax: filters.searchMax || undefined,
+					sortField: sortOpts.sortField || undefined,
+					sortOrder: sortOpts.sortOrder || undefined,
 					grade: grade,
 					page: page,
 					size: size,
@@ -159,26 +172,53 @@ const ProductSearchPage: React.FC = () => {
 
 	// 초기 데이터 로드 (초기 검색어가 있으면 해당 검색어로 검색)
 	useEffect(() => {
-		performSearch(initialSearch, 1, "", "", "DESC", "", "", "");
+		performSearch(
+			{ search: initialSearch, searchField: "", searchMin: "", searchMax: "" },
+			1,
+			{ sortField: "", sortOrder: "DESC" },
+			"",
+			"",
+			"",
+		);
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+	// 검색 필터 변경 핸들러
+	const handleFilterChange = (
+		field: keyof typeof searchFilters,
+		value: string,
+	) => {
+		setSearchFilters((prev) => ({ ...prev, [field]: value }));
+	};
 
 	// 검색 실행
 	const handleSearch = () => {
 		setCurrentPage(1);
-		performSearch(searchTerm, 1, searchField, sortField, sortOrder, filterSetType, filterClassification, filterFactory);
+		performSearch(
+			searchFilters,
+			1,
+			sortOptions,
+			filterSetType,
+			filterClassification,
+			filterFactory,
+		);
 	};
 
 	// 초기화 처리
 	const handleReset = () => {
-		setSearchTerm("");
-		setSearchField("");
-		setSortField("");
-		setSortOrder("DESC");
+		const resetFilters = {
+			search: "",
+			searchField: "",
+			searchMin: "",
+			searchMax: "",
+		};
+		const resetSort = { sortField: "", sortOrder: "DESC" };
+		setSearchFilters(resetFilters);
+		setSortOptions(resetSort);
 		setFilterSetType("");
 		setFilterClassification("");
 		setFilterFactory("");
 		setCurrentPage(1);
-		performSearch("", 1, "", "", "DESC", "", "", "");
+		performSearch(resetFilters, 1, resetSort, "", "", "");
 	};
 
 	// 상품 선택 처리
@@ -201,21 +241,25 @@ const ProductSearchPage: React.FC = () => {
 		window.close();
 	};
 
-	// 총 매입가 계산
+	// 총 매입가 계산 (카타로그와 동일하게 includeStone/includeQuantity 존중)
 	const calculateTotalPurchaseCost = (product: ProductDto): number => {
 		const productCost = parseInt(product.productPurchaseCost) || 0;
-		const stoneCost = product.productStones.reduce((sum, stone) => {
-			return sum + stone.purchasePrice * stone.stoneQuantity;
-		}, 0);
+		const stoneCost = product.productStones
+			.filter((stone) => stone.includeStone && stone.includeQuantity !== false)
+			.reduce((sum, stone) => {
+				return sum + stone.purchasePrice * stone.stoneQuantity;
+			}, 0);
 		return productCost + stoneCost;
 	};
 
-	// 총 판매가 계산 (상품 판매가 + 스톤 판매가)
+	// 총 판매가 계산 (카타로그와 동일하게 includeStone/includePrice 존중)
 	const calculateTotalLaborCost = (product: ProductDto): number => {
 		const productCost = parseInt(product.productLaborCost) || 0;
-		const stoneCost = product.productStones.reduce((sum, stone) => {
-			return sum + stone.laborCost * stone.stoneQuantity;
-		}, 0);
+		const stoneCost = product.productStones
+			.filter((stone) => stone.includeStone && stone.includePrice !== false)
+			.reduce((sum, stone) => {
+				return sum + stone.laborCost * stone.stoneQuantity;
+			}, 0);
 		return productCost + stoneCost;
 	};
 
@@ -277,12 +321,15 @@ const ProductSearchPage: React.FC = () => {
 							</select>
 						</div>
 
-						{/* 2행: 검색 필터 및 정렬 */}
+						{/* 2행: 검색 필터 및 정렬 (카타로그와 동일) */}
 						<div className="filter-row-common">
 							<select
 								className="filter-group-common select"
-								value={searchField}
-								onChange={(e) => setSearchField(e.target.value)}
+								value={searchFilters.searchField}
+								onChange={(e) =>
+									handleFilterChange("searchField", e.target.value)
+								}
+								disabled={dropdownLoading}
 							>
 								<option value="">검색 필터</option>
 								<option value="modelNumber">모델번호</option>
@@ -291,37 +338,102 @@ const ProductSearchPage: React.FC = () => {
 								<option value="setType">세트타입</option>
 								<option value="classification">분류</option>
 								<option value="material">재질</option>
+								<option value="standardWeight">표준중량</option>
+								<option value="createDate">등록일</option>
+								<option value="hasImage">사진여부</option>
 							</select>
 
 							<select
 								className="filter-group-common select"
-								value={sortField}
-								onChange={(e) => setSortField(e.target.value)}
+								value={sortOptions.sortField}
+								onChange={(e) =>
+									setSortOptions((prev) => ({
+										...prev,
+										sortField: e.target.value,
+									}))
+								}
+								disabled={dropdownLoading}
 							>
 								<option value="">정렬 기준</option>
 								<option value="productName">상품명</option>
 								<option value="factory">제조사</option>
+								<option value="setType">세트</option>
 								<option value="classification">분류</option>
-								<option value="setType">세트타입</option>
 							</select>
 
 							<select
 								className="filter-group-common select"
-								value={sortOrder}
-								onChange={(e) => setSortOrder(e.target.value)}
+								value={sortOptions.sortOrder}
+								onChange={(e) =>
+									setSortOptions((prev) => ({
+										...prev,
+										sortOrder: e.target.value,
+									}))
+								}
+								disabled={dropdownLoading}
 							>
-								<option value="DESC">내림차순</option>
+								<option value="">정렬 방향</option>
 								<option value="ASC">오름차순</option>
+								<option value="DESC">내림차순</option>
 							</select>
 
-							<input
-								className="search-input-common"
-								type="text"
-								placeholder="검색어"
-								value={searchTerm}
-								onChange={(e) => setSearchTerm(e.target.value)}
-								onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-							/>
+							{/* 범위 검색 필드 (standardWeight, createDate) */}
+							{searchFilters.searchField === "standardWeight" ||
+							searchFilters.searchField === "createDate" ? (
+								<>
+									<input
+										className="search-input-common"
+										type={
+											searchFilters.searchField === "createDate"
+												? "date"
+												: "text"
+										}
+										placeholder="최소값"
+										value={searchFilters.searchMin}
+										onChange={(e) =>
+											handleFilterChange("searchMin", e.target.value)
+										}
+									/>
+									<input
+										className="search-input-common"
+										type={
+											searchFilters.searchField === "createDate"
+												? "date"
+												: "text"
+										}
+										placeholder="최대값"
+										value={searchFilters.searchMax}
+										onChange={(e) =>
+											handleFilterChange("searchMax", e.target.value)
+										}
+										onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+									/>
+								</>
+							) : searchFilters.searchField === "hasImage" ? (
+								<select
+									className="filter-group-common select"
+									value={searchFilters.search}
+									onChange={(e) =>
+										handleFilterChange("search", e.target.value)
+									}
+								>
+									<option value="">전체</option>
+									<option value="true">있음</option>
+									<option value="false">없음</option>
+								</select>
+							) : (
+								<input
+									className="search-input-common"
+									type="text"
+									placeholder="검색어"
+									value={searchFilters.search}
+									onChange={(e) =>
+										handleFilterChange("search", e.target.value)
+									}
+									onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+								/>
+							)}
+
 							<div className="search-buttons-common">
 								<button
 									className="search-btn-common"
@@ -383,12 +495,12 @@ const ProductSearchPage: React.FC = () => {
 											{product.productName}
 										</h3>
 										<div className="search-product-details">
-											{/* 무게, 재질 */}
-											<div className="search-detail-row combined">
+											{/* 무게, 금중량, 재질 */}
+											<div className="search-detail-row combined search-meta-row">
 												<div className="search-detail-item">
 													<div className="value">{product.productWeight}g</div>
 												</div>
-												<div className="detail-item">
+												<div className="search-detail-item">
 													<div className="gold-content">
 														{calculatePureGoldWeight(
 															product.productWeight,
@@ -397,7 +509,7 @@ const ProductSearchPage: React.FC = () => {
 														돈
 													</div>
 												</div>
-												<div className="detail-item">
+												<div className="search-detail-item">
 													<span className="value">
 														{product.productMaterial}
 													</span>
@@ -455,7 +567,14 @@ const ProductSearchPage: React.FC = () => {
 						totalElements={totalElements}
 						loading={loading}
 						onPageChange={(page) => {
-							performSearch(searchTerm, page, searchField, sortField, sortOrder, filterSetType, filterClassification, filterFactory);
+							performSearch(
+								searchFilters,
+								page,
+								sortOptions,
+								filterSetType,
+								filterClassification,
+								filterFactory,
+							);
 						}}
 						className="product"
 					/>

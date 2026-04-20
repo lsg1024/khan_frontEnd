@@ -430,7 +430,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										🗑️
 									</button>
 								</td>
-								{/* 거래처 - 재고 등록 시 storeId=1 고정 */}
+								{/* 거래처 */}
 								<td className="search-type-cell">
 									<div className="search-field-container">
 										<input
@@ -440,8 +440,13 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 												searchInputs[row.id]?.storeName ?? row.storeName
 											}
 											placeholder="거래처"
-											disabled={true}
-											readOnly={true}
+											disabled={
+												!safeIsRowInputEnabled(index) ||
+												isReadOnlyMode ||
+												isDetailMode ||
+												isSaleMode
+											}
+											readOnly={false}
 											style={{
 												backgroundColor: "#f5f5f5",
 											}}
@@ -458,6 +463,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											onBlur={() => handleSearchBlur(row.id, "storeName")}
 											onFocus={() => {
 												if (mode === "create" && safeIsRowInputEnabled(index)) {
+													if (!row.storeId) {
+														safeOnRequiredFieldClick(row.id, "store");
+													}
 													safeOnRowFocus(row.id);
 												}
 											}}
@@ -496,6 +504,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 											onBlur={() => handleSearchBlur(row.id, "productName")}
 											onFocus={() => {
 												if (mode === "create" && safeIsRowInputEnabled(index)) {
+													if (!row.productId) {
+														safeOnRequiredFieldClick(row.id, "product");
+													}
 													safeOnRowFocus(row.id);
 												}
 											}}
@@ -510,6 +521,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 														searchingField[row.id] !== "product" &&
 														safeIsRowInputEnabled(index)
 													) {
+														if (!row.productId) {
+															safeOnRequiredFieldClick(row.id, "product");
+														}
 														safeOnProductSearchOpen(row.id);
 													} else if (searchingField[row.id] !== "product") {
 														alert("이전 주문장을 완성해 주세요.");
@@ -593,9 +607,20 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 									<select
 										id={`stock-material-select-${row.id}`}
 										value={row.materialId}
+										onClick={() => {
+											if (
+												isCreateMode &&
+												!row.materialId &&
+												safeIsRowInputEnabled(index)
+											) {
+												safeOnRequiredFieldClick(row.id, "material");
+											}
+										}}
 										onFocus={() => {
 											if (!isReadOnlyMode && !isDetailMode && !isSaleMode) {
-												safeOnRequiredFieldClick(row.id, "material");
+												if (!row.materialId) {
+													safeOnRequiredFieldClick(row.id, "material");
+												}
 											}
 										}}
 										onChange={(e) => {
@@ -634,9 +659,20 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="drop-down-cell2">
 									<select
 										value={row.colorId}
+										onClick={() => {
+											if (
+												isCreateMode &&
+												!row.colorId &&
+												safeIsRowInputEnabled(index)
+											) {
+												safeOnRequiredFieldClick(row.id, "color");
+											}
+										}}
 										onFocus={() => {
 											if (!isReadOnlyMode && !isDetailMode && !isSaleMode) {
-												safeOnRequiredFieldClick(row.id, "color");
+												if (!row.colorId) {
+													safeOnRequiredFieldClick(row.id, "color");
+												}
 											}
 										}}
 										onChange={(e) => {

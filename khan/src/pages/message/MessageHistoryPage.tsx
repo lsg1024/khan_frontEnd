@@ -1,9 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { messageApi } from "../../../libs/api/messageApi";
 import type { MessageHistoryItem } from "../../types/messageDto";
 import Pagination from "../../components/common/Pagination";
 import { useToast } from "../../components/common/toast/Toast";
 import "../../styles/pages/message.css";
+
+interface HistoryFilters {
+	receiverName: string;
+	receiverPhone: string;
+	content: string;
+	startDate: string;
+	endDate: string;
+}
+
+const EMPTY_FILTERS: HistoryFilters = {
+	receiverName: "",
+	receiverPhone: "",
+	content: "",
+	startDate: "",
+	endDate: "",
+};
 
 const MessageHistoryPage = () => {
 	const [history, setHistory] = useState<MessageHistoryItem[]>([]);
@@ -11,25 +27,58 @@ const MessageHistoryPage = () => {
 	const [totalPages, setTotalPages] = useState(0);
 	const [totalElements, setTotalElements] = useState(0);
 	const [loading, setLoading] = useState(false);
+	// 입력값(input state)
+	const [filters, setFilters] = useState<HistoryFilters>(EMPTY_FILTERS);
+	// 실제로 적용된 검색 조건 (검색 버튼 누를 때 반영)
+	const [appliedFilters, setAppliedFilters] =
+		useState<HistoryFilters>(EMPTY_FILTERS);
 	const { showToast } = useToast();
 
-	useEffect(() => {
-		loadHistory();
-	}, [page]);
-
-	const loadHistory = async () => {
-		setLoading(true);
-		try {
-			const response = await messageApi.getHistory(page, 20);
-			if (response.success && response.data) {
-				setHistory(response.data.content || []);
-				setTotalPages(response.data.totalPages || 0);
-				setTotalElements(response.data.totalElements || 0);
+	const loadHistory = useCallback(
+		async (currentPage: number, applied: HistoryFilters) => {
+			setLoading(true);
+			try {
+				const response = await messageApi.getHistory(
+					currentPage,
+					20,
+					applied
+				);
+				if (response.success && response.data) {
+					setHistory(response.data.content || []);
+					setTotalPages(response.data.totalPages || 0);
+					setTotalElements(response.data.totalElements || 0);
+				}
+			} catch {
+				showToast("전송 이력을 불러올 수 없습니다.", "error", 3000);
+			} finally {
+				setLoading(false);
 			}
-		} catch {
-			showToast("전송 이력을 불러올 수 없습니다.", "error", 3000);
-		} finally {
-			setLoading(false);
+		},
+		[showToast]
+	);
+
+	useEffect(() => {
+		loadHistory(page, appliedFilters);
+	}, [page, appliedFilters, loadHistory]);
+
+	const handleSearch = () => {
+		if (filters.startDate && filters.endDate && filters.startDate > filters.endDate) {
+			showToast("시작일이 종료일보다 클 수 없습니다.", "warning", 3000);
+			return;
+		}
+		setPage(1);
+		setAppliedFilters(filters);
+	};
+
+	const handleReset = () => {
+		setFilters(EMPTY_FILTERS);
+		setPage(1);
+		setAppliedFilters(EMPTY_FILTERS);
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			handleSearch();
 		}
 	};
 
@@ -47,6 +96,97 @@ const MessageHistoryPage = () => {
 
 	return (
 		<div className="page">
+			{/* 검색 영역 */}
+			<div className="search-section-common">
+				<div className="search-filters-common">
+					<div className="filter-row-common">
+						<input
+							type="text"
+							className="search-input-common"
+							style={{ maxWidth: "180px" }}
+							placeholder="수신자(거래처)"
+							value={filters.receiverName}
+							onChange={(e) =>
+								setFilters((prev) => ({
+									...prev,
+									receiverName: e.target.value,
+								}))
+							}
+							onKeyDown={handleKeyDown}
+						/>
+						<input
+							type="text"
+							className="search-input-common"
+							style={{ maxWidth: "160px" }}
+							placeholder="전화번호"
+							value={filters.receiverPhone}
+							onChange={(e) =>
+								setFilters((prev) => ({
+									...prev,
+									receiverPhone: e.target.value,
+								}))
+							}
+							onKeyDown={handleKeyDown}
+						/>
+						<input
+							type="text"
+							className="search-input-common"
+							style={{ flex: 1, minWidth: "180px" }}
+							placeholder="내용"
+							value={filters.content}
+							onChange={(e) =>
+								setFilters((prev) => ({
+									...prev,
+									content: e.target.value,
+								}))
+							}
+							onKeyDown={handleKeyDown}
+						/>
+					</div>
+					<div className="filter-row-common">
+						<div className="message-date-range">
+							<input
+								type="date"
+								value={filters.startDate}
+								onChange={(e) =>
+									setFilters((prev) => ({
+										...prev,
+										startDate: e.target.value,
+									}))
+								}
+							/>
+							<span>~</span>
+							<input
+								type="date"
+								value={filters.endDate}
+								onChange={(e) =>
+									setFilters((prev) => ({
+										...prev,
+										endDate: e.target.value,
+									}))
+								}
+							/>
+						</div>
+						<div className="search-buttons-common">
+							<button
+								className="search-btn-common"
+								onClick={handleSearch}
+								disabled={loading}
+							>
+								검색
+							</button>
+							<button
+								className="reset-btn-common"
+								onClick={handleReset}
+								disabled={loading}
+							>
+								초기화
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<div className="list">
 				<table className="table">
 					<thead>

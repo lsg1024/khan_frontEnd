@@ -90,6 +90,9 @@ const OrderCreatePage = () => {
 	const [loading, setLoading] = useState(false);
 	const currentDate = getLocalDate();
 
+	// 전역 주문일 (모든 행에 공통 적용)
+	const [globalOrderDate, setGlobalOrderDate] = useState<string>(currentDate);
+
 	const foundPriority = priorities.find(
 		(p) => p.priorityName === priorities[0]?.priorityName
 	);
@@ -103,6 +106,34 @@ const OrderCreatePage = () => {
 		deliveryDate = formatDateToString(calculatedDate);
 	}
 
+	// 전역 주문일 변경 시 모든 행의 createAt + shippingAt 재계산
+	const handleGlobalOrderDateChange = (newDate: string) => {
+		setGlobalOrderDate(newDate);
+		setOrderRows((prevRows) =>
+			prevRows.map((row) => {
+				const selectedPriority = priorities.find(
+					(p) => p.priorityName === row.priorityName
+				);
+				let newShippingAt = row.shippingAt;
+				if (selectedPriority && selectedPriority.priorityDate && newDate) {
+					const newOrderDate = new Date(newDate);
+					if (!isNaN(newOrderDate.getTime())) {
+						const newDeliveryDate = addBusinessDays(
+							newOrderDate,
+							selectedPriority.priorityDate
+						);
+						newShippingAt = formatDateToString(newDeliveryDate);
+					}
+				}
+				return {
+					...row,
+					createAt: newDate,
+					shippingAt: newShippingAt,
+				};
+			})
+		);
+	};
+
 	// 새 주문 행 추가
 	const addOrderRow = () => {
 		const defaultPriority =
@@ -112,6 +143,16 @@ const OrderCreatePage = () => {
 
 		const defaultAssistantStone =
 			assistantStones.length > 0 ? assistantStones[0] : null;
+
+		// 전역 주문일 기준으로 출고일 재계산
+		let newRowShippingAt = deliveryDate;
+		if (globalOrderDate && defaultPriority.priorityDate) {
+			const baseDate = new Date(globalOrderDate);
+			if (!isNaN(baseDate.getTime())) {
+				const calculated = addBusinessDays(baseDate, defaultPriority.priorityDate);
+				newRowShippingAt = formatDateToString(calculated);
+			}
+		}
 
 		const newRow: OrderRowData = {
 			id: Date.now().toString(),
@@ -149,8 +190,8 @@ const OrderCreatePage = () => {
 			mainStoneCount: 0,
 			assistanceStoneCount: 0,
 			stoneWeightTotal: 0,
-			createAt: currentDate,
-			shippingAt: deliveryDate,
+			createAt: globalOrderDate || currentDate,
+			shippingAt: newRowShippingAt,
 			// 보조석 관련 필드
 			assistantStone: false,
 			assistantStoneId:
@@ -207,7 +248,7 @@ const OrderCreatePage = () => {
 							mainStoneCount: "",
 							assistanceStoneCount: "",
 							stoneWeightTotal: 0,
-							createAt: currentDate,
+							createAt: globalOrderDate || currentDate,
 							shippingAt: deliveryDate,
 							// 보조석 관련 필드들을 서버 데이터 기반으로 초기화
 							assistantStone: false,
@@ -495,15 +536,26 @@ const OrderCreatePage = () => {
 		updateOrderRow(rowId, "storeHarry", store.goldHarryLoss || "");
 		updateOrderRow(rowId, "storeGrade", newGrade);
 
-		// 판매처 상세 정보 조회 (재질 우선순위용)
+		// 판매처 상세 정보 조회 (재질/색상 우선순위용)
 		let storeMaterialId: string | undefined;
 		let storeMaterialName: string | undefined;
+		let storeColorId: string | undefined;
+		let storeColorName: string | undefined;
 		try {
 			const storeDetail = await storeApi.getStore(storeIdValue);
 			if (storeDetail?.data?.additionalMaterialId) {
 				storeMaterialId = storeDetail.data.additionalMaterialId;
 				storeMaterialName = storeDetail.data.additionalMaterialName;
 			}
+			if (storeDetail?.data?.additionalColorId) {
+				storeColorId = storeDetail.data.additionalColorId;
+				storeColorName = storeDetail.data.additionalColorName;
+			}
+			// row state에 store defaults 저장 (applyProductSelection에서 사용)
+			updateOrderRow(rowId, "storeAdditionalMaterialId", storeMaterialId || "");
+			updateOrderRow(rowId, "storeAdditionalMaterialName", storeMaterialName || "");
+			updateOrderRow(rowId, "storeAdditionalColorId", storeColorId || "");
+			updateOrderRow(rowId, "storeAdditionalColorName", storeColorName || "");
 		} catch {
 			// 판매처 상세 조회 실패 시 무시
 		}
@@ -609,9 +661,13 @@ const OrderCreatePage = () => {
 
 					// 재질 자동 선택 (판매처 설정 > 카탈로그 기본값)
 					let materialApplied = false;
-					if (storeMaterialId && storeMaterialName) {
+					const row = orderRows.find((r) => r.id === rowId);
+					const storeMatId = row?.storeAdditionalMaterialId;
+					const storeMatName = row?.storeAdditionalMaterialName;
+
+					if (storeMatId || storeMatName) {
 						const foundStoreMaterial = materials.find(
-							(m) => m.materialId?.toString() === storeMaterialId || m.materialName === storeMaterialName
+							(m) => m.materialId?.toString() === storeMatId || m.materialName === storeMatName
 						);
 						if (foundStoreMaterial) {
 							updateOrderRow(rowId, "materialId", foundStoreMaterial.materialId);
@@ -629,16 +685,32 @@ const OrderCreatePage = () => {
 						}
 					}
 
-					// 색상 자동 선택
-					if (matchingColorName) {
+					// 색상 자동 선택 (판매처 설정 > 가격정책 > 카탈로그 기본값)
+					let colorApplied = false;
+					const storeColorId = row?.storeAdditionalColorId;
+					const storeColorName = row?.storeAdditionalColorName;
+
+					if (storeColorId || storeColorName) {
+						const foundStoreColor = colors.find(
+							(c) => c.colorId?.toString() === storeColorId || c.colorName === storeColorName
+						);
+						if (foundStoreColor) {
+							updateOrderRow(rowId, "colorId", foundStoreColor.colorId);
+							updateOrderRow(rowId, "colorName", foundStoreColor.colorName);
+							colorApplied = true;
+						}
+					}
+					if (!colorApplied && matchingColorName) {
 						const foundColor = colors.find(
 							(c) => c.colorName === matchingColorName
 						);
 						if (foundColor) {
 							updateOrderRow(rowId, "colorId", foundColor.colorId);
 							updateOrderRow(rowId, "colorName", foundColor.colorName);
+							colorApplied = true;
 						}
-					} else if (colors.length > 0) {
+					}
+					if (!colorApplied && colors.length > 0) {
 						updateOrderRow(rowId, "colorId", colors[0].colorId || "1");
 						updateOrderRow(rowId, "colorName", colors[0].colorName);
 					}
@@ -1014,7 +1086,7 @@ const OrderCreatePage = () => {
 							mainStoneCount: 0,
 							assistanceStoneCount: 0,
 							stoneWeightTotal: 0,
-							createAt: currentDate,
+							createAt: globalOrderDate || currentDate,
 							shippingAt: defaultDeliveryDate,
 							assistantStone: false,
 							assistantStoneId:
@@ -1141,7 +1213,19 @@ const OrderCreatePage = () => {
 				closeDelay: 0, // 서버 응답 직후 바로 창 닫기
 			});
 		} catch (err) {
-			handleError(err);
+			// 에러 메시지 추출 및 사용자에게 표시
+			const errorMessage = (err as any)?.response?.data?.message ??
+				(err instanceof Error ? err.message : "주문 생성 중 오류가 발생했습니다.");
+
+			// 기존 toast 또는 alert로 에러 메시지 표시
+			if (showToast) {
+				showToast(errorMessage, "error", 5000);
+			} else {
+				alert(errorMessage);
+			}
+
+			// DO NOT close the popup; let user correct input
+			// window.close() is NOT called on error
 		} finally {
 			setLoading(false);
 		}
@@ -1179,6 +1263,20 @@ const OrderCreatePage = () => {
 				title="과거 거래내역"
 				maxRows={4}
 			/>
+
+			{/* 전역 주문일 선택기 */}
+			<div className="global-order-date-bar">
+				<label className="global-order-date-label">
+					전체 주문일
+					<input
+						type="date"
+						value={globalOrderDate}
+						onChange={(e) => handleGlobalOrderDateChange(e.target.value)}
+						disabled={loading}
+						className="global-order-date-input"
+					/>
+				</label>
+			</div>
 
 			{/* 주문 테이블 */}
 			<OrderTable

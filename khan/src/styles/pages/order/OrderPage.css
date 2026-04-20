@@ -65,18 +65,40 @@
 }
 
 .info-cell {
-	min-width: 40px;
+	min-width: 60px;
+	padding: 6px 10px !important;
 	text-align: center !important;
+}
+
+/* 주문/출고(info-cell) 은 날짜 두 줄이라 조금 더 공간이 필요 */
+td.info-cell:has(.info-value-expect) {
+	min-width: 90px;
+	padding: 8px 12px !important;
+}
+
+/* 상태(order-status-cell) 여백 */
+.order-status-cell {
+	padding: 6px 12px !important;
+	text-align: center !important;
+	min-width: 70px;
 }
 
 .info-row-order {
 	justify-content: center;
 	align-items: center;
-	margin-bottom: 2px;
+	margin-bottom: 6px;
+	line-height: 1.4;
 }
 
 .info-row-order:last-child {
 	margin-bottom: 0;
+}
+
+/* 주문/출고 날짜 셀은 두 줄(주문일/출고일)이 표기되므로 추가 여백 확보 */
+td.info-cell .info-row-order .info-value,
+td.info-cell .info-row-order .info-value-expect {
+	display: inline-block;
+	padding: 2px 4px;
 }
 
 .info-label {
@@ -126,24 +148,29 @@
 .priority-badge-order,
 .status-badge-order {
 	display: inline-block;
-	padding: 4px 8px;
+	padding: 6px 14px;
+	margin: 4px 2px;
 	border-radius: 12px;
 	font-size: 12px;
 	font-weight: 500;
 	text-align: center;
-	min-width: 60px;
+	min-width: 72px;
+	line-height: 1.4;
 }
 
 /* 상태 드롭다운 스타일 */
 .status-dropdown-order {
-	padding: 4px 6px;
+	padding: 6px 10px;
+	margin: 4px 2px;
 	border: 1px solid var(--border-color-light);
 	border-radius: var(--border-radius-sm);
 	background-color: var(--bg-primary);
 	cursor: pointer;
 	color: #000;
 	transition: border-color 0.2s;
-	font-size: 10px;
+	font-size: 11px;
+	min-width: 72px;
+	line-height: 1.4;
 }
 
 .status-dropdown-order:focus {

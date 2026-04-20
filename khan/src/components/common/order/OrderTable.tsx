@@ -344,7 +344,6 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 						<th>급</th>
 						<th>기타</th>
 						<th>수량</th>
-						<th>주문일</th>
 						<th>출고일</th>
 					</tr>
 					<tr>
@@ -368,7 +367,6 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 						<th></th>
 						<th>메인</th>
 						<th>보조</th>
-						<th></th>
 						<th></th>
 						<th></th>
 						<th></th>
@@ -429,6 +427,9 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 													safeIsRowInputEnabled(index) &&
 													!isStockStatus
 												) {
+													if (!row.storeId) {
+														safeOnRequiredFieldClick(row.id, "store");
+													}
 													safeOnRowFocus(row.id);
 												}
 											}}
@@ -443,6 +444,9 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 													safeIsRowInputEnabled(index) &&
 													!isStockStatus
 												) {
+													if (mode === "create" && !row.storeId) {
+														safeOnRequiredFieldClick(row.id, "store");
+													}
 													safeOnStoreSearchOpen(row.id);
 												} else if (isStockStatus) {
 													alert("재고 상태에서는 수정할 수 없습니다.");
@@ -492,6 +496,9 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 													safeIsRowInputEnabled(index) &&
 													!isStockStatus
 												) {
+													if (!row.productId) {
+														safeOnRequiredFieldClick(row.id, "product");
+													}
 													safeOnRowFocus(row.id);
 												}
 											}}
@@ -506,6 +513,9 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 													safeIsRowInputEnabled(index) &&
 													!isStockStatus
 												) {
+													if (mode === "create" && !row.productId) {
+														safeOnRequiredFieldClick(row.id, "product");
+													}
 													safeOnProductSearchOpen(row.id);
 												} else if (isStockStatus) {
 													alert("재고 상태에서는 수정할 수 없습니다.");
@@ -625,11 +635,10 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											}
 										}}
 										onFocus={() => {
-											if (
-												mode === "create" &&
-												safeIsRowInputEnabled(index) &&
-												!isStockStatus
-											) {
+											if (mode === "create" && safeIsRowInputEnabled(index) && !isStockStatus) {
+												if (!row.materialId) {
+													safeOnRequiredFieldClick(row.id, "material");
+												}
 												safeOnRowFocus(row.id);
 											}
 										}}
@@ -690,11 +699,10 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											}
 										}}
 										onFocus={() => {
-											if (
-												mode === "create" &&
-												safeIsRowInputEnabled(index) &&
-												!isStockStatus
-											) {
+											if (mode === "create" && safeIsRowInputEnabled(index) && !isStockStatus) {
+												if (!row.colorId) {
+													safeOnRequiredFieldClick(row.id, "color");
+												}
 												safeOnRowFocus(row.id);
 											}
 										}}
@@ -1173,49 +1181,6 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 											if (mode === "create" && safeIsRowInputEnabled(index)) {
 												safeOnRowFocus(row.id);
 											}
-										}}
-									/>
-								</td>
-								<td>
-									<input
-										type="date"
-										value={row.createAt}
-										onChange={(e) => {
-											if (isStockStatus) return;
-											onRowUpdate(row.id, "createAt", e.target.value);
-											// 주문일 변경 시 출고일 자동 재계산
-											const selectedPriority = priorities.find(
-												(p) => p.priorityName === row.priorityName
-											);
-											if (selectedPriority && selectedPriority.priorityDate) {
-												const newOrderDate = new Date(e.target.value);
-												if (!isNaN(newOrderDate.getTime())) {
-													const newDeliveryDate = addBusinessDays(
-														newOrderDate,
-														selectedPriority.priorityDate
-													);
-													const formattedDate = formatDateToString(newDeliveryDate);
-													onRowUpdate(row.id, "shippingAt", formattedDate);
-												}
-											}
-										}}
-										disabled={
-											loading || !safeIsRowInputEnabled(index) || isStockStatus
-										}
-										onFocus={() => {
-											if (
-												mode === "create" &&
-												safeIsRowInputEnabled(index) &&
-												!isStockStatus
-											) {
-												safeOnRowFocus(row.id);
-											}
-										}}
-										style={{
-											opacity:
-												!safeIsRowInputEnabled(index) || isStockStatus
-													? 0.5
-													: 1,
 										}}
 									/>
 								</td>

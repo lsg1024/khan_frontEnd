@@ -4,6 +4,7 @@ import { productApi } from "../../../libs/api/productApi";
 import { useErrorHandler } from "../../utils/errorHandler";
 import { handleApiSubmit } from "../../utils/apiSubmitHandler";
 import { useProductImageUpload } from "../../hooks/useProductImageUpload";
+import { useToast } from "../../components/common/toast/Toast";
 import ProductInfo from "../../components/common/product/BasicInfo";
 import PriceTable from "../../components/common/product/PriceTable";
 import StoneTable from "../../components/common/stone/StoneTable";
@@ -82,6 +83,7 @@ const ProductCreatePage = () => {
 	>({});
 	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const { handleError } = useErrorHandler();
+	const { showToast } = useToast();
 
 	// 이미지 업로드 훅 사용
 	const { uploadImages, uploading } = useProductImageUpload({
@@ -137,16 +139,32 @@ const ProductCreatePage = () => {
 		);
 
 		if (emptyStoneIndex !== -1) {
-			alert(
-				`[No.${
-					emptyStoneIndex + 1
-				}] 스톤이 선택되지 않았습니다.\n\n스톤을 선택하거나, 해당 행을 삭제한 후 다시 시도해주세요.`
+			showToast(
+				`[No.${emptyStoneIndex + 1}] 스톤이 선택되지 않았습니다.\n스톤을 선택하거나 해당 행을 삭제한 후 다시 시도해주세요.`,
+				"error",
+				5000
 			);
 			return false; // 유효성 검사 실패 -> 저장 중단
 		}
 
 		setValidationErrors(errors);
-		return Object.keys(errors).length === 0;
+		const errorMessages = Object.values(errors);
+		if (errorMessages.length > 0) {
+			const summary =
+				errorMessages.length === 1
+					? errorMessages[0]
+					: `입력값 ${errorMessages.length}개를 확인해주세요.\n${errorMessages
+							.slice(0, 5)
+							.map((m) => `• ${m}`)
+							.join("\n")}${
+							errorMessages.length > 5
+								? `\n외 ${errorMessages.length - 5}개 항목`
+								: ""
+					  }`;
+			showToast(summary, "error", 5000);
+			return false;
+		}
+		return true;
 	};
 
 	const handleFactorySelect = (factoryId: number, factoryName: string) =>

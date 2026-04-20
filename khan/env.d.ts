@@ -5,6 +5,7 @@ interface ImportMetaEnv {
     readonly VITE_BACKEND_PROTOCOL?: string;  // http|https
     readonly VITE_BACKEND_PORT?: string;      // "8080" | "" (비우면 생략)
     readonly VITE_API_PREFIX?: string;        // "/api" 등 (선택)
+    readonly VITE_API_BASE_URL?: string;      // API Base URL 빌드 타임 override (예: https://api.kkhan.co.kr)
 }
 
 interface ImportMeta {

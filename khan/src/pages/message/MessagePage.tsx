@@ -13,6 +13,15 @@ interface StoreItem {
 	storePhoneNumber?: string;
 }
 
+type SortOption = "default" | "selectedFirst" | "nameAsc" | "nameDesc";
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+	{ value: "default", label: "기본 순서" },
+	{ value: "selectedFirst", label: "선택된 거래처 먼저" },
+	{ value: "nameAsc", label: "거래처명 오름차순" },
+	{ value: "nameDesc", label: "거래처명 내림차순" },
+];
+
 const DEFAULT_MESSAGE =
 	"안녕하세요.\n오늘 물품이 내려갑니다.\n내일 통상 확인해주세요~";
 
@@ -28,6 +37,7 @@ const MessagePage = () => {
 	const [storeSearch, setStoreSearch] = useState("");
 	const [startDate, setStartDate] = useState(getLocalDate());
 	const [endDate, setEndDate] = useState(getLocalDate());
+	const [sortOption, setSortOption] = useState<SortOption>("default");
 	const { showToast } = useToast();
 
 	useEffect(() => {
@@ -74,11 +84,36 @@ const MessagePage = () => {
 	};
 
 	const filteredStores = (): StoreItem[] => {
-		if (!storeSearch) return stores;
-		const keyword = storeSearch.toLowerCase();
-		return stores.filter((s) =>
-			(s.storeName || "").toLowerCase().includes(keyword)
-		);
+		let list: StoreItem[] = stores;
+		if (storeSearch) {
+			const keyword = storeSearch.toLowerCase();
+			list = list.filter((s) =>
+				(s.storeName || "").toLowerCase().includes(keyword)
+			);
+		}
+
+		// 정렬 적용
+		if (sortOption === "selectedFirst") {
+			list = [...list].sort((a, b) => {
+				const aSelected = selectedStoreIds.has(a.storeId) ? 0 : 1;
+				const bSelected = selectedStoreIds.has(b.storeId) ? 0 : 1;
+				if (aSelected !== bSelected) return aSelected - bSelected;
+				return (a.storeName || "").localeCompare(
+					b.storeName || "",
+					"ko"
+				);
+			});
+		} else if (sortOption === "nameAsc") {
+			list = [...list].sort((a, b) =>
+				(a.storeName || "").localeCompare(b.storeName || "", "ko")
+			);
+		} else if (sortOption === "nameDesc") {
+			list = [...list].sort((a, b) =>
+				(b.storeName || "").localeCompare(a.storeName || "", "ko")
+			);
+		}
+
+		return list;
 	};
 
 	// 판매 내역 기반 거래처 자동 선택 — 거래처 ID/이름만 조회 (경량 API)
@@ -125,6 +160,7 @@ const MessagePage = () => {
 
 					setSelectedStoreIds(nameMatchedIds);
 					setStoreSearch("");
+					setSortOption("selectedFirst");
 					showToast(
 						`${label} 판매 거래처 ${nameMatchedIds.size}곳이 선택되었습니다.`,
 						"success",
@@ -135,6 +171,7 @@ const MessagePage = () => {
 
 				setSelectedStoreIds(matchedStoreIds);
 				setStoreSearch("");
+				setSortOption("selectedFirst");
 				showToast(
 					`${label} 판매 거래처 ${matchedStoreIds.size}곳이 선택되었습니다.`,
 					"success",
@@ -260,7 +297,7 @@ const MessagePage = () => {
 							</button>
 						</div>
 					</div>
-					{/* 거래처 검색 + 전체 선택/초기화 */}
+					{/* 거래처 검색 + 정렬 필터 + 전체 선택/초기화 */}
 					<div className="filter-row-common">
 						<input
 							type="text"
@@ -270,6 +307,21 @@ const MessagePage = () => {
 							value={storeSearch}
 							onChange={(e) => setStoreSearch(e.target.value)}
 						/>
+						<select
+							className="search-input-common"
+							style={{ maxWidth: "200px" }}
+							value={sortOption}
+							onChange={(e) =>
+								setSortOption(e.target.value as SortOption)
+							}
+							aria-label="정렬 기준"
+						>
+							{SORT_OPTIONS.map((opt) => (
+								<option key={opt.value} value={opt.value}>
+									{opt.label}
+								</option>
+							))}
+						</select>
 						<div className="search-buttons-common">
 							<button
 								className="common-btn-common"
@@ -288,6 +340,7 @@ const MessagePage = () => {
 									setContent(DEFAULT_MESSAGE);
 									setStartDate(getLocalDate());
 									setEndDate(getLocalDate());
+									setSortOption("default");
 								}}
 							>
 								초기화

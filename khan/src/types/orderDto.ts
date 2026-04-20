@@ -230,4 +230,10 @@ export interface OrderRowData {
 
 	// 재고 상태 필드 추가
 	currentStatus?: string; // ORDER, STOCK, SHIPPED 등
+
+	// 판매처 기본값 (재질/색상 우선순위용)
+	storeAdditionalMaterialId?: string;
+	storeAdditionalMaterialName?: string;
+	storeAdditionalColorId?: string;
+	storeAdditionalColorName?: string;
 }

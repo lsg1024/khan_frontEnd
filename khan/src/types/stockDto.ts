@@ -52,6 +52,12 @@ export interface StockOrderRows {
 	currentStatus?: string; // STOCK, SHIPPED 등
 	// 판매 관련 필드
 	saleNote?: string; // 판매 비고
+
+	// 판매처 기본값 (재질/색상 우선순위용)
+	storeAdditionalMaterialId?: string;
+	storeAdditionalMaterialName?: string;
+	storeAdditionalColorId?: string;
+	storeAdditionalColorName?: string;
 }
 
 // 재고 생성 요청 데이터

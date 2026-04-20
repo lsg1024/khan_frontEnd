@@ -240,6 +240,36 @@
 	gap: 4px; /* 간격 증가 */
 }
 
+/* 중량 · 금중량 · 재질 한 줄 레이아웃 */
+.search-detail-row.combined.search-meta-row {
+	gap: 6px;
+	flex-wrap: nowrap;
+	align-items: center;
+}
+
+.search-detail-row.combined.search-meta-row .search-detail-item {
+	flex: 0 0 auto;
+	align-items: center;
+	min-width: 0;
+	white-space: nowrap;
+}
+
+.search-detail-row.combined.search-meta-row .value {
+	color: var(--text-dark);
+	font-size: 12px;
+	font-weight: var(--font-weight-medium);
+	white-space: nowrap;
+}
+
+.search-product-info .gold-content {
+	color: var(--warning-color);
+	font-size: 12px;
+	font-weight: var(--font-weight-medium);
+	font-style: italic;
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
 /* 가격 스타일 */
 .search-labor-cost {
 	color: var(--info-color);

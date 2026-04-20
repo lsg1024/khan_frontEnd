@@ -94,6 +94,19 @@ export const StockCreatePage = () => {
 
 	const currentDate = getLocalDate();
 
+	// 전역 주문일 (모든 재고 행에 공통 적용)
+	const [globalOrderDate, setGlobalOrderDate] = useState<string>(currentDate);
+
+	const handleGlobalOrderDateChange = (newDate: string) => {
+		setGlobalOrderDate(newDate);
+		setStockRows((prevRows) =>
+			prevRows.map((row) => ({
+				...row,
+				createAt: newDate,
+			}))
+		);
+	};
+
 	// 과거 주문 데이터 가져오기
 	const fetchPastOrders = async (
 		storeId: string,
@@ -372,7 +385,24 @@ export const StockCreatePage = () => {
 			// 재질 자동 선택 (판매처 설정 > 카탈로그 기본값)
 			let stockMaterialApplied = false;
 			const currentStockRow = stockRows.find((r) => r.id === rowId);
-			if (currentStockRow?.storeId) {
+
+			// 먼저 row state에 저장된 store defaults를 확인
+			if (
+				currentStockRow?.storeAdditionalMaterialId ||
+				currentStockRow?.storeAdditionalMaterialName
+			) {
+				const foundStoreMat = materials.find(
+					(m) =>
+						m.materialId?.toString() === currentStockRow.storeAdditionalMaterialId ||
+						m.materialName === currentStockRow.storeAdditionalMaterialName
+				);
+				if (foundStoreMat) {
+					updateStockRow(rowId, "materialId", foundStoreMat.materialId);
+					updateStockRow(rowId, "materialName", foundStoreMat.materialName);
+					stockMaterialApplied = true;
+				}
+			} else if (currentStockRow?.storeId) {
+				// row state에 없으면 API로 조회
 				try {
 					const storeDetailRes = await storeApi.getStore(currentStockRow.storeId);
 					if (storeDetailRes?.data?.additionalMaterialId) {
@@ -386,11 +416,15 @@ export const StockCreatePage = () => {
 							updateStockRow(rowId, "materialName", foundStoreMat.materialName);
 							stockMaterialApplied = true;
 						}
+						// row state에도 저장 (다음 번에는 row state에서 조회하도록)
+						updateStockRow(rowId, "storeAdditionalMaterialId", storeMatId || "");
+						updateStockRow(rowId, "storeAdditionalMaterialName", storeMatName || "");
 					}
 				} catch {
 					// 무시
 				}
 			}
+
 			if (!stockMaterialApplied && productDetail.materialDto?.materialName) {
 				const foundMaterial = materials.find(
 					(m) => m.materialName === productDetail.materialDto?.materialName
@@ -401,15 +435,58 @@ export const StockCreatePage = () => {
 				}
 			}
 
-			if (matchingColorName) {
+			// 색상 자동 선택 (판매처 설정 > 가격정책 > 카탈로그 기본값)
+			let colorApplied = false;
+			if (
+				currentStockRow?.storeAdditionalColorId ||
+				currentStockRow?.storeAdditionalColorName
+			) {
+				const foundStoreColor = colors.find(
+					(c) =>
+						c.colorId?.toString() === currentStockRow.storeAdditionalColorId ||
+						c.colorName === currentStockRow.storeAdditionalColorName
+				);
+				if (foundStoreColor) {
+					updateStockRow(rowId, "colorId", foundStoreColor.colorId);
+					updateStockRow(rowId, "colorName", foundStoreColor.colorName);
+					colorApplied = true;
+				}
+			} else if (currentStockRow?.storeId) {
+				// row state에 없으면 API로 조회
+				try {
+					const storeDetailRes = await storeApi.getStore(currentStockRow.storeId);
+					if (storeDetailRes?.data?.additionalColorId) {
+						const storeColorName = storeDetailRes.data.additionalColorName;
+						const storeColorId = storeDetailRes.data.additionalColorId;
+						const foundStoreColor = colors.find(
+							(c) => c.colorId?.toString() === storeColorId || c.colorName === storeColorName
+						);
+						if (foundStoreColor) {
+							updateStockRow(rowId, "colorId", foundStoreColor.colorId);
+							updateStockRow(rowId, "colorName", foundStoreColor.colorName);
+							colorApplied = true;
+						}
+						// row state에도 저장
+						updateStockRow(rowId, "storeAdditionalColorId", storeColorId || "");
+						updateStockRow(rowId, "storeAdditionalColorName", storeColorName || "");
+					}
+				} catch {
+					// 무시
+				}
+			}
+
+			if (!colorApplied && matchingColorName) {
 				const foundColor = colors.find(
 					(c) => c.colorName === matchingColorName
 				);
 				if (foundColor) {
 					updateStockRow(rowId, "colorId", foundColor.colorId);
 					updateStockRow(rowId, "colorName", foundColor.colorName);
+					colorApplied = true;
 				}
-			} else if (colors.length > 0) {
+			}
+
+			if (!colorApplied && colors.length > 0) {
 				updateStockRow(rowId, "colorId", colors[0].colorId || "1");
 				updateStockRow(rowId, "colorName", colors[0].colorName);
 			}
@@ -734,7 +811,7 @@ export const StockCreatePage = () => {
 					if (row.id === id) {
 						return {
 							...row,
-							createAt: currentDate,
+							createAt: globalOrderDate || currentDate,
 							storeId: defaultStore?.storeId || "1",
 							storeName: defaultStore?.storeName || "",
 							grade: defaultStore?.grade || "1",
@@ -867,7 +944,7 @@ export const StockCreatePage = () => {
 				for (let i = 0; i < initialRowCount; i++) {
 					const newRow: StockOrderRows = {
 						id: `${Date.now()}-${i}`,
-						createAt: currentDate,
+						createAt: globalOrderDate || currentDate,
 						shippingAt: currentDate,
 						storeId: defaultStoreData.storeId,
 						storeName: defaultStoreData.storeName,
@@ -1051,6 +1128,20 @@ export const StockCreatePage = () => {
 				title="과거 거래내역"
 				maxRows={4}
 			/>
+
+			{/* 전역 주문일 선택기 */}
+			<div className="global-order-date-bar">
+				<label className="global-order-date-label">
+					전체 주문일
+					<input
+						type="date"
+						value={globalOrderDate}
+						onChange={(e) => handleGlobalOrderDateChange(e.target.value)}
+						disabled={loading}
+						className="global-order-date-input"
+					/>
+				</label>
+			</div>
 
 			{/* 재고 주문 테이블 */}
 			<StockTable

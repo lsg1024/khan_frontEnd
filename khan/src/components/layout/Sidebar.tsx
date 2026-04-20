@@ -73,11 +73,6 @@ const sidebarItems: SidebarItem[] = [
 		],
 	},
 	{
-		path: "/expense",
-		label: "경비 관리",
-		icon: "📊"
-	},
-	{
 		path:"/accounts",
 		label: "거래처",
 		icon: "🏢",

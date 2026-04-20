@@ -10,11 +10,21 @@ import {
 import Pagination from "../../components/common/Pagination";
 import AccountTable from "../../components/account/AccountTable";
 import AccountBulkActionBar from "../../components/account/AccountBulkActionBar";
-import AccountSearchBar from "../../components/account/AccountSearchBar";
 import "../../styles/pages/account/FactoryPage.css";
 
 export const FactoryPage = () => {
-	const [searchName, setSearchName] = useState("");
+	// 검색 관련 상태 (카타로그 패턴과 동일)
+	const [searchFilters, setSearchFilters] = useState({
+		search: "",
+		searchField: "",
+	});
+
+	// 정렬 관련 상태
+	const [sortOptions, setSortOptions] = useState({
+		sortField: "",
+		sortOrder: "",
+	});
+
 	const [factories, setFactories] = useState<FactorySearchDto[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
@@ -30,11 +40,23 @@ export const FactoryPage = () => {
 
 	// 제조사 목록 조회
 	const loadFactories = useCallback(
-		async (name: string, page: number) => {
+		async (
+			filters: typeof searchFilters,
+			page: number,
+			sortOpts: typeof sortOptions
+		) => {
 			setLoading(true);
 
 			try {
-				const res = await factoryApi.getFactories(name, page, false, size);
+				const res = await factoryApi.getFactories(
+					filters.search,
+					page,
+					false,
+					size,
+					filters.searchField || undefined,
+					sortOpts.sortField || undefined,
+					sortOpts.sortOrder || undefined
+				);
 
 				if (!isApiSuccess(res)) {
 					alert(res.message || "제조사 데이터를 불러오지 못했습니다.");
@@ -69,7 +91,11 @@ export const FactoryPage = () => {
 
 	// 초기 데이터 로드
 	useEffect(() => {
-		loadFactories("", 1);
+		loadFactories(
+			{ search: "", searchField: "" },
+			1,
+			{ sortField: "", sortOrder: "" }
+		);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
@@ -84,7 +110,10 @@ export const FactoryPage = () => {
 			) {
 				if (event.data.accountType === "factory") {
 					// 서버 트랜잭션 커밋 완료 대기 후 목록 새로고침
-					setTimeout(() => loadFactories(searchName, currentPage), 500);
+					setTimeout(
+						() => loadFactories(searchFilters, currentPage, sortOptions),
+						500
+					);
 				}
 			}
 		};
@@ -93,19 +122,29 @@ export const FactoryPage = () => {
 		return () => {
 			window.removeEventListener("message", handleMessage);
 		};
-	}, [searchName, currentPage, loadFactories]);
+	}, [searchFilters, sortOptions, currentPage, loadFactories]);
+
+	const handleFilterChange = (
+		field: keyof typeof searchFilters,
+		value: string
+	) => {
+		setSearchFilters((prev) => ({ ...prev, [field]: value }));
+	};
 
 	// 검색 처리
 	const handleSearch = () => {
 		setCurrentPage(1);
-		loadFactories(searchName, 1);
+		loadFactories(searchFilters, 1, sortOptions);
 	};
 
 	// 초기화 처리
 	const handleReset = () => {
-		setSearchName("");
+		const resetFilters = { search: "", searchField: "" };
+		const resetSort = { sortField: "", sortOrder: "" };
+		setSearchFilters(resetFilters);
+		setSortOptions(resetSort);
 		setCurrentPage(1);
-		loadFactories("", 1);
+		loadFactories(resetFilters, 1, resetSort);
 	};
 
 	// 생성 페이지 팝업으로 열기
@@ -182,7 +221,7 @@ export const FactoryPage = () => {
 				return;
 			}
 			alert("해리가 수정되었습니다.");
-			loadFactories(searchName, currentPage);
+			loadFactories(searchFilters, currentPage, sortOptions);
 		} catch {
 			alert("해리 수정 중 오류가 발생했습니다.");
 		}
@@ -199,7 +238,7 @@ export const FactoryPage = () => {
 				return;
 			}
 			alert("등급이 수정되었습니다.");
-			loadFactories(searchName, currentPage);
+			loadFactories(searchFilters, currentPage, sortOptions);
 		} catch {
 			alert("등급 수정 중 오류가 발생했습니다.");
 		}
@@ -217,7 +256,7 @@ export const FactoryPage = () => {
 			}
 			alert("삭제되었습니다.");
 			setSelectedId(null);
-			loadFactories(searchName, currentPage);
+			loadFactories(searchFilters, currentPage, sortOptions);
 		} catch {
 			alert("삭제 중 오류가 발생했습니다.");
 		}
@@ -249,16 +288,105 @@ export const FactoryPage = () => {
 
 	return (
 		<div className="page">
-			{/* 검색 영역 */}
-			<AccountSearchBar
-				searchName={searchName}
-				onSearchNameChange={setSearchName}
-				onSearch={handleSearch}
-				onReset={handleReset}
-				onCreate={handleCreate}
-				onExcelDownload={handleExcel}
-				loading={loading}
-			/>
+			{/* 검색 영역 (카타로그 패턴과 동일한 레이아웃) */}
+			<div className="search-section-common">
+				<div className="search-filters-common">
+					<div className="filter-row-common">
+						<select
+							className="filter-group-common select"
+							value={searchFilters.searchField}
+							onChange={(e) =>
+								handleFilterChange("searchField", e.target.value)
+							}
+							disabled={loading}
+						>
+							<option value="">검색 필터</option>
+							<option value="accountName">제조사명</option>
+							<option value="accountOwnerName">대표자</option>
+							<option value="phoneNumber">전화번호</option>
+							<option value="faxNumber">팩스</option>
+							<option value="businessNumber1">연락처1</option>
+							<option value="businessNumber2">연락처2</option>
+							<option value="grade">등급</option>
+							<option value="note">비고</option>
+						</select>
+
+						<select
+							className="filter-group-common select"
+							value={sortOptions.sortField}
+							onChange={(e) =>
+								setSortOptions((prev) => ({
+									...prev,
+									sortField: e.target.value,
+								}))
+							}
+							disabled={loading}
+						>
+							<option value="">정렬 기준</option>
+							<option value="accountName">제조사명</option>
+							<option value="accountOwnerName">대표자</option>
+							<option value="grade">등급</option>
+							<option value="gold">금잔량</option>
+							<option value="money">현금잔량</option>
+							<option value="createDate">등록일</option>
+						</select>
+
+						<select
+							className="filter-group-common select"
+							value={sortOptions.sortOrder}
+							onChange={(e) =>
+								setSortOptions((prev) => ({
+									...prev,
+									sortOrder: e.target.value,
+								}))
+							}
+							disabled={loading}
+						>
+							<option value="">정렬 방향</option>
+							<option value="ASC">오름차순</option>
+							<option value="DESC">내림차순</option>
+						</select>
+
+						<input
+							className="search-input-common"
+							type="text"
+							placeholder="검색어"
+							value={searchFilters.search}
+							onChange={(e) => handleFilterChange("search", e.target.value)}
+							onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+						/>
+
+						<button
+							className="search-btn-common"
+							onClick={handleSearch}
+							disabled={loading}
+						>
+							검색
+						</button>
+						<button
+							className="reset-btn-common"
+							onClick={handleReset}
+							disabled={loading}
+						>
+							초기화
+						</button>
+						<button
+							className="common-btn-common"
+							onClick={handleCreate}
+							disabled={loading}
+						>
+							생성
+						</button>
+						<button
+							className="common-btn-common"
+							onClick={handleExcel}
+							disabled={loading}
+						>
+							엑셀 다운로드
+						</button>
+					</div>
+				</div>
+			</div>
 
 			{/* 제조사 목록 */}
 			<div className="list">
@@ -315,7 +443,7 @@ export const FactoryPage = () => {
 						totalElements={totalElements}
 						loading={loading}
 						onPageChange={(page) => {
-							loadFactories(searchName, page);
+							loadFactories(searchFilters, page, sortOptions);
 						}}
 						className="factory"
 					/>

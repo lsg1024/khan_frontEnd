@@ -5,5 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # 기본은 운영 URL. 스테이징 등 다른 환경에서는
+        # VITE_API_BASE_URL=https://staging.kkhan.co.kr docker compose build
+        # 처럼 override 가능.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://api.kkhan.co.kr}
     ports:
-      - "8026:80"  
+      - "8026:80"

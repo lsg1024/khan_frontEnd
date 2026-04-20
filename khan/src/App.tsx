@@ -67,7 +67,6 @@ import WGPricePopupPage from "./pages/sale/WGPricePopupPage";
 import MessagePage from "./pages/message/MessagePage";
 import MessageHistoryPage from "./pages/message/MessageHistoryPage";
 import MessageSettingsPopupPage from "./pages/setting/MessageSettingsPopupPage";
-import ExpensePage from "./pages/expense/ExpensePage";
 
 import Layout from "./components/layout/Layout";
 
@@ -269,7 +268,7 @@ function App() {
 						<Route path="/gold-money" element={<GoldMoneyPage />} />
 						<Route path="/purchase" element={<PurchasePage />} />
 						<Route path="/purchase/receipts" element={<PurchaseReceiptsPage />} />
-						<Route path="/expense" element={<ExpensePage />} />
+						<Route path="/expense" element={<Navigate to="/gold-money" replace />} />
 						<Route path="/message" element={<MessagePage />} />
 						<Route path="/message/history" element={<MessageHistoryPage />} />
 						<Route path="/login" element={<Navigate to="/" replace />} />

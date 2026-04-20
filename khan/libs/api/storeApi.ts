@@ -14,14 +14,24 @@ import type {
 } from "../../src/types/AccountDto";
 
 export const storeApi = {
-	// 판매처 검색 (페이징 지원)
+	// 판매처 검색 (페이징 + 정렬 + searchField 지원)
 	getStores: async (
 		name?: string,
 		page: number = 1,
-		size = 12
+		size = 12,
+		searchField?: string,
+		sortField?: string,
+		sortOrder?: string
 	): Promise<ApiResponse<StoreSearchResponse>> => {
 		return apiRequest.get<StoreSearchResponse>("account/stores", {
-			params: { search: name || "", page: page, size: size },
+			params: {
+				search: name || "",
+				page: page,
+				size: size,
+				searchField: searchField || undefined,
+				sortField: sortField || undefined,
+				sortOrder: sortOrder || undefined,
+			},
 		});
 	},
 
