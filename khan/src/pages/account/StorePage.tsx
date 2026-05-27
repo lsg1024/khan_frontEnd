@@ -10,7 +10,25 @@ import {
 import Pagination from "../../components/common/Pagination";
 import AccountTable from "../../components/account/AccountTable";
 import AccountBulkActionBar from "../../components/account/AccountBulkActionBar";
+import AccountRecentActivityModal, {
+	type RecentActivityTab,
+} from "../../components/account/AccountRecentActivityModal";
 import "../../styles/pages/account/StorePage.css";
+
+/**
+ * 최근거래일/최근결제일 공통 포맷터.
+ * BE 는 "YYYY-MM-DD HH24:MI:SS" 문자열을 반환하며, 목록 UI 에서는 "YY-MM-DD" 로 축약해 노출.
+ * null / undefined / 빈 문자열이면 "-" 로 표시.
+ */
+const formatShortDate = (raw: string | null | undefined): string => {
+	if (!raw) return "-";
+	const d = new Date(raw);
+	if (isNaN(d.getTime())) return "-";
+	const yy = String(d.getFullYear()).slice(-2);
+	const mm = String(d.getMonth() + 1).padStart(2, "0");
+	const dd = String(d.getDate()).padStart(2, "0");
+	return `${yy}-${mm}-${dd}`;
+};
 
 export const StorePage = () => {
 	// 검색 관련 상태 (카타로그 패턴과 동일)
@@ -34,6 +52,12 @@ export const StorePage = () => {
 	const accountDetailPopups = useRef<Map<number, Window>>(new Map());
 	const accountCreatePopup = useRef<Window | null>(null);
 	const size = 20;
+	// Task 4-3 / 4-4 : 최근거래일·최근결제일 셀 클릭 시 노출되는 모달 상태.
+	const [recentModal, setRecentModal] = useState<{
+		id: number;
+		name: string;
+		tab: RecentActivityTab;
+	} | null>(null);
 
 	const { handleError } = useErrorHandler();
 
@@ -393,17 +417,80 @@ export const StorePage = () => {
 					<AccountTable
 						data={stores}
 						columns={[
+							// Task 4-1: 등급/해리/거래방식/대표자/사업장번호1·2/팩스번호 컬럼 제거.
+							// Task 4-2: 최근거래일/최근결제일 컬럼 추가. 날짜 포맷은 YY-MM-DD.
 							{ key: "accountName", label: "거래처명" },
-							{ key: "businessOwnerName", label: "대표자" },
 							{ key: "businessOwnerNumber", label: "연락처" },
-							{ key: "faxNumber", label: "팩스" },
-							{ key: "businessNumber1", label: "사업장번호1" },
-							{ key: "businessNumber2", label: "사업장번호2" },
 							{ key: "address", label: "주소", maxWidth: "200px" },
-							{ key: "grade", label: "등급" },
-							{ key: "goldHarryLoss", label: "해리" },
-							{ key: "tradeType", label: "거래방식" },
 							{ key: "note", label: "비고", maxWidth: "150px" },
+							{
+								key: "lastSaleDate",
+								label: "최근거래일",
+								render: (item) => {
+									const s = item as StoreSearchDto;
+									return (
+										<span
+											onClick={(e) => {
+												e.stopPropagation();
+												if (!s.accountId) return;
+												setRecentModal({
+													id: s.accountId,
+													name: s.accountName,
+													tab: "transactions",
+												});
+											}}
+											style={{
+												cursor: s.accountId ? "pointer" : "default",
+												color: s.accountId
+													? "var(--primary-color, #1976d2)"
+													: undefined,
+												textDecoration: s.accountId ? "underline" : "none",
+											}}
+											title={
+												s.accountId
+													? "클릭: 해당 거래처의 최근 거래 내역 상세 보기"
+													: undefined
+											}
+										>
+											{formatShortDate(s.lastSaleDate)}
+										</span>
+									);
+								},
+							},
+							{
+								key: "lastPaymentDate",
+								label: "최근결제일",
+								render: (item) => {
+									const s = item as StoreSearchDto;
+									return (
+										<span
+											onClick={(e) => {
+												e.stopPropagation();
+												if (!s.accountId) return;
+												setRecentModal({
+													id: s.accountId,
+													name: s.accountName,
+													tab: "payment",
+												});
+											}}
+											style={{
+												cursor: s.accountId ? "pointer" : "default",
+												color: s.accountId
+													? "var(--primary-color, #1976d2)"
+													: undefined,
+												textDecoration: s.accountId ? "underline" : "none",
+											}}
+											title={
+												s.accountId
+													? "클릭: 해당 거래처의 결제 집계 상세 보기"
+													: undefined
+											}
+										>
+											{formatShortDate(s.lastPaymentDate)}
+										</span>
+									);
+								},
+							},
 						]}
 						selectedIds={
 							selectedId !== null ? new Set([selectedId]) : new Set()
@@ -437,6 +524,18 @@ export const StorePage = () => {
 					/>
 				)}
 			</div>
+
+			{/* Task 4-3 / 4-4 최근 활동 모달 */}
+			{recentModal && (
+				<AccountRecentActivityModal
+					accountId={recentModal.id}
+					accountName={recentModal.name}
+					accountType="store"
+					initialTab={recentModal.tab}
+					loader={(id, limit) => storeApi.getStoreRecentActivity(id, limit)}
+					onClose={() => setRecentModal(null)}
+				/>
+			)}
 		</div>
 	);
 };

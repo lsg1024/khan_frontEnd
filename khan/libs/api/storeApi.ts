@@ -6,6 +6,7 @@ import type {
 	StoreReceivableResponse,
 	StoreReceivableSaleLogResponse,
 	AccountInfoDto,
+	RecentActivityResponse,
 } from "../../src/types/storeDto";
 import type {
 	AccountSingleResponse,
@@ -79,6 +80,19 @@ export const storeApi = {
 		const params = { saleCode: saleCode };
 
 		return apiRequest.get(`account/stores/receivable/sale-log/${id}`, { params });
+	},
+
+	/**
+	 * Task 4-3 / 4-4 — 거래처 최근 활동(거래 내역 + 결제 집계) 조회.
+	 * StorePage 의 최근거래일/최근결제일 셀 클릭 시 모달에서 호출.
+	 */
+	getStoreRecentActivity: async (
+		id: string,
+		limit: number = 20
+	): Promise<ApiResponse<RecentActivityResponse>> => {
+		return apiRequest.get(`account/stores/${id}/recent-activity`, {
+			params: { limit },
+		});
 	},
 
 	// 판매처 생성

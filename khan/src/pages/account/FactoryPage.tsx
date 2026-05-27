@@ -10,7 +10,25 @@ import {
 import Pagination from "../../components/common/Pagination";
 import AccountTable from "../../components/account/AccountTable";
 import AccountBulkActionBar from "../../components/account/AccountBulkActionBar";
+import AccountRecentActivityModal, {
+	type RecentActivityTab,
+} from "../../components/account/AccountRecentActivityModal";
 import "../../styles/pages/account/FactoryPage.css";
+
+/**
+ * 최근거래일/최근결제일 공통 포맷터.
+ * BE 는 "YYYY-MM-DD HH24:MI:SS" 문자열을 반환하며, 목록 UI 에서는 "YY-MM-DD" 로 축약해 노출.
+ * null / undefined / 빈 문자열이면 "-" 로 표시.
+ */
+const formatShortDate = (raw: string | null | undefined): string => {
+	if (!raw) return "-";
+	const d = new Date(raw);
+	if (isNaN(d.getTime())) return "-";
+	const yy = String(d.getFullYear()).slice(-2);
+	const mm = String(d.getMonth() + 1).padStart(2, "0");
+	const dd = String(d.getDate()).padStart(2, "0");
+	return `${yy}-${mm}-${dd}`;
+};
 
 export const FactoryPage = () => {
 	// 검색 관련 상태 (카타로그 패턴과 동일)
@@ -33,6 +51,12 @@ export const FactoryPage = () => {
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 	const accountDetailPopups = useRef<Map<number, Window>>(new Map());
 	const accountCreatePopup = useRef<Window | null>(null);
+	// Task 4-3 / 4-4 : 최근거래일·최근결제일 셀 클릭 시 노출되는 모달 상태.
+	const [recentModal, setRecentModal] = useState<{
+		id: number;
+		name: string;
+		tab: RecentActivityTab;
+	} | null>(null);
 
 	const size = 20;
 
@@ -405,17 +429,80 @@ export const FactoryPage = () => {
 					<AccountTable
 						data={factories}
 						columns={[
+							// Task 4-1: 등급/해리/거래방식/대표자/연락처1·2(사업장번호)/팩스번호 컬럼 제거.
+							// Task 4-2: 최근거래일/최근결제일 컬럼 추가. 날짜 포맷은 YY-MM-DD.
 							{ key: "factoryName", label: "제조사명" },
-							{ key: "factoryOwnerName", label: "대표자" },
 							{ key: "factoryPhoneNumber", label: "전화번호" },
-							{ key: "factoryContactNumber1", label: "연락처1" },
-							{ key: "factoryContactNumber2", label: "연락처2" },
-							{ key: "factoryFaxNumber", label: "팩스" },
-							{ key: "grade", label: "등급" },
-							{ key: "goldHarryLoss", label: "해리" },
-							{ key: "tradeType", label: "거래방식" },
 							{ key: "address", label: "주소", maxWidth: "200px" },
 							{ key: "factoryNote", label: "비고", maxWidth: "150px" },
+							{
+								key: "lastSaleDate",
+								label: "최근거래일",
+								render: (item) => {
+									const f = item as FactorySearchDto;
+									return (
+										<span
+											onClick={(e) => {
+												e.stopPropagation();
+												if (!f.factoryId) return;
+												setRecentModal({
+													id: f.factoryId,
+													name: f.factoryName,
+													tab: "transactions",
+												});
+											}}
+											style={{
+												cursor: f.factoryId ? "pointer" : "default",
+												color: f.factoryId
+													? "var(--primary-color, #1976d2)"
+													: undefined,
+												textDecoration: f.factoryId ? "underline" : "none",
+											}}
+											title={
+												f.factoryId
+													? "클릭: 해당 제조사의 최근 거래 내역 상세 보기"
+													: undefined
+											}
+										>
+											{formatShortDate(f.lastSaleDate)}
+										</span>
+									);
+								},
+							},
+							{
+								key: "lastPaymentDate",
+								label: "최근결제일",
+								render: (item) => {
+									const f = item as FactorySearchDto;
+									return (
+										<span
+											onClick={(e) => {
+												e.stopPropagation();
+												if (!f.factoryId) return;
+												setRecentModal({
+													id: f.factoryId,
+													name: f.factoryName,
+													tab: "payment",
+												});
+											}}
+											style={{
+												cursor: f.factoryId ? "pointer" : "default",
+												color: f.factoryId
+													? "var(--primary-color, #1976d2)"
+													: undefined,
+												textDecoration: f.factoryId ? "underline" : "none",
+											}}
+											title={
+												f.factoryId
+													? "클릭: 해당 제조사의 결제 집계 상세 보기"
+													: undefined
+											}
+										>
+											{formatShortDate(f.lastPaymentDate)}
+										</span>
+									);
+								},
+							},
 						]}
 						selectedIds={
 							selectedId !== null ? new Set([selectedId]) : new Set()
@@ -449,6 +536,20 @@ export const FactoryPage = () => {
 					/>
 				)}
 			</div>
+
+			{/* Task 4-3 / 4-4 최근 활동 모달 */}
+			{recentModal && (
+				<AccountRecentActivityModal
+					accountId={recentModal.id}
+					accountName={recentModal.name}
+					accountType="factory"
+					initialTab={recentModal.tab}
+					loader={(id, limit) =>
+						factoryApi.getFactoryRecentActivity(id, limit)
+					}
+					onClose={() => setRecentModal(null)}
+				/>
+			)}
 		</div>
 	);
 };

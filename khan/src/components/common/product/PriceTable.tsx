@@ -283,7 +283,7 @@ const PriceTable: React.FC<PriceTableProps> = ({
 												? "error"
 												: ""
 										}`}
-										value={group.productPurchasePrice.toString()}
+										value={(group.productPurchasePrice ?? 0).toString()}
 										onChange={(e) =>
 											handleFieldChange(
 												index,
@@ -300,7 +300,7 @@ const PriceTable: React.FC<PriceTableProps> = ({
 									/>
 								) : (
 									<span className="fixed-text">
-										{group.productPurchasePrice.toLocaleString()}
+										{(group.productPurchasePrice ?? 0).toLocaleString()}
 									</span>
 								)}
 							</td>
@@ -324,7 +324,7 @@ const PriceTable: React.FC<PriceTableProps> = ({
 													className={`editable-number table-input ${
 														hasErr ? "error" : ""
 													}`}
-													value={policy.laborCost.toString()}
+													value={(policy.laborCost ?? 0).toString()}
 													onChange={(e) =>
 														handleLaborCostChange(
 															index,
@@ -337,7 +337,7 @@ const PriceTable: React.FC<PriceTableProps> = ({
 												/>
 											) : (
 												<span className="fixed-text">
-													{policy.laborCost.toLocaleString()}
+													{(policy.laborCost ?? 0).toLocaleString()}
 												</span>
 											)
 										) : (

@@ -27,6 +27,7 @@ import ProductInfoSection from "../../components/common/product/ProductInfoSecti
 import { calculateStoneDetails } from "../../utils/calculateStone";
 import { transformProductStones } from "../../utils/productTransformations";
 import { handleApiSubmit } from "../../utils/apiSubmitHandler";
+import { syncStockWeightFields } from "../../utils/stockWeightSync";
 import type { MaterialDto } from "../../types/materialDto";
 import type { ColorDto } from "../../types/colorDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
@@ -151,7 +152,12 @@ export const StockCreatePage = () => {
 							materialName: prevMaterial,
 						} = row;
 
-						const updatedRow = { ...row, [field]: value };
+						// 무게 필드 동기화 유틸 적용 (총중량 = 금중량 + 알중량 항등식 유지,
+						// 재질 변경 시 금중량 재계산, 알중량 set 시 총중량 자동 채움).
+						const updatedRow = {
+							...row,
+							...syncStockWeightFields(row, field, value),
+						};
 
 						const {
 							storeId: nextStore,
@@ -525,9 +531,12 @@ export const StockCreatePage = () => {
 	};
 
 	// 제조사 선택 적용 함수 (공통 로직)
+	// storeHarry 와 동일하게, 공장 선택 시점의 goldHarryLoss 를 factoryHarry 스냅샷으로 row 에 저장.
+	// 백엔드 Stock 엔티티에 그대로 전송되어 이후 공장 원본 harry 변경에 영향을 받지 않는다.
 	const applyFactorySelection = (rowId: string, factory: FactorySearchDto) => {
 		updateStockRow(rowId, "factoryId", factory.factoryId?.toString());
 		updateStockRow(rowId, "factoryName", factory.factoryName || "");
+		updateStockRow(rowId, "factoryHarry", factory.goldHarryLoss || "");
 	};
 
 	const handleFactorySelect = (factory: FactorySearchDto) => {
@@ -823,6 +832,7 @@ export const StockCreatePage = () => {
 							colorName: "",
 							factoryId: "",
 							factoryName: "",
+							factoryHarry: "",
 							productSize: "",
 							productPurchaseCost: 0,
 							goldWeight: "",
@@ -983,6 +993,7 @@ export const StockCreatePage = () => {
 						assistantStoneCreateAt: "",
 						totalWeight: 0,
 						storeHarry: defaultStoreData.storeHarry,
+						factoryHarry: "",
 						classificationId: "",
 						classificationName: "",
 						setTypeId: "",
@@ -1048,6 +1059,7 @@ export const StockCreatePage = () => {
 					storeHarry: row.storeHarry,
 					factoryId: row.factoryId,
 					factoryName: row.factoryName,
+					factoryHarry: row.factoryHarry,
 					productId: row.productId,
 					productName: row.productName,
 					productFactoryName: row.productFactoryName,
@@ -1129,21 +1141,7 @@ export const StockCreatePage = () => {
 				maxRows={4}
 			/>
 
-			{/* 전역 주문일 선택기 */}
-			<div className="global-order-date-bar">
-				<label className="global-order-date-label">
-					전체 주문일
-					<input
-						type="date"
-						value={globalOrderDate}
-						onChange={(e) => handleGlobalOrderDateChange(e.target.value)}
-						disabled={loading}
-						className="global-order-date-input"
-					/>
-				</label>
-			</div>
-
-			{/* 재고 주문 테이블 */}
+			{/* 재고 주문 테이블 (전역 주문일 선택기는 테이블 컨테이너 내부 상단에 통합) */}
 			<StockTable
 				mode="create"
 				stockRows={stockRows}
@@ -1165,6 +1163,22 @@ export const StockCreatePage = () => {
 				onStoneInfoOpen={openStoneInfoManager}
 				validateSequence={validateSequence}
 				isRowInputEnabled={isRowInputEnabled}
+				tableHeader={
+					<div className="global-order-date-bar">
+						<label className="global-order-date-label">
+							전체 주문일
+							<input
+								type="date"
+								value={globalOrderDate}
+								onChange={(e) =>
+									handleGlobalOrderDateChange(e.target.value)
+								}
+								disabled={loading}
+								className="global-order-date-input"
+							/>
+						</label>
+					</div>
+				}
 			/>
 
 			{/* 하단 버튼 */}

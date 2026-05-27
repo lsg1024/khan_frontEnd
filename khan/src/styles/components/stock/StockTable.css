@@ -10,6 +10,16 @@
 	margin-top: 8px;
 }
 
+/*
+ * 테이블 상단 슬롯 영역: StockCreatePage 의 "전체 주문일" 바 등이 여기에 주입된다.
+ * 컨테이너와 하나의 블록처럼 보이도록 배경은 상속받고, 테이블과의 경계만 구분선으로 표시.
+ */
+.stock-table-header-slot {
+	padding: 0;
+	margin-bottom: 4px;
+	border-bottom: 1px solid var(--border-color-light, #e5e5e5);
+}
+
 .read-only-cell {
 	background-color: #f5f5f5;
 	color: var(--text-light);

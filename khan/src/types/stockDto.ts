@@ -43,6 +43,8 @@ export interface StockOrderRows {
 
 	totalWeight: number; // 총중량
 	storeHarry: string;
+	/** 공장 손모율 스냅샷. storeHarry 와 동일하게 공장 선택 시점 값을 보존. */
+	factoryHarry?: string;
 	// 분류 및 세트 타입 필드 추가
 	classificationId: string;
 	classificationName: string;
@@ -68,6 +70,7 @@ export interface StockCreateRequest {
 	storeHarry: string;
 	factoryId: string;
 	factoryName: string;
+	factoryHarry?: string;
 	productId: string;
 	productName: string;
 	productFactoryName: string;
@@ -105,6 +108,7 @@ export interface StockRegisterResponse {
 	storeName: string;
 	factoryId: string;
 	factoryName: string;
+	factoryHarry?: string;
 	productId: string;
 	productName: string;
 	productFactoryName: string;
@@ -188,6 +192,7 @@ export interface StockResponse {
 	originStatus: string;
 	currentStatus: string;
 	storeName: string;
+	factoryName: string;
 	productName: string;
 	productFactoryName: string;
 	productSize: string;
@@ -236,6 +241,7 @@ export interface StockResponseDetail {
 	stoneWeight: string;
 	productPurchaseCost: number;
 	storeHarry: string;
+	factoryHarry?: string;
 	assistantStoneId: string;
 	assistantStone: boolean;
 	assistantStoneName: string;
@@ -245,6 +251,25 @@ export interface StockResponseDetail {
 }
 
 export interface StockUpdateRequest {
+	// 식별/연관 정보 (이름 필드도 함께 전송해야 백엔드가 null 로 덮어쓰지 않음)
+	storeId?: string;
+	storeName?: string;
+	storeGrade?: string;
+	factoryId?: string;
+	factoryName?: string;
+	factoryHarry?: string;
+	productId?: string;
+	productName?: string;
+	productFactoryName?: string;
+	materialId?: string;
+	materialName?: string;
+	colorId?: string;
+	colorName?: string;
+	classificationId?: string;
+	classificationName?: string;
+	setTypeId?: string;
+	setTypeName?: string;
+	// 기존 수정 가능 필드
 	productSize: string;
 	isProductWeightSale: boolean;
 	stockNote: string;
@@ -292,6 +317,7 @@ export interface ResponseDetail {
 	storeHarry: string;
 	factoryId: string;
 	factoryName: string;
+	factoryHarry?: string;
 	productId: string;
 	productName: string;
 	productSize: string;

@@ -19,6 +19,12 @@ interface BaseStockTableProps {
 		value: unknown
 	) => void;
 	onStoneInfoOpen?: (rowId: string) => void;
+	/**
+	 * 테이블 컨테이너(.stock-table-container) 내부 최상단에 렌더링되는 슬롯.
+	 * StockCreatePage 의 "전체 주문일" 바와 같이, 테이블과 하나의 블록으로 보이게
+	 * 할 헤더 영역을 주입하는 용도.
+	 */
+	tableHeader?: React.ReactNode;
 }
 
 interface CreateModeProps extends BaseStockTableProps {
@@ -116,6 +122,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 		assistantStones,
 		goldHarries,
 		onRowUpdate,
+		tableHeader,
 	} = props;
 
 	const safeOnAssistanceStoneArrivalChange = (id: string, value: string) => {
@@ -321,6 +328,9 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 
 	return (
 		<div className="stock-table-container">
+			{tableHeader ? (
+				<div className="stock-table-header-slot">{tableHeader}</div>
+			) : null}
 			<table className="stock-update-table">
 				<thead>
 					{/* 기본 정보 */}
@@ -884,7 +894,7 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 								<td className="stone-weight-cell">
 									<input
 										type="text"
-										value={row.stoneWeight.toLocaleString()}
+										value={(row.stoneWeight ?? "").toLocaleString()}
 										onChange={(e) => {
 											onRowUpdate(row.id, "stoneWeight", e.target.value);
 										}}
@@ -971,33 +981,17 @@ const StockTable: React.FC<StockTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								{/* 총중량 (3 컬럼) */}
+								{/* 총중량 (3 컬럼)
+								  * "총중량 = 금중량 + 알중량" 항등식은 상위 update 함수
+								  * (syncStockWeightFields) 에서 자동 유지한다. 여기서는
+								  * totalWeight 값 반영만 담당. */}
 								<td className="stone-weight-cell">
 									<input
 										type="number"
 										value={row.totalWeight > 0 ? row.totalWeight : ""}
 										onChange={(e) => {
 											const newTotalWeight = parseFloat(e.target.value) || 0;
-											const stoneWeightTotal = Number(row.stoneWeight || 0);
-
-											// goldWeight = 총중량 - 알중량
-											const calculatedGoldWeight =
-												newTotalWeight - stoneWeightTotal;
-
-											// totalWeight 업데이트
 											onRowUpdate(row.id, "totalWeight", newTotalWeight);
-											// goldWeight 업데이트 (총중량 - 알중량)
-											onRowUpdate(
-												row.id,
-												"goldWeight",
-												calculatedGoldWeight.toFixed(3)
-											);
-											// stoneWeight 업데이트 (알중량 기준)
-											onRowUpdate(
-												row.id,
-												"stoneWeight",
-												stoneWeightTotal.toFixed(3)
-											);
 										}}
 										disabled={loading || mode === "readonly"}
 										placeholder="0.000"

@@ -441,6 +441,12 @@ const OrderUpdatePage: React.FC = () => {
 				"factoryName",
 				factory.factoryName || "",
 			);
+			// storeHarry 와 동일한 스냅샷 패턴: 공장 변경 시 새 factoryHarry 도 함께 갱신
+			updateOrderRow(
+				factoryModal.selectedRowId,
+				"factoryHarry",
+				factory.goldHarryLoss || "",
+			);
 		}
 		factoryModal.handleSelect();
 	};
@@ -615,11 +621,20 @@ const OrderUpdatePage: React.FC = () => {
 			const currentRow = orderRows[0];
 
 			// OrderCreateRequest 형식으로 데이터 변환
+			// ⚠ productName/productFactoryName/storeName/factoryName 등 이름 필드도
+			//    반드시 포함해야 한다 (백엔드가 무조건 덮어쓰기 하므로 누락 시 DB의 값이 null 로 초기화됨).
 			const orderUpdateData: OrderRequestDetail = {
 				storeId: currentRow.storeId,
+				storeName: currentRow.storeName,
+				storeGrade: currentRow.storeGrade,
+				storeHarry: currentRow.storeHarry,
 				orderNote: currentRow.orderNote,
 				factoryId: currentRow.factoryId,
+				factoryName: currentRow.factoryName,
+				factoryHarry: currentRow.factoryHarry,
 				productId: currentRow.productId,
+				productName: currentRow.productName,
+				productFactoryName: currentRow.productFactoryName,
 				productSize: currentRow.productSize,
 				isProductWeightSale: currentRow.isProductWeightSale,
 				productLaborCost: currentRow.productLaborCost,
@@ -628,8 +643,16 @@ const OrderUpdatePage: React.FC = () => {
 				materialName: currentRow.materialName,
 				colorId: currentRow.colorId,
 				colorName: currentRow.colorName,
+				classificationId: currentRow.classificationId,
+				classificationName: currentRow.classificationName,
+				setTypeId: currentRow.setTypeId,
+				setTypeName: currentRow.setTypeName,
 				priorityName: currentRow.priorityName,
 				stoneWeight: Number(currentRow.stoneWeightTotal),
+				stoneAddLaborCost:
+					typeof currentRow.stoneAddLaborCost === "number"
+						? currentRow.stoneAddLaborCost
+						: undefined,
 				mainStoneNote: currentRow.mainStoneNote,
 				assistanceStoneNote: currentRow.assistanceStoneNote,
 				assistantStone: currentRow.assistantStone,

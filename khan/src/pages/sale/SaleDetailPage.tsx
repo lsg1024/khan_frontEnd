@@ -151,7 +151,15 @@ const SaleDetailPage: React.FC = () => {
 								parseFloat(String(response.goldWeight)) || 0;
 							const goldWeight = rawGoldWeight;
 							const stoneWeight = parseFloat(String(response.stoneWeight)) || 0;
-							const totalWeight = goldWeight + stoneWeight;
+							// 알중량 표기 우선순위: 저장된 엔티티 stoneWeight > 0 이면 이를 사용,
+							// 없으면 stoneInfos 합산값으로 폴백 (초기 등록 직후 등 stoneWeight 미확정 케이스).
+							const effectiveStoneWeight =
+								stoneWeight > 0
+									? stoneWeight
+									: calculatedStoneData.stoneWeight;
+							// JS 부동소수점 오차 (12.43 + 0.04 = 12.469999999999999) 방지 위해 소수 3자리 반올림.
+							const totalWeight =
+								Math.round((goldWeight + effectiveStoneWeight) * 1000) / 1000;
 
 							// bulk 모드는 반품이지만 해리 적용
 							const pureGoldWeight = calculatePureGoldWeightWithHarry(
@@ -188,9 +196,9 @@ const SaleDetailPage: React.FC = () => {
 								mainStonePrice: calculatedStoneData.mainStonePrice,
 								assistanceStonePrice: calculatedStoneData.assistanceStonePrice,
 								stoneAddLaborCost: response.addStoneLaborCost || 0,
-								stoneWeightTotal: calculatedStoneData.stoneWeight,
+								stoneWeightTotal: effectiveStoneWeight,
 								totalWeight: totalWeight,
-								stoneWeight: stoneWeight,
+								stoneWeight: effectiveStoneWeight,
 								goldWeight: goldWeight,
 								pureGoldWeight: pureGoldWeight,
 								pricePerGram: 0,
@@ -393,7 +401,13 @@ const SaleDetailPage: React.FC = () => {
 					const rawGoldWeight = parseFloat(String(response.goldWeight)) || 0;
 					const goldWeight = rawGoldWeight;
 					const stoneWeight = parseFloat(String(response.stoneWeight)) || 0;
-					const totalWeight = goldWeight + stoneWeight;
+					// 알중량 표기 우선순위: 저장된 엔티티 stoneWeight > 0 이면 이를 사용,
+					// 없으면 stoneInfos 합산값으로 폴백 (초기 등록 직후 등 stoneWeight 미확정 케이스).
+					const effectiveStoneWeight =
+						stoneWeight > 0 ? stoneWeight : calculatedStoneData.stoneWeight;
+					// JS 부동소수점 오차 (12.43 + 0.04 = 12.469999999999999) 방지 위해 소수 3자리 반올림.
+					const totalWeight =
+						Math.round((goldWeight + effectiveStoneWeight) * 1000) / 1000;
 
 					const getSaleStatusFromType = (saleType: string): SaleStatusType => {
 						const mapping: Record<string, SaleStatusType> = {
@@ -451,9 +465,9 @@ const SaleDetailPage: React.FC = () => {
 						mainStonePrice: calculatedStoneData.mainStonePrice,
 						assistanceStonePrice: calculatedStoneData.assistanceStonePrice,
 						stoneAddLaborCost: response.addStoneLaborCost || 0,
-						stoneWeightTotal: calculatedStoneData.stoneWeight,
+						stoneWeightTotal: effectiveStoneWeight,
 						totalWeight: totalWeight,
-						stoneWeight: stoneWeight,
+						stoneWeight: effectiveStoneWeight,
 						goldWeight: goldWeight,
 						pureGoldWeight: pureGoldWeight,
 						pricePerGram: 0,

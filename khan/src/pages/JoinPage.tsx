@@ -39,7 +39,7 @@ function JoinPage() {
 		}
 
 		try {
-			const data = await apiRequest.post<ApiResponse>("/users/signup", {
+			const data = await apiRequest.post<ApiResponse>("/jewelry/signup", {
 				userId,
 				nickname,
 				password,

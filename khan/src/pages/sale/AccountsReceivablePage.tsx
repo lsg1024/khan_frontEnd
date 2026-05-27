@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { storeApi } from "../../../libs/api/storeApi";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
@@ -16,6 +17,17 @@ export const AccountReceivablePage = () => {
 	const [stores, setStores] = useState<AccountInfoDto[]>([]);
 	const [loading, setLoading] = useState(false);
 	const { handleError } = useErrorHandler();
+	const navigate = useNavigate();
+
+	/**
+	 * 거래처명 클릭 → 판매 화면으로 이동하여 결제 처리 시작.
+	 * 기존에는 "미수 확인 후 다시 판매로" 이동해야 하는 복잡함이 있었음.
+	 * source=payment 파라미터로 SaleCreatePage 가 스토어 미수 정보를 자동 프리필 한다.
+	 */
+	const handleStoreClickToSale = (store: AccountInfoDto) => {
+		if (!store.accountId) return;
+		navigate(`/sales/create?source=payment&storeId=${store.accountId}`);
+	};
 
 	const [currentPage, setCurrentPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
@@ -152,6 +164,7 @@ export const AccountReceivablePage = () => {
 					loading={loading}
 					currentPage={currentPage}
 					size={size}
+					onStoreClick={handleStoreClickToSale}
 				/>
 
 				{/* 페이지네이션 */}

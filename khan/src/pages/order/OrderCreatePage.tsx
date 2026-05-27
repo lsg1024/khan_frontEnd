@@ -766,9 +766,12 @@ const OrderCreatePage = () => {
 	};
 
 	// 제조사 선택 적용 (실제 row 업데이트 로직)
+	// storeHarry 와 동일한 스냅샷 패턴: 공장 선택 시점의 goldHarryLoss 값을 factoryHarry 로 row 에 저장.
+	// 이후 백엔드 Order/Stock/Sale 에 그대로 전송되어 독립 보존된다.
 	const applyFactorySelection = (rowId: string, factory: FactorySearchDto) => {
 		updateOrderRow(rowId, "factoryId", factory.factoryId?.toString());
 		updateOrderRow(rowId, "factoryName", factory.factoryName || "");
+		updateOrderRow(rowId, "factoryHarry", factory.goldHarryLoss || "");
 	};
 
 	// 제조사 선택 처리 (팝업에서 선택 시)

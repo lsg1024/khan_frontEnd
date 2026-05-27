@@ -91,13 +91,82 @@
 	--spacing-mobile-lg: 16px;
 }
 
-/* ===== 다크 모드 지원 ===== */
+/* ===== 다크 모드 지원 (OS 설정 자동 감지) =====
+ * prefers-color-scheme: dark 미디어 쿼리로 운영체제 다크 모드를 감지하여
+ * CSS 커스텀 속성 값을 일괄 재정의한다. 컴포넌트가 var(--...)을 참조하고 있다면
+ * 별도 수정 없이 다크 테마가 적용된다.
+ *
+ * 원칙:
+ *  - 본문 배경은 순수 검정(#000) 대신 약간 밝은 회색(#1a1d21)을 사용해 눈부심 감소
+ *  - primary 계열은 채도/명도를 살짝 올려 어두운 배경에서도 대비 확보
+ *  - shadow는 어두운 배경에서 보이지 않으므로 투명도를 올려 깊이감 유지
+ *  - state 색상(danger/warning/success/info)은 WCAG AA 대비를 위해 밝은 톤으로 보정
+ */
 @media (prefers-color-scheme: dark) {
 	:root {
-		--text-primary: #f8f9fa;
+		color-scheme: dark;
+
+		/* 색상 팔레트 (어두운 배경에서 대비 확보를 위해 소폭 밝게 보정) */
+		--primary-color: #34ce57;
+		--primary-light: #5fd97d;
+		--primary-dark: #28a745;
+		--secondary-color: #adb5bd;
+		--success-color: #34ce57;
+		--danger-color: #f06270;
+		--warning-color: #ffd454;
+		--info-color: #3bc0d6;
+		--light-color: #495057;
+		--dark-color: #f8f9fa;
+
+		/* 텍스트 색상 (라이트모드 대비 반전) */
+		--text-primary: #f1f3f5;
 		--text-secondary: #adb5bd;
-		--bg-primary: #212529;
-		--bg-secondary: #343a40;
-		--border-color: #495057;
+		--text-muted: #868e96;
+		--text-white: #ffffff;
+		--text-dark: #e9ecef;
+		--text-light: #ced4da;
+
+		/* 배경 색상 (순수 검정 회피, 2단계 깊이감) */
+		--bg-primary: #1a1d21;
+		--bg-secondary: #252930;
+		--bg-dark: #0d1117;
+
+		/* 보더 (배경과 충분한 대비, 너무 밝지 않게) */
+		--border-color: #3a4048;
+		--border-color-light: #2d3238;
+		--border-color-soft: #343a40;
+
+		/* 그림자 (어두운 배경에서도 식별 가능하도록 불투명도 상향) */
+		--shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.4);
+		--shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+		--shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.55);
+		--shadow-card: 0 2px 4px rgba(0, 0, 0, 0.45);
+		--shadow-section: 0 2px 8px rgba(0, 0, 0, 0.5);
+		--shadow-modal: 0 4px 20px rgba(0, 0, 0, 0.6);
+	}
+
+	/* ===== 다크 모드 전용 보조 스타일 ===== */
+
+	/* 이미지/아이콘 눈부심 완화 (순백 이미지의 휘도만 약간 낮춤) */
+	img:not([src*=".svg"]) {
+		filter: brightness(0.9);
+	}
+
+	/* 입력 필드 autofill 배경 색상 덮어쓰기 (Chrome 기본 노란 배경 제거) */
+	input:-webkit-autofill,
+	input:-webkit-autofill:hover,
+	input:-webkit-autofill:focus,
+	textarea:-webkit-autofill,
+	select:-webkit-autofill {
+		-webkit-text-fill-color: var(--text-primary);
+		-webkit-box-shadow: 0 0 0 1000px var(--bg-secondary) inset;
+		caret-color: var(--text-primary);
+		transition: background-color 9999s ease-in-out 0s;
+	}
+
+	/* 선택(selection) 색상 — primary-color 기반, 대비 확보 */
+	::selection {
+		background-color: color-mix(in srgb, var(--primary-color) 40%, transparent);
+		color: var(--text-white);
 	}
 }

@@ -205,6 +205,11 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 		[rowId: string]: "store" | "product" | "factory" | null;
 	}>({});
 
+	// 소수 입력 중 raw draft 버퍼. key = `${rowId}.${field}`.
+	// 타이핑 중에는 "0.", "5." 같은 중간 상태를 그대로 표시해 커서 점프/NaN 을 막고,
+	// blur 시 toFixed(3) 으로 정규화해서 draft 를 제거한다.
+	const [decimalDrafts, setDecimalDrafts] = useState<{ [key: string]: string }>({});
+
 	// 검색어 변경 핸들러
 	const handleSearchInputChange = (
 		rowId: string,
@@ -312,6 +317,67 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 		const numericString = value.replace(/[^0-9]/g, "");
 		const numericValue = numericString === "" ? 0 : parseInt(numericString, 10);
 		onRowUpdate(id, field, numericValue);
+	};
+
+	// 소수 입력 핸들러 — 기존 handleIntegerChange 의 소수판. (A안)
+	//  - 숫자·소수점 외 문자 제거, 소수점 2개 이상 방지
+	//  - 편집 중 raw 문자열은 decimalDrafts 버퍼에 기록 → value 가 toFixed 로 강제 재포맷되어
+	//    커서가 점프하거나 Number("5..") = NaN 이 노출되는 현상을 차단한다.
+	//  - row state 에는 parseFloat 결과(number) 를 즉시 커밋하여 금중량 등 파생 계산은 정상 동작.
+	const handleDecimalChange = (
+		id: string,
+		field: keyof OrderRowData,
+		value: string
+	) => {
+		let cleaned = value.replace(/[^0-9.]/g, "");
+		const firstDot = cleaned.indexOf(".");
+		if (firstDot !== -1) {
+			cleaned =
+				cleaned.substring(0, firstDot + 1) +
+				cleaned.substring(firstDot + 1).replace(/\./g, "");
+		}
+		const draftKey = `${id}.${String(field)}`;
+		setDecimalDrafts((prev) => ({ ...prev, [draftKey]: cleaned }));
+
+		const parsed =
+			cleaned === "" || cleaned === "." ? 0 : parseFloat(cleaned);
+		onRowUpdate(id, field, Number.isFinite(parsed) ? parsed : 0);
+	};
+
+	// blur 시 draft 제거 + 소수점 3자리로 정규화.
+	const handleDecimalBlur = (
+		id: string,
+		field: keyof OrderRowData,
+		current: number | "" | undefined
+	) => {
+		const draftKey = `${id}.${String(field)}`;
+		setDecimalDrafts((prev) => {
+			if (!(draftKey in prev)) return prev;
+			const next = { ...prev };
+			delete next[draftKey];
+			return next;
+		});
+		const n =
+			typeof current === "number" ? current : parseFloat(String(current ?? 0));
+		const normalized = Number.isFinite(n) ? Number(n.toFixed(3)) : 0;
+		if (normalized !== current) {
+			onRowUpdate(id, field, normalized);
+		}
+	};
+
+	// 표시 값 계산 — 편집 중이면 draft(raw), 아니면 row state 의 number 를 toFixed(3) 포맷.
+	const getDecimalDisplay = (
+		id: string,
+		field: keyof OrderRowData,
+		stateValue: number | "" | undefined
+	): string => {
+		const draftKey = `${id}.${String(field)}`;
+		if (decimalDrafts[draftKey] !== undefined) return decimalDrafts[draftKey];
+		if (stateValue === "" || stateValue === undefined || stateValue === null) {
+			return "0.000";
+		}
+		const n = Number(stateValue);
+		return Number.isFinite(n) ? n.toFixed(3) : "0.000";
 	};
 
 	return (
@@ -975,9 +1041,25 @@ const OrderTable: React.FC<OrderTableProps> = (props) => {
 								<td className="order-create-table-stone-weight-cell">
 									<input
 										type="text"
-										value={row.stoneWeightTotal === "" ? "0.000" : Number(row.stoneWeightTotal).toFixed(3)}
+										inputMode="decimal"
+										value={getDecimalDisplay(
+											row.id,
+											"stoneWeightTotal",
+											row.stoneWeightTotal
+										)}
 										onChange={(e) =>
-											onRowUpdate(row.id, "stoneWeightTotal", e.target.value)
+											handleDecimalChange(
+												row.id,
+												"stoneWeightTotal",
+												e.target.value
+											)
+										}
+										onBlur={() =>
+											handleDecimalBlur(
+												row.id,
+												"stoneWeightTotal",
+												row.stoneWeightTotal
+											)
 										}
 										placeholder="0.000"
 										disabled={loading || !safeIsRowInputEnabled(index)}

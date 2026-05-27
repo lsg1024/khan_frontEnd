@@ -13,6 +13,10 @@ export interface FactorySearchDto {
 	tradeType: "WEIGHT" | "PIECE";
 	grade: "1" | "2" | "3" | "4";
 	goldHarryLoss: string;
+	/** 최근 거래일 (Task 4-2). BE findAllFactory 서브쿼리로 계산. 없으면 null. */
+	lastSaleDate?: string | null;
+	/** 최근 결제일 (Task 4-2). BE findAllFactory 서브쿼리로 계산. 없으면 null. */
+	lastPaymentDate?: string | null;
 }
 
 // 공장 검색 API 응답

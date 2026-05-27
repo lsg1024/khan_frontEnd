@@ -36,7 +36,7 @@ function parseJwt(token: string) {
 				.map(function (c) {
 					return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
 				})
-				.join("")
+				.join(""),
 		);
 
 		return JSON.parse(jsonPayload);
@@ -58,7 +58,7 @@ export const api = axios.create({
 						(_match, key, value) => {
 							// 16자리 이상의 숫자는 문자열로 변환
 							return `"${key}":"${value}"`;
-						}
+						},
 					);
 					return JSON.parse(processedData);
 				} catch {
@@ -170,7 +170,7 @@ api.interceptors.response.use(
 						originalRequest.headers["Authorization"] =
 							"Bearer " + tokenUtils.getToken();
 						originalRequest.headers["X-Tenant-ID"] = extractSubdomain(
-							window.location.hostname
+							window.location.hostname,
 						);
 						return api(originalRequest);
 					})
@@ -219,7 +219,8 @@ api.interceptors.response.use(
 					// 서버가 tenant mismatch로 세션을 무효화한 경우
 					if (response.status === 401) {
 						const errorData = await response.json().catch(() => null);
-						const isTenantMismatch = errorData?.message?.includes("Tenant mismatch");
+						const isTenantMismatch =
+							errorData?.message?.includes("Tenant mismatch");
 
 						if (isTenantMismatch) {
 							// 서버에서 이미 refresh token을 삭제함 → 즉시 로그아웃
@@ -247,7 +248,11 @@ api.interceptors.response.use(
 					const tokenTenantId = decoded?.tenantId || decoded?.tenant;
 					const currentSubdomain = extractSubdomain(window.location.hostname);
 
-					if (tokenTenantId && currentSubdomain && tokenTenantId !== currentSubdomain) {
+					if (
+						tokenTenantId &&
+						currentSubdomain &&
+						tokenTenantId !== currentSubdomain
+					) {
 						// 토큰 tenant 불일치 → 서버에 로그아웃 요청하여 refresh token 완전 삭제
 						reissueFailCount = MAX_REISSUE_ATTEMPTS;
 						fetch(`${getApiBaseUrl()}/auth/reissue`, {
@@ -297,7 +302,7 @@ api.interceptors.response.use(
 		}
 
 		return Promise.reject(new Error(errorMessage));
-	}
+	},
 );
 
 // API 응답 타입 정의
@@ -309,7 +314,7 @@ export interface ApiResponse<T = unknown> {
 
 // API 에러 처리 유틸리티
 export function isApiSuccess<T>(
-	response: ApiResponse<T>
+	response: ApiResponse<T>,
 ): response is ApiResponse<T> & { success: true } {
 	return response.success === true;
 }
@@ -322,7 +327,7 @@ export function getApiErrorMessage<T>(response: ApiResponse<T>): string {
 export const apiRequest = {
 	async get<T>(
 		url: string,
-		config?: AxiosRequestConfig
+		config?: AxiosRequestConfig,
 	): Promise<ApiResponse<T>> {
 		const response = await api.get<ApiResponse<T>>(url, config);
 		return response.data;
@@ -331,7 +336,7 @@ export const apiRequest = {
 	async post<T, D = unknown>(
 		url: string,
 		data?: D,
-		config?: AxiosRequestConfig<D>
+		config?: AxiosRequestConfig<D>,
 	): Promise<ApiResponse<T>> {
 		const response = await api.post<ApiResponse<T>>(url, data, config);
 		return response.data;
@@ -340,7 +345,7 @@ export const apiRequest = {
 	async patch<T, D = unknown>(
 		url: string,
 		data?: D,
-		config?: AxiosRequestConfig<D>
+		config?: AxiosRequestConfig<D>,
 	): Promise<ApiResponse<T>> {
 		const response = await api.patch<ApiResponse<T>>(url, data, config);
 		return response.data;
@@ -348,7 +353,7 @@ export const apiRequest = {
 
 	async delete<T>(
 		url: string,
-		config?: AxiosRequestConfig
+		config?: AxiosRequestConfig,
 	): Promise<ApiResponse<T>> {
 		const response = await api.delete<ApiResponse<T>>(url, config);
 		return response.data;

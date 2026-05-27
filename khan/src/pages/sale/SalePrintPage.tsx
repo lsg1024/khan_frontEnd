@@ -198,7 +198,10 @@ export const SalePrintPage = () => {
 										</div>
 									</td>
 									<td style={{ width: "40px", padding: "0px 2px" }}>
-										{item.goldWeight?.toFixed(3) || "-"}
+										{/* "금" 컬럼: 엔티티에 저장된 금중량(goldWeight) 을 그대로 표시. */}
+										{item.goldWeight != null
+											? Number(item.goldWeight).toFixed(3)
+											: "-"}
 									</td>
 									<td style={{ width: "40px", padding: "0px 2px" }}>
 										{item.stoneWeight?.toFixed(3) || "-"}

@@ -19,6 +19,12 @@ interface SaleTableProps {
 	storeId?: string;
 	storeName?: string;
 	isBulkReturnMode?: boolean;
+	/**
+	 * 행 추가 콜백. 제공되면 테이블 본문 맨 아래에 + 버튼 행이 렌더된다.
+	 * SaleCreatePage 에서만 사용하며 SaleDetailPage 등 읽기전용 사용처에서는 넘기지 않는다.
+	 * (주문과 동일한 패턴: 판매 생성 중 결제/DC/WG 등 flowCode 없는 행을 추가 입력 가능하게 함.)
+	 */
+	onAddRow?: () => void;
 }
 
 const SaleTable: React.FC<SaleTableProps> = (props) => {
@@ -34,6 +40,7 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 		disabled = false,
 		storeId = "",
 		isBulkReturnMode = false,
+		onAddRow,
 	} = props;
 
 	// 거래처가 선택되지 않았는지 확인
@@ -214,9 +221,11 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 				</thead>
 				<tbody>
 					{rows.map((row, index) => {
-						// 금중량 계산 (총중량 - 알중량)
+						// 금중량 계산 (총중량 - 알중량). stoneWeight 를 단일 소스로 사용.
+						// (stoneWeightTotal 은 초기화 시 mirror 되지만 편집 경로가 stoneWeight 핸들러로
+						// 통일됨에 따라 display 도 stoneWeight 기준으로 계산.)
 						const goldWeight =
-							Number(row.totalWeight || 0) - Number(row.stoneWeightTotal || 0);
+							Number(row.totalWeight || 0) - Number(row.stoneWeight || 0);
 
 						return (
 							<tr key={row.id} onFocus={() => onRowFocus?.(row.id)}>
@@ -589,10 +598,19 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 								<td className="stone-weight-cell">
 									<input
 										type="text"
-										value={row.stoneWeightTotal?.toFixed(3) || "0.000"}
-										onChange={(e) =>
-											onRowUpdate(row.id, "stoneWeightTotal", e.target.value)
-										}
+										inputMode="decimal"
+										// value 에 toFixed(3) 을 강제하면 편집 중 state 가 string 이 될 때 TypeError
+										// (화이트 스크린) 가 발생하므로 raw 값을 그대로 표시. 입력은 onChange 에서
+										// regex 로 숫자/마이너스/소수점만 허용하도록 sanitize.
+										value={row.stoneWeight}
+										onChange={(e) => {
+											const val = e.target.value;
+											if (/^-?\d*\.?\d*$/.test(val)) {
+												// stoneWeight 필드로 dispatch — handleRowUpdate 의
+												// field === "stoneWeight" 분기에서 goldWeight/pureGoldWeight 재계산.
+												onRowUpdate(row.id, "stoneWeight", val);
+											}
+										}}
 										disabled={
 											loading ||
 											disabled ||
@@ -635,11 +653,11 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 										}}
 									/>
 								</td>
-								{/* 총 중량 - 알중량 */}
+								{/* 총 중량 - 알중량 (읽기 전용 미러). Number() 로 string 도 안전 coerce. */}
 								<td className="stone-weight-cell">
 									<input
 										type="text"
-										value={Number(row.stoneWeightTotal || 0).toFixed(3)}
+										value={Number(row.stoneWeight || 0).toFixed(3)}
 										readOnly
 										disabled
 										style={{ backgroundColor: "#f5f5f5" }}
@@ -854,6 +872,30 @@ const SaleTable: React.FC<SaleTableProps> = (props) => {
 							</tr>
 						);
 					})}
+					{/* 행 추가 버튼 (SaleCreatePage 등 편집 모드에서만 노출)
+					   - 전체 컬럼 수: 26 (No, 삭제, 구분, 시리얼, 모델번호, 재질, 색상,
+					     보조석 유형/입고여부/입고날짜, 스톤 비고 메인/보조, 사이즈, 비고, 알중량,
+					     중량 전체/알/금/순금, 상품 단가 기본/추가, 알 단가 중심/보조/추가,
+					     개당 알수 메인/보조). 첫 셀(No)과 두번째 셀(+버튼) 이후 colSpan=24.
+					   - 주문(OrderTable) 과 동일한 패턴으로 판매 생성 화면에서 결제/반품 등
+					     flowCode 없는 행을 추가 입력할 수 있게 한다. */}
+					{onAddRow && (
+						<tr>
+							<td className="no-cell">{rows.length + 1}</td>
+							<td className="no-cell">
+								<button
+									type="button"
+									className="btn-add-row"
+									onClick={onAddRow}
+									disabled={loading || disabled}
+									title="행 추가 (결제/DC/WG/반품 등 입력용)"
+								>
+									+
+								</button>
+							</td>
+							<td colSpan={24}></td>
+						</tr>
+					)}
 				</tbody>
 			</table>
 		</div>

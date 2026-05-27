@@ -67,7 +67,7 @@ function ProductDetailPage() {
 				const transformedData: Product = {
 					...response.data,
 					productWorkGradePolicyGroupDto:
-						response.data.productWorkGradePolicyGroupDto.map(
+						(response.data.productWorkGradePolicyGroupDto || []).map(
 							(group: {
 								productGroupId: string;
 								productPurchasePrice: number;
@@ -78,7 +78,7 @@ function ProductDetailPage() {
 								policyDtos?: unknown;
 							}) => ({
 								productGroupId: group.productGroupId,
-								productPurchasePrice: group.productPurchasePrice,
+								productPurchasePrice: group.productPurchasePrice ?? 0,
 								colorId: group.colorId,
 								colorName: group.colorName,
 								note: group.note,

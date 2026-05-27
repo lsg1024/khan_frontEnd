@@ -1,0 +1,57 @@
+# ── 빌드 컨텍스트에서 제외할 항목 ───────────────────────────────
+# Dockerfile 의 COPY . . 로 끌려 들어가면 이미지 크기와 푸시 시간을
+# 과도하게 키우거나 빌드를 불안정하게 만드는 파일들을 모두 제외한다.
+
+# 1) 의존성 — 컨테이너 내부에서 npm install 로 재설치됨
+node_modules/
+
+# 2) 로컬 빌드 산출물 — 컨테이너 내부 RUN npm run build 로 재생성됨
+dist/
+dist-ssr/
+
+# 3) 이전 이미지 아카이브 (약 50MB) — 빌드에 불필요
+khan-frontend.tar
+*.tar
+*.tar.gz
+*.tgz
+
+# 4) Git 메타데이터
+.git/
+.gitignore
+.gitattributes
+
+# 5) 로컬 환경 변수 파일 — Dockerfile 의 ARG/ENV 로 주입하므로 제외
+#    (빈 .env 가 딸려들어가 VITE 환경변수를 덮어쓰는 사고 방지)
+.env
+.env.*
+*.local
+
+# 6) OMC / 에디터 / IDE 설정
+.omc/
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# 7) 문서 및 기타 비빌드 자산
+*.md
+AGENTS.md
+README.md
+fix-error-handlers.md
+
+# 8) 로그
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# 9) 도커 관련 (자기 자신 / 컴포즈) — 이미지 안에 넣을 필요 없음
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 10) 테스트/커버리지 산출물
+coverage/
+.nyc_output/

@@ -6,6 +6,11 @@ interface AccountsReceivableListProps {
 	loading: boolean;
 	currentPage: number;
 	size: number;
+	/**
+	 * 거래처명 클릭 핸들러. 제공되면 거래처명 셀이 클릭 가능해지고
+	 * 클릭 시 호출된다 (예: 판매 화면으로 이동하여 결제 처리).
+	 */
+	onStoreClick?: (store: AccountInfoDto) => void;
 }
 
 export const AccountsReceivableList = ({
@@ -13,6 +18,7 @@ export const AccountsReceivableList = ({
 	loading,
 	currentPage,
 	size,
+	onStoreClick,
 }: AccountsReceivableListProps) => {
 	if (loading) {
 		return <div className="loading-message">목록을 불러오는 중...</div>;
@@ -49,7 +55,28 @@ export const AccountsReceivableList = ({
 					return (
 						<tr key={store.accountId || `store-${index}`}>
 							<td>{rowNumber}</td>
-							<td className="store-name">{store.accountName}</td>
+							<td
+								className="store-name"
+								onClick={
+									onStoreClick ? () => onStoreClick(store) : undefined
+								}
+								style={
+									onStoreClick
+										? {
+												cursor: "pointer",
+												color: "var(--primary-color, #1976d2)",
+												textDecoration: "underline",
+										  }
+										: undefined
+								}
+								title={
+									onStoreClick
+										? "클릭하면 판매 화면에서 결제 처리로 바로 이동합니다"
+										: undefined
+								}
+							>
+								{store.accountName}
+							</td>
 							<td>
 								<span
 									className={`level-badge level-${store.grade.toLowerCase()}`}

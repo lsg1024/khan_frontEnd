@@ -56,9 +56,16 @@ export interface OrderResponseDetail {
 
 export interface OrderRequestDetail {
 	storeId: string;
+	storeName?: string;
+	storeGrade?: string;
+	storeHarry?: string;
 	orderNote: string;
 	factoryId: string;
+	factoryName?: string;
+	factoryHarry?: string;
 	productId: string;
+	productName?: string;
+	productFactoryName?: string;
 	productSize: string;
 	isProductWeightSale: boolean;
 	productLaborCost: number;
@@ -67,8 +74,13 @@ export interface OrderRequestDetail {
 	materialName: string;
 	colorId: string;
 	colorName: string;
+	classificationId?: string;
+	classificationName?: string;
+	setTypeId?: string;
+	setTypeName?: string;
 	priorityName: string;
 	stoneWeight: number;
+	stoneAddLaborCost?: number;
 	mainStoneNote: string;
 	assistanceStoneNote: string;
 	assistantStone: boolean;

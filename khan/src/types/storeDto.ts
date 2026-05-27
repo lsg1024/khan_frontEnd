@@ -14,6 +14,10 @@ export interface StoreSearchDto {
 	faxNumber: string;
 	note: string;
 	address: string;
+	/** 최근 거래일 (Task 4-2). BE findAllStore 에서 서브쿼리로 계산. 없으면 null/undefined. */
+	lastSaleDate?: string | null;
+	/** 최근 결제일 (Task 4-2). BE findAllStore 에서 서브쿼리로 계산. 없으면 null/undefined. */
+	lastPaymentDate?: string | null;
 }
 
 // 상점 검색 API 응답
@@ -41,6 +45,33 @@ export interface StoreReceivableSaleLogResponse extends StoreSearchDto {
 	afterMoneyBalance: string;
 	lastSaleDate: string;
 	lastPaymentDate: string;
+}
+
+/**
+ * Task 4-3 / 4-4 — 거래처/제조사 최근 활동 응답.
+ * - recentTransactions : 최신순 SALE 트랜잭션 내역.
+ * - paymentSummary     : PAYMENT 집계(총 순금 중량, 총 결제 금액, 건수, 최근 결제일).
+ */
+export interface TransactionItem {
+	transactionDate: string;
+	transactionType: string;
+	material: string | null;
+	goldAmount: string;
+	moneyAmount: string;
+	saleCode: string | null;
+	note: string | null;
+}
+
+export interface PaymentSummary {
+	totalGoldWeight: string;
+	totalMoneyAmount: string;
+	paymentCount: number;
+	lastPaymentDate: string | null;
+}
+
+export interface RecentActivityResponse {
+	recentTransactions: TransactionItem[];
+	paymentSummary: PaymentSummary;
 }
 
 // 거래 내역 페이지 (매입/판매 미수금)

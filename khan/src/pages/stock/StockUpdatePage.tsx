@@ -9,6 +9,7 @@ import { useErrorHandler } from "../../utils/errorHandler";
 import { formatToLocalDate, getLocalDate } from "../../utils/dateUtils";
 import { calculateStoneDetails } from "../../utils/calculateStone";
 import { handleApiSubmit } from "../../utils/apiSubmitHandler";
+import { syncStockWeightFields } from "../../utils/stockWeightSync";
 import type { MaterialDto } from "../../types/materialDto";
 import type { ColorDto } from "../../types/colorDto";
 import type { AssistantStoneDto } from "../../types/AssistantStoneDto";
@@ -39,13 +40,19 @@ const StockUpdatePage: React.FC = () => {
 	const [goldHarries, setGoldHarries] = useState<GoldHarryDto[]>([]);
 
 	// 재고 행 업데이트
+	// 무게 관련 필드(totalWeight / stoneWeight / materialId / materialName)가 변경되면
+	// "총중량 = 금중량 + 알중량" 항등식과 "재질 변경 시 금중량 재계산"을 자동 적용.
 	const handleRowUpdate = (
 		id: string,
 		field: keyof StockOrderRows,
 		value: unknown
 	) => {
 		setStockRows((prev) =>
-			prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+			prev.map((row) =>
+				row.id === id
+					? { ...row, ...syncStockWeightFields(row, field, value) }
+					: row
+			)
 		);
 	};
 
@@ -227,45 +234,54 @@ const StockUpdatePage: React.FC = () => {
 						);
 
 						// StockResponseDetail을 StockOrderRows 형태로 변환
+						// 레거시 마이그레이션 재고는 BigDecimal/참조 필드가 null 로 반환될 수 있으므로
+						// 렌더링 중 .toLocaleString()/.toString() 등 NPE 를 방지하기 위해 안전값으로 coerce.
+						const safeGoldWeight = detail.goldWeight ?? "";
+						const safeStoneWeight = detail.stoneWeight ?? "";
+						const goldWeightNum = parseFloat(safeGoldWeight);
+						const stoneWeightNum = parseFloat(safeStoneWeight);
+
 						const stockRowData: StockOrderRows = {
 							id: detail.flowCode,
 							createAt: formatToLocalDate(detail.createAt),
 							shippingAt: "",
 							storeId: detail.storeId || "",
-							storeName: detail.storeName,
+							storeName: detail.storeName ?? "",
 							storeHarry: detail.storeHarry || "",
 							grade: detail.storeGrade || "",
 							productId: detail.productId || "",
-							productName: detail.productName,
+							productName: detail.productName ?? "",
 							productFactoryName: "",
 							materialId: foundMaterial?.materialId || "",
-							materialName: detail.materialName,
+							materialName: detail.materialName ?? "",
 							colorId: foundColor?.colorId || "",
-							colorName: detail.colorName,
+							colorName: detail.colorName ?? "",
 							factoryId: detail.factoryId || "",
-							factoryName: detail.factoryName,
-							productSize: detail.productSize,
-							productPurchaseCost: detail.productPurchaseCost,
-							goldWeight: detail.goldWeight,
-							stoneWeight: detail.stoneWeight,
+							factoryName: detail.factoryName ?? "",
+							factoryHarry: detail.factoryHarry || "",
+							productSize: detail.productSize ?? "",
+							productPurchaseCost: detail.productPurchaseCost ?? 0,
+							goldWeight: safeGoldWeight,
+							stoneWeight: safeStoneWeight,
 							isProductWeightSale: detail.isProductWeightSale || false,
-							mainStoneNote: detail.mainStoneNote,
-							assistanceStoneNote: detail.assistanceStoneNote,
-							orderNote: detail.note,
+							mainStoneNote: detail.mainStoneNote ?? "",
+							assistanceStoneNote: detail.assistanceStoneNote ?? "",
+							orderNote: detail.note ?? "",
 							stoneInfos: detail.stoneInfos || [],
 							productLaborCost: detail.productLaborCost || 0,
-							productAddLaborCost: detail.productAddLaborCost,
+							productAddLaborCost: detail.productAddLaborCost ?? 0,
 							mainStonePrice: calculatedStoneData.mainStonePrice,
 							assistanceStonePrice: calculatedStoneData.assistanceStonePrice,
 							mainStoneCount: calculatedStoneData.mainStoneCount,
 							assistanceStoneCount: calculatedStoneData.assistanceStoneCount,
-							stoneAddLaborCost: detail.stoneAddLaborCost,
+							stoneAddLaborCost: detail.stoneAddLaborCost ?? 0,
 							assistantStoneId: detail.assistantStoneId || "1",
 							assistantStone: detail.assistantStone || false,
 							assistantStoneName: detail.assistantStoneName || "",
 							assistantStoneCreateAt: detail.assistantStoneCreateAt || "",
 							totalWeight:
-								parseFloat(detail.goldWeight) + parseFloat(detail.stoneWeight),
+								(isNaN(goldWeightNum) ? 0 : goldWeightNum) +
+								(isNaN(stoneWeightNum) ? 0 : stoneWeightNum),
 							stoneWeightTotal: calculatedStoneData.stoneWeight,
 							classificationId: "",
 							classificationName: "",
@@ -308,14 +324,34 @@ const StockUpdatePage: React.FC = () => {
 			setLoading(true);
 
 			// 모든 재고 행에 대해 업데이트 요청 생성
+			// ⚠ productName/storeName/factoryName 등 식별·이름 필드도 반드시 함께 전송.
+			//    백엔드가 payload 에 없는 필드를 null 로 덮어쓰는 사고를 방지.
 			const updatePromises = stockRows.map((currentRow) => {
 				const updateData: StockUpdateRequest = {
+					storeId: currentRow.storeId,
+					storeName: currentRow.storeName,
+					storeGrade: currentRow.grade,
+					factoryId: currentRow.factoryId,
+					factoryName: currentRow.factoryName,
+					factoryHarry: currentRow.factoryHarry ?? "",
+					productId: currentRow.productId,
+					productName: currentRow.productName,
+					productFactoryName: currentRow.productFactoryName,
+					materialId: currentRow.materialId,
+					materialName: currentRow.materialName,
+					colorId: currentRow.colorId,
+					colorName: currentRow.colorName,
+					classificationId: currentRow.classificationId,
+					classificationName: currentRow.classificationName,
+					setTypeId: currentRow.setTypeId,
+					setTypeName: currentRow.setTypeName,
 					productSize: currentRow.productSize,
 					isProductWeightSale: currentRow.isProductWeightSale,
 					stockNote: currentRow.orderNote,
 					productPurchaseCost: Number(currentRow.productPurchaseCost) || 0,
 					productLaborCost: Number(currentRow.productLaborCost) || 0,
 					productAddLaborCost: Number(currentRow.productAddLaborCost) || 0,
+					storeHarry: currentRow.storeHarry ?? "",
 					stoneWeight: currentRow.stoneWeight,
 					goldWeight: currentRow.goldWeight,
 					mainStoneNote: currentRow.mainStoneNote,

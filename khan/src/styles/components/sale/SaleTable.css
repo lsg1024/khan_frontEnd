@@ -144,3 +144,31 @@
 .stock-size-cell {
 	width: 45px;
 }
+
+/* 행 추가 버튼 (주문 테이블과 동일한 스타일)
+   SaleCreatePage 에서만 노출. 결제/DC/WG/반품 등 flowCode 없는 행을 추가 입력할 때 사용. */
+.sale-table .btn-add-row {
+	background-color: var(--primary-color);
+	color: white;
+	padding: 4px 8px;
+	border: none;
+	border-radius: var(--border-radius-sm);
+	font-size: 14px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background-color 0.2s;
+	width: 24px;
+	height: 24px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.sale-table .btn-add-row:hover:not(:disabled) {
+	background-color: var(--primary-hover-color);
+}
+
+.sale-table .btn-add-row:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}

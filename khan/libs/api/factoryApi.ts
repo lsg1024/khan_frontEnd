@@ -10,7 +10,7 @@ import type {
 	FactoryCreateRequest,
 	FactoryUpdateRequest,
 } from "../../src/types/AccountDto";
-import type { TransactionPageResponse } from "../../src/types/storeDto";
+import type { TransactionPageResponse, RecentActivityResponse } from "../../src/types/storeDto";
 
 export const factoryApi = {
 	// 제조사 검색 (페이징 + 정렬 + searchField 지원)
@@ -137,6 +137,19 @@ export const factoryApi = {
 		return api.get("account/factories/purchase/excel", {
 			params: { endAt },
 			responseType: "blob",
+		});
+	},
+
+	/**
+	 * Task 4-3 / 4-4 — 제조사 최근 활동(거래 내역 + 결제 집계) 조회.
+	 * FactoryPage 의 최근거래일/최근결제일 셀 클릭 시 모달에서 호출.
+	 */
+	getFactoryRecentActivity: async (
+		id: string,
+		limit: number = 20
+	): Promise<ApiResponse<RecentActivityResponse>> => {
+		return apiRequest.get(`account/factories/${id}/recent-activity`, {
+			params: { limit },
 		});
 	},
 };

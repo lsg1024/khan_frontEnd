@@ -8,17 +8,22 @@
 	background: #f2f2f2;
 }
 
-/* 전역 주문일 선택 바 (과거 거래내역 ~ 주문장 사이, 우측 정렬) */
+/* 전역 주문일 선택 바 (우측 정렬) */
+/*
+ * StockTable 내부 .stock-table-container 안 .stock-table-header-slot 에 주입되어
+ * 테이블과 하나의 블록처럼 보이도록 한다. 컨테이너가 이미 배경/테두리/그림자/라운드를
+ * 갖고 있으므로 여기서는 제거하고, 테이블과의 경계만 얇은 구분선으로 표현.
+ */
 .global-order-date-bar {
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
-	padding: 8px 10px;
-	margin-bottom: 8px;
-	background-color: var(--bg-primary, #fff);
-	border: 1px solid var(--border-color-light, #e5e5e5);
-	border-radius: var(--border-radius-sm, 6px);
-	box-shadow: var(--shadow-card);
+	padding: 6px 8px;
+	margin: 0;
+	background-color: transparent;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
 }
 
 .global-order-date-label {

@@ -25,6 +25,7 @@ import type { StoreSearchDto, AccountInfoDto } from "../../types/storeDto";
 import type { ProductDto } from "../../types/productDto";
 import StockTable from "../../components/common/stock/StockTable";
 import { calculateStoneDetails } from "../../utils/calculateStone";
+import { syncStockWeightFields } from "../../utils/stockWeightSync";
 
 const POPUP_ORIGIN = window.location.origin;
 
@@ -474,8 +475,16 @@ const StockRegisterPage: React.FC = () => {
 		field: keyof StockOrderRows,
 		value: unknown
 	) => {
+		// 무게 항등식(총중량 = 금중량 + 알중량) 자동 유지.
+		// 기존에는 단순 spread 만 수행하여 사용자가 총중량을 수정해도 row.goldWeight 가
+		// 갱신되지 않고 초기 response 값(보통 0) 으로 저장되는 버그가 있었음.
+		// StockCreatePage / StockUpdatePage 와 동일하게 syncStockWeightFields 를 적용.
 		setOrderRows((prevRows) =>
-			prevRows.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+			prevRows.map((row) =>
+				row.id === id
+					? { ...row, ...syncStockWeightFields(row, field, value) }
+					: row
+			)
 		);
 	};
 

@@ -135,6 +135,55 @@ export const SaleCreatePage = () => {
 		}))
 	);
 
+	/**
+	 * 새 판매 행 추가.
+	 * - 기본 status 는 "결제". 사용자가 ?source=order / ?source=stock 으로 진입하면
+	 *   기존 pre-fill 된 판매 행들(판매 status)은 그대로 두고, 뒤에 결제/DC/WG/반품 등을
+	 *   추가 입력할 때 이 버튼을 사용한다. (주문 화면의 addOrderRow 와 동일한 UX)
+	 * - flowCode 는 비워둔다. handleSubmit 의 validRows 필터가 "판매" 외 status 는
+	 *   flowCode 없이도 materialName + (goldWeight 또는 productPrice) 만 있으면 유효로 판단.
+	 * - BE 영향: 결제/DC/WG/결통 status 는 saleApi.createPaymentSale 로 라우팅 되어
+	 *   SalePaymentRequest 로 처리되므로 신규 BE 변경 불필요 (기존 handleSubmit 분기 재사용).
+	 */
+	const addSaleRow = () => {
+		const newRow: SaleCreateRow = {
+			id: `new-${Date.now()}`,
+			status: "결제",
+			flowCode: "",
+			storeId: saleOptions.storeId,
+			productId: "",
+			productName: "",
+			materialId: "",
+			materialName: "",
+			colorId: "",
+			colorName: "",
+			assistantStoneId: "",
+			assistantStoneName: "",
+			assistantStone: false,
+			assistantStoneCreateAt: "",
+			mainStoneNote: "",
+			assistanceStoneNote: "",
+			productSize: "",
+			note: "",
+			productPrice: 0,
+			additionalProductPrice: 0,
+			stonePurchasePrice: 0,
+			mainStonePrice: 0,
+			assistanceStonePrice: 0,
+			stoneAddLaborCost: 0,
+			stoneWeightTotal: 0,
+			totalWeight: 0,
+			stoneWeight: 0,
+			goldWeight: 0,
+			pureGoldWeight: 0,
+			pricePerGram: 0,
+			mainStoneCount: 0,
+			assistanceStoneCount: 0,
+			stoneInfos: [],
+		};
+		setSaleRows((prev) => [...prev, newRow]);
+	};
+
 	// 안전한 숫자 변환 헬퍼 함수 (음수 허용)
 	const getSafeNumber = (value: string): number => {
 		// 빈 값이거나 단독 '-'인 경우만 0으로 처리
@@ -920,11 +969,32 @@ export const SaleCreatePage = () => {
 
 	// URL 파라미터에서 source와 ids를 가져와서 데이터 로드
 	useEffect(() => {
-		const source = searchParams.get("source"); // "order" 또는 "stock"
+		const source = searchParams.get("source"); // "order" | "stock" | "payment"
 		const ids = searchParams.get("ids"); // 쉼표로 구분된 ID 문자열
+		const urlStoreId = searchParams.get("storeId"); // 결제 전용 진입 시 거래처 ID
 
 		if (source && ids) {
 			loadSaleData(source, ids);
+		} else if (source === "payment" && urlStoreId) {
+			// 미수리스트에서 거래처 클릭으로 진입: 해당 거래처 미수 정보를 조회해
+			// saleOptions 및 accountBalanceHistory 에 프리필. 기존 handleStoreSelect 로직
+			// 을 그대로 재사용하여 동일한 UX 를 제공한다.
+			(async () => {
+				try {
+					const res = await storeApi.getStoreReceivableById(urlStoreId);
+					if (res.success && res.data) {
+						await handleStoreSelect(res.data);
+					} else {
+						showToast(
+							"거래처 미수 정보를 불러오지 못했습니다.",
+							"warning",
+							3000
+						);
+					}
+				} catch (err) {
+					handleError(err);
+				}
+			})();
 		}
 
 		// 재고 선택 메시지 리스너 추가
@@ -1431,6 +1501,7 @@ export const SaleCreatePage = () => {
 					onAssistanceStoneArrivalChange={handleAssistanceStoneArrivalChange}
 					storeId={saleOptions.storeId}
 					storeName={saleOptions.storeName}
+					onAddRow={addSaleRow}
 				/>
 
 				{/* 버튼 영역 */}
