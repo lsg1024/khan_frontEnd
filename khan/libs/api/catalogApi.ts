@@ -62,7 +62,7 @@ export const catalogApi = {
 
 	// 상품 이미지 로드 (Blob 반환)
 	getProductImageByPath: async (imagePath: string): Promise<Blob> => {
-		const response = await api.get(`catalog/products/images${imagePath}`, {
+		const response = await api.get(`product/products/images${imagePath}`, {
 			responseType: "blob",
 		});
 		return response.data as Blob;

@@ -29,9 +29,9 @@ export const authApi = {
 		return apiRequest.login<LoginResponse>("auth/login", credentials);
 	},
 
-	// 회원가입
+	// 회원가입 (jewelry_emp UsersController.signup → gateway 가 /users/** 로 라우팅)
 	join: async (userData: JoinRequest): Promise<ApiResponse<unknown>> => {
-		return apiRequest.post("auth/join", userData);
+		return apiRequest.post("users/signup", userData);
 	},
 
 	// 로그아웃

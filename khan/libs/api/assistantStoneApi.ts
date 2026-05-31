@@ -12,7 +12,7 @@ export const assistantStoneApi = {
     },
     
     getAssistantStoneInfo: async (id: string): Promise<ApiResponse<AssistantStoneResponse>> => {
-        return apiRequest.get<AssistantStoneResponse>(`api/assistant_stone/${id}`);
+        return apiRequest.get<AssistantStoneResponse>(`product/api/assistant_stone/${id}`);
     },
 
     createAssistantStone: async (data: {assistantStoneName: string, assistantStoneNote?: string}): Promise<ApiResponse<string>> => {

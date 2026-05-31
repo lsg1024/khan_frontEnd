@@ -271,20 +271,6 @@ export const stockApi = {
 		});
 	},
 
-	// 삭제 -> 재고
-	updateDeleteToStock: async (
-		flowCodes: string[],
-		orderType: string
-	): Promise<ApiResponse<string>> => {
-		const params = {
-			ids: flowCodes.join(","),
-			order_type: orderType,
-		};
-		return apiRequest.patch<string>("order/stocks/delete/stock", null, {
-			params,
-		});
-	},
-
 	// ============ 재고 조사 API ============
 
 	// 재고 조사 목록 조회
