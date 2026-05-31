@@ -1,6 +1,6 @@
 import { apiRequest } from "./config";
 import type { ApiResponse } from "./config";
-import type { ClassificationDto, ClassificationRequest } from "../../src/types/classification";
+import type { ClassificationDto, ClassificationRequest } from "../../src/types/classificationDto";
 
 type ClassificationResponseSingle = ClassificationDto;
 type ClassificationResponseList = ClassificationDto[];

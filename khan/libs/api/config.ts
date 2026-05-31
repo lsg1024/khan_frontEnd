@@ -13,9 +13,6 @@ const API_LOCAL_URL = "http://localhost:8080";
  *   1) VITE_API_BASE_URL 환경 변수 (빌드 시 주입 가능: .env.production 또는 Docker --build-arg)
  *   2) import.meta.env.PROD === true  → API_PROD_URL
  *   3) 그 외 (npm run dev)            → API_LOCAL_URL
- *
- * Dockerfile 의 `npm run build` 는 자동으로 PROD 모드로 동작하므로
- * 이미지 빌드 시 별도 설정 없이 API_PROD_URL 이 사용된다.
  */
 export function getApiBaseUrl(): string {
 	const override = import.meta.env.VITE_API_BASE_URL;

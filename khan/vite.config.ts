@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
 	plugins: [react()],
 	server: {
-		host: "ttt.localtest.me",
+		host: "lim.localtest.me",
 		port: 5173,
 		fs: {
 			// 로컬 파일 시스템 접근 허용

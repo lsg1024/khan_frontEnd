@@ -82,11 +82,13 @@ export interface CreateExpenseRecordRequest {
   taxAmount?: number;
 }
 
+// BE 의 CustomPage 는 Spring PageImpl flat 직렬화 — 현재 페이지는 `number` 필드.
 export interface ExpenseRecordsResponse {
   content: ExpenseRecordListItem[];
   totalElements: number;
   totalPages: number;
-  currentPage: number;
+  number: number;
+  size: number;
 }
 
 export const expenseMasterApi = {
@@ -132,7 +134,8 @@ export const expenseMasterApi = {
 
 export const expenseRecordApi = {
   getRecords: (startDate: string, endDate: string, expenseType?: string, bankTypeId?: number, page: number = 1): Promise<ApiResponse<ExpenseRecordsResponse>> => {
-    const params: Record<string, string | number> = { startDate, endDate, page };
+    // FE 는 1-indexed, BE Pageable 은 0-indexed → page-1 로 변환.
+    const params: Record<string, string | number> = { startDate, endDate, page: Math.max(0, page - 1) };
     if (expenseType) params.expenseType = expenseType;
     if (bankTypeId) params.bankTypeId = bankTypeId;
     return apiRequest.get<ExpenseRecordsResponse>("account/expense/records", { params });

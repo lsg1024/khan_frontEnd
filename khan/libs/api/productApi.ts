@@ -91,17 +91,17 @@ export const productApi = {
 		);
 	},
 
-	// 상품 다중 이미지 업로드 (기존 이미지 유지하면서 추가)
+	// 상품 다중 이미지 업로드 (기존 이미지 유지하면서 추가) — BE 가 string 메시지를 반환한다.
 	uploadProductImages: async (
 		productId: string,
 		imageFiles: File[],
-	): Promise<ApiResponse<ProductImageDto[]>> => {
+	): Promise<ApiResponse<string>> => {
 		const formData = new FormData();
 		imageFiles.forEach((file) => {
 			formData.append("images", file);
 		});
 
-		return apiRequest.post<ProductImageDto[]>(
+		return apiRequest.post<string>(
 			`product/products/${productId}/images`,
 			formData,
 		);
@@ -116,13 +116,11 @@ export const productApi = {
 		);
 	},
 
-	// 상품 이미지 조회 (여러 상품 ID로 조회)
+	// 상품 이미지 조회 (여러 상품 ID로 조회) — BE 는 productId → {productId, imagePath} 맵을 반환.
 	getProductImages: async (
 		productIds: number[],
 	): Promise<
-		ApiResponse<
-			Record<number, { images: Array<{ imageId: number; imageUrl: string }> }>
-		>
+		ApiResponse<Record<number, { productId: number; imagePath: string }>>
 	> => {
 		return apiRequest.get(`product/api/products/images`, {
 			params: { ids: productIds.join(",") },

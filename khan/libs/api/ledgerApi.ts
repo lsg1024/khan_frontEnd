@@ -11,14 +11,14 @@ export interface LedgerEntry {
 	description: string | null;
 }
 
+// BE 의 CustomPage 는 Spring PageImpl 을 flat 으로 직렬화한다.
+// number/size/totalElements/totalPages 모두 top-level 필드.
 export interface LedgerListResponse {
 	content: LedgerEntry[];
-	page: {
-		number: number;
-		size: number;
-		totalElements: number;
-		totalPages: number;
-	};
+	number: number;
+	size: number;
+	totalElements: number;
+	totalPages: number;
 }
 
 export interface LedgerBalance {

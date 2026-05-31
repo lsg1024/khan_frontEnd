@@ -45,7 +45,7 @@ export const factoryApi = {
 		page: number = 1,
 		size: number = 20
 	): Promise<ApiResponse<TransactionPageResponse>> => {
-		return apiRequest.get<TransactionPageResponse>("account/purchase/factory", {
+		return apiRequest.get<TransactionPageResponse>("account/factories/purchase", {
 			params: {
 				start,
 				end,
