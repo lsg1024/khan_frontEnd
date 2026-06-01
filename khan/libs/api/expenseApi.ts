@@ -133,11 +133,12 @@ export const expenseMasterApi = {
 };
 
 export const expenseRecordApi = {
-  getRecords: (startDate: string, endDate: string, expenseType?: string, bankTypeId?: number, page: number = 1): Promise<ApiResponse<ExpenseRecordsResponse>> => {
+  getRecords: (startDate: string, endDate: string, expenseType?: string, bankTypeId?: number, page: number = 1, counterparty?: string): Promise<ApiResponse<ExpenseRecordsResponse>> => {
     // FE 는 1-indexed, BE Pageable 은 0-indexed → page-1 로 변환.
     const params: Record<string, string | number> = { startDate, endDate, page: Math.max(0, page - 1) };
     if (expenseType) params.expenseType = expenseType;
     if (bankTypeId) params.bankTypeId = bankTypeId;
+    if (counterparty) params.counterparty = counterparty;
     return apiRequest.get<ExpenseRecordsResponse>("account/expense/records", { params });
   },
 
