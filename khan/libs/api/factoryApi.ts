@@ -47,8 +47,8 @@ export const factoryApi = {
 	): Promise<ApiResponse<TransactionPageResponse>> => {
 		return apiRequest.get<TransactionPageResponse>("account/factories/purchase", {
 			params: {
-				start,
-				end,
+				startAt: start,
+				endAt: end,
 				accountType: accountType || undefined,
 				accountName: accountName || undefined,
 				page,

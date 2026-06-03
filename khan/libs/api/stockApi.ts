@@ -81,8 +81,8 @@ export const stockApi = {
 		size?: number
 	): Promise<ApiResponse<StockSearchResponse>> => {
 		const params: Record<string, string> = { page: page.toString() };
-		if (start) params.start = start;
-		if (end) params.end = end;
+		if (start) params.startAt = start;
+		if (end) params.endAt = end;
 		if (search) params.search = search;
 		if (searchField) params.searchField = searchField;
 		if (factory) params.factory = factory;
@@ -115,8 +115,8 @@ export const stockApi = {
 		page: number = 1
 	): Promise<ApiResponse<StockSearchResponse>> => {
 		const params: Record<string, string> = { page: page.toString() };
-		if (start) params.start = start;
-		if (end) params.end = end;
+		if (start) params.startAt = start;
+		if (end) params.endAt = end;
 		if (search) params.search = search;
 		if (searchField) params.searchField = searchField;
 		if (factory) params.factory = factory;
@@ -139,8 +139,8 @@ export const stockApi = {
 		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
-		if (start) params.start = start;
-		if (end) params.end = end;
+		if (start) params.startAt = start;
+		if (end) params.endAt = end;
 		if (order_status) params.order_status = order_status;
 
 		return apiRequest.get<string[]>("order/stocks/filters/factory", { params });
@@ -152,8 +152,8 @@ export const stockApi = {
 		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
-		if (start) params.start = start;
-		if (end) params.end = end;
+		if (start) params.startAt = start;
+		if (end) params.endAt = end;
 		if (order_status) params.order_status = order_status;
 
 		return apiRequest.get<string[]>("order/stocks/filters/store", { params });
@@ -165,8 +165,8 @@ export const stockApi = {
 		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
-		if (start) params.start = start;
-		if (end) params.end = end;
+		if (start) params.startAt = start;
+		if (end) params.endAt = end;
 		if (order_status) params.order_status = order_status;
 
 		return apiRequest.get<string[]>("order/stocks/filters/set-type", {
@@ -180,8 +180,8 @@ export const stockApi = {
 		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
-		if (start) params.start = start;
-		if (end) params.end = end;
+		if (start) params.startAt = start;
+		if (end) params.endAt = end;
 		if (order_status) params.order_status = order_status;
 
 		return apiRequest.get<string[]>("order/stocks/filters/color", { params });
@@ -193,8 +193,8 @@ export const stockApi = {
 		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
-		if (start) params.start = start;
-		if (end) params.end = end;
+		if (start) params.startAt = start;
+		if (end) params.endAt = end;
 		if (order_status) params.order_status = order_status;
 
 		return apiRequest.get<string[]>("order/stocks/filters/classification", { params });
@@ -206,8 +206,8 @@ export const stockApi = {
 		order_status?: string
 	): Promise<ApiResponse<string[]>> => {
 		const params: Record<string, string> = {};
-		if (start) params.start = start;
-		if (end) params.end = end;
+		if (start) params.startAt = start;
+		if (end) params.endAt = end;
 		if (order_status) params.order_status = order_status;
 
 		return apiRequest.get<string[]>("order/stocks/filters/material", { params });

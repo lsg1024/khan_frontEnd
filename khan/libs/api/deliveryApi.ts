@@ -24,8 +24,8 @@ export const deliveryApi = {
 	): Promise<ApiResponse<OrderSearchResponse>> => {
 		const params: Record<string, string> = { page: page.toString() };
 
-		if (start) params.start = start;
-		if (end) params.end = end;
+		if (start) params.startAt = start;
+		if (end) params.endAt = end;
 		if (search) params.search = search;
 		if (searchField) params.searchField = searchField;
 		if (factory) params.factory = factory;

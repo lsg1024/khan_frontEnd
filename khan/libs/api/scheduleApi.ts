@@ -13,8 +13,8 @@ export const createSchedule = async (data: ScheduleRequest) => {
 // 일정 목록 조회 (기간별)
 export const getSchedules = async (params: ScheduleListParams) => {
 	const queryParams = new URLSearchParams();
-	queryParams.append("start", params.start);
-	queryParams.append("end", params.end);
+	queryParams.append("startAt", params.start);
+	queryParams.append("endAt", params.end);
 
 	return apiRequest.get<ScheduleResponse[]>(
 		`/account/schedules?${queryParams.toString()}`

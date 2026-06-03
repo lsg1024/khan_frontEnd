@@ -18,8 +18,11 @@ interface LoginResponse {
 
 interface JoinRequest {
 	userId: string;
+	nickname: string;
 	password: string;
-	email: string;
+	confirm_password: string;
+	role?: string;
+	storeId?: number;
 }
 export const authApi = {
 	// 로그인

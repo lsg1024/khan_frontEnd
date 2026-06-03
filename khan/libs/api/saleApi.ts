@@ -34,8 +34,8 @@ export const saleApi = {
 		page: number = 1
 	): Promise<ApiResponse<SaleSearchResponse>> => {
 		const params: Record<string, string | number | undefined> = {
-			start,
-			end,
+			startAt: start,
+			endAt: end,
 			search,
 			type,
 			// sortField,
@@ -55,8 +55,8 @@ export const saleApi = {
 		type?: string
 	): Promise<ApiResponse<SaleRow[]>> => {
 		const params: Record<string, string | undefined> = {
-			start,
-			end,
+			startAt: start,
+			endAt: end,
 			search,
 			type,
 		};
@@ -69,7 +69,7 @@ export const saleApi = {
 		end: string
 	): Promise<ApiResponse<{ storeId: number; storeName: string }[]>> => {
 		return apiRequest.get<{ storeId: number; storeName: string }[]>("order/sales/stores", {
-			params: { start, end },
+			params: { startAt: start, endAt: end },
 		});
 	},
 
@@ -210,7 +210,7 @@ export const saleApi = {
 		search?: string,
 		type?: string
 	): Promise<AxiosResponse<Blob>> => {
-		const params: Record<string, string> = { start, end };
+		const params: Record<string, string> = { startAt: start, endAt: end };
 		if (search) params.search = search;
 		if (type) params.type = type;
 

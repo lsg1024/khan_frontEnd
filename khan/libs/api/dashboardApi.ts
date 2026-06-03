@@ -73,8 +73,8 @@ export const getMonthlySalesSummary = async () => {
 export const getStoreTradeStatistics = async (params: StoreStatisticsSearchParams = {}) => {
 	const queryParams = new URLSearchParams();
 
-	if (params.start) queryParams.append("start", params.start);
-	if (params.end) queryParams.append("end", params.end);
+	if (params.start) queryParams.append("startAt", params.start);
+	if (params.end) queryParams.append("endAt", params.end);
 	if (params.storeName) queryParams.append("storeName", params.storeName);
 	if (params.storeGrade) queryParams.append("storeGrade", params.storeGrade);
 	if (params.tradeType) queryParams.append("tradeType", params.tradeType);
