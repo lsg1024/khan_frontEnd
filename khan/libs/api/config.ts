@@ -67,6 +67,49 @@ export const api = axios.create({
 	],
 });
 
+// HTTP status별 사용자 안내 메시지 (서버 message 부재 시 폴백)
+const STATUS_FALLBACK_MESSAGES: Record<number, string> = {
+	400: "요청이 올바르지 않습니다. 입력값을 확인해주세요.",
+	401: "로그인이 필요합니다. 다시 로그인해주세요.",
+	403: "이 작업을 수행할 권한이 없습니다.",
+	404: "요청한 정보를 찾을 수 없습니다.",
+	408: "요청 시간이 초과되었습니다. 다시 시도해주세요.",
+	409: "이미 처리되었거나 다른 데이터와 충돌이 발생했습니다.",
+	413: "전송한 데이터(파일)가 너무 큽니다.",
+	500: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+	502: "서버에 일시적으로 연결할 수 없습니다. 잠시 후 다시 시도해주세요.",
+	503: "서버가 일시적으로 사용할 수 없는 상태입니다. 잠시 후 다시 시도해주세요.",
+	504: "서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.",
+};
+
+/**
+ * axios 에러 → 사용자에게 보여줄 한국어 메시지.
+ * 우선순위: 서버 message(백엔드가 한국어 보장) → 타임아웃/네트워크 → status별 폴백.
+ * "Network Error", "timeout of 15000ms exceeded" 같은 axios 영어 메시지 노출 차단.
+ */
+function toUserErrorMessage(err: unknown): string {
+	const e = err as {
+		code?: string;
+		response?: { status?: number; data?: { message?: unknown } };
+	};
+
+	const serverMessage = e.response?.data?.message;
+	if (typeof serverMessage === "string" && serverMessage.length > 0) {
+		return serverMessage;
+	}
+	if (e.code === "ECONNABORTED" || e.code === "ETIMEDOUT") {
+		return "요청 시간이 초과되었습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.";
+	}
+	if (!e.response) {
+		return "서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.";
+	}
+	const status = e.response.status;
+	return (
+		(status !== undefined && STATUS_FALLBACK_MESSAGES[status]) ||
+		"알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+	);
+}
+
 let isRefreshing = false;
 let reissueFailCount = 0;
 const MAX_REISSUE_ATTEMPTS = 1;
@@ -122,7 +165,7 @@ api.interceptors.request.use((config) => {
 
 			window.dispatchEvent(new CustomEvent("tokenExpired"));
 
-			throw new Error("Tenant mismatch: Please login again.");
+			throw new Error("다른 매장 계정으로 로그인되어 있습니다. 다시 로그인해주세요.");
 		}
 
 		(config.headers as AxiosHeaders).set("Authorization", `Bearer ${token}`);
@@ -172,7 +215,7 @@ api.interceptors.response.use(
 						return api(originalRequest);
 					})
 					.catch((err) => {
-						return Promise.reject(err.message);
+						return Promise.reject(err);
 					});
 			}
 
@@ -195,7 +238,9 @@ api.interceptors.response.use(
 			if (reissueFailCount >= MAX_REISSUE_ATTEMPTS) {
 				tokenUtils.removeToken();
 				window.dispatchEvent(new CustomEvent("tokenExpired"));
-				return Promise.reject(new Error("Maximum reissue attempts exceeded"));
+				return Promise.reject(
+					new Error("로그인이 만료되었습니다. 다시 로그인해주세요."),
+				);
 			}
 
 			isRefreshing = true;
@@ -222,17 +267,19 @@ api.interceptors.response.use(
 						if (isTenantMismatch) {
 							// 서버에서 이미 refresh token을 삭제함 → 즉시 로그아웃
 							reissueFailCount = MAX_REISSUE_ATTEMPTS;
-							throw new Error("Cross-tenant session invalidated");
+							throw new Error(
+								"다른 매장 계정 세션이 감지되어 로그아웃되었습니다. 다시 로그인해주세요.",
+							);
 						}
 					}
 
-					throw new Error(`HTTP error! status: ${response.status}`);
+					throw new Error("로그인이 만료되었습니다. 다시 로그인해주세요.");
 				}
 
 				const data = await response.json();
 				if (!data.success) {
 					reissueFailCount++;
-					throw new Error("Token refresh failed");
+					throw new Error("로그인이 만료되었습니다. 다시 로그인해주세요.");
 				}
 
 				const authHeader =
@@ -260,7 +307,9 @@ api.interceptors.response.use(
 								"X-Tenant-ID": currentSubdomain,
 							},
 						}).catch(() => {});
-						throw new Error("Tenant mismatch on reissue");
+						throw new Error(
+								"다른 매장 계정 세션이 감지되어 로그아웃되었습니다. 다시 로그인해주세요.",
+							);
 					}
 
 					tokenUtils.setToken(newToken);
@@ -285,20 +334,7 @@ api.interceptors.response.use(
 			}
 		}
 
-		const responseData = err.response?.data;
-		let errorMessage = "알 수 없는 오류가 발생했습니다.";
-
-		if (
-			responseData &&
-			typeof responseData === "object" &&
-			"message" in responseData
-		) {
-			errorMessage = responseData.message as string;
-		} else if (err.message) {
-			errorMessage = err.message;
-		}
-
-		return Promise.reject(new Error(errorMessage));
+		return Promise.reject(new Error(toUserErrorMessage(err)));
 	},
 );
 
@@ -362,13 +398,4 @@ export const apiRequest = {
 		const authHeader =
 			response.headers["Authorization"] ||
 			response.headers["authorization"] ||
-			response.headers.Authorization;
-
-		if (authHeader && authHeader.startsWith("Bearer ")) {
-			const token = authHeader.substring(7);
-			tokenUtils.setToken(token);
-		}
-
-		return response.data;
-	},
-};
+			res

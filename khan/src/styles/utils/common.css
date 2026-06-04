@@ -390,6 +390,29 @@
 	padding: 20px;
 }
 
+/* 모달 푸터 (취소/저장 등 액션 영역) — canonical */
+.modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: var(--spacing-sm);
+	padding: 16px 20px;
+	border-top: 1px solid #e0e0e0;
+	background-color: var(--bg-secondary);
+}
+
+/* danger 버튼 (삭제) — .btn 과 함께 사용. common.css 에 누락돼 있던 canonical 정의 */
+.btn-danger {
+	color: var(--text-white);
+	background-color: var(--danger-color);
+	border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+	background-color: #c82333;
+	border-color: #bd2130;
+}
+
 /* AuthImage 컴포넌트 스타일 */
 .auth-image-loading {
 	display: flex;

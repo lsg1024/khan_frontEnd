@@ -13,6 +13,8 @@ import { getLocalDate } from "../../utils/dateUtils";
 import { useToast } from "../../components/common/toast/Toast";
 import Pagination from "../../components/common/Pagination";
 import "../../styles/pages/expense/ExpensePage.css";
+import "../../styles/pages/gold_money/GoldMoneyPage.css";
+import GoldMoneyBulkRegister from "./GoldMoneyBulkRegister";
 
 /**
  * 금&현금 페이지 (구 "경비 관리" 페이지와 통합됨).
@@ -39,6 +41,7 @@ const GoldMoneyPage = () => {
 
   // 등록/수정 모달
   const [showModal, setShowModal] = useState(false);
+  const [showBulk, setShowBulk] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<CreateExpenseRecordRequest>({
     recordDate: getLocalDate(),
@@ -123,24 +126,9 @@ const GoldMoneyPage = () => {
     loadRecords(page);
   };
 
+  // 자료등록 버튼 → 멀티행 일괄 등록 그리드 열기 (단건 모달은 행 클릭 시 '수정'용으로 유지)
   const openCreateModal = () => {
-    setEditingId(null);
-    setFormData({
-      recordDate: getLocalDate(),
-      expenseType: "INCOME",
-      bankTypeId: bankTypes.length > 0 ? bankTypes[0].id : 0,
-      incomeAccountId: incomeAccounts.length > 0 ? incomeAccounts[0].id : null,
-      expenseAccountId: null,
-      counterparty: "",
-      description: "",
-      material: "",
-      weight: 0,
-      quantity: 1,
-      unitPrice: 0,
-      supplyAmount: 0,
-      taxAmount: 0,
-    });
-    setShowModal(true);
+    setShowBulk(true);
   };
 
   const openEditModal = async (id: number) => {
@@ -360,18 +348,18 @@ const GoldMoneyPage = () => {
 
       {/* 등록/수정 모달 */}
       {showModal && (
-        <div className="create-form-overlay" onClick={() => setShowModal(false)}>
-          <div className="expense-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="create-form-header">
-              <h3>{editingId ? "금&현금 수정" : "금&현금 등록"}</h3>
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content modal-content-sm gm-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingId ? "금&현금 수정" : "금&현금 등록"}</h2>
               <button
-                className="close-button"
+                className="modal-close-button"
                 onClick={() => setShowModal(false)}
               >
                 ×
               </button>
             </div>
-            <div className="create-form-body">
+            <div className="modal-body">
               <div className="form-group">
                 <label>등록일 *</label>
                 <input
@@ -569,21 +557,31 @@ const GoldMoneyPage = () => {
                 </div>
               </div>
             </div>
-            <div className="create-form-footer">
-              <button className="reset-btn-common" onClick={() => setShowModal(false)}>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
                 취소
               </button>
               {editingId && (
-                <button className="delete-btn-common" onClick={handleDelete}>
+                <button className="btn btn-danger" onClick={handleDelete}>
                   삭제
                 </button>
               )}
-              <button className="search-btn-common" onClick={handleSave}>
+              <button className="btn btn-primary" onClick={handleSave}>
                 {editingId ? "수정" : "등록"}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {showBulk && (
+        <GoldMoneyBulkRegister
+          bankTypes={bankTypes}
+          incomeAccounts={incomeAccounts}
+          expenseAccounts={expenseAccounts}
+          onClose={() => setShowBulk(false)}
+          onSuccess={() => loadRecords(currentPage)}
+        />
       )}
     </div>
   );
