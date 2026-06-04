@@ -165,7 +165,9 @@ api.interceptors.request.use((config) => {
 
 			window.dispatchEvent(new CustomEvent("tokenExpired"));
 
-			throw new Error("다른 매장 계정으로 로그인되어 있습니다. 다시 로그인해주세요.");
+			throw new Error(
+				"다른 매장 계정으로 로그인되어 있습니다. 다시 로그인해주세요.",
+			);
 		}
 
 		(config.headers as AxiosHeaders).set("Authorization", `Bearer ${token}`);
@@ -308,8 +310,8 @@ api.interceptors.response.use(
 							},
 						}).catch(() => {});
 						throw new Error(
-								"다른 매장 계정 세션이 감지되어 로그아웃되었습니다. 다시 로그인해주세요.",
-							);
+							"다른 매장 계정 세션이 감지되어 로그아웃되었습니다. 다시 로그인해주세요.",
+						);
 					}
 
 					tokenUtils.setToken(newToken);
@@ -398,4 +400,13 @@ export const apiRequest = {
 		const authHeader =
 			response.headers["Authorization"] ||
 			response.headers["authorization"] ||
-			res
+			response.headers.Authorization;
+
+		if (authHeader && authHeader.startsWith("Bearer ")) {
+			const token = authHeader.substring(7);
+			tokenUtils.setToken(token);
+		}
+
+		return response.data;
+	},
+};
