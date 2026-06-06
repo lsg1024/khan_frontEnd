@@ -3,17 +3,19 @@ import { factoryApi } from "../../../libs/api/factoryApi";
 import { isApiSuccess } from "../../../libs/api/config";
 import { useErrorHandler } from "../../utils/errorHandler";
 import type {
-	TransactionPage,
-	TransactionPageResponse,
-} from "../../types/storeDto";
+	FactoryPurchaseDto,
+	FactoryPurchaseResponse,
+} from "../../types/factoryDto";
 import { getLocalDate } from "../../utils/dateUtils";
 import Pagination from "../../components/common/Pagination";
 import PurchaseList from "../../components/common/purchase/PurchaseList";
+import PurchaseCreateModal from "../../components/common/purchase/PurchaseCreateModal";
 import "../../styles/pages/sale/AccountsReceivablePage.css";
 
 export const PurchasePage = () => {
-	const [transactions, setTransactions] = useState<TransactionPage[]>([]);
+	const [transactions, setTransactions] = useState<FactoryPurchaseDto[]>([]);
 	const [loading, setLoading] = useState(false);
+	const [showCreateModal, setShowCreateModal] = useState(false);
 	const { handleError } = useErrorHandler();
 
 	const [currentPage, setCurrentPage] = useState(1);
@@ -71,7 +73,7 @@ export const PurchasePage = () => {
 				return;
 			}
 
-			const data = res.data as TransactionPageResponse;
+			const data = res.data as FactoryPurchaseResponse;
 			const content = data?.content ?? [];
 			const pageInfo = data?.page;
 
@@ -123,16 +125,12 @@ export const PurchasePage = () => {
 		loadFactoryPurchase(resetFilters, 1);
 	};
 
-	// 매입 생성
-	const handleCreate = async () => {
-		try {
-			setLoading(true);
-			alert("생성 기능은 준비 중입니다.");
-		} catch (err) {
-			handleError(err, "Purchase");
-		} finally {
-			setLoading(false);
-		}
+	// 매입 생성 모달 열기
+	const handleCreate = () => setShowCreateModal(true);
+
+	// 매입 생성 완료 -> 현재 페이지 목록 새로고침
+	const handleCreated = () => {
+		loadFactoryPurchase(searchFilters, currentPage);
 	};
 
 	const handleExcelDownload = async () => {
@@ -242,7 +240,7 @@ export const PurchasePage = () => {
 								onClick={handleCreate}
 								disabled={loading}
 							>
-								생성
+								매입 생성
 							</button>
 							<button
 								className="common-btn-common"
@@ -276,6 +274,13 @@ export const PurchasePage = () => {
 					/>
 				)}
 			</div>
+
+			{showCreateModal && (
+				<PurchaseCreateModal
+					onClose={() => setShowCreateModal(false)}
+					onCreated={handleCreated}
+				/>
+			)}
 		</div>
 	);
 };

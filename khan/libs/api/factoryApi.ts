@@ -4,13 +4,14 @@ import type { ApiResponse } from "./config";
 import type {
 	FactorySearchResponse,
 	FactoryPurchaseResponse,
+	PurchaseCreateLine,
 } from "../../src/types/factoryDto";
 import type {
 	AccountSingleResponse,
 	FactoryCreateRequest,
 	FactoryUpdateRequest,
 } from "../../src/types/AccountDto";
-import type { TransactionPageResponse, RecentActivityResponse } from "../../src/types/storeDto";
+import type { RecentActivityResponse } from "../../src/types/storeDto";
 
 export const factoryApi = {
 	// 제조사 검색 (페이징 + 정렬 + searchField 지원)
@@ -36,7 +37,7 @@ export const factoryApi = {
 		});
 	},
 
-	// 제조사 매입 미수금 조회
+	// 제조사 매입 미수금(제조사별 잔액) 조회
 	getFactoryPurchase: async (
 		start: string,
 		end: string,
@@ -44,8 +45,8 @@ export const factoryApi = {
 		accountName?: string,
 		page: number = 1,
 		size: number = 20
-	): Promise<ApiResponse<TransactionPageResponse>> => {
-		return apiRequest.get<TransactionPageResponse>("account/factories/purchase", {
+	): Promise<ApiResponse<FactoryPurchaseResponse>> => {
+		return apiRequest.get<FactoryPurchaseResponse>("account/factories/purchase", {
 			params: {
 				startAt: start,
 				endAt: end,
@@ -55,6 +56,16 @@ export const factoryApi = {
 				size,
 			},
 		});
+	},
+
+	// 매입 생성 - 여러 줄을 한 번에 등록 (BE POST /purchase/factory)
+	createFactoryPurchase: async (
+		lines: PurchaseCreateLine[]
+	): Promise<ApiResponse<string>> => {
+		return apiRequest.post<string, PurchaseCreateLine[]>(
+			"account/purchase/factory",
+			lines
+		);
 	},
 
 	// 제조사 상세 조회
@@ -141,7 +152,7 @@ export const factoryApi = {
 	},
 
 	/**
-	 * Task 4-3 / 4-4 — 제조사 최근 활동(거래 내역 + 결제 집계) 조회.
+	 * Task 4-3 / 4-4 - 제조사 최근 활동(거래 내역 + 결제 집계) 조회.
 	 * FactoryPage 의 최근거래일/최근결제일 셀 클릭 시 모달에서 호출.
 	 */
 	getFactoryRecentActivity: async (
